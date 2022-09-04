@@ -1,0 +1,57 @@
+#!/bin/sh
+
+DATE_FORMAT='+backup-%Y%m%S-%H%M%S'
+
+
+# In case you wanted to check what variables were passed
+# echo "flags = $*"
+
+
+
+usage() {
+    echo '''
+Usage: git bak SUBCOMMAND
+
+Subcommands:
+    backup    - backup the current files
+    purge     - purge old backups
+'''
+    exit 1
+}
+
+
+backup() {
+    # https://stackoverflow.com/questions/402377/using-getopts-to-process-long-and-short-command-line-options/7680682#7680682
+    while getopts ph OPT; do
+	case $OPT in
+	    p) DO_PUSH=1; shift ;;
+	    h) usage; shift ;;
+	    *) exit 1 ;;
+	esac
+    done
+    BACKUP_ID=$(date "$DATE_FORMAT")
+    git checkout --orphan "$BACKUP_ID"
+    git add .
+    git commit -m "$BACKUP_ID"
+    if [ -n "$DO_PUSH" ]; then
+        git push
+    fi
+}
+
+
+if [ -n "${1}" ]; then
+    SUBCOMMAND="$1"
+    shift
+    if [ "$SUBCOMMAND" = 'backup' ]; then
+        backup $@
+    fi
+else
+    usage
+fi
+
+
+
+
+
+
+

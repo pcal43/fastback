@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "fastback",
+  "version": "${version}",
+  "name": "Fastback",
+  "description": "Fast, incremental backups based on git",
+  "authors": ["pcal.net"],
+
+  "contact": {
+    "homepage": "https://github.com/pcal43/fastback",
+    "sources": "https://github.com/pcal43/fastback"
+  },
+  "license": "GPL-2",
+  "icon": "",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "net.pcal.fastback.FastbackInitializer"
+    ]
+  },
+  "mixins": [
+    "fastback.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.11.3",
+    "fabric": "*",
+    "minecraft": "1.19.x",
+    "java": ">=17"
+  },
+  "conflicts": {}
+}
