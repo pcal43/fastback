@@ -8,6 +8,11 @@ CURRENT_VERSION=$(sed -rn 's/^mod_version.*=[ ]*([^\n]+)$/\1/p' gradle.propertie
 echo "Current version is '$CURRENT_VERSION'"
 
 RELEASE_VERSION=$(echo $CURRENT_VERSION | sed s/-prerelease//)
+if [ $CURRENT_VERSION = $RELEASE_VERSION ]; then
+    echo "ERROR - current version is not a prerelease: $CURRENT_VERSION"
+    exit 1
+fi
+
 echo "Release version will be '$RELEASE_VERSION'"
 
-#sed -i "/mod_version=/ s/=.*/=HEY/" gradle.properties
+sed -i "/mod_version=/ s/=.*/=${RELEASE_VERSION}/" gradle.properties
