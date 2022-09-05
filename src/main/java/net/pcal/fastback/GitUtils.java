@@ -82,6 +82,7 @@ public class GitUtils {
 //        git.getRepository().getConfig().save();
 //    }
 
+    // FIXME this is creating duplicate entries
     public static void mergeGitConfig(Git git, String rawConfig, Logger logger) throws GitAPIException, IOException {
         final StoredConfig config = git.getRepository().getConfig();
         rawConfig = config.toText() + "\n" + rawConfig;
