@@ -26,7 +26,8 @@ configurations {
 }
 
 project.ext.versions = [
-    jgit     : '6.2.0.202206071550-r',
+    jgit         : '6.2.0.202206071550-r',
+	apache_sshd  : '2.8.0'
 ]
 
 dependencies {
@@ -42,11 +43,11 @@ dependencies {
 
 	//https://download.eclipse.org/jgit/site/6.2.0.202206071550-r/org.eclipse.jgit.ssh.apache/dependencies.html
 
-	implementation group: 'org.apache.sshd', name: 'sshd-core', version: '2.8.0'
-	include group: 'org.apache.sshd', name: 'sshd-core', version: '2.8.0'
+	implementation group: 'org.apache.sshd', name: 'sshd-core', version: versions.apache_sshd
+	include group: 'org.apache.sshd', name: 'sshd-core', version: versions.apache_sshd
 
-	implementation group: 'org.apache.sshd', name: 'sshd-common', version: '2.8.0'
-	include group: 'org.apache.sshd', name: 'sshd-common', version: '2.8.0'
+	implementation group: 'org.apache.sshd', name: 'sshd-common', version: versions.apache_sshd
+	include group: 'org.apache.sshd', name: 'sshd-common', version: versions.apache_sshd
 
 
 	//modImplementation
