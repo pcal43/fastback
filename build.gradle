@@ -27,7 +27,7 @@ configurations {
 
 project.ext.versions = [
     jgit         : '6.2.0.202206071550-r',
-	apache_sshd  : '2.8.0'
+    apache_sshd  : '2.8.0'
 ]
 
 dependencies {
