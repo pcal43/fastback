@@ -7,6 +7,8 @@
 # simple stuff like this.
 #
 
+set -eu
+
 if [ -n "$(git status --porcelain)" ]; then
   echo "Working directory not clean, cannot release"
   exit 1
@@ -18,6 +20,7 @@ if [ "${CURRENT_BRANCH}" != 'main' ]; then
   exit 1
 fi
 
+
 CURRENT_VERSION=$(sed -rn 's/^mod_version.*=[ ]*([^\n]+)$/\1/p' gradle.properties)
 echo "Current version is '$CURRENT_VERSION'"
 
@@ -27,17 +30,20 @@ if [ $CURRENT_VERSION = $RELEASE_VERSION ]; then
     exit 1
 fi
 echo "Release version will be '$RELEASE_VERSION'"
-sed -ie "s/^mod_version =.*/mod_version = $RELEASE_VERSION/" gradle.properties
-
-git commit -am "Release ${RELEASE_VERSION}"
-git tag "${RELEASE_VERSION}"
-git push --tags
+sed "s/^mod_version =.*/mod_version = $RELEASE_VERSION/" gradle.properties > gradle.properties.temp
+rm gradle.properties
+mv gradle.properties.temp gradle.properties
 
 rm -rf build/libs
 ./gradlew remapJar
 
+
+git commit -am "Release ${RELEASE_VERSION}"
+#git tag "${RELEASE_VERSION}"
+git push
+
 # this is always creating a draft release for some reason
-gh release create ${RELEASE_VERSION} build/libs/ --title "${RELEASE_VERSION}" --notes "release ${RELEASE_VERSION}"
+gh release create --title "${RELEASE_VERSION}" --notes "release ${RELEASE_VERSION}" ${RELEASE_VERSION} build/libs/*
 
 BUILD_METADATA=$(echo ${RELEASE_VERSION} | awk '{split($NF,v,/[+]/); $NF=v[2]}1')
 BUILD_METADATA="${BUILD_METADATA}-prerelease"
@@ -46,6 +52,9 @@ NEXT_MOD_VERSION=$(echo ${RELEASE_VERSION} | awk '{split($NF,v,/[.]/); $NF=v[1]"
 NEXT_VERSION="${NEXT_MOD_VERSION}+${BUILD_METADATA}"
 echo "Next version is ${NEXT_VERSION}"
 
-sed -ie "s/^mod_version =.*/mod_version = $NEXT_VERSION/" gradle.properties
+sed "s/^mod_version =.*/mod_version = $NEXT_VERSION/" gradle.properties > gradle.properties.temp
+rm gradle.properties
+mv gradle.properties.temp gradle.properties
+
 git commit -am "Prepare for next version ${NEXT_VERSION}"
 git push
