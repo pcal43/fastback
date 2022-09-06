@@ -14,15 +14,15 @@ import static net.pcal.fastback.LogUtils.info;
 
 public class LifecycleUtils {
 
-    public static void onMinecraftStart(final ModContext mod) {
+    public static void onMinecraftStart(final ModContext mctx) {
         try {
             ModConfig.writeDefaultConfigFile();
-            ModConfig.load(mod.getLog4j());
+            ModConfig.load(mctx.getLog4j());
         } catch (IOException e) {
             throw new RuntimeException("Configuration errors, cannot start", e);
         }
-        Commands.registerCommands("backup");
-        mod.getLogger().info("Fastback initialized");
+        Commands.registerCommands(mctx, "backup");
+        mctx.getLogger().info("Fastback initialized");
     }
 
     public static void onWorldStart(final WorldContext world) {

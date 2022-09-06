@@ -30,6 +30,11 @@ class FabricModContext implements ModContext {
     }
 
     @Override
+    public WorldContext getWorldContext(MinecraftServer forServer) {
+        return new FabricWorldContext(this, forServer);
+    }
+
+    @Override
     public org.apache.logging.log4j.Logger getLog4j() {
         return this.log4j;
     }
