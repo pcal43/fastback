@@ -17,15 +17,11 @@ class FabricWorldContext implements ModContext.WorldContext {
     private final ModContext modContext;
     private final MinecraftServer server;
     private final LevelStorage.Session session;
-    private final LevelInfo li;
-    private final LevelSummary ls;
 
     FabricWorldContext(ModContext modContext, MinecraftServer server) {
-        this.modContext =requireNonNull(modContext);
+        this.modContext = requireNonNull(modContext);
         this.server = requireNonNull(server);
         this.session = requireNonNull(((ServerAccessors) server).getSession());
-        this.ls = requireNonNull(session.getLevelSummary());
-        this.li = requireNonNull(ls.getLevelInfo());
     }
 
     @Override
@@ -41,7 +37,7 @@ class FabricWorldContext implements ModContext.WorldContext {
 
     @Override
     public String getWorldName() {
-        return this.li.getLevelName();
+        return this.getLevelInfo().getLevelName();
     }
 
     @Override
@@ -51,12 +47,12 @@ class FabricWorldContext implements ModContext.WorldContext {
 
     @Override
     public String getGameMode() {
-        return String.valueOf(li.getGameMode());
+        return String.valueOf(getLevelInfo().getGameMode());
     }
 
     @Override
     public String getDifficulty() {
-        return String.valueOf(li.getDifficulty());
+        return String.valueOf(getLevelInfo().getDifficulty());
     }
 
     @Override
@@ -65,4 +61,7 @@ class FabricWorldContext implements ModContext.WorldContext {
         return server.getVersion();
     }
 
+    private LevelInfo getLevelInfo() {
+        return requireNonNull(session.getLevelSummary().getLevelInfo());
+    }
 }

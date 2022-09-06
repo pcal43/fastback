@@ -23,6 +23,7 @@ public class ListCommand {
     }
 
     private final ModContext context;
+
     private ListCommand(ModContext context) {
         this.context = requireNonNull(context);
     }
@@ -31,15 +32,14 @@ public class ListCommand {
         final ModContext.WorldContext world = this.context.getWorldContext(cc.getSource().getServer());
         final Path worldSaveDir = world.getWorldSaveDirectory();
 
-        try {
-            Git git = Git.open(worldSaveDir.toFile());
+
+        try (final Git git = Git.open(worldSaveDir.toFile())) {
             for (Ref branch : git.branchList().call()) {
                 cc.getSource().sendFeedback(Text.literal(branch.getName()), true);
             }
         } catch (GitAPIException | IOException e) {
             throw new RuntimeException(e);
         }
-
         return 1;
     }
 }
