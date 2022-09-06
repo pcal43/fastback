@@ -19,9 +19,9 @@ ifndef SKIP_CHECKS
 		echo "You have uncommitted work."; echo; false; \
 	fi
 
-	@currentBranch=$$(git rev-parse --abbref-ref HEAD) ;\
+	@currentBranch=$$(git rev-parse --abbrev-ref HEAD) ;\
 	if [ "$${currentBranch}" != "main" ]; then \
-			echo "Releases must be performed on main"; false; \
+		echo "Releases must be performed on main"; false; \
 	fi
 endif
 # todo port this into the makefile.  i think
@@ -32,7 +32,9 @@ clean:
 	./gradlew cleanIdea idea
 
 
-
+.PHONY: pr
+pr:
+	firefox https://github.com/pcal43/fastback/pulls
 
 
 
