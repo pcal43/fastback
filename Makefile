@@ -28,7 +28,7 @@ endif
 	./release.sh
 
 .PHONY: ide
-clean:
+ide:
 	./gradlew cleanIdea idea
 
 

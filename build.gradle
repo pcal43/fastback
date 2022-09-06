@@ -35,24 +35,40 @@ dependencies {
 	modImplementation  group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: versions.jgit
 	include  group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: versions.jgit
 
-	modImplementation  group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.ssh.jsch', version: versions.jgit
+	modRuntimeOnly  group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.ssh.jsch', version: versions.jgit
 	include group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.ssh.jsch', version: versions.jgit
 
-	modRuntimeOnly group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.ssh.apache', version: versions.jgit
+	// WORKS ON IF ONLY STUFF ABOVE HERE
+
+	//modRuntimeOnly group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.ssh.apache', version: versions.jgit
 	include group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.ssh.apache', version: versions.jgit
+
+	include group: 'org.apache.sshd', name: 'sshd-core', version: versions.apache_sshd
+	include group: 'org.apache.sshd', name: 'sshd-common', version: versions.apache_sshd
+
+//	modRuntimeOnly group: 'org.slf4j', name: 'jcl-over-slf4j'
+	//include group: 'org.slf4j', name: ' slf4j-api', version: '1.7.30'
+
+	/**
 
 	//https://download.eclipse.org/jgit/site/6.2.0.202206071550-r/org.eclipse.jgit.ssh.apache/dependencies.html
 
 	modRuntimeOnly group: 'org.apache.sshd', name: 'sshd-core', version: versions.apache_sshd
 	include group: 'org.apache.sshd', name: 'sshd-core', version: versions.apache_sshd
 
+	modRuntimeOnly group: 'org.apache.sshd', name: 'sshd-sftp', version: versions.apache_sshd
+	include group: 'org.apache.sshd', name: 'sshd-sftp', version: versions.apache_sshd
+	/**
 	modRuntimeOnly group: 'org.apache.sshd', name: 'sshd-common', version: versions.apache_sshd
-	include group: 'org.apache.sshd', name: 'sshd-common', version: versions.apache_sshd
+	//include group: 'org.apache.sshd', name: 'sshd-common', version: versions.apache_sshd
+
+	 modRuntimeOnly group: 'org.slf4j', name: 'jcl-over-slf4j'
+	 //include group: 'org.slf4j', name: 'jcl-over-slf4j', version: '1.7.32'
 
 	//modImplementation
 	//runtimeOnly group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.ui', version: versions.jgit
 	//runtimeOnly group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.gpg.bc', version: versions.jgit
-
+**/
 
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
