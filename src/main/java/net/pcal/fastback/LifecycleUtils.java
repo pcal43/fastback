@@ -1,45 +1,36 @@
 package net.pcal.fastback;
 
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.minecraft.server.MinecraftServer;
-import org.apache.logging.log4j.LogManager;
+import net.pcal.fastback.ModContext.WorldContext;
+import net.pcal.fastback.commands.Commands;
+import net.pcal.fastback.tasks.BackupTask;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 import static net.pcal.fastback.LogUtils.error;
 import static net.pcal.fastback.LogUtils.info;
 
-public class FastbackInitializer implements ModInitializer {
+public class LifecycleUtils {
 
-    private final Logger logger = LogManager.getLogger("Fastback");
-
-    // ===================================================================================
-    // ModInitializer implementation
-
-    @Override
-    public void onInitialize() {
+    public static void onMinecraftStart(final ModContext mod) {
         try {
             ModConfig.writeDefaultConfigFile();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        try {
-            ModConfig.load(logger);
+            ModConfig.load(mod.getLog4j());
         } catch (IOException e) {
             throw new RuntimeException("Configuration errors, cannot start", e);
         }
-        ServerLifecycleEvents.SERVER_STOPPED.register(this::onShutdown);
-        ServerLifecycleEvents.SERVER_STARTING.register(this::onStartup);
-        info(logger, "Fastback initialized");
+        Commands.registerCommands("backup");
+        mod.getLogger().info("Fastback initialized");
     }
 
-    private void onStartup(MinecraftServer server) {
+    public static void onWorldStart(final WorldContext world) {
+        final Path worldSaveDir = world.getWorldSaveDirectory();
+        final Logger logger = world.getModContext().getLog4j();
         final ModConfig modConfig;
         try {
-            modConfig = ModConfig.loadForWorld(server, logger);
+            modConfig = ModConfig.loadForWorld(worldSaveDir, logger);
         } catch (IOException e) {
             error(logger, "Unable to load config, backups disabled", e);
             return;
@@ -49,16 +40,19 @@ public class FastbackInitializer implements ModInitializer {
             return;
         }
         try {
-            WorldUtils.doWorldMaintenance(modConfig, server, logger);
+            WorldUtils.doWorldMaintenance(modConfig, world, logger);
         } catch (IOException | GitAPIException e) {
             error(logger, "Unable to perform maintenance.  Backups will probably not work correctly", e);
         }
+
     }
 
-    private void onShutdown(MinecraftServer server) {
+    public static void onWorldStop(final WorldContext world) {
+        final Logger logger = world.getModContext().getLog4j();
+        final Path worldSaveDir = world.getWorldSaveDirectory();
         final ModConfig modConfig;
         try {
-            modConfig = ModConfig.loadForWorld(server, logger);
+            modConfig = ModConfig.loadForWorld(worldSaveDir, logger);
         } catch (IOException e) {
             error(logger, "BACKUP FAILED.  Unable to load config.", e);
             return;
@@ -68,9 +62,10 @@ public class FastbackInitializer implements ModInitializer {
             return;
         }
         if (modConfig.getBoolean(ModConfig.Key.SHUTDOWN_BACKUP_ENABLED)) {
-            new BackupTask(modConfig, server, this.logger).run();
+            new BackupTask(modConfig, worldSaveDir, logger).run();
         } else {
             info(logger, "Shutdown backups disabled.");
         }
     }
+
 }

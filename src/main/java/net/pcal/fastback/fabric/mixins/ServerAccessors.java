@@ -1,4 +1,4 @@
-package net.pcal.fastback.mixins;
+package net.pcal.fastback.fabric.mixins;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.SaveProperties;
@@ -9,8 +9,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(MinecraftServer.class)
 public interface ServerAccessors {
 
-    @Accessor
-    SaveProperties getSaveProperties();
     @Accessor
     LevelStorage.Session getSession();
 }

@@ -1,5 +1,7 @@
 package net.pcal.fastback;
 
+import net.pcal.fastback.fabric.FabricFastbackInitializer;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -26,7 +28,7 @@ public class FileUtils {
 
     public static void writeResourceToFile(String resourcePath, Path targetFile) throws IOException {
         final String rawResource;
-        try (InputStream in = FastbackInitializer.class.getClassLoader().getResourceAsStream(resourcePath)) {
+        try (InputStream in = FabricFastbackInitializer.class.getClassLoader().getResourceAsStream(resourcePath)) {
             if (in == null) {
                 throw new FileNotFoundException("Unable to load resource " + resourcePath); // wat
             }

@@ -15,7 +15,7 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.pcal.fastback.FastbackInitializer"
+      "net.pcal.fastback.fabric.FabricFastbackInitializer"
     ]
   },
   "mixins": [

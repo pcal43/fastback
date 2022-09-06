@@ -1,6 +1,5 @@
 package net.pcal.fastback;
 
-import net.minecraft.server.MinecraftServer;
 import org.apache.logging.log4j.Logger;
 
 import java.io.FileInputStream;
@@ -21,7 +20,7 @@ public class ModConfig {
     private static final String DEFAULT_MOD_CONFIG_RESOURCE = "config/fastback.properties";
     private static final String DEFAULT_PROPERTIES_RESOURCE = "/config-defaults.properties";
 
-    enum Key {
+    public enum Key {
 
         FASTBACK_ENABLED("fastback.enabled"),
 
@@ -70,11 +69,11 @@ public class ModConfig {
         this.properties = requireNonNull(props);
     }
 
-    String get(Key key) {
+    public String get(Key key) {
         return this.properties.getProperty(key.propertyName);
     }
 
-    Boolean getBoolean(Key key) {
+    public Boolean getBoolean(Key key) {
         return Boolean.parseBoolean(get(key));
     }
 
@@ -98,11 +97,11 @@ public class ModConfig {
     /**
      * Load the mod configuration.  This is used when no world is open.
      */
-    public static ModConfig loadForWorld(final MinecraftServer server, final Logger logger) throws IOException {
+    public static ModConfig loadForWorld(final Path worldSaveDir, final Logger logger) throws IOException {
         final Properties props = new Properties();
         loadDefaultProperties(props);
         loadFileProperties(props, MOD_CONFIG_PATH);
-        final Path worldConfigPath = MinecraftUtils.getWorldSaveDir(server).resolve(WORLD_CONFIG_PATH);
+        final Path worldConfigPath = worldSaveDir.resolve(WORLD_CONFIG_PATH);
         // Load the mod configuration.
         if (!worldConfigPath.toFile().exists()) {
             debug(logger, () -> "No world configuration found at " + worldConfigPath);
@@ -126,7 +125,7 @@ public class ModConfig {
     }
 
     private static void loadDefaultProperties(final Properties properties) throws IOException {
-        try (final InputStream in = FastbackInitializer.class.getResourceAsStream(DEFAULT_PROPERTIES_RESOURCE)) {
+        try (final InputStream in = ModConfig.class.getResourceAsStream(DEFAULT_PROPERTIES_RESOURCE)) {
             if (in == null) {
                 throw new FileNotFoundException("Unable to load resource " + DEFAULT_PROPERTIES_RESOURCE);
             }

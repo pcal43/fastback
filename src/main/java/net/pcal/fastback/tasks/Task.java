@@ -1,7 +1,7 @@
-package net.pcal.fastback;
+package net.pcal.fastback.tasks;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.Task.TaskState.NEW;
+import static net.pcal.fastback.tasks.Task.TaskState.NEW;
 
 @SuppressWarnings("FieldCanBeLocal")
 abstract public class Task implements Runnable {
