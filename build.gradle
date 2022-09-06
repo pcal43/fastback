@@ -32,23 +32,22 @@ project.ext.versions = [
 
 dependencies {
 	// Fabric & Minecraft
-	implementation  group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: versions.jgit
+	modImplementation  group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: versions.jgit
 	include  group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: versions.jgit
 
-	implementation  group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.ssh.jsch', version: versions.jgit
+	modImplementation  group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.ssh.jsch', version: versions.jgit
 	include group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.ssh.jsch', version: versions.jgit
 
-	implementation group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.ssh.apache', version: versions.jgit
+	modRuntimeOnly group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.ssh.apache', version: versions.jgit
 	include group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.ssh.apache', version: versions.jgit
 
 	//https://download.eclipse.org/jgit/site/6.2.0.202206071550-r/org.eclipse.jgit.ssh.apache/dependencies.html
 
-	implementation group: 'org.apache.sshd', name: 'sshd-core', version: versions.apache_sshd
+	modRuntimeOnly group: 'org.apache.sshd', name: 'sshd-core', version: versions.apache_sshd
 	include group: 'org.apache.sshd', name: 'sshd-core', version: versions.apache_sshd
 
-	implementation group: 'org.apache.sshd', name: 'sshd-common', version: versions.apache_sshd
+	modRuntimeOnly group: 'org.apache.sshd', name: 'sshd-common', version: versions.apache_sshd
 	include group: 'org.apache.sshd', name: 'sshd-common', version: versions.apache_sshd
-
 
 	//modImplementation
 	//runtimeOnly group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.ui', version: versions.jgit
