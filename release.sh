@@ -15,4 +15,4 @@ fi
 
 echo "Release version will be '$RELEASE_VERSION'"
 
-sed -i "/mod_version=/ s/=.*/=${RELEASE_VERSION}/" gradle.properties
+sed -ier "s/^mod_version =.*/mod_version = XXX/" gradle.properties
