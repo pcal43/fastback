@@ -1,9 +1,6 @@
 package net.pcal.fastback;
 
-import net.minecraft.world.level.storage.LevelStorage;
 import net.pcal.fastback.ModContext.WorldContext;
-import net.pcal.fastback.fabric.mixins.ServerAccessors;
-import net.pcal.fastback.fabric.mixins.SessionAccessors;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -47,8 +44,7 @@ public class WorldUtils {
     }
 
     private static void updateWorldInfo(final WorldContext world, final Logger logger) throws IOException {
-        final LevelStorage.Session session = ((ServerAccessors) world).getSession();
-        final Path worldSaveDir = ((SessionAccessors) session).getDirectory().path();
+        final Path worldSaveDir = world.getWorldSaveDirectory();
         final Path worldPropsPath = worldSaveDir.resolve(WORLD_INFO_PATH);
         String worldUuid = null;
         if (worldPropsPath.toFile().exists()) {
