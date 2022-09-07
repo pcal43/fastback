@@ -3,7 +3,7 @@ package net.pcal.fastback;
 import java.io.IOException;
 import java.util.function.Supplier;
 
-public interface Loginator {
+public interface Loggr {
 
     void error(String message);
 

@@ -30,7 +30,7 @@ public class WorldUtils {
     private static final String GITIGNORE_RESOURCE = "world/fastback/dot-gitignore";
     private static final Path GITIGNORE_PATH = Path.of("fastback/.gitignore");
 
-    public static void doWorldMaintenance(final ModConfig config, final WorldContext server, final Loginator logger)
+    public static void doWorldMaintenance(final ModConfig config, final WorldContext server, final Loggr logger)
             throws IOException, GitAPIException {
         final Path worldSaveDir = server.getWorldSaveDirectory();
         final Git git = Git.init().setDirectory(worldSaveDir.toFile()).call();
@@ -42,7 +42,7 @@ public class WorldUtils {
         updateDefaultWorldConfig(worldSaveDir);
     }
 
-    private static void updateWorldInfo(final WorldContext world, final Loginator logger) throws IOException {
+    private static void updateWorldInfo(final WorldContext world, final Loggr logger) throws IOException {
         final Path worldSaveDir = world.getWorldSaveDirectory();
         final Path worldPropsPath = worldSaveDir.resolve(WORLD_INFO_PATH);
         String worldUuid = null;

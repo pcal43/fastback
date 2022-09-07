@@ -3,7 +3,7 @@ package net.pcal.fastback.fabric;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.server.MinecraftServer;
-import net.pcal.fastback.Loginator;
+import net.pcal.fastback.Loggr;
 import net.pcal.fastback.ModContext;
 import org.apache.logging.log4j.LogManager;
 
@@ -14,7 +14,7 @@ import java.util.concurrent.Executors;
 class FabricModContext implements ModContext {
 
     private static final String MOD_ID = "fastback";
-    private final Loginator logger = new Log4jLoginator(LogManager.getLogger("fastback"));
+    private final Loggr logger = new Log4jLoggr(LogManager.getLogger("fastback"));
     private ExecutorService exs = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
     @Override
@@ -27,7 +27,7 @@ class FabricModContext implements ModContext {
     }
 
     @Override
-    public Loginator getLogger() {
+    public Loggr getLogger() {
         return this.logger;
     }
 

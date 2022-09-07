@@ -10,7 +10,7 @@ public interface ModContext {
 
     String getFastbackModVersion();
 
-    Loginator getLogger();
+    Loggr getLogger();
 
     ExecutorService getExecutorService();
 

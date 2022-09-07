@@ -26,7 +26,7 @@ public class LifecycleUtils {
 
     public static void onWorldStart(final WorldContext world) {
         final Path worldSaveDir = world.getWorldSaveDirectory();
-        final Loginator logger = world.getModContext().getLogger();
+        final Loggr logger = world.getModContext().getLogger();
         final ModConfig modConfig;
         try {
             modConfig = ModConfig.loadForWorld(worldSaveDir, logger);
@@ -47,7 +47,7 @@ public class LifecycleUtils {
     }
 
     public static void onWorldStop(final WorldContext world) {
-        final Loginator logger = world.getModContext().getLogger();
+        final Loggr logger = world.getModContext().getLogger();
         final Path worldSaveDir = world.getWorldSaveDirectory();
         final ModConfig modConfig;
         try {

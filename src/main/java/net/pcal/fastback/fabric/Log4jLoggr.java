@@ -1,6 +1,6 @@
 package net.pcal.fastback.fabric;
 
-import net.pcal.fastback.Loginator;
+import net.pcal.fastback.Loggr;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
@@ -8,14 +8,13 @@ import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
 
-class Log4jLoginator implements Loginator {
+class Log4jLoggr implements Loggr {
 
     private final Logger log4j;
 
-    Log4jLoginator(Logger log4j) {
+    Log4jLoggr(Logger log4j) {
         this.log4j = requireNonNull(log4j);
     }
-
 
     @Override
     public void error(String message) {
