@@ -65,7 +65,7 @@ public class RestoreSnapshotTask extends Task {
         try {
             targetDirectory = getTargetDir(this.saveDir, worldName, snapshotName);
             String uri = "file://" + this.worldSaveDir.toAbsolutePath();
-            taskListener.feedback("Restoring " + this.snapshotName + " into " + targetDirectory);
+            taskListener.feedback("Restoring " + this.snapshotName + " to\n" + targetDirectory);
             try (Git git = Git.cloneRepository().setDirectory(targetDirectory.toFile()).
                     setBranchesToClone(List.of("refs/heads/" + branchName)).setURI(uri).call()) {
             }
