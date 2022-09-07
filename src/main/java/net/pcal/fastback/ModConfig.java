@@ -1,7 +1,5 @@
 package net.pcal.fastback;
 
-import org.apache.logging.log4j.Logger;
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -87,7 +85,7 @@ public class ModConfig {
     /**
      * Load the mod configuration.  This is used when no world is open.
      */
-    public static ModConfig load(final ModContext.Logger logger) throws IOException {
+    public static ModConfig load(final Loginator logger) throws IOException {
         final Properties props = new Properties();
         loadDefaultProperties(props);
         loadFileProperties(props, MOD_CONFIG_PATH);
@@ -97,7 +95,7 @@ public class ModConfig {
     /**
      * Load the mod configuration.  This is used when no world is open.
      */
-    public static ModConfig loadForWorld(final Path worldSaveDir, final ModContext.Logger logger) throws IOException {
+    public static ModConfig loadForWorld(final Path worldSaveDir, final Loginator logger) throws IOException {
         final Properties props = new Properties();
         loadDefaultProperties(props);
         loadFileProperties(props, MOD_CONFIG_PATH);

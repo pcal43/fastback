@@ -1,6 +1,5 @@
 package net.pcal.fastback;
 
-import org.apache.logging.log4j.Logger;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.RmCommand;
@@ -20,7 +19,7 @@ import static net.pcal.fastback.WorldUtils.getWorldInfo;
 
 public class CommitUtils {
 
-    public static void doCommit(final ModConfig modConfig, final Path worldSaveDir, String newBranchName, final ModContext.Logger logger) throws GitAPIException, IOException {
+    public static void doCommit(final ModConfig modConfig, final Path worldSaveDir, String newBranchName, final Loginator logger) throws GitAPIException, IOException {
         final long startTime = System.currentTimeMillis();
         info(logger, "Starting local backup.");
         debug(logger, "doing commit");

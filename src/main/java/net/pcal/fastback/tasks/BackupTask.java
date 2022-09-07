@@ -1,10 +1,9 @@
 package net.pcal.fastback.tasks;
 
 import net.pcal.fastback.CommitUtils;
+import net.pcal.fastback.Loginator;
 import net.pcal.fastback.ModConfig;
-import net.pcal.fastback.ModContext;
 import net.pcal.fastback.PushUtils;
-import org.apache.logging.log4j.Logger;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.IOException;
@@ -22,9 +21,9 @@ public class BackupTask extends Task {
 
     private final ModConfig modConfig;
     private final Path worldSaveDir;
-    private final ModContext.Logger logger;
+    private final Loginator logger;
 
-    public BackupTask(final ModConfig modConfig, final Path worldSaveDir, final ModContext.Logger logger) {
+    public BackupTask(final ModConfig modConfig, final Path worldSaveDir, final Loginator logger) {
         this.worldSaveDir = requireNonNull(worldSaveDir);
         this.modConfig = requireNonNull(modConfig);
         this.logger = requireNonNull(logger);

@@ -1,6 +1,6 @@
 package net.pcal.fastback.fabric;
 
-import net.pcal.fastback.ModContext;
+import net.pcal.fastback.Loginator;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
@@ -8,11 +8,11 @@ import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
 
-class FabricLoggerAdapter implements ModContext.Logger {
+class Log4jLoggrAdapter implements Loginator {
 
     private final Logger log4j;
 
-    FabricLoggerAdapter(Logger log4j) {
+    Log4jLoggrAdapter(Logger log4j) {
         this.log4j = requireNonNull(log4j);
     }
 
