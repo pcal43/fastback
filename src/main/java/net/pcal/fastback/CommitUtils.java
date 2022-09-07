@@ -2,6 +2,7 @@ package net.pcal.fastback;
 
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.RmCommand;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -25,7 +26,7 @@ public class CommitUtils {
         git = Git.init().setDirectory(worldSaveDir.toFile()).call();
         logger.debug("checkout");
         git.checkout().setOrphan(true).setName(newBranchName).call();
-        git.reset().call();
+        git.reset().setMode(ResetCommand.ResetType.SOFT).call();
         logger.debug("status");
         final Status status = git.status().call();
 
