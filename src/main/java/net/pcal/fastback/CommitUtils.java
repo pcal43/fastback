@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import static net.pcal.fastback.ModConfig.Key.REPO_LATEST_BRANCH_NAME;
-import static net.pcal.fastback.WorldUtils.getWorldInfo;
 
 public class CommitUtils {
 
@@ -61,7 +60,7 @@ public class CommitUtils {
             gitRm.call();
         }
         logger.debug("commit");
-        git.commit().setMessage(getWorldInfo(worldSaveDir)).call();
+        git.commit().setMessage(newBranchName).call();
         final String latestBranchName = modConfig.get(REPO_LATEST_BRANCH_NAME);
         logger.debug("Updating " + latestBranchName);
         git.branchCreate().setForce(true).setName(latestBranchName).call();

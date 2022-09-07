@@ -1,6 +1,7 @@
 package net.pcal.fastback.tasks;
 
 import net.pcal.fastback.Loggr;
+import net.pcal.fastback.WorldUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
@@ -24,12 +25,10 @@ public class ListSnapshotsTask extends Task {
     private final Function<String, String> branchFilter;
     private final Loggr logger;
 
-    public static Runnable listSnapshotsForWorld(WorldContext world, Consumer<String> sink) {
-        final Path worldSaveDir = world.getWorldSaveDirectory();
-        final Loggr logger = world.getModContext().getLogger();
+    public static Runnable listSnapshotsForWorld(Path worldSaveDir, Consumer<String> sink, Loggr logger) {
         final String worldUuid;
         try {
-            worldUuid = world.getWorldUuid();
+            worldUuid = WorldUtils.getWorldUuid(worldSaveDir);
         } catch (IOException e) {
             sink.accept("Internal error encountered.  See logs for details.");
             logger.error("Could not load world Uuid", e);
