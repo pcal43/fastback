@@ -46,6 +46,7 @@ public class WorldUtils {
             final String newUuid = UUID.randomUUID().toString();
             try (final FileWriter fw = new FileWriter(worldUuidpath.toFile())) {
                 fw.append(newUuid);
+                fw.append('\n');
             }
             logger.info("Generated new world.uuid " + newUuid);
         }
