@@ -1,11 +1,6 @@
 package net.pcal.fastback;
 
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.LevelInfo;
-import net.minecraft.world.level.storage.LevelStorage;
-import net.minecraft.world.level.storage.LevelSummary;
-import net.pcal.fastback.mixins.ServerAccessors;
-import net.pcal.fastback.mixins.SessionAccessors;
+import net.pcal.fastback.ModContext.WorldContext;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -19,8 +14,6 @@ import java.nio.file.Path;
 import java.util.Properties;
 import java.util.UUID;
 
-import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.FabricUtils.getModVersion;
 import static net.pcal.fastback.FileUtils.mkdirs;
 import static net.pcal.fastback.LogUtils.debug;
 import static net.pcal.fastback.ModConfig.Key.REPO_GIT_CONFIG;
@@ -38,9 +31,9 @@ public class WorldUtils {
     private static final String GITIGNORE_RESOURCE = "world/fastback/dot-gitignore";
     private static final Path GITIGNORE_PATH = Path.of("fastback/.gitignore");
 
-    public static void doWorldMaintenance(final ModConfig config, final MinecraftServer server, final Logger logger)
+    public static void doWorldMaintenance(final ModConfig config, final WorldContext server, final Logger logger)
             throws IOException, GitAPIException {
-        final Path worldSaveDir = MinecraftUtils.getWorldSaveDir(server);
+        final Path worldSaveDir = server.getWorldSaveDirectory();
         final Git git = Git.init().setDirectory(worldSaveDir.toFile()).call();
         final String rawConfig = config.get(REPO_GIT_CONFIG).replace(';', '\n');
         debug(logger, "updating local git config");
@@ -50,9 +43,8 @@ public class WorldUtils {
         updateDefaultWorldConfig(worldSaveDir);
     }
 
-    private static void updateWorldInfo(final MinecraftServer server, final Logger logger) throws IOException {
-        final LevelStorage.Session session = ((ServerAccessors) server).getSession();
-        final Path worldSaveDir = ((SessionAccessors) session).getDirectory().path();
+    private static void updateWorldInfo(final WorldContext world, final Logger logger) throws IOException {
+        final Path worldSaveDir = world.getWorldSaveDirectory();
         final Path worldPropsPath = worldSaveDir.resolve(WORLD_INFO_PATH);
         String worldUuid = null;
         if (worldPropsPath.toFile().exists()) {
@@ -67,7 +59,7 @@ public class WorldUtils {
         mkdirs(worldPropsPath.getParent());
         try (final FileWriter fw = new FileWriter(worldPropsPath.toFile());
              final PrintWriter out = new PrintWriter(fw)) {
-            updateWorldInfo(server, worldUuid, out);
+            updateWorldInfo(world, worldUuid, out);
         }
     }
 
@@ -75,20 +67,14 @@ public class WorldUtils {
         return Files.readString(worldSaveDir.resolve(WORLD_INFO_PATH));
     }
 
-    public static void updateWorldInfo(MinecraftServer server, String worldUuid, PrintWriter out) {
-        requireNonNull(server, "null server");
-        requireNonNull(worldUuid, "null worldUuid");
-        requireNonNull(out, "null out");
-        final LevelStorage.Session session = requireNonNull(((ServerAccessors) server).getSession());
-        final LevelSummary ls = requireNonNull(session.getLevelSummary());
-        final LevelInfo li = requireNonNull(ls.getLevelInfo());
+    public static void updateWorldInfo(WorldContext world, String worldUuid, PrintWriter out) {
         out.println(WORLD_UUID_PROPERTY + "         = " + worldUuid);
-        out.println("world.name         = " + li.getLevelName());
-        out.println("world.seed         = " + server.getSaveProperties().getGeneratorOptions().getSeed());
-        out.println("world.mode         = " + li.getGameMode());
-        out.println("world.difficulty   = " + li.getDifficulty());
-        out.println("minecraft.version  = " + server.getVersion());
-        out.println("fastback.version   = " + getModVersion());
+        out.println("world.name         = " + world.getWorldName());
+        out.println("world.seed         = " + world.getSeed());
+        out.println("world.mode         = " + world.getGameMode());
+        out.println("world.difficulty   = " + world.getDifficulty());
+        out.println("minecraft.version  = " + world.getMinecraftVersion());
+        out.println("fastback.version   = " + world.getModContext().getFastbackModVersion());
     }
 
     public static String getWorldUuid(Path worldSaveDir) throws IOException {

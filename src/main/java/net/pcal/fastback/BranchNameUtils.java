@@ -24,7 +24,15 @@ public class BranchNameUtils {
             if (end == -1) {
                 logger.warn("Ignore remote branch with unexpected name: " + fromSnapshotBranchName);
             }
-           return fromSnapshotBranchName.substring(start, fromSnapshotBranchName.indexOf("/", start));
+            return fromSnapshotBranchName.substring(start, fromSnapshotBranchName.indexOf("/", start));
+        }
+        return null;
+    }
+
+    public static String filterOnWorldUuid(final String branchName, final String worldUuid, final ModContext.Logger logger) {
+        final String prefix = SNAPSHOTS_PREFIX + worldUuid+"/";
+        if (branchName.startsWith(prefix)) {
+            return branchName.substring(prefix.length());
         }
         return null;
     }

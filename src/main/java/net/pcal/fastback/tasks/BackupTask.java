@@ -1,6 +1,8 @@
-package net.pcal.fastback;
+package net.pcal.fastback.tasks;
 
-import net.minecraft.server.MinecraftServer;
+import net.pcal.fastback.CommitUtils;
+import net.pcal.fastback.ModConfig;
+import net.pcal.fastback.PushUtils;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
@@ -12,23 +14,22 @@ import static net.pcal.fastback.BranchNameUtils.createSnapshotBranchName;
 import static net.pcal.fastback.LogUtils.error;
 import static net.pcal.fastback.LogUtils.info;
 import static net.pcal.fastback.WorldUtils.getWorldUuid;
-import static net.pcal.fastback.Task.TaskState.FAILED;
+import static net.pcal.fastback.tasks.Task.TaskState.FAILED;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class BackupTask extends Task {
 
     private final ModConfig modConfig;
-    private final MinecraftServer server;
+    private final Path worldSaveDir;
     private final Logger logger;
 
-    BackupTask(final ModConfig modConfig, final MinecraftServer server, final Logger logger) {
-        this.server = requireNonNull(server);
+    public BackupTask(final ModConfig modConfig, final Path worldSaveDir, final Logger logger) {
+        this.worldSaveDir = requireNonNull(worldSaveDir);
         this.modConfig = requireNonNull(modConfig);
         this.logger = requireNonNull(logger);
     }
 
     public void run() {
-        final Path worldSaveDir = MinecraftUtils.getWorldSaveDir(this.server);
         final String worldUuid;
         try {
             worldUuid = getWorldUuid(worldSaveDir);

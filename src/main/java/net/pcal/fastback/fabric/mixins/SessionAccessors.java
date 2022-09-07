@@ -1,4 +1,4 @@
-package net.pcal.fastback.mixins;
+package net.pcal.fastback.fabric.mixins;
 
 import net.minecraft.world.level.storage.LevelStorage;
 import org.spongepowered.asm.mixin.Mixin;
