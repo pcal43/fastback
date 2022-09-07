@@ -9,7 +9,6 @@ import java.nio.file.Paths;
 import java.util.Properties;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.LogUtils.debug;
 import static net.pcal.fastback.WorldUtils.WORLD_CONFIG_PATH;
 
 public class ModConfig {
@@ -102,7 +101,7 @@ public class ModConfig {
         final Path worldConfigPath = worldSaveDir.resolve(WORLD_CONFIG_PATH);
         // Load the mod configuration.
         if (!worldConfigPath.toFile().exists()) {
-            debug(logger, () -> "No world configuration found at " + worldConfigPath);
+            logger.debug(() -> "No world configuration found at " + worldConfigPath);
         } else {
             loadFileProperties(props, worldConfigPath);
         }

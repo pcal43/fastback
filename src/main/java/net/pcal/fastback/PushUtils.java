@@ -19,10 +19,6 @@ import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.FileUtils.mkdirs;
 import static net.pcal.fastback.WorldUtils.WORLD_INFO_PATH;
 import static net.pcal.fastback.WorldUtils.getWorldUuid;
-import static net.pcal.fastback.LogUtils.debug;
-import static net.pcal.fastback.LogUtils.error;
-import static net.pcal.fastback.LogUtils.info;
-import static net.pcal.fastback.LogUtils.warn;
 import static net.pcal.fastback.ModConfig.Key.*;
 
 public class PushUtils {
@@ -36,7 +32,7 @@ public class PushUtils {
         final long startTime = System.currentTimeMillis();
         final boolean isPushEnabled = modConfig.getBoolean(PUSH_ENABLED);
         if (!isPushEnabled) {
-            info(logger, "Remote backup disabled in config.");
+            logger.info("Remote backup disabled in config.");
             return false;
         }
         final boolean isFupEnabled = modConfig.getBoolean(FILE_UPSTREAM_ENABLED);
@@ -46,7 +42,7 @@ public class PushUtils {
 
         if (isFupEnabled) {
             if (isRupEnabled) {
-                error(logger, "Skipping remote backup.  " +
+                logger.error("Skipping remote backup.  " +
                         FILE_UPSTREAM_ENABLED.getPropertyName() + " and " +
                         REMOTE_UPSTREAM_ENABLED.getPropertyName() + " cannot both be set to true.");
                 return false;
@@ -56,17 +52,17 @@ public class PushUtils {
             try {
                 configureRemoteUpstream(modConfig, worldSaveDir);
             } catch (URISyntaxException e) {
-                error(logger, "Skipping remote backup because an invalid URI is configured for " +
+                logger.error("Skipping remote backup because an invalid URI is configured for " +
                         REMOTE_UPSTREAM_URI.getPropertyName(), e);
                 return false;
             }
         } else {
             if (GitUtils.getRemoteUri(git, remoteName, logger) == null) {
-                error(logger, "Skipping remote backup.  Remote '" + remoteName +
+                logger.error("Skipping remote backup.  Remote '" + remoteName +
                         "' is not set and no auto-remote configuration is enabled.");
                 return false;
             } else {
-                info(logger, "Using manually-configured remote '" + remoteName + "'");
+                logger.info("Using manually-configured remote '" + remoteName + "'");
             }
         }
         final URIish pushUri = GitUtils.getRemoteUri(git, remoteName, logger);
@@ -74,17 +70,17 @@ public class PushUtils {
             throw new IOException("No remote '" + remoteName + "' is configured.");
         }
         if (!doUuidCheck(modConfig, git, remoteName, worldSaveDir, logger)) {
-            warn(logger, "Skipping remote backup due to world mismatch.");
+            logger.warn("Skipping remote backup due to world mismatch.");
             return false;
         }
-        info(logger, "Starting remote backup to " + pushUri);
+        logger.info("Starting remote backup to " + pushUri);
         if (modConfig.getBoolean(SMART_PUSH_ENABLED)) {
             doSmartPush(git, branchNameToPush, modConfig, logger);
         } else {
             doNaivePush(git, branchNameToPush, modConfig, logger);
         }
         final Duration duration = Duration.ofMillis(System.currentTimeMillis() - startTime);
-        info(logger, "Remote backup complete.  Elapsed time: " + duration.toMinutesPart() + "m " + duration.toSecondsPart() + "s");
+        logger.info("Remote backup complete.  Elapsed time: " + duration.toMinutesPart() + "m " + duration.toSecondsPart() + "s");
         return true;
     }
 
@@ -95,43 +91,43 @@ public class PushUtils {
         final boolean tempBranchCleanup = modConfig.getBoolean(SMART_PUSH_TEMP_BRANCH_CLEANUP_ENABLED);
         final boolean remoteTempBranchCleanup = modConfig.getBoolean(SMART_PUSH_REMOTE_TEMP_BRANCH_CLEANUP_ENABLED);
         if (!GitUtils.isBranchExtant(git, lastPushedBranchName, logger)) {
-            warn(logger, "** This appears to be the first time this world has been pushed.");
-            warn(logger, "** If the world is large, this may take some time.");
+            logger.warn("** This appears to be the first time this world has been pushed.");
+            logger.warn("** If the world is large, this may take some time.");
             git.push().setRemote(remoteName).call();
         } else {
-            debug(logger, "checkout");
+            logger.debug("checkout");
             final String tempBranchName = tempBranchNameFormat.formatted(branchNameToPush);
-            debug(logger, "checkout temp");
+            logger.debug("checkout temp");
             git.checkout().setCreateBranch(true).setName(tempBranchName).call();
             final ObjectId branchId = git.getRepository().resolve(lastPushedBranchName);
-            debug(logger, "merge");
+            logger.debug("merge");
             git.merge().setContentMergeStrategy(ContentMergeStrategy.OURS).
                     include(branchId).setMessage("Merge " + branchNameToPush + " into " + tempBranchName).call();
-            debug(logger, "push " + tempBranchName);
+            logger.debug("push " + tempBranchName);
             git.push().setRemote(remoteName).setRefSpecs(new RefSpec(tempBranchName + ":" + tempBranchName), new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
-            debug(logger, "checkout restore");
+            logger.debug("checkout restore");
             git.checkout().setName(branchNameToPush).call();
             if (tempBranchCleanup) {
-                debug(logger, "deleting local temp branch " + tempBranchName);
+                logger.debug("deleting local temp branch " + tempBranchName);
                 git.branchDelete().setForce(true).setBranchNames(tempBranchName).call();
             }
             if (remoteTempBranchCleanup) {
                 final String remoteTempBranch = "refs/heads/" + tempBranchName;
-                debug(logger, "deleting remote temp branch " + remoteTempBranch);
+                logger.debug("deleting remote temp branch " + remoteTempBranch);
                 final RefSpec deleteRemoteBranchSpec = new RefSpec().setSource(null).setDestination(remoteTempBranch);
                 git.push().setRemote(remoteName).setRefSpecs(deleteRemoteBranchSpec).call();
             }
-            debug(logger, "push complete");
+            logger.debug("push complete");
         }
-        debug(logger, "Updating " + lastPushedBranchName);
+        logger.debug("Updating " + lastPushedBranchName);
         git.branchCreate().setForce(true).setName(lastPushedBranchName).call();
     }
 
     private static void doNaivePush(final Git git, final String branchNameToPush, final ModConfig modConfig, final Loggr logger) throws IOException, GitAPIException {
         final String remoteName = modConfig.get(PUSH_REMOTE_NAME);
-        debug(logger, "doing naive push");
+        logger.debug("doing naive push");
         git.push().setRemote(remoteName).setRefSpecs(new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
-        debug(logger, () -> "checking out " + branchNameToPush);
+        logger.debug(() -> "checking out " + branchNameToPush);
     }
 
     private static void configureRemoteUpstream(final ModConfig modConfig, final Path worldSaveDir) throws IOException, GitAPIException, URISyntaxException {
@@ -155,7 +151,7 @@ public class PushUtils {
         }
         Git git = Git.init().setBare(config.getBoolean(FILE_UPSTREAM_BARE)).setDirectory(fupGitDir.toFile()).call();
         final String rawConfig = config.get(FILE_UPSTREAM_GIT_CONFIG).replace(';', '\n');
-        debug(logger, "updating upstream git config");
+        logger.debug("updating upstream git config");
         GitUtils.mergeGitConfig(git, rawConfig, logger);
         // configure the world save git dir the push to it
         final String remoteName = config.get(PUSH_REMOTE_NAME);
@@ -177,21 +173,21 @@ public class PushUtils {
         final Set<String> remoteWorldUuids = getWorldUuidsOnRemote(git, remoteName, logger);
         final String localUuid = getWorldUuid(worldSaveDir);
         if (remoteWorldUuids.size() > 2) {
-            warn(logger, "Remote has more than one world-uuid.  This unusual. " + remoteWorldUuids);
+            logger.warn("Remote has more than one world-uuid.  This unusual. " + remoteWorldUuids);
         }
         if (remoteWorldUuids.isEmpty()) {
-            debug(logger, "Remote does not have any previously-backed up worlds.");
+            logger.debug("Remote does not have any previously-backed up worlds.");
         } else {
             if (!remoteWorldUuids.contains(localUuid)) {
                 final URIish remoteUri = GitUtils.getRemoteUri(git, remoteName, logger);
-                error(logger, "Remote at " + remoteUri + " is a backup target for a different world.");
-                error(logger, "Please configure a new remote for backing up this world.");
-                error(logger, "local =" + localUuid);
-                error(logger, "remote =" + remoteWorldUuids);
+                logger.error("Remote at " + remoteUri + " is a backup target for a different world.");
+                logger.error("Please configure a new remote for backing up this world.");
+                logger.error("local =" + localUuid);
+                logger.error("remote =" + remoteWorldUuids);
                 return false;
             }
         }
-        debug(logger, "world-uuid check passed.");
+        logger.debug("world-uuid check passed.");
         return true;
     }
 

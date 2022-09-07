@@ -17,8 +17,6 @@ import java.util.List;
 import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.LogUtils.debug;
-import static net.pcal.fastback.LogUtils.trace;
 
 public class GitUtils {
 
@@ -42,7 +40,7 @@ public class GitUtils {
         final Collection<Ref> refs = git.lsRemote().setHeads(true).setTags(false).setRemote(remoteName).call();
         final Set<String> branchNames = new HashSet<>();
         for (final Ref ref : refs) {
-            debug(logger, "ls-remote  " + ref);
+            logger.debug("ls-remote  " + ref);
             branchNames.add(ref.getName().substring(UUID_REFNAME_PREFIX.length()));
         }
         return branchNames;
@@ -53,7 +51,7 @@ public class GitUtils {
         requireNonNull(remoteName);
         final List<RemoteConfig> remotes = git.remoteList().call();
         for (final RemoteConfig remote : remotes) {
-            trace(logger, "getRemoteUri " + remote);
+            logger.trace("getRemoteUri " + remote);
             if (remote.getName().equals(remoteName)) {
                 return remote.getPushURIs() != null && !remote.getURIs().isEmpty() ? remote.getURIs().get(0) : null;
             }
@@ -85,7 +83,7 @@ public class GitUtils {
     public static void mergeGitConfig(Git git, String rawConfig, Loggr logger) throws GitAPIException, IOException {
         final StoredConfig config = git.getRepository().getConfig();
         rawConfig = config.toText() + "\n" + rawConfig;
-        debug(logger, "Setting git config: \n" + rawConfig);
+        logger.debug("Setting git config: \n" + rawConfig);
         try {
             config.fromText(rawConfig);
         } catch (ConfigInvalidException e) {

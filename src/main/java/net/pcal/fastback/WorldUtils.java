@@ -14,7 +14,6 @@ import java.util.Properties;
 import java.util.UUID;
 
 import static net.pcal.fastback.FileUtils.mkdirs;
-import static net.pcal.fastback.LogUtils.debug;
 import static net.pcal.fastback.ModConfig.Key.REPO_GIT_CONFIG;
 import static net.pcal.fastback.FileUtils.writeResourceToFile;
 
@@ -35,7 +34,7 @@ public class WorldUtils {
         final Path worldSaveDir = server.getWorldSaveDirectory();
         final Git git = Git.init().setDirectory(worldSaveDir.toFile()).call();
         final String rawConfig = config.get(REPO_GIT_CONFIG).replace(';', '\n');
-        debug(logger, "updating local git config");
+        logger.debug("updating local git config");
         GitUtils.mergeGitConfig(git, rawConfig, logger);
         updateWorldInfo(server, logger);
         writeResourceToFile(GITIGNORE_RESOURCE, worldSaveDir.resolve(GITIGNORE_PATH));
