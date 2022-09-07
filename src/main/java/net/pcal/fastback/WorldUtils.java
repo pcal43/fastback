@@ -38,7 +38,6 @@ public class WorldUtils {
             throws IOException, GitAPIException {
         final Path worldSaveDir = server.getWorldSaveDirectory();
         final Git git = Git.init().setDirectory(worldSaveDir.toFile()).call();
-
         final String rawConfig = config.get(REPO_GIT_CONFIG).replace(';', '\n');
         logger.debug("updating local git config");
         GitUtils.mergeGitConfig(git, rawConfig, logger);
