@@ -1,6 +1,6 @@
 package net.pcal.fastback.tasks;
 
-import net.pcal.fastback.ModContext;
+import net.pcal.fastback.Loggr;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
@@ -22,11 +22,11 @@ public class ListSnapshotsTask extends Task {
     private final Path worldSaveDir;
     private final Consumer<String> out;
     private final Function<String, String> branchFilter;
-    private final Logger logger;
+    private final Loggr logger;
 
     public static Runnable listSnapshotsForWorld(WorldContext world, Consumer<String> sink) {
         final Path worldSaveDir = world.getWorldSaveDirectory();
-        final Logger logger = world.getModContext().getLogger();
+        final Loggr logger = world.getModContext().getLogger();
         final String worldUuid;
         try {
             worldUuid = world.getWorldUuid();
@@ -38,12 +38,12 @@ public class ListSnapshotsTask extends Task {
         return listSnapshotsForWorld(worldSaveDir, worldUuid, sink, logger);
     }
 
-    public static Runnable listSnapshotsForWorld(Path worldSaveDir, String worldUuid, Consumer<String> sink, ModContext.Logger logger) {
-        final Function<String, String> branchFilter = branchName->filterOnWorldUuid(branchName, worldUuid, logger);
+    public static Runnable listSnapshotsForWorld(Path worldSaveDir, String worldUuid, Consumer<String> sink, Loggr logger) {
+        final Function<String, String> branchFilter = branchName -> filterOnWorldUuid(branchName, worldUuid, logger);
         return new ListSnapshotsTask(worldSaveDir, branchFilter, sink, logger);
     }
 
-    private ListSnapshotsTask(Path worldSaveDir, Function<String, String> branchFilter, Consumer<String> sink, Logger logger) {
+    private ListSnapshotsTask(Path worldSaveDir, Function<String, String> branchFilter, Consumer<String> sink, Loggr logger) {
         this.worldSaveDir = requireNonNull(worldSaveDir);
         this.out = requireNonNull(sink);
         this.branchFilter = requireNonNull(branchFilter);
@@ -59,9 +59,9 @@ public class ListSnapshotsTask extends Task {
             for (Ref branch : git.branchList().call()) {
                 String branchName = branch.getName();
                 if (!branchName.startsWith(BRANCH_NAME_PREFIX)) {
-                    this.logger.warn("Unexpected ref name "+branchName);
+                    this.logger.warn("Unexpected ref name " + branchName);
                 } else {
-                    branchName = branchName.substring(BRANCH_NAME_PREFIX.length()+1);
+                    branchName = branchName.substring(BRANCH_NAME_PREFIX.length() + 1);
                 }
                 branchName = this.branchFilter.apply(branchName);
                 if (branchName != null) this.out.accept(branchName);

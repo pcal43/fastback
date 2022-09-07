@@ -6,6 +6,7 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.pcal.fastback.ModContext;
+
 import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
@@ -26,7 +27,7 @@ public class ListCommand {
 
     private int execute(final CommandContext<ServerCommandSource> cc) {
         final ModContext.WorldContext world = this.mctx.getWorldContext(cc.getSource().getServer());
-        final Consumer<String> sink = message->cc.getSource().sendFeedback(Text.literal(message), false);
+        final Consumer<String> sink = message -> cc.getSource().sendFeedback(Text.literal(message), false);
         sink.accept("Local snapshots:");
         this.mctx.getExecutorService().execute(listSnapshotsForWorld(world, sink));
         return 1;

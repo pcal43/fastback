@@ -1,7 +1,5 @@
 package net.pcal.fastback;
 
-import org.apache.logging.log4j.Logger;
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -11,7 +9,6 @@ import java.nio.file.Paths;
 import java.util.Properties;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.LogUtils.debug;
 import static net.pcal.fastback.WorldUtils.WORLD_CONFIG_PATH;
 
 public class ModConfig {
@@ -87,7 +84,7 @@ public class ModConfig {
     /**
      * Load the mod configuration.  This is used when no world is open.
      */
-    public static ModConfig load(final Logger logger) throws IOException {
+    public static ModConfig load(final Loggr logger) throws IOException {
         final Properties props = new Properties();
         loadDefaultProperties(props);
         loadFileProperties(props, MOD_CONFIG_PATH);
@@ -97,14 +94,14 @@ public class ModConfig {
     /**
      * Load the mod configuration.  This is used when no world is open.
      */
-    public static ModConfig loadForWorld(final Path worldSaveDir, final Logger logger) throws IOException {
+    public static ModConfig loadForWorld(final Path worldSaveDir, final Loggr logger) throws IOException {
         final Properties props = new Properties();
         loadDefaultProperties(props);
         loadFileProperties(props, MOD_CONFIG_PATH);
         final Path worldConfigPath = worldSaveDir.resolve(WORLD_CONFIG_PATH);
         // Load the mod configuration.
         if (!worldConfigPath.toFile().exists()) {
-            debug(logger, () -> "No world configuration found at " + worldConfigPath);
+            logger.debug(() -> "No world configuration found at " + worldConfigPath);
         } else {
             loadFileProperties(props, worldConfigPath);
         }

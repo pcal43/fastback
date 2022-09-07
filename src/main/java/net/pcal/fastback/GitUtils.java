@@ -1,6 +1,5 @@
 package net.pcal.fastback;
 
-import org.apache.logging.log4j.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidConfigurationException;
@@ -18,8 +17,6 @@ import java.util.List;
 import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.LogUtils.debug;
-import static net.pcal.fastback.LogUtils.trace;
 
 public class GitUtils {
 
@@ -38,23 +35,23 @@ public class GitUtils {
 //        return tempGit;
 //    }
 
-    public static Set<String> getRemoteBranchNames(Git git, String remoteName, Logger logger) throws GitAPIException {
+    public static Set<String> getRemoteBranchNames(Git git, String remoteName, Loggr logger) throws GitAPIException {
         final String UUID_REFNAME_PREFIX = "refs/heads/";
         final Collection<Ref> refs = git.lsRemote().setHeads(true).setTags(false).setRemote(remoteName).call();
         final Set<String> branchNames = new HashSet<>();
         for (final Ref ref : refs) {
-            debug(logger, "ls-remote  " + ref);
+            logger.debug("ls-remote  " + ref);
             branchNames.add(ref.getName().substring(UUID_REFNAME_PREFIX.length()));
         }
         return branchNames;
     }
 
-    public static URIish getRemoteUri(Git git, String remoteName, Logger logger) throws GitAPIException {
+    public static URIish getRemoteUri(Git git, String remoteName, Loggr logger) throws GitAPIException {
         requireNonNull(git);
         requireNonNull(remoteName);
         final List<RemoteConfig> remotes = git.remoteList().call();
         for (final RemoteConfig remote : remotes) {
-            trace(logger, "getRemoteUri " + remote);
+            logger.trace("getRemoteUri " + remote);
             if (remote.getName().equals(remoteName)) {
                 return remote.getPushURIs() != null && !remote.getURIs().isEmpty() ? remote.getURIs().get(0) : null;
             }
@@ -62,7 +59,7 @@ public class GitUtils {
         return null;
     }
 
-    public static boolean isBranchExtant(Git git, String name, Logger logger) throws GitAPIException {
+    public static boolean isBranchExtant(Git git, String name, Loggr logger) throws GitAPIException {
         try {
             git.branchList().setContains(name).call();
             return true;
@@ -83,10 +80,10 @@ public class GitUtils {
 //    }
 
     // FIXME this is creating duplicate entries
-    public static void mergeGitConfig(Git git, String rawConfig, Logger logger) throws GitAPIException, IOException {
+    public static void mergeGitConfig(Git git, String rawConfig, Loggr logger) throws GitAPIException, IOException {
         final StoredConfig config = git.getRepository().getConfig();
         rawConfig = config.toText() + "\n" + rawConfig;
-        debug(logger, "Setting git config: \n" + rawConfig);
+        logger.debug("Setting git config: \n" + rawConfig);
         try {
             config.fromText(rawConfig);
         } catch (ConfigInvalidException e) {

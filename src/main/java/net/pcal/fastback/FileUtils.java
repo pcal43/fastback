@@ -16,12 +16,12 @@ public class FileUtils {
         final File file = path.toFile();
         if (file.exists()) {
             if (!file.isDirectory()) {
-                throw new IOException("Cannot create directory because file exists at " +path);
+                throw new IOException("Cannot create directory because file exists at " + path);
             }
         } else {
             file.mkdirs();
             if (!file.exists() || !file.isDirectory()) {
-                throw new IOException("Failed to create directory at " +path);
+                throw new IOException("Failed to create directory at " + path);
             }
         }
     }
