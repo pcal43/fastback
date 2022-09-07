@@ -13,8 +13,7 @@ import java.util.concurrent.Executors;
 class FabricModContext implements ModContext {
 
     private static final String MOD_ID = "fastback";
-    private final org.apache.logging.log4j.Logger log4j = LogManager.getLogger("fastback");
-    private final Logger logger = new FabricLoggerAdapter(log4j);
+    private final Logger logger = new FabricLoggerAdapter(LogManager.getLogger("fastback"));
     private ExecutorService exs = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
     @Override
@@ -39,11 +38,6 @@ class FabricModContext implements ModContext {
     @Override
     public WorldContext getWorldContext(MinecraftServer forServer) {
         return new FabricWorldContext(this, forServer);
-    }
-
-    @Override
-    public org.apache.logging.log4j.Logger getLog4j() {
-        return this.log4j;
     }
 
 }

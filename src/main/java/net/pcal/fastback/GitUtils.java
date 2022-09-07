@@ -38,7 +38,7 @@ public class GitUtils {
 //        return tempGit;
 //    }
 
-    public static Set<String> getRemoteBranchNames(Git git, String remoteName, Logger logger) throws GitAPIException {
+    public static Set<String> getRemoteBranchNames(Git git, String remoteName, ModContext.Logger logger) throws GitAPIException {
         final String UUID_REFNAME_PREFIX = "refs/heads/";
         final Collection<Ref> refs = git.lsRemote().setHeads(true).setTags(false).setRemote(remoteName).call();
         final Set<String> branchNames = new HashSet<>();
@@ -49,7 +49,7 @@ public class GitUtils {
         return branchNames;
     }
 
-    public static URIish getRemoteUri(Git git, String remoteName, Logger logger) throws GitAPIException {
+    public static URIish getRemoteUri(Git git, String remoteName, ModContext.Logger logger) throws GitAPIException {
         requireNonNull(git);
         requireNonNull(remoteName);
         final List<RemoteConfig> remotes = git.remoteList().call();
@@ -62,7 +62,7 @@ public class GitUtils {
         return null;
     }
 
-    public static boolean isBranchExtant(Git git, String name, Logger logger) throws GitAPIException {
+    public static boolean isBranchExtant(Git git, String name, ModContext.Logger logger) throws GitAPIException {
         try {
             git.branchList().setContains(name).call();
             return true;
@@ -83,7 +83,7 @@ public class GitUtils {
 //    }
 
     // FIXME this is creating duplicate entries
-    public static void mergeGitConfig(Git git, String rawConfig, Logger logger) throws GitAPIException, IOException {
+    public static void mergeGitConfig(Git git, String rawConfig, ModContext.Logger logger) throws GitAPIException, IOException {
         final StoredConfig config = git.getRepository().getConfig();
         rawConfig = config.toText() + "\n" + rawConfig;
         debug(logger, "Setting git config: \n" + rawConfig);

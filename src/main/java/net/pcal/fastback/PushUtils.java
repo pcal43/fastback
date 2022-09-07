@@ -28,7 +28,7 @@ import static net.pcal.fastback.ModConfig.Key.*;
 
 public class PushUtils {
 
-    public static boolean pushIfNecessary(final String branchNameToPush, final ModConfig modConfig, final Path worldSaveDir, final Logger logger) throws IOException, GitAPIException {
+    public static boolean pushIfNecessary(final String branchNameToPush, final ModConfig modConfig, final Path worldSaveDir, final ModContext.Logger logger) throws IOException, GitAPIException {
         requireNonNull(branchNameToPush);
         requireNonNull(modConfig);
         requireNonNull(worldSaveDir);
@@ -89,7 +89,7 @@ public class PushUtils {
         return true;
     }
 
-    private static void doSmartPush(final Git git, final String branchNameToPush, final ModConfig modConfig, final Logger logger) throws GitAPIException, IOException {
+    private static void doSmartPush(final Git git, final String branchNameToPush, final ModConfig modConfig, final ModContext.Logger logger) throws GitAPIException, IOException {
         final String remoteName = modConfig.get(PUSH_REMOTE_NAME);
         final String lastPushedBranchName = modConfig.get(SMART_PUSH_BRANCH_NAME);
         final String tempBranchNameFormat = modConfig.get(SMART_PUSH_TEMP_BRANCH_FORMAT);
@@ -128,7 +128,7 @@ public class PushUtils {
         git.branchCreate().setForce(true).setName(lastPushedBranchName).call();
     }
 
-    private static void doNaivePush(final Git git, final String branchNameToPush, final ModConfig modConfig, final Logger logger) throws IOException, GitAPIException {
+    private static void doNaivePush(final Git git, final String branchNameToPush, final ModConfig modConfig, final ModContext.Logger logger) throws IOException, GitAPIException {
         final String remoteName = modConfig.get(PUSH_REMOTE_NAME);
         debug(logger, "doing naive push");
         git.push().setRemote(remoteName).setRefSpecs(new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
@@ -145,7 +145,7 @@ public class PushUtils {
         setRemote(remoteName, remoteUri, worldSaveDir);
     }
 
-    private static void configureFileUpstream(final ModConfig config, final Path worldSaveDir, Logger logger) throws IOException, GitAPIException {
+    private static void configureFileUpstream(final ModConfig config, final Path worldSaveDir, ModContext.Logger logger) throws IOException, GitAPIException {
         // ensure a git repository exists to push at the configured path
         final String uuid = getWorldUuid(worldSaveDir);
         final Path fupHome = Path.of(config.get(FILE_UPSTREAM_PATH)).resolve(uuid);
@@ -170,7 +170,7 @@ public class PushUtils {
         worldGit.remoteAdd().setName(remoteName).setUri(uri).call();
     }
 
-    private static boolean doUuidCheck(ModConfig config, Git git, String remoteName, Path worldSaveDir, Logger logger) throws GitAPIException, IOException {
+    private static boolean doUuidCheck(ModConfig config, Git git, String remoteName, Path worldSaveDir, ModContext.Logger logger) throws GitAPIException, IOException {
         if (!config.getBoolean(PUSH_UUID_CHECK_ENABLED)) {
             logger.warn("World uuid check has been disabled.  You're in danger of mixing backups.");
             return true;
@@ -196,7 +196,7 @@ public class PushUtils {
         return true;
     }
 
-    public static Set<String> getWorldUuidsOnRemote(Git git, String remoteName, Logger logger) throws GitAPIException {
+    public static Set<String> getWorldUuidsOnRemote(Git git, String remoteName, ModContext.Logger logger) throws GitAPIException {
         final Set<String> remoteBranchNames = GitUtils.getRemoteBranchNames(git, remoteName, logger);
         final Set<String> out = new HashSet<>();
         for (String branchName : remoteBranchNames) {

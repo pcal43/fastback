@@ -1,6 +1,7 @@
 package net.pcal.fastback;
 
 import net.minecraft.server.MinecraftServer;
+import org.eclipse.jgit.api.errors.RefNotFoundException;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -17,8 +18,8 @@ public interface ModContext {
 
     WorldContext getWorldContext(MinecraftServer forServer);
 
-    @Deprecated
-    org.apache.logging.log4j.Logger getLog4j(); //KILLME
+//    @Deprecated
+//    Logger getLog4j(); //KILLME
 
     interface WorldContext {
         String getWorldUuid() throws IOException;
@@ -47,14 +48,18 @@ public interface ModContext {
 
         void warn(String message);
 
+        void warn(String s, IOException ioe);
+
         void info(String message);
 
         void debug(String message);
+        void debug(Supplier<?> messageSupplier);
 
         void trace(String message);
 
         void trace(Supplier<?> messageSupplier);
 
+        void trace(Supplier<?> s, Throwable t);
     }
 
 }

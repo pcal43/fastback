@@ -3,6 +3,7 @@ package net.pcal.fastback.fabric;
 import net.pcal.fastback.ModContext;
 import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
 import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
@@ -32,6 +33,11 @@ class FabricLoggerAdapter implements ModContext.Logger {
     }
 
     @Override
+    public void warn(String s, IOException ioe) {
+        this.log4j.warn(s, ioe);
+    }
+
+    @Override
     public void info(String message) {
         this.log4j.info(message);
     }
@@ -42,6 +48,11 @@ class FabricLoggerAdapter implements ModContext.Logger {
     }
 
     @Override
+    public void debug(Supplier<?> messageSupplier) {
+        this.log4j.debug(messageSupplier);
+    }
+
+    @Override
     public void trace(String message) {
         this.log4j.trace(message);
     }
@@ -49,5 +60,11 @@ class FabricLoggerAdapter implements ModContext.Logger {
     @Override
     public void trace(Supplier<?> messageSupplier) {
         this.log4j.trace(messageSupplier);
+    }
+
+    @Override
+    public void trace(Supplier<?> s, Throwable t) {
+        this.log4j.trace(s,t);
+
     }
 }
