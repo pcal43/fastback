@@ -19,6 +19,14 @@ public class BranchNameUtils {
         return SNAPSHOTS_PREFIX + requireNonNull(worldUuid) + "/" + snapshotName;
     }
 
+    public static String getLatestBranchName(final String worldUuid) {
+        return SNAPSHOTS_PREFIX + worldUuid + "/latest";
+    }
+
+    public static String getLastPushedBranchName(final String worldUuid) {
+        return SNAPSHOTS_PREFIX + worldUuid + "/last-pushed";
+    }
+
     public static String extractWorldUuid(final String fromSnapshotBranchName, final Loggr logger) {
         if (fromSnapshotBranchName.startsWith(SNAPSHOTS_PREFIX)) {
             int start = SNAPSHOTS_PREFIX.length();
@@ -37,5 +45,9 @@ public class BranchNameUtils {
             return branchName.substring(prefix.length());
         }
         return null;
+    }
+
+    public static String getTempBranchName(String uniqueName) {
+        return "temp/"+uniqueName;
     }
 }

@@ -11,12 +11,13 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.BranchNameUtils.createNewSnapshotBranchName;
-import static net.pcal.fastback.WorldUtils.getWorldUuid;
+import static net.pcal.fastback.BranchNameUtils.getLatestBranchName;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class BackupTask extends Task {
@@ -33,30 +34,34 @@ public class BackupTask extends Task {
 
     public void run() {
         this.setStarted();
-        try(Git git = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
-            final String worldUuid;
+        try (Git git = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
+            final WorldConfig config;
             try {
-                worldUuid = getWorldUuid(worldSaveDir);
+                config = WorldConfig.load(worldSaveDir, git.getRepository().getConfig());
             } catch (IOException e) {
                 listener.internalError();
                 logger.error("Local backup failed.  Could not determine world-uuid.", e);
                 this.setFailed();
                 return;
             }
-            final String newBranchName = createNewSnapshotBranchName(worldUuid);
-            logger.info("Creating " + newBranchName);
+            final String newBranchName = createNewSnapshotBranchName(config.worldUuid());
+            logger.info("Committing " + newBranchName);
             try {
-                doCommit(worldSaveDir, newBranchName, logger);
+                doCommit(git, config, newBranchName, logger);
+                final Duration dur = getSplitDuration();
+                logger.info("Local backup complete.  Elapsed time: " + dur.toMinutesPart() + "m " + dur.toSecondsPart() + "s");
             } catch (GitAPIException | IOException e) {
                 listener.internalError();
                 logger.error("Local backup failed.  Unable to commit changes.", e);
                 this.setFailed();
                 return;
             }
-            final WorldConfig worldConfig = WorldConfig.load(git.getRepository().getConfig());
-            if (worldConfig.isRemoteBackupEnabled()) {
+
+            if (config.isRemoteBackupEnabled()) {
                 final PushTask push = new PushTask(worldSaveDir, newBranchName, this.listener, logger);
                 push.run();
+                final Duration dur = getSplitDuration();
+                logger.info("Remote backup complete.  Elapsed time: " + dur.toMinutesPart() + "m " + dur.toSecondsPart() + "s");
                 if (push.isFailed()) {
                     logger.error("Local backup succeeded but remote backup failed.");
                 }
@@ -69,58 +74,53 @@ public class BackupTask extends Task {
             this.setFailed();
             return;
         }
+        this.listener.feedback("Backup complete.");
         this.setCompleted();
     }
 
-    private static void doCommit(final Path worldSaveDir, String newBranchName, final Loggr logger) throws GitAPIException, IOException {
-        try(Git git =  Git.init().setDirectory(worldSaveDir.toFile()).call()) {
-            final long startTime = System.currentTimeMillis();
-            logger.info("Starting local backup.");
-            logger.debug("doing commit");
-            logger.debug("checkout");
-            git.checkout().setOrphan(true).setName(newBranchName).call();
-            git.reset().setMode(ResetCommand.ResetType.SOFT).call();
-            logger.debug("status");
-            final Status status = git.status().call();
+    private static void doCommit(Git git, WorldConfig config, String newBranchName, final Loggr logger) throws GitAPIException, IOException {
+        logger.info("Starting local backup.");
+        logger.debug("doing commit");
+        logger.debug("checkout");
+        git.checkout().setOrphan(true).setName(newBranchName).call();
+        git.reset().setMode(ResetCommand.ResetType.SOFT).call();
+        logger.debug("status");
+        final Status status = git.status().call();
 
-            logger.debug("add");
+        logger.debug("add");
 
-            // https://bugs.eclipse.org/bugs/show_bug.cgi?id=494323
-            //
-            // One workaround would be to first fire a jgit status to find the modified and new files and then do a jgit add with explicit pathes. That should be fast.
+        // https://bugs.eclipse.org/bugs/show_bug.cgi?id=494323
+        //
+        // One workaround would be to first fire a jgit status to find the modified and new files and then do a jgit add with explicit patches. That should be fast.
 
-            final AddCommand gitAdd = git.add();
-            for (String file : status.getModified()) {
-                logger.debug(() -> "add modified " + file);
-                gitAdd.addFilepattern(file);
-            }
-            for (String file : status.getUntracked()) {
-                gitAdd.addFilepattern(file);
-                logger.debug(() -> "add untracked " + file);
-            }
-            logger.debug("doing add");
-            gitAdd.call();
-
-            final Collection<String> toDelete = new ArrayList<>();
-            toDelete.addAll(status.getRemoved());
-            toDelete.addAll(status.getMissing());
-            if (!toDelete.isEmpty()) {
-                final RmCommand gitRm = git.rm();
-                for (final String file : toDelete) {
-                    gitRm.addFilepattern(file);
-                    logger.debug(() -> "removed " + file);
-                }
-                logger.debug("doing rm");
-                gitRm.call();
-            }
-            logger.debug("commit");
-            git.commit().setMessage(newBranchName).call();
-            WorldConfig config = WorldConfig.load(git.getRepository().getConfig());
-            final String latestBranchName = config.getLatestBranchName(); //FIXME prefix this with snapshot/uuid/
-            logger.debug("Updating " + latestBranchName);
-            git.branchCreate().setForce(true).setName(latestBranchName).call();
-            //final Duration duration = Duration.ofMillis(System.currentTimeMillis() - startTime).plusMillis(900);
-            //logger.info("Local backup complete.  Elapsed time: " + duration.toMinutesPart() + "m " + duration.toSecondsPart() + "s");
+        final AddCommand gitAdd = git.add();
+        for (String file : status.getModified()) {
+            logger.debug(() -> "add modified " + file);
+            gitAdd.addFilepattern(file);
         }
+        for (String file : status.getUntracked()) {
+            gitAdd.addFilepattern(file);
+            logger.debug(() -> "add untracked " + file);
+        }
+        logger.debug("doing add");
+        gitAdd.call();
+
+        final Collection<String> toDelete = new ArrayList<>();
+        toDelete.addAll(status.getRemoved());
+        toDelete.addAll(status.getMissing());
+        if (!toDelete.isEmpty()) {
+            final RmCommand gitRm = git.rm();
+            for (final String file : toDelete) {
+                gitRm.addFilepattern(file);
+                logger.debug(() -> "removed " + file);
+            }
+            logger.debug("doing rm");
+            gitRm.call();
+        }
+        logger.debug("commit");
+        git.commit().setMessage(newBranchName).call();
+        final String latestBranchName = getLatestBranchName(config.worldUuid());
+        logger.debug("Updating " + latestBranchName);
+        git.branchCreate().setForce(true).setName(latestBranchName).call();
     }
 }

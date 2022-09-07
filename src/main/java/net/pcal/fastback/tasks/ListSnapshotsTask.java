@@ -1,7 +1,7 @@
 package net.pcal.fastback.tasks;
 
 import net.pcal.fastback.Loggr;
-import net.pcal.fastback.WorldUtils;
+import net.pcal.fastback.WorldConfig;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
@@ -15,7 +15,7 @@ import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.BranchNameUtils.filterOnWorldUuid;
 import static net.pcal.fastback.tasks.Task.TaskState.COMPLETED;
 import static net.pcal.fastback.tasks.Task.TaskState.FAILED;
-import static net.pcal.fastback.tasks.Task.TaskState.RUNNING;
+import static net.pcal.fastback.tasks.Task.TaskState.STARTED;
 
 public class ListSnapshotsTask extends Task {
 
@@ -27,7 +27,7 @@ public class ListSnapshotsTask extends Task {
     public static Runnable listSnapshotsForWorld(Path worldSaveDir, Consumer<String> sink, Loggr logger) {
         final String worldUuid;
         try {
-            worldUuid = WorldUtils.getWorldUuid(worldSaveDir);
+            worldUuid = WorldConfig.getWorldUuid(worldSaveDir);
         } catch (IOException e) {
             sink.accept("Internal error encountered.  See logs for details.");
             logger.error("Could not load world Uuid", e);
@@ -52,7 +52,7 @@ public class ListSnapshotsTask extends Task {
 
     @Override
     public void run() {
-        super.setState(RUNNING);
+        super.setState(STARTED);
         try (final Git git = Git.open(worldSaveDir.toFile())) {
             for (Ref branch : git.branchList().call()) {
                 String branchName = branch.getName();

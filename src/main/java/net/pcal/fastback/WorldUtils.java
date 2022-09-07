@@ -1,23 +1,16 @@
 package net.pcal.fastback;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.UUID;
 
 import static net.pcal.fastback.FileUtils.writeResourceToFile;
+import static net.pcal.fastback.WorldConfig.ensureWorldHasUuid;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class WorldUtils {
-
-    private static final Path WORLD_UUID_PATH = Path.of("world.uuid");
 
     private static final Iterable<Pair<String, Path>> WORLD_RESOURCES_TO_COPY = List.of(
             Pair.of("world/dot-gitignore", Path.of(".gitignore"))
@@ -36,20 +29,5 @@ public class WorldUtils {
         }
     }
 
-    private static void ensureWorldHasUuid(final Path worldSaveDir, final Loggr logger) throws IOException {
-        final Path worldUuidpath = worldSaveDir.resolve(WORLD_UUID_PATH);
-        if (!worldUuidpath.toFile().exists()) {
-            final String newUuid = UUID.randomUUID().toString();
-            try (final FileWriter fw = new FileWriter(worldUuidpath.toFile())) {
-                fw.append(newUuid);
-                fw.append('\n');
-            }
-            logger.info("Generated new world.uuid " + newUuid);
-        }
-    }
-
-    public static String getWorldUuid(Path worldSaveDir) throws IOException {
-        return Files.readString(worldSaveDir.resolve(WORLD_UUID_PATH)).trim();
-    }
 
 }
