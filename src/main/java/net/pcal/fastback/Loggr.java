@@ -7,6 +7,8 @@ public interface Loggr {
 
     void error(String message);
 
+    void error(Throwable t);
+
     void error(String message, Throwable t);
 
     void warn(String message);

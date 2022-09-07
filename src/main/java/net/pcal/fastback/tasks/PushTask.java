@@ -55,7 +55,7 @@ public class PushTask extends Task {
                     uuidCheckResult = doUuidCheck(git, worldConfig.getRemoteName(), logger);
                 } catch (final GitAPIException | IOException e) {
                     logger.error("Skipping remote backup due to failed uuid check", e);
-                    listener.unexpectedError();
+                    listener.internalError();
                     super.setFailed();
                     return;
                 }
@@ -79,7 +79,7 @@ public class PushTask extends Task {
             logger.info("Remote backup complete.  Elapsed time: " + duration.toMinutesPart() + "m " + duration.toSecondsPart() + "s");
         } catch (GitAPIException | IOException e) {
             logger.error("Remote backup failed unexpectedly", e);
-            listener.unexpectedError();
+            listener.internalError();
             super.setFailed();
         }
     }

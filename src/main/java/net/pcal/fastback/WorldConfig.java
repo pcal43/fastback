@@ -60,7 +60,14 @@ public record WorldConfig(
     private static final String CONFIG_SHUTDOWN_BACKUP_ENABLED = "shutdown-backup-enabled";
     private static final String CONFIG_REMOTE_BACKUP_ENABLED = "remote-backup-enabled";
 
-    public static WorldConfig load(Config gitConfig) throws IOException {
+    public static WorldConfig load(Path worldSaveDir) throws IOException {
+        try(Git git = Git.open(worldSaveDir.toFile())) {
+            return load(git.getRepository().getConfig());
+        }
+    }
+
+
+    public static WorldConfig load(Config gitConfig) {
         return new WorldConfig(
                 gitConfig.getBoolean(CONFIG_SECTION, null, CONFIG_BACKUP_ENABLED, false),
                 gitConfig.getBoolean(CONFIG_SECTION, null, CONFIG_SHUTDOWN_BACKUP_ENABLED, false),
