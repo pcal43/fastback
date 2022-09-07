@@ -16,6 +16,7 @@ public class ModConfig {
     private static final Path MOD_CONFIG_PATH = Paths.get("config", "fastback.properties");
     private static final String DEFAULT_MOD_CONFIG_RESOURCE = "config/fastback.properties";
     private static final String DEFAULT_PROPERTIES_RESOURCE = "/config-defaults.properties";
+    private final WorldConfig worldConfig;
 
     public enum Key {
 
@@ -60,10 +61,16 @@ public class ModConfig {
         }
     }
 
+    @Deprecated
     private final Properties properties;
 
-    public ModConfig(final Properties props) {
+    public ModConfig(final Properties props, WorldConfig worldConfig) {
+        this.worldConfig = worldConfig;
         this.properties = requireNonNull(props);
+    }
+
+    public WorldConfig getWorldConfig() {
+        return this.worldConfig;
     }
 
     public String get(Key key) {
@@ -88,11 +95,11 @@ public class ModConfig {
         final Properties props = new Properties();
         loadDefaultProperties(props);
         loadFileProperties(props, MOD_CONFIG_PATH);
-        return new ModConfig(props);
+        return new ModConfig(props, null);
     }
 
     /**
-     * Load the mod configuration.  This is used when no world is open.
+     * Load the mod configuration.
      */
     public static ModConfig loadForWorld(final Path worldSaveDir, final Loggr logger) throws IOException {
         final Properties props = new Properties();
@@ -106,7 +113,9 @@ public class ModConfig {
             loadFileProperties(props, worldConfigPath);
         }
         validateProperties(props);
-        return new ModConfig(props);
+
+        final WorldConfig worldConfig = WorldConfig.load(worldSaveDir);
+        return new ModConfig(props, worldConfig);
     }
 
     public static void writeDefaultConfigFile() throws IOException {

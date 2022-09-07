@@ -1,47 +1,57 @@
 package net.pcal.fastback;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.Config;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
 
 import java.io.IOException;
 import java.nio.file.Path;
 
-record WorldConfig(
+public record WorldConfig(
         boolean isBackupEnabled,
         boolean isShutdownBackupEnabled,
         boolean isRemoteBackupEnabled,
         String getRemotePushUri) {
 
-    String getRemoteName() {
+    public String getRemoteName() {
         return REMOTE_NAME;
     }
 
-    String getUuidCheckPrefix() {
+    public String getUuidCheckPrefix() {
         return "FIXME";
     }
 
-    boolean isUuidCheckEnabled() {
+    public boolean isUuidCheckEnabled() {
         return true;
     }
 
-    boolean isTempBranchCleanupEnabled() {
+    public boolean isTempBranchCleanupEnabled() {
         return true;
     }
 
-    boolean isFileRemoteTempBranchCleanupEnabled() {
+    public boolean isFileRemoteTempBranchCleanupEnabled() {
         return true;
     }
 
-    String getTempBranchNameFormat() {
+    public String getTempBranchNameFormat() {
         return "temp/%s";
     }
 
-    String getSnapshotPrefix() {
+    public String getSnapshotPrefix() {
         return "snapshot";
     }
 
-    String getDateFormat() {
+    public String getDateFormat() {
         return "yyyy-MM-dd_HH-mm-ss";
+    }
+
+    public boolean isSmartPushEnabled() {
+        return true;
+    }
+
+    public String getLatestBranchName() {
+        return "latest";
     }
 
     private static final String REMOTE_NAME = "origin";
@@ -50,41 +60,33 @@ record WorldConfig(
     private static final String CONFIG_SHUTDOWN_BACKUP_ENABLED = "shutdown-backup-enabled";
     private static final String CONFIG_REMOTE_BACKUP_ENABLED = "remote-backup-enabled";
 
-    static WorldConfig load(Path worldSaveDir) throws IOException {
-        try(final Git git = Git.open(worldSaveDir.toFile())) {
-            final StoredConfig config = git.getRepository().getConfig();
-            return new WorldConfig(
-                    config.getBoolean(CONFIG_SECTION, null, CONFIG_BACKUP_ENABLED, false),
-                    config.getBoolean(CONFIG_SECTION, null, CONFIG_SHUTDOWN_BACKUP_ENABLED, false),
-                    config.getBoolean(CONFIG_SECTION, null, CONFIG_REMOTE_BACKUP_ENABLED, false),
-                    config.getString("remote", REMOTE_NAME, "url")
-            );
-        }
+    public static WorldConfig load(Config gitConfig) throws IOException {
+        return new WorldConfig(
+                gitConfig.getBoolean(CONFIG_SECTION, null, CONFIG_BACKUP_ENABLED, false),
+                gitConfig.getBoolean(CONFIG_SECTION, null, CONFIG_SHUTDOWN_BACKUP_ENABLED, false),
+                gitConfig.getBoolean(CONFIG_SECTION, null, CONFIG_REMOTE_BACKUP_ENABLED, false),
+                gitConfig.getString("remote", REMOTE_NAME, "url")
+        );
     }
 
-    static void setRemoteUrl(Path worldSaveDir, String url) throws IOException {
-        try(final Git git = Git.open(worldSaveDir.toFile())) {
-            git.getRepository().getConfig().setString("remote" , REMOTE_NAME, "url", url);
-        }
+    // REMEMBER TO CALL config.save() YOURSELF!!
+
+    public static void setRemoteUrl(Config gitConfig, String url) {
+        gitConfig.setString("remote" , REMOTE_NAME, "url", url);
     }
 
-    static void setBackupEnabled(Path worldSaveDir, boolean value) throws IOException {
-        setBoolean(worldSaveDir, value, CONFIG_BACKUP_ENABLED);
+    public static void setBackupEnabled(Config gitConfig, boolean value) {
+        gitConfig.setBoolean(CONFIG_SECTION, null, CONFIG_BACKUP_ENABLED, value);
     }
 
-    static void setShutdownBackupEnabled(Path worldSaveDir, boolean value) throws IOException {
-        setBoolean(worldSaveDir, value, CONFIG_SHUTDOWN_BACKUP_ENABLED);
+    public static void setShutdownBackupEnabled(Config gitConfig, boolean value) {
+        gitConfig.setBoolean(CONFIG_SECTION, null, CONFIG_SHUTDOWN_BACKUP_ENABLED, value);
     }
 
-    static void setRemoteBackupEnabled(Path worldSaveDir, boolean value) throws IOException {
-        setBoolean(worldSaveDir, value, CONFIG_REMOTE_BACKUP_ENABLED);
+    public static void setRemoteBackupEnabled(Config gitConfig, boolean value) {
+        gitConfig.setBoolean(CONFIG_SECTION, null, CONFIG_REMOTE_BACKUP_ENABLED, value);
     }
 
-    private static void setBoolean(Path worldSaveDir, boolean value, String configKey) throws IOException {
-        try(final Git git = Git.open(worldSaveDir.toFile())) {
-            git.getRepository().getConfig().setBoolean(CONFIG_SECTION, null, configKey, value);
-        }
-    }
 }
 
 

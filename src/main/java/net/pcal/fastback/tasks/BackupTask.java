@@ -3,7 +3,7 @@ package net.pcal.fastback.tasks;
 import net.pcal.fastback.CommitUtils;
 import net.pcal.fastback.Loggr;
 import net.pcal.fastback.ModConfig;
-import net.pcal.fastback.PushUtils;
+import net.pcal.fastback.WorldConfig;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.IOException;
@@ -17,13 +17,18 @@ import static net.pcal.fastback.tasks.Task.TaskState.FAILED;
 @SuppressWarnings("FieldCanBeLocal")
 public class BackupTask extends Task {
 
+    private final WorldConfig worldConfig;
+
+    @Deprecated
     private final ModConfig modConfig;
     private final Path worldSaveDir;
     private final Loggr logger;
 
-    public BackupTask(final ModConfig modConfig, final Path worldSaveDir, final Loggr logger) {
+    public BackupTask(final ModConfig modConfig, final Path worldSaveDir, TaskListener listener, final Loggr logger) {
+        this.worldConfig = requireNonNull(modConfig.getWorldConfig());
         this.worldSaveDir = requireNonNull(worldSaveDir);
         this.modConfig = requireNonNull(modConfig);
+        this.listener = requireNonNull(listener);
         this.logger = requireNonNull(logger);
     }
 
@@ -44,10 +49,14 @@ public class BackupTask extends Task {
             super.setState(FAILED);
             return;
         }
-        try {
-            PushUtils.pushIfNecessary(newBranchName, modConfig, worldSaveDir, logger);
-        } catch (IOException | GitAPIException e) {
-            logger.error("Local backup succeeded but remote backup failed.", e);
+        if (worldConfig.isRemoteBackupEnabled()) {
+            final PushTask push = new PushTask(worldSaveDir, newBranchName, tl, logger);
+            push.run();
+            if (push.isFailed()) {
+                logger.error("Local backup succeeded but remote backup failed.");
+            }
+        } else {
+            logger.info("Remote backup disabled in config.");
         }
     }
 }
