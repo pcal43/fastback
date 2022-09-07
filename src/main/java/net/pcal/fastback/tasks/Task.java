@@ -7,7 +7,7 @@ import static net.pcal.fastback.tasks.Task.TaskState.NEW;
 abstract public class Task implements Runnable {
 
     private TaskState state = null;
-    Task() {
+    public Task() {
         this.state = NEW;
     }
 

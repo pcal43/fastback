@@ -2,7 +2,9 @@ package net.pcal.fastback;
 
 import net.minecraft.server.MinecraftServer;
 
+import java.io.IOException;
 import java.nio.file.Path;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 
 public interface ModContext {
@@ -11,14 +13,15 @@ public interface ModContext {
 
     Logger getLogger();
 
+    ExecutorService getExecutorService();
+
     WorldContext getWorldContext(MinecraftServer forServer);
 
     @Deprecated
     org.apache.logging.log4j.Logger getLog4j(); //KILLME
 
     interface WorldContext {
-
-        ModContext getModContext();
+        String getWorldUuid() throws IOException;
 
         Path getWorldSaveDirectory();
 
@@ -31,6 +34,9 @@ public interface ModContext {
         String getDifficulty();
 
         String getMinecraftVersion();
+
+        ModContext getModContext();
+
     }
 
     interface Logger {

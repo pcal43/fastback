@@ -7,12 +7,15 @@ import net.pcal.fastback.ModContext;
 import org.apache.logging.log4j.LogManager;
 
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 class FabricModContext implements ModContext {
 
     private static final String MOD_ID = "fastback";
     private final org.apache.logging.log4j.Logger log4j = LogManager.getLogger("fastback");
     private final Logger logger = new FabricLoggerAdapter(log4j);
+    private ExecutorService exs = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
     @Override
     public String getFastbackModVersion() {
@@ -23,10 +26,14 @@ class FabricModContext implements ModContext {
         return optionalModContainer.get().getMetadata().getVersion().toString();
     }
 
-
     @Override
     public Logger getLogger() {
         return this.logger;
+    }
+
+    @Override
+    public ExecutorService getExecutorService() {
+        return this.exs;
     }
 
     @Override

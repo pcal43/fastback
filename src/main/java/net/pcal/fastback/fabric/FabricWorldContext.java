@@ -4,10 +4,11 @@ import net.pcal.fastback.ModContext;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.LevelInfo;
 import net.minecraft.world.level.storage.LevelStorage;
-import net.minecraft.world.level.storage.LevelSummary;
+import net.pcal.fastback.WorldUtils;
 import net.pcal.fastback.fabric.mixins.ServerAccessors;
 import net.pcal.fastback.fabric.mixins.SessionAccessors;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
@@ -27,6 +28,11 @@ class FabricWorldContext implements ModContext.WorldContext {
     @Override
     public ModContext getModContext() {
         return this.modContext;
+    }
+
+    @Override
+    public String getWorldUuid() throws IOException {
+        return WorldUtils.getWorldUuid(this.getWorldSaveDirectory());
     }
 
     @Override
@@ -64,4 +70,5 @@ class FabricWorldContext implements ModContext.WorldContext {
     private LevelInfo getLevelInfo() {
         return requireNonNull(session.getLevelSummary().getLevelInfo());
     }
+
 }

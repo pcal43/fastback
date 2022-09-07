@@ -3,7 +3,6 @@ package net.pcal.fastback.tasks;
 import net.pcal.fastback.CommitUtils;
 import net.pcal.fastback.ModConfig;
 import net.pcal.fastback.PushUtils;
-import net.pcal.fastback.tasks.Task;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
