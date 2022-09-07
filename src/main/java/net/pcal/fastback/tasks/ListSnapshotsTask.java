@@ -39,7 +39,7 @@ public class ListSnapshotsTask extends Task {
     }
 
     public static Runnable listSnapshotsForWorld(Path worldSaveDir, String worldUuid, Consumer<String> sink, Loginator logger) {
-        final Function<String, String> branchFilter = branchName->filterOnWorldUuid(branchName, worldUuid, logger);
+        final Function<String, String> branchFilter = branchName -> filterOnWorldUuid(branchName, worldUuid, logger);
         return new ListSnapshotsTask(worldSaveDir, branchFilter, sink, logger);
     }
 
@@ -59,9 +59,9 @@ public class ListSnapshotsTask extends Task {
             for (Ref branch : git.branchList().call()) {
                 String branchName = branch.getName();
                 if (!branchName.startsWith(BRANCH_NAME_PREFIX)) {
-                    this.logger.warn("Unexpected ref name "+branchName);
+                    this.logger.warn("Unexpected ref name " + branchName);
                 } else {
-                    branchName = branchName.substring(BRANCH_NAME_PREFIX.length()+1);
+                    branchName = branchName.substring(BRANCH_NAME_PREFIX.length() + 1);
                 }
                 branchName = this.branchFilter.apply(branchName);
                 if (branchName != null) this.out.accept(branchName);

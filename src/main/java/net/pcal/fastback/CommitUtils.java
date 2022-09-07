@@ -39,12 +39,12 @@ public class CommitUtils {
 
         final AddCommand gitAdd = git.add();
         for (String file : status.getModified()) {
-            debug(logger, ()->"add modified " + file);
+            debug(logger, () -> "add modified " + file);
             gitAdd.addFilepattern(file);
         }
         for (String file : status.getUntracked()) {
             gitAdd.addFilepattern(file);
-            debug(logger, ()->"add untracked " + file);
+            debug(logger, () -> "add untracked " + file);
         }
         debug(logger, "doing add");
         gitAdd.call();
@@ -56,7 +56,7 @@ public class CommitUtils {
             final RmCommand gitRm = git.rm();
             for (final String file : toDelete) {
                 gitRm.addFilepattern(file);
-                debug(logger, ()-> "removed "+file);
+                debug(logger, () -> "removed " + file);
             }
             debug(logger, "dong rm");
             gitRm.call();

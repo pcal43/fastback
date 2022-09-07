@@ -14,12 +14,12 @@ public class FabricFastbackInitializer implements ModInitializer {
         final FabricModContext modContext = new FabricModContext();
 
         ServerLifecycleEvents.SERVER_STOPPED.register(
-                minecraftServer->{
+                minecraftServer -> {
                     LifecycleUtils.onWorldStop(new FabricWorldContext(modContext, minecraftServer));
                 }
         );
         ServerLifecycleEvents.SERVER_STARTING.register(
-                minecraftServer->{
+                minecraftServer -> {
                     LifecycleUtils.onWorldStart(new FabricWorldContext(modContext, minecraftServer));
                 }
         );

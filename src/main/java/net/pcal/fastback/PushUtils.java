@@ -66,7 +66,7 @@ public class PushUtils {
                         "' is not set and no auto-remote configuration is enabled.");
                 return false;
             } else {
-                info(logger, "Using manually-configured remote '" + remoteName+ "'");
+                info(logger, "Using manually-configured remote '" + remoteName + "'");
             }
         }
         final URIish pushUri = GitUtils.getRemoteUri(git, remoteName, logger);

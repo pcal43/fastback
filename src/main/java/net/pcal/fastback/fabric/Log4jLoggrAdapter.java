@@ -64,7 +64,7 @@ class Log4jLoggrAdapter implements Loginator {
 
     @Override
     public void trace(Supplier<?> s, Throwable t) {
-        this.log4j.trace(s,t);
+        this.log4j.trace(s, t);
 
     }
 }

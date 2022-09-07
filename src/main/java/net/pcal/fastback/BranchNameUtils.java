@@ -28,7 +28,7 @@ public class BranchNameUtils {
     }
 
     public static String filterOnWorldUuid(final String branchName, final String worldUuid, final Loginator logger) {
-        final String prefix = SNAPSHOTS_PREFIX + worldUuid+"/";
+        final String prefix = SNAPSHOTS_PREFIX + worldUuid + "/";
         if (branchName.startsWith(prefix)) {
             return branchName.substring(prefix.length());
         }

@@ -38,7 +38,7 @@ public class BackupTask extends Task {
             return;
         }
         final String newBranchName = createSnapshotBranchName(worldUuid, logger);
-        info(logger, "Creating "+newBranchName);
+        info(logger, "Creating " + newBranchName);
         try {
             CommitUtils.doCommit(modConfig, worldSaveDir, newBranchName, logger);
         } catch (GitAPIException | IOException e) {
