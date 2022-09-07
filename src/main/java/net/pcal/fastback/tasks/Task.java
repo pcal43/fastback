@@ -55,8 +55,9 @@ abstract public class Task implements Runnable {
             case FAILED:
                 return Duration.ofMillis(this.endTime - this.splitStartTime);
             case STARTED:
-                final Duration out = Duration.ofMillis(this.endTime - this.splitStartTime);
-                this.splitStartTime = System.currentTimeMillis();
+                final long now = System.currentTimeMillis();
+                final Duration out = Duration.ofMillis(now - this.splitStartTime);
+                this.splitStartTime = now;
                 return out;
         }
         throw new IllegalStateException("invalid state "+this.state);
