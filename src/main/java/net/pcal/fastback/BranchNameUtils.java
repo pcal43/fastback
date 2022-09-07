@@ -10,9 +10,13 @@ public class BranchNameUtils {
     private static final String SNAPSHOTS_PREFIX = "snapshot/";
     private static final String DATE_FORMAT = "yyyy-MM-dd_HH-mm-ss";
 
-    public static String createSnapshotBranchName(final String worldUuid, final Loggr logger) {
+    public static String createNewSnapshotBranchName(final String worldUuid) {
         final String formattedDate = new SimpleDateFormat(requireNonNull(DATE_FORMAT)).format(new Date());
-        return SNAPSHOTS_PREFIX + requireNonNull(worldUuid) + "/" + formattedDate;
+        return getSnapshotBranchName(worldUuid, formattedDate);
+    }
+
+    public static String getSnapshotBranchName(final String worldUuid, final String snapshotName) {
+        return SNAPSHOTS_PREFIX + requireNonNull(worldUuid) + "/" + snapshotName;
     }
 
     public static String extractWorldUuid(final String fromSnapshotBranchName, final Loggr logger) {

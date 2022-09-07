@@ -11,6 +11,8 @@ import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.URIish;
 
 import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -34,6 +36,7 @@ public class GitUtils {
 //        }
 //        return tempGit;
 //    }
+
 
     public static Set<String> getRemoteBranchNames(Git git, String remoteName, Loggr logger) throws GitAPIException {
         final String UUID_REFNAME_PREFIX = "refs/heads/";

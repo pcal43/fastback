@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.BranchNameUtils.createSnapshotBranchName;
+import static net.pcal.fastback.BranchNameUtils.createNewSnapshotBranchName;
 import static net.pcal.fastback.WorldUtils.getWorldUuid;
 import static net.pcal.fastback.tasks.Task.TaskState.FAILED;
 
@@ -35,7 +35,7 @@ public class BackupTask extends Task {
             logger.error("Local backup failed.  Could not determine world-uuid.", e);
             return;
         }
-        final String newBranchName = createSnapshotBranchName(worldUuid, logger);
+        final String newBranchName = createNewSnapshotBranchName(worldUuid);
         logger.info("Creating " + newBranchName);
         try {
             CommitUtils.doCommit(modConfig, worldSaveDir, newBranchName, logger);

@@ -3,10 +3,14 @@ package net.pcal.fastback.fabric;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.level.storage.LevelStorage;
 import net.pcal.fastback.Loggr;
 import net.pcal.fastback.ModContext;
+import net.pcal.fastback.fabric.mixins.ServerAccessors;
+import net.pcal.fastback.fabric.mixins.SessionAccessors;
 import org.apache.logging.log4j.LogManager;
 
+import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -39,6 +43,12 @@ class FabricModContext implements ModContext {
     @Override
     public WorldContext getWorldContext(MinecraftServer forServer) {
         return new FabricWorldContext(this, forServer);
+    }
+
+    @Override
+    public Path getWorldSaveDirectory(MinecraftServer server) {
+        final LevelStorage.Session session = ((ServerAccessors) server).getSession();
+        return ((SessionAccessors) session).getDirectory().path();
     }
 
 }
