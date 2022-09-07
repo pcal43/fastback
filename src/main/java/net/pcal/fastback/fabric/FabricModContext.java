@@ -2,6 +2,7 @@ package net.pcal.fastback.fabric;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
+import net.minecraft.SharedConstants;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelStorage;
 import net.pcal.fastback.Loggr;
@@ -19,7 +20,12 @@ class FabricModContext implements ModContext {
 
     private static final String MOD_ID = "fastback";
     private final Loggr logger = new Log4jLoggr(LogManager.getLogger("fastback"));
-    private ExecutorService exs = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    private final ExecutorService exs = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
+    @Override
+    public String getMinecraftVersion() {
+        return SharedConstants.getGameVersion().getName();
+    }
 
     @Override
     public String getFastbackModVersion() {
@@ -41,14 +47,14 @@ class FabricModContext implements ModContext {
     }
 
     @Override
-    public WorldContext getWorldContext(MinecraftServer forServer) {
-        return new FabricWorldContext(this, forServer);
-    }
-
-    @Override
     public Path getWorldSaveDirectory(MinecraftServer server) {
         final LevelStorage.Session session = ((ServerAccessors) server).getSession();
         return ((SessionAccessors) session).getDirectory().path();
     }
 
+    @Override
+    public String getWorldName(MinecraftServer server) {
+        final LevelStorage.Session session = ((ServerAccessors) server).getSession();
+        return session.getLevelSummary().getLevelInfo().getLevelName();
+    }
 }

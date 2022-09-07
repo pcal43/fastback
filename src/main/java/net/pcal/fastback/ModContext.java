@@ -8,37 +8,16 @@ import java.util.concurrent.ExecutorService;
 
 public interface ModContext {
 
+    String getMinecraftVersion();
+
     String getFastbackModVersion();
 
     Loggr getLogger();
 
     ExecutorService getExecutorService();
 
-    WorldContext getWorldContext(MinecraftServer forServer);
-
     Path getWorldSaveDirectory(MinecraftServer server);
 
-//    @Deprecated
-//    Logger getLog4j(); //KILLME
-
-    interface WorldContext {
-
-        String getWorldUuid() throws IOException;
-
-        Path getWorldSaveDirectory();
-
-        String getWorldName();
-
-        long getSeed();
-
-        String getGameMode();
-
-        String getDifficulty();
-
-        String getMinecraftVersion();
-
-        ModContext getModContext();
-
-    }
+    String getWorldName(MinecraftServer server);
 
 }

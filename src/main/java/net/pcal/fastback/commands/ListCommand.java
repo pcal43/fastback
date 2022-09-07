@@ -2,11 +2,13 @@ package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.pcal.fastback.ModContext;
 
+import java.nio.file.Path;
 import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
@@ -19,17 +21,18 @@ public class ListCommand {
         fastbackCmd.then(CommandManager.literal("list").executes(rc::execute));
     }
 
-    private final ModContext mctx;
+    private final ModContext ctx;
 
     private ListCommand(ModContext context) {
-        this.mctx = requireNonNull(context);
+        this.ctx = requireNonNull(context);
     }
 
     private int execute(final CommandContext<ServerCommandSource> cc) {
-        final ModContext.WorldContext world = this.mctx.getWorldContext(cc.getSource().getServer());
+        final MinecraftServer server = cc.getSource().getServer();
+        final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
         final Consumer<String> sink = message -> cc.getSource().sendFeedback(Text.literal(message), false);
         sink.accept("Local snapshots:");
-        this.mctx.getExecutorService().execute(listSnapshotsForWorld(world, sink));
+        this.ctx.getExecutorService().execute(listSnapshotsForWorld(worldSaveDir, sink, ctx.getLogger()));
         return 1;
     }
 

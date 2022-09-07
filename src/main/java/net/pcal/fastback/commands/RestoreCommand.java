@@ -3,6 +3,7 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
@@ -31,8 +32,9 @@ public class RestoreCommand {
     }
 
     private int execute(CommandContext<ServerCommandSource> cc) {
-        final ModContext.WorldContext world = this.ctx.getWorldContext(cc.getSource().getServer());
-        final Path worldSaveDir = world.getWorldSaveDirectory();
+        final MinecraftServer server = cc.getSource().getServer();
+        final String worldName = this.ctx.getWorldName(server);
+        final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
         final TaskListener tl = new ServerTaskListener(cc.getSource());
         final String snapshotName = cc.getArgument("snapshot", String.class);
         final Path targetDirectory;
@@ -42,7 +44,7 @@ public class RestoreCommand {
             return 0;
         }
         this.ctx.getExecutorService().execute(
-                RestoreSnapshotTask.create(worldSaveDir, snapshotName, world.getWorldName(),
+                RestoreSnapshotTask.create(worldSaveDir, snapshotName, worldName,
                         targetDirectory, tl, this.ctx.getLogger()));
         return 1;
     }
