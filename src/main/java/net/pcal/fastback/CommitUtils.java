@@ -57,7 +57,7 @@ public class CommitUtils {
                 gitRm.addFilepattern(file);
                 logger.debug(() -> "removed " + file);
             }
-            logger.debug("dong rm");
+            logger.debug("doing rm");
             gitRm.call();
         }
         logger.debug("commit");
