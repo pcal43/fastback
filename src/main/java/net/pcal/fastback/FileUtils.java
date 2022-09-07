@@ -26,6 +26,10 @@ public class FileUtils {
         }
     }
 
+    public static void rmdir(final Path path) throws IOException {
+        org.apache.commons.io.FileUtils.deleteDirectory(path.toFile());
+    }
+
     public static void writeResourceToFile(String resourcePath, Path targetFile) throws IOException {
         final String rawResource;
         try (InputStream in = FabricFastbackInitializer.class.getClassLoader().getResourceAsStream(resourcePath)) {

@@ -16,10 +16,13 @@ public interface ModContext {
 
     WorldContext getWorldContext(MinecraftServer forServer);
 
+    Path getWorldSaveDirectory(MinecraftServer server);
+
 //    @Deprecated
 //    Logger getLog4j(); //KILLME
 
     interface WorldContext {
+
         String getWorldUuid() throws IOException;
 
         Path getWorldSaveDirectory();
