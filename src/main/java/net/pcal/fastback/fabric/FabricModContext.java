@@ -14,7 +14,7 @@ import java.util.concurrent.Executors;
 class FabricModContext implements ModContext {
 
     private static final String MOD_ID = "fastback";
-    private final Loginator logger = new Log4jLoggrAdapter(LogManager.getLogger("fastback"));
+    private final Loginator logger = new Log4jLoginator(LogManager.getLogger("fastback"));
     private ExecutorService exs = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
     @Override

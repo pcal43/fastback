@@ -8,11 +8,11 @@ import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
 
-class Log4jLoggrAdapter implements Loginator {
+class Log4jLoginator implements Loginator {
 
     private final Logger log4j;
 
-    Log4jLoggrAdapter(Logger log4j) {
+    Log4jLoginator(Logger log4j) {
         this.log4j = requireNonNull(log4j);
     }
 
