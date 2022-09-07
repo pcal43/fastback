@@ -1,6 +1,5 @@
 package net.pcal.fastback;
 
-import net.pcal.fastback.ModContext.WorldContext;
 import net.pcal.fastback.commands.Commands;
 import net.pcal.fastback.tasks.BackupTask;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -21,9 +20,7 @@ public class LifecycleUtils {
         mctx.getLogger().info("Fastback initialized");
     }
 
-    public static void onWorldStart(final WorldContext world) {
-        final Path worldSaveDir = world.getWorldSaveDirectory();
-        final Loggr logger = world.getModContext().getLogger();
+    public static void onWorldStart(final Path worldSaveDir, Loggr logger) {
         final ModConfig modConfig;
         try {
             modConfig = ModConfig.loadForWorld(worldSaveDir, logger);
@@ -36,16 +33,14 @@ public class LifecycleUtils {
             return;
         }
         try {
-            WorldUtils.doWorldMaintenance(modConfig, world, logger);
+            WorldUtils.doWorldMaintenance(modConfig, worldSaveDir, logger);
         } catch (IOException | GitAPIException e) {
             logger.error("Unable to perform maintenance.  Backups will probably not work correctly", e);
         }
 
     }
 
-    public static void onWorldStop(final WorldContext world) {
-        final Loggr logger = world.getModContext().getLogger();
-        final Path worldSaveDir = world.getWorldSaveDirectory();
+    public static void onWorldStop(final Path worldSaveDir, Loggr logger) {
         final ModConfig modConfig;
         try {
             modConfig = ModConfig.loadForWorld(worldSaveDir, logger);

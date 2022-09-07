@@ -17,7 +17,6 @@ import java.util.*;
 import static java.nio.file.StandardCopyOption.*;
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.FileUtils.mkdirs;
-import static net.pcal.fastback.WorldUtils.WORLD_INFO_PATH;
 import static net.pcal.fastback.WorldUtils.getWorldUuid;
 import static net.pcal.fastback.ModConfig.Key.*;
 
@@ -146,9 +145,6 @@ public class PushUtils {
         final Path fupHome = Path.of(config.get(FILE_UPSTREAM_PATH)).resolve(uuid);
         final Path fupGitDir = fupHome.resolve("git");
         mkdirs(fupGitDir);
-        if (worldSaveDir.resolve(WORLD_INFO_PATH).toFile().exists()) {
-            Files.copy(worldSaveDir.resolve(WORLD_INFO_PATH), fupHome.resolve("world-info.properties"), REPLACE_EXISTING);
-        }
         Git git = Git.init().setBare(config.getBoolean(FILE_UPSTREAM_BARE)).setDirectory(fupGitDir.toFile()).call();
         final String rawConfig = config.get(FILE_UPSTREAM_GIT_CONFIG).replace(';', '\n');
         logger.debug("updating upstream git config");
@@ -182,8 +178,7 @@ public class PushUtils {
                 final URIish remoteUri = GitUtils.getRemoteUri(git, remoteName, logger);
                 logger.error("Remote at " + remoteUri + " is a backup target for a different world.");
                 logger.error("Please configure a new remote for backing up this world.");
-                logger.error("local =" + localUuid);
-                logger.error("remote =" + remoteWorldUuids);
+                logger.error("local: " + localUuid + ", remote: " + remoteWorldUuids);
                 return false;
             }
         }
