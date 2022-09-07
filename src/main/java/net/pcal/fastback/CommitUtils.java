@@ -26,6 +26,7 @@ public class CommitUtils {
         git = Git.init().setDirectory(worldSaveDir.toFile()).call();
         logger.debug("checkout");
         git.checkout().setOrphan(true).setName(newBranchName).call();
+        git.reset().call();
         logger.debug("status");
         final Status status = git.status().call();
 

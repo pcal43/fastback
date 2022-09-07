@@ -1,6 +1,7 @@
 package net.pcal.fastback;
 
 import net.pcal.fastback.ModContext.WorldContext;
+import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
@@ -10,6 +11,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -26,8 +28,11 @@ public class WorldUtils {
     public static final Path WORLD_INFO_PATH = Path.of("fastback/world-info.properties");
     private static final String WORLD_UUID_PROPERTY = "world.uuid";
 
-    private static final String GITIGNORE_RESOURCE = "world/fastback/dot-gitignore";
-    private static final Path GITIGNORE_PATH = Path.of("fastback/.gitignore");
+    private static final Iterable<Pair<String, Path>> WORLD_RESOURCES_TO_COPY = List.of(
+            Pair.of("world/fastback/dot-gitignore", Path.of("fastback/.gitignore")),
+            Pair.of("world/dot-gitignore", Path.of(".gitignore"))
+    );
+
 
     public static void doWorldMaintenance(final ModConfig config, final WorldContext server, final Loggr logger)
             throws IOException, GitAPIException {
@@ -37,7 +42,9 @@ public class WorldUtils {
         logger.debug("updating local git config");
         GitUtils.mergeGitConfig(git, rawConfig, logger);
         updateWorldInfo(server, logger);
-        writeResourceToFile(GITIGNORE_RESOURCE, worldSaveDir.resolve(GITIGNORE_PATH));
+        for (final Pair<String, Path> resource2path : WORLD_RESOURCES_TO_COPY) {
+            writeResourceToFile(resource2path.getLeft(), worldSaveDir.resolve(resource2path.getRight()));
+        }
         updateDefaultWorldConfig(worldSaveDir);
     }
 
