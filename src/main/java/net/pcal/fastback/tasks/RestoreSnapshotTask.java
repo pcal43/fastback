@@ -10,7 +10,7 @@ import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.BranchNameUtils.getSnapshotBranchName;
-import static net.pcal.fastback.WorldConfig.getWorldUuid;
+import static net.pcal.fastback.WorldConfig.WORLD_UUID_PATH;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class RestoreSnapshotTask extends Task {
@@ -42,23 +42,21 @@ public class RestoreSnapshotTask extends Task {
     }
 
     public void run() {
-        final String worldUuid;
-        try {
-            worldUuid = getWorldUuid(worldSaveDir);
-        } catch (IOException e) {
-            this.taskListener.error("Unable to determine world UUID.  See log for details.");
-            logger.error("Could not determine world-uuid.", e);
-            return;
-        }
-        final String branchName = getSnapshotBranchName(worldUuid, this.snapshotName);
+        setStarted();
+        final WorldConfig config;
+        final String branchName;
         try (final Git git = Git.open(this.worldSaveDir.toFile())) {
+            config = WorldConfig.load(worldSaveDir, git.getRepository().getConfig());
+            branchName = getSnapshotBranchName(config.worldUuid(), this.snapshotName);
             if (!GitUtils.isBranchExtant(git, branchName, logger)) {
                 taskListener.error("No such snapshot " + snapshotName);
                 return;
             }
         } catch (IOException | GitAPIException e) {
-            this.taskListener.error("An unexpected error occurred.  See log for details.");
+            this.taskListener.internalError();
             logger.error("Unexpected error looking up branch names", e);
+            setFailed();
+            return;
         }
 
         final Path targetDirectory;
@@ -67,24 +65,28 @@ public class RestoreSnapshotTask extends Task {
             String uri = "file://" + this.worldSaveDir.toAbsolutePath();
             taskListener.feedback("Restoring " + this.snapshotName + " to\n" + targetDirectory);
             try (Git git = Git.cloneRepository().setDirectory(targetDirectory.toFile()).
-                    setBranchesToClone(List.of("refs/heads/" + branchName)).setURI(uri).call()) {
+                    setBranchesToClone(List.of("refs/heads/" + branchName)).setBranch(branchName).setURI(uri).call()) {
             }
         } catch (Exception e) {
-            this.taskListener.error("An unexpected error occurred.  See log for details.");
-            logger.error("Restore of " + branchName + " failed.", e);
+            this.taskListener.internalError();
+            logger.error("Restoration clone of " + branchName + " failed.", e);
+            setFailed();
             return;
         }
-        if (this.doClean) {
+        if (config.isPostRestoreCleanupEnabled()) {
             try {
                 FileUtils.rmdir(targetDirectory.resolve(".git"));
-                FileUtils.rmdir(targetDirectory.resolve("fastback"));
+                FileUtils.rmdir(targetDirectory.resolve(WORLD_UUID_PATH));
             } catch (IOException e) {
                 this.taskListener.error("Restoration finished but an unexpected error " +
                         "occurred during cleanup.  See log for details.");
                 logger.error("Unexpected error cleaning restored snapshot", e);
+                setFailed();
+                return;
             }
         }
         taskListener.feedback("Restoration complete");
+        setCompleted();
     }
 
     private static Path getTargetDir(Path saveDir, String worldName, String snapshotName) {
@@ -99,7 +101,7 @@ public class RestoreSnapshotTask extends Task {
                 throw new IllegalStateException("wat i = " + i);
             }
         }
-        return base;
+        return candidate;
 
     }
 }
