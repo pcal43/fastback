@@ -157,11 +157,12 @@ public class PushTask extends Task {
      * setRemote(remoteName, fileUri, worldSaveDir);
      * }
      **/
-    private static void setRemote(String remoteName, URIish uri, final Path worldSaveDir) throws IOException, GitAPIException {
+    /**    private static void setRemote(String remoteName, URIish uri, final Path worldSaveDir) throws IOException, GitAPIException {
         final Git worldGit = Git.open(worldSaveDir.toFile());
         worldGit.remoteRemove().setRemoteName(remoteName).call();
         worldGit.remoteAdd().setName(remoteName).setUri(uri).call();
     }
+     **/
 
     private static boolean doUuidCheck(Git git, WorldConfig config, Loggr logger) throws GitAPIException, IOException {
         final Set<String> remoteWorldUuids = getWorldUuidsOnRemote(git, config.getRemoteName(), logger);
