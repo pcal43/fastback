@@ -15,6 +15,8 @@ public interface ModContext {
 
     ExecutorService getExecutorService();
 
+    Path getClientSavesDir();
+
     Path getWorldSaveDirectory(MinecraftServer server);
 
     String getWorldName(MinecraftServer server);

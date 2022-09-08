@@ -47,7 +47,12 @@ public class RestoreCommand {
         final String snapshotName = cc.getArgument("snapshot", String.class);
         final Path targetDirectory;
         try {
-            targetDirectory = Files.createTempDirectory("fastback-restore-");
+            final Path clientDir = this.ctx.getClientSavesDir();
+            if (clientDir != null) {
+                targetDirectory = clientDir;
+            } else {
+                targetDirectory = Files.createTempDirectory("fastback-restore-");
+            }
         } catch (IOException e) {
             return 0;
         }

@@ -4,6 +4,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModMetadata;
 import net.minecraft.SharedConstants;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.level.storage.LevelStorage;
@@ -47,6 +48,12 @@ class FabricModContext implements ModContext {
     @Override
     public ExecutorService getExecutorService() {
         return this.exs;
+    }
+
+    @Override
+    public Path getClientSavesDir() {
+        final MinecraftClient client = MinecraftClient.getInstance();
+        return client == null ? null : client.getLevelStorage().getSavesDirectory();
     }
 
     @Override
