@@ -32,7 +32,7 @@ public class EnableCommand {
         fastbackCmd.then(
                 literal("enable").executes(c::enableShutdown).then(
                         literal("remote").then(
-                                argument("remote-url", StringArgumentType.string()).
+                                argument("remote-url", StringArgumentType.greedyString()).
                                         executes(c::enableRemoteUrl))).then(
                         literal("remote").executes(c::enableRemote)).then(
                         literal("shutdown").executes(c::enableShutdown)));
