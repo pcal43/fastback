@@ -38,6 +38,8 @@ public record WorldConfig(
         return true;
     }
 
+    public boolean isPostRestoreCleanupEnabled() { return true; }
+
     private static final String REMOTE_NAME = "origin";
     private static final String CONFIG_SECTION = "fastback";
     private static final String CONFIG_BACKUP_ENABLED = "backup-enabled";
