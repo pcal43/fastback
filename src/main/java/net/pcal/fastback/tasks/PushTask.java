@@ -63,6 +63,7 @@ public class PushTask extends Task {
                     final String msg = "Skipping remote backup due to world mismatch.";
                     logger.error(msg);
                     listener.error(msg);
+                    super.setFailed();
                     return;
                 }
             }

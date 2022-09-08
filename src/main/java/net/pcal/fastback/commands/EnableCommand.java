@@ -16,6 +16,7 @@ import org.eclipse.jgit.lib.StoredConfig;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import static net.pcal.fastback.WorldUtils.doWorldMaintenance;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 
@@ -58,6 +59,7 @@ public class EnableCommand {
         final TaskListener taskListener = taskListener(cc);
         final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
         try (final Git git = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
+            doWorldMaintenance(worldSaveDir, logger); // FIXME handoff here could be cleaner
             final StoredConfig gitConfig = git.getRepository().getConfig();
             if (remoteUrl == null) {
                 final WorldConfig worldConfig = WorldConfig.load(worldSaveDir, gitConfig);
@@ -86,6 +88,7 @@ public class EnableCommand {
         final TaskListener taskListener = taskListener(cc);
         final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
         try (final Git git = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
+            doWorldMaintenance(worldSaveDir, logger); // FIXME handoff here could be cleaner
             final StoredConfig config = git.getRepository().getConfig();
             WorldConfig.setBackupEnabled(config, true);
             WorldConfig.setShutdownBackupEnabled(config, true);
