@@ -13,7 +13,8 @@ import static net.pcal.fastback.WorldConfig.ensureWorldHasUuid;
 public class WorldUtils {
 
     private static final Iterable<Pair<String, Path>> WORLD_RESOURCES_TO_COPY = List.of(
-            Pair.of("world/dot-gitignore", Path.of(".gitignore"))
+            Pair.of("world/dot-gitignore", Path.of(".gitignore")),
+            Pair.of("world/dot-gitattributes", Path.of(".gitattributes"))
     );
 
     public static void doWorldMaintenance(final Path worldSaveDir, final Loggr logger) throws IOException {
