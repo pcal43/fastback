@@ -36,12 +36,18 @@ public class NowCommand {
 
     private int now(CommandContext<ServerCommandSource> cc) {
         final MinecraftServer server = cc.getSource().getServer();
+        server.save(false, true, true); // suppressLogs, flush, force
         final TaskListener taskListener = taskListener(cc);
         final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
         try {
             final WorldConfig config = WorldConfig.load(worldSaveDir);
             if (config.isBackupEnabled()) {
-                new BackupTask(worldSaveDir, taskListener, logger).run();
+                try {
+                    this.ctx.enableWorldSaving(server, false);
+                    new BackupTask(worldSaveDir, taskListener, logger).run();
+                } finally {
+                    this.ctx.enableWorldSaving(server, true);
+                }
             } else {
                 taskListener.error("Backups are disabled.  Run '/backup enable' first.");
             }
