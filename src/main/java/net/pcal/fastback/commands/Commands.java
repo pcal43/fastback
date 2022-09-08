@@ -9,6 +9,7 @@ public class Commands {
 
     public static void registerCommands(final ModContext mctx, final String fastbackCommand) {
         final LiteralArgumentBuilder<ServerCommandSource> fastbackCmd = LiteralArgumentBuilder.literal(fastbackCommand);
+        EnableCommand.register(fastbackCmd, mctx);
         StatusCommand.register(fastbackCmd, mctx);
         RestoreCommand.register(fastbackCmd, mctx);
         ListCommand.register(fastbackCmd, mctx);
