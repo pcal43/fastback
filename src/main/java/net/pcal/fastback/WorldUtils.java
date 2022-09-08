@@ -30,6 +30,7 @@ public class WorldUtils {
             try (final Git git = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
                 final StoredConfig config = git.getRepository().getConfig();
                 config.setInt("core", null, "compression", 0);
+                config.setInt("pack", null, "window", 0);
                 config.save();
             } catch (GitAPIException e) {
                 logger.error("failed to do world maintenance", e);
@@ -39,6 +40,4 @@ public class WorldUtils {
             logger.debug("backups not enabled for world, skipping maintenance");
         }
     }
-
-
 }

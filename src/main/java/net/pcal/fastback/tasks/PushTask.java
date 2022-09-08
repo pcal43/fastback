@@ -66,9 +66,7 @@ public class PushTask extends Task {
                     return;
                 }
             }
-            final String msg = "Starting remote backup to " + pushUrl;
-            logger.info(msg);
-            listener.feedback(msg);
+            logger.info("starting push");
             if (worldConfig.isSmartPushEnabled()) {
                 doSmartPush(git, branchNameToPush,worldConfig, logger);
             } else {
