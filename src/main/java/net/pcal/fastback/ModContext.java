@@ -2,7 +2,6 @@ package net.pcal.fastback;
 
 import net.minecraft.server.MinecraftServer;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.ExecutorService;
 
@@ -20,4 +19,5 @@ public interface ModContext {
 
     String getWorldName(MinecraftServer server);
 
+    void enableWorldSaving(MinecraftServer mc, boolean enabled);
 }

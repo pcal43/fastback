@@ -5,6 +5,7 @@ import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModMetadata;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.level.storage.LevelStorage;
 import net.pcal.fastback.Loggr;
 import net.pcal.fastback.ModContext;
@@ -58,5 +59,12 @@ class FabricModContext implements ModContext {
     public String getWorldName(MinecraftServer server) {
         final LevelStorage.Session session = ((ServerAccessors) server).getSession();
         return session.getLevelSummary().getLevelInfo().getLevelName();
+    }
+
+    @Override
+    public void enableWorldSaving(MinecraftServer mc, boolean enabled) {
+        for (ServerWorld serverWorld : mc.getWorlds()) {
+            if (serverWorld != null) serverWorld.savingDisabled = !enabled;
+        }
     }
 }

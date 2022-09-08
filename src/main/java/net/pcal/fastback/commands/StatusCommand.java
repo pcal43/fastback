@@ -18,7 +18,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
+import static net.pcal.fastback.GitUtils.isGitRepo;
 import static net.pcal.fastback.commands.CommandTaskListener.taskListener;
+import static net.pcal.fastback.commands.Commands.FAILURE;
 
 public class StatusCommand {
 
@@ -39,7 +41,11 @@ public class StatusCommand {
         final MinecraftServer server = cc.getSource().getServer();
         final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
         final TaskListener tl = taskListener(cc);
-        WorldConfig config = null;
+        if (!isGitRepo(worldSaveDir)) {
+            tl.error("Run '/backup enable' to enable backups.");
+            return FAILURE;
+        }
+        final WorldConfig config;
         try {
             config = WorldConfig.load(worldSaveDir);
         } catch (IOException ex) {

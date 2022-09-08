@@ -7,6 +7,8 @@ import net.pcal.fastback.tasks.TaskListener;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import static net.pcal.fastback.GitUtils.isGitRepo;
+
 public class LifecycleUtils {
 
     public static void onMinecraftStart(final ModContext mctx) {
@@ -15,6 +17,10 @@ public class LifecycleUtils {
     }
 
     public static void onWorldStart(final Path worldSaveDir, Loggr logger) {
+        if (!isGitRepo(worldSaveDir)) {
+            logger.info("Backups not enabled; to enable, run '/backup enable'");
+            return;
+        }
         try {
             WorldUtils.doWorldMaintenance(worldSaveDir, logger);
         } catch (IOException e) {
@@ -23,6 +29,10 @@ public class LifecycleUtils {
     }
 
     public static void onWorldStop(final Path worldSaveDir, Loggr logger) {
+        if (!isGitRepo(worldSaveDir)) {
+            logger.info("Backups not enabled; to enable, run '/backup enable'");
+            return;
+        }
         try {
             final WorldConfig config = WorldConfig.load(worldSaveDir);
             if (config.isShutdownBackupEnabled()) {

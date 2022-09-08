@@ -2,16 +2,12 @@ package net.pcal.fastback;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.InvalidConfigurationException;
 import org.eclipse.jgit.api.errors.RefNotFoundException;
-import org.eclipse.jgit.errors.ConfigInvalidException;
 import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.URIish;
 
-import java.io.IOException;
-import java.net.URI;
+import java.io.File;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashSet;
@@ -72,26 +68,9 @@ public class GitUtils {
         }
     }
 
-//    public static void replaceGitConfig(Git git, String rawConfig, Logger logger) throws GitAPIException, IOException {
-//        debug(logger, "Setting git config: \n" + rawConfig);
-//        try {
-//            git.getRepository().getConfig().fromText(rawConfig);
-//        } catch (ConfigInvalidException e) {
-//            throw new InvalidConfigurationException("Invalid git config " + rawConfig, e);
-//        }
-//        git.getRepository().getConfig().save();
-//    }
-
-    // FIXME this is creating duplicate entries
-    public static void mergeGitConfig(Git git, String rawConfig, Loggr logger) throws GitAPIException, IOException {
-        final StoredConfig config = git.getRepository().getConfig();
-        rawConfig = config.toText() + "\n" + rawConfig;
-        logger.debug("Setting git config: \n" + rawConfig);
-        try {
-            config.fromText(rawConfig);
-        } catch (ConfigInvalidException e) {
-            throw new InvalidConfigurationException("Invalid git config " + rawConfig, e);
-        }
-        git.getRepository().getConfig().save();
+    public static boolean isGitRepo(Path worldSaveDir) {
+        final File dotGit = worldSaveDir.resolve(".git").toFile();
+        return dotGit.exists() && dotGit.isDirectory();
     }
+
 }

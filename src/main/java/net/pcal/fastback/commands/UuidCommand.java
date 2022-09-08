@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
+import static net.pcal.fastback.GitUtils.isGitRepo;
 import static net.pcal.fastback.commands.CommandTaskListener.taskListener;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
@@ -37,6 +38,10 @@ public class UuidCommand {
         final MinecraftServer server = cc.getSource().getServer();
         final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
         final TaskListener tl = taskListener(cc);
+        if (!isGitRepo(worldSaveDir)) {
+            tl.error("Run '/backup enable' to enable backups.");
+            return FAILURE;
+        }
         try {
             tl.feedback(WorldConfig.getWorldUuid(worldSaveDir));
         } catch (IOException e) {

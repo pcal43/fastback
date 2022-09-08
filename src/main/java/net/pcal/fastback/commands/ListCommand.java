@@ -7,11 +7,15 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.pcal.fastback.ModContext;
+import net.pcal.fastback.tasks.TaskListener;
 
 import java.nio.file.Path;
 import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
+import static net.pcal.fastback.GitUtils.isGitRepo;
+import static net.pcal.fastback.commands.CommandTaskListener.taskListener;
+import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.tasks.ListSnapshotsTask.*;
 
 public class ListCommand {
@@ -30,6 +34,11 @@ public class ListCommand {
     private int execute(final CommandContext<ServerCommandSource> cc) {
         final MinecraftServer server = cc.getSource().getServer();
         final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
+        if (!isGitRepo(worldSaveDir)) {
+            final TaskListener taskListener = taskListener(cc);
+            taskListener.error("No backups available for this world.  Run '/backup enable' to enable backups.");
+            return FAILURE;
+        }
         final Consumer<String> sink = message -> cc.getSource().sendFeedback(Text.literal(message), false);
         sink.accept("Local snapshots:");
         this.ctx.getExecutorService().execute(listSnapshotsForWorld(worldSaveDir, sink, ctx.getLogger()));

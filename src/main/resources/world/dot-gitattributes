@@ -1,0 +1,9 @@
+# treat everything as binaries
+* -diff -merge -text
+
+# ...with a few exceptions (that are unlikely to matter much, tbh).
+*.json diff merge text
+*.txt diff merge text
+*.properties diff merge text
+*.toml diff merge text
+*.yaml diff merge text
