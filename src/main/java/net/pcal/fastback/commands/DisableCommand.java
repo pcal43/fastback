@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
+import static net.pcal.fastback.GitUtils.isGitRepo;
 import static net.pcal.fastback.commands.CommandTaskListener.taskListener;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
@@ -38,6 +39,10 @@ public class DisableCommand {
         final TaskListener taskListener = taskListener(cc);
         final Loggr logger = this.ctx.getLogger();
         final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
+        if (!isGitRepo(worldSaveDir)) {
+            taskListener.feedback("Backups have never been enabled on this world.");
+            return SUCCESS;
+        }
         try (final Git git = Git.open(worldSaveDir.toFile())) {
             final StoredConfig config = git.getRepository().getConfig();
             WorldConfig.setBackupEnabled(config, false);

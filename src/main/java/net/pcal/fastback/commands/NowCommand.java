@@ -15,6 +15,7 @@ import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
+import static net.pcal.fastback.GitUtils.isGitRepo;
 import static net.pcal.fastback.commands.CommandTaskListener.taskListener;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
@@ -39,6 +40,10 @@ public class NowCommand {
         server.save(false, true, true); // suppressLogs, flush, force
         final TaskListener taskListener = taskListener(cc);
         final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
+        if (!isGitRepo(worldSaveDir)) {
+            taskListener.error("Run '/backup enable' to enable backups.");
+            return FAILURE;
+        }
         try {
             final WorldConfig config = WorldConfig.load(worldSaveDir);
             if (config.isBackupEnabled()) {
