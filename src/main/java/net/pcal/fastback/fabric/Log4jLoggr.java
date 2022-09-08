@@ -22,6 +22,11 @@ class Log4jLoggr implements Loggr {
     }
 
     @Override
+    public void error(Throwable t) {
+        this.log4j.error(t);
+    }
+
+    @Override
     public void error(String message, Throwable t) {
         this.log4j.error(message, t);
     }

@@ -10,7 +10,7 @@ import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.BranchNameUtils.getSnapshotBranchName;
-import static net.pcal.fastback.WorldUtils.getWorldUuid;
+import static net.pcal.fastback.WorldConfig.getWorldUuid;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class RestoreSnapshotTask extends Task {
