@@ -8,7 +8,6 @@ import static java.util.Objects.requireNonNull;
 
 class ServerTaskListener implements TaskListener {
 
-    private final boolean sendToOps = true; //??
     private final ServerCommandSource scs;
 
     ServerTaskListener(ServerCommandSource scs) {
@@ -17,7 +16,12 @@ class ServerTaskListener implements TaskListener {
 
     @Override
     public void feedback(String message) {
-        scs.sendFeedback(Text.literal(message), sendToOps);
+        scs.sendFeedback(Text.literal(message), false);
+    }
+
+    @Override
+    public void broadcast(String message) {
+        scs.sendFeedback(Text.literal(message), true);
     }
 
     @Override

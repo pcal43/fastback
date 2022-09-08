@@ -4,6 +4,8 @@ public interface TaskListener {
 
     void feedback(String message);
 
+    void broadcast(String message);
+
     void error(String message);
 
     default void internalError() {
@@ -15,6 +17,11 @@ public interface TaskListener {
 
         @Override
         public void feedback(String message) {
+
+        }
+
+        @Override
+        public void broadcast(String message) {
 
         }
 
