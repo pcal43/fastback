@@ -1,16 +1,21 @@
 package net.pcal.fastback.commands;
 
+import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.pcal.fastback.tasks.TaskListener;
 
 import static java.util.Objects.requireNonNull;
 
-class ServerTaskListener implements TaskListener {
+class CommandTaskListener implements TaskListener {
 
     private final ServerCommandSource scs;
 
-    ServerTaskListener(ServerCommandSource scs) {
+    public static TaskListener taskListener(CommandContext<ServerCommandSource> cc) {
+        return new CommandTaskListener(cc.getSource());
+    }
+
+    private CommandTaskListener(ServerCommandSource scs) {
         this.scs = requireNonNull(scs);
     }
 

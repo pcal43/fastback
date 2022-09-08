@@ -1,50 +1,49 @@
 package net.pcal.fastback.commands;
 
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
+import net.pcal.fastback.Loggr;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.tasks.RestoreSnapshotTask;
+import net.pcal.fastback.WorldConfig;
+import net.pcal.fastback.tasks.TaskListener;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.commands.CommandTaskListener.taskListener;
+import static net.pcal.fastback.commands.Commands.FAILURE;
+import static net.pcal.fastback.commands.Commands.SUCCESS;
 
-public class RestoreCommand {
+public class UuidCommand {
 
     public static void register(LiteralArgumentBuilder<ServerCommandSource> fastbackCmd, ModContext ctx) {
-        final RestoreCommand rc = new RestoreCommand(ctx);
-        fastbackCmd.then(CommandManager.literal("restore").
-                then(CommandManager.argument("snapshot", StringArgumentType.string()).
-                        executes(rc::execute)));
+        final UuidCommand rc = new UuidCommand(ctx);
+        fastbackCmd.then(CommandManager.literal("uuid").executes(rc::execute));
     }
 
     private final ModContext ctx;
+    private final Loggr logger;
 
-    private RestoreCommand(ModContext context) {
+    private UuidCommand(ModContext context) {
+        this.logger = requireNonNull(context.getLogger());
         this.ctx = requireNonNull(context);
     }
 
     private int execute(CommandContext<ServerCommandSource> cc) {
         final MinecraftServer server = cc.getSource().getServer();
-        final String worldName = this.ctx.getWorldName(server);
         final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
-        final String snapshotName = cc.getArgument("snapshot", String.class);
-        final Path targetDirectory;
+        final TaskListener tl = taskListener(cc);
         try {
-            targetDirectory = Files.createTempDirectory("fastback-restore-");
+            tl.feedback(WorldConfig.getWorldUuid(worldSaveDir));
         } catch (IOException e) {
-            return 0;
+            logger.error(e);
+            tl.internalError();
+            return FAILURE;
         }
-        this.ctx.getExecutorService().execute(
-                RestoreSnapshotTask.create(worldSaveDir, snapshotName, worldName,
-                        targetDirectory, taskListener(cc), this.ctx.getLogger()));
-        return 1;
+        return SUCCESS;
     }
 }

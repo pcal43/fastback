@@ -5,9 +5,10 @@ import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.tasks.TaskListener;
 
 import static java.util.Objects.requireNonNull;
+import static net.pcal.fastback.commands.CommandTaskListener.taskListener;
+import static net.pcal.fastback.commands.Commands.SUCCESS;
 
 public class VersionCommand {
 
@@ -23,8 +24,7 @@ public class VersionCommand {
     }
 
     private int execute(CommandContext<ServerCommandSource> cc) {
-        final TaskListener tl = new ServerTaskListener(cc.getSource());
-        tl.feedback(this.ctx.getFastbackModVersion());
-        return 1;
+        taskListener(cc).feedback(this.ctx.getFastbackModVersion());
+        return SUCCESS;
     }
 }

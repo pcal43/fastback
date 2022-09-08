@@ -34,6 +34,7 @@ public class BackupTask extends Task {
 
     public void run() {
         this.setStarted();
+        this.listener.feedback("Starting backup.");
         try (Git git = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
             final WorldConfig config;
             try {
@@ -50,6 +51,7 @@ public class BackupTask extends Task {
                 doCommit(git, config, newBranchName, logger);
                 final Duration dur = getSplitDuration();
                 logger.info("Local backup complete.  Elapsed time: " + dur.toMinutesPart() + "m " + dur.toSecondsPart() + "s");
+                this.listener.feedback("Local backup complete.");
             } catch (GitAPIException | IOException e) {
                 listener.internalError();
                 logger.error("Local backup failed.  Unable to commit changes.", e);
@@ -60,13 +62,16 @@ public class BackupTask extends Task {
             if (config.isRemoteBackupEnabled()) {
                 final PushTask push = new PushTask(worldSaveDir, newBranchName, this.listener, logger);
                 push.run();
-                final Duration dur = getSplitDuration();
-                logger.info("Remote backup complete.  Elapsed time: " + dur.toMinutesPart() + "m " + dur.toSecondsPart() + "s");
                 if (push.isFailed()) {
                     logger.error("Local backup succeeded but remote backup failed.");
+                    listener.error("Local backup succeeded but remote backup failed.  See log for details.");
+                } else {
+                    final Duration dur = getSplitDuration();
+                    logger.info("Remote backup complete.  Elapsed time: " + dur.toMinutesPart() + "m " + dur.toSecondsPart() + "s");
+                    this.listener.feedback("Remote backup to "+config.getRemotePushUri()+" complete.");
                 }
             } else {
-                logger.info("Remote backup disabled in config.");
+                logger.info("Remote backup disabled.");
             }
         } catch (GitAPIException e) {
             listener.internalError();
@@ -74,7 +79,6 @@ public class BackupTask extends Task {
             this.setFailed();
             return;
         }
-        this.listener.feedback("Backup complete.");
         this.setCompleted();
     }
 

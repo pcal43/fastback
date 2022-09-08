@@ -2,6 +2,7 @@ package net.pcal.fastback.fabric;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
+import net.fabricmc.loader.api.metadata.ModMetadata;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelStorage;
@@ -33,7 +34,8 @@ class FabricModContext implements ModContext {
         if (optionalModContainer.isEmpty()) {
             throw new IllegalStateException("Could not find loader for " + MOD_ID);
         }
-        return optionalModContainer.get().getMetadata().getVersion().toString();
+        final ModMetadata m = optionalModContainer.get().getMetadata();
+        return m.getName() + " " + m.getVersion();
     }
 
     @Override
