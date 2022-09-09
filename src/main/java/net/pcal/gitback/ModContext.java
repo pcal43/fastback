@@ -2,6 +2,7 @@ package net.pcal.gitback;
 
 import net.minecraft.server.MinecraftServer;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.ExecutorService;
 
@@ -17,7 +18,7 @@ public interface ModContext {
 
     ExecutorService getExecutorService();
 
-    Path getClientSavesDir();
+    Path getRestoresDir() throws IOException;
 
     Path getWorldSaveDirectory(MinecraftServer server);
 

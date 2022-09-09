@@ -14,16 +14,20 @@ import net.pcal.gitback.fabric.mixins.ServerAccessors;
 import net.pcal.gitback.fabric.mixins.SessionAccessors;
 import org.apache.logging.log4j.LogManager;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import static java.nio.file.Files.createTempDirectory;
 
 class FabricModContext implements ModContext {
 
     private static final String MOD_ID = "gitback";
     private final Loggr logger = new Log4jLoggr(LogManager.getLogger(MOD_ID));
     private final ExecutorService exs = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    private Path tempRestoresDirectory = null;
 
     @Override
     public String getMinecraftVersion() {
@@ -56,9 +60,16 @@ class FabricModContext implements ModContext {
     }
 
     @Override
-    public Path getClientSavesDir() {
+    public Path getRestoresDir() throws IOException {
         final MinecraftClient client = MinecraftClient.getInstance();
-        return client == null ? null : client.getLevelStorage().getSavesDirectory();
+        if (client != null) {
+            return client.getLevelStorage().getSavesDirectory();
+        } else {
+            if (tempRestoresDirectory == null) {
+                tempRestoresDirectory = createTempDirectory(MOD_ID+"-restore");
+            }
+            return tempRestoresDirectory;
+        }
     }
 
     @Override

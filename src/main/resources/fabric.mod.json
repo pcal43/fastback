@@ -15,7 +15,7 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.pcal.gitback.fabric.FabricFastbackInitializer"
+      "net.pcal.gitback.fabric.GitbackInitializer"
     ]
   },
   "mixins": [

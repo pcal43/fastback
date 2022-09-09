@@ -19,7 +19,7 @@ import static java.util.Objects.requireNonNull;
 public class GitUtils {
 
 //    public static Git createTempRepo(Git original, Logger logger) throws IOException, GitAPIException {
-//        final Path tempDir = Files.createTempDirectory("fastback-temp");
+//        final Path tempDir = Files.createTempDirectory("gitback-temp");
 //        debug(logger, "Creating temp repo at "+tempDir);
 //        tempDir.toFile().mkdirs();
 //        final Git tempGit = Git.init().setDirectory(tempDir.toFile()).call();

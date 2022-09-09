@@ -28,9 +28,9 @@ import static net.pcal.gitback.commands.Commands.executeStandard;
 
 public class CreateFileRemoteCommand {
 
-    public static void register(final LiteralArgumentBuilder<ServerCommandSource> fastbackCmd, final ModContext ctx) {
+    public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         final CreateFileRemoteCommand c = new CreateFileRemoteCommand(ctx);
-        fastbackCmd.then(
+        argb.then(
                 literal("create-remote").then(
                         argument("file-path", StringArgumentType.greedyString()).
                                 executes(c::setFileRemote))

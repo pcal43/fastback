@@ -8,16 +8,13 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.gitback.ModContext;
 import net.pcal.gitback.tasks.RestoreSnapshotTask;
-import net.pcal.gitback.tasks.TaskListener;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.gitback.GitUtils.isGitRepo;
 import static net.pcal.gitback.commands.CommandTaskListener.taskListener;
-import static net.pcal.gitback.commands.Commands.FAILURE;
+import static net.pcal.gitback.commands.Commands.SUCCESS;
+import static net.pcal.gitback.commands.Commands.executeStandard;
 
 public class RestoreCommand {
 
@@ -35,29 +32,16 @@ public class RestoreCommand {
     }
 
     private int execute(CommandContext<ServerCommandSource> cc) {
-        final MinecraftServer server = cc.getSource().getServer();
-        final String worldName = this.ctx.getWorldName(server);
-        final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
-        if (!isGitRepo(worldSaveDir)) {
-            final TaskListener taskListener = taskListener(cc);
-            taskListener.error("No backups available for this world.  Run '/backup enable' to enable backups.");
-            return FAILURE;
-        }
-        final String snapshotName = cc.getArgument("snapshot", String.class);
-        final Path targetDirectory;
-        try {
-            final Path clientDir = this.ctx.getClientSavesDir();
-            if (clientDir != null) {
-                targetDirectory = clientDir;
-            } else {
-                targetDirectory = Files.createTempDirectory("fastback-restore-");
-            }
-        } catch (IOException e) {
-            return 0;
-        }
-        this.ctx.getExecutorService().execute(
-                RestoreSnapshotTask.create(worldSaveDir, snapshotName, worldName,
-                        targetDirectory, taskListener(cc), this.ctx.getLogger()));
-        return 1;
+        return executeStandard(this.ctx, cc, (gitc, wc, tali) -> {
+            final String snapshotName = cc.getArgument("snapshot", String.class);
+            final Path restoresDir = this.ctx.getRestoresDir();
+            final MinecraftServer server = cc.getSource().getServer();
+            final String worldName = this.ctx.getWorldName(server);
+            final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
+            this.ctx.getExecutorService().execute(
+                    RestoreSnapshotTask.create(worldSaveDir, snapshotName, worldName,
+                            restoresDir, taskListener(cc), this.ctx.getLogger()));
+            return SUCCESS;
+        });
     }
 }

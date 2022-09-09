@@ -1,6 +1,6 @@
 package net.pcal.gitback;
 
-import net.pcal.gitback.fabric.FabricFastbackInitializer;
+import net.pcal.gitback.fabric.GitbackInitializer;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -32,7 +32,7 @@ public class FileUtils {
 
     public static void writeResourceToFile(String resourcePath, Path targetFile) throws IOException {
         final String rawResource;
-        try (InputStream in = FabricFastbackInitializer.class.getClassLoader().getResourceAsStream(resourcePath)) {
+        try (InputStream in = GitbackInitializer.class.getClassLoader().getResourceAsStream(resourcePath)) {
             if (in == null) {
                 throw new FileNotFoundException("Unable to load resource " + resourcePath); // wat
             }

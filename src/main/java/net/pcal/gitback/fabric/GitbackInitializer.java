@@ -4,7 +4,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.pcal.gitback.LifecycleUtils;
 
-public class FabricFastbackInitializer implements ModInitializer {
+public class GitbackInitializer implements ModInitializer {
 
     // ===================================================================================
     // ModInitializer implementation
