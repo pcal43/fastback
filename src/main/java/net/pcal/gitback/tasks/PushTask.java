@@ -2,8 +2,9 @@ package net.pcal.gitback.tasks;
 
 import net.pcal.gitback.BranchNameUtils;
 import net.pcal.gitback.GitUtils;
+import net.pcal.gitback.progress.LoggingProgressMonitor;
 import net.pcal.gitback.Loggr;
-import net.pcal.gitback.ScaledProgressMonitor;
+import net.pcal.gitback.progress.IncrementalProgressMonitor;
 import net.pcal.gitback.WorldConfig;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -90,11 +91,7 @@ public class PushTask extends Task {
         final String remoteName = worldConfig.getRemoteName();
         final String lastPushedBranchName = getLastPushedBranchName(worldConfig.worldUuid());
 
-        ProgressMonitor pm = new ScaledProgressMonitor(
-                (name, completed) -> {
-                    logger.info(name + " " + (completed*5) + "%");
-                },
-                20);
+        final ProgressMonitor pm = new IncrementalProgressMonitor(new LoggingProgressMonitor(logger), 100);
 
         if (!GitUtils.isBranchExtant(git, lastPushedBranchName, logger)) {
             logger.warn("** This appears to be the first time this world has been pushed.");
