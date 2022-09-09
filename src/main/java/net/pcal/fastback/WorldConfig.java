@@ -67,7 +67,9 @@ public record WorldConfig(
         return true;
     }
 
-    public boolean isPostRestoreCleanupEnabled() { return true; }
+    public boolean isPostRestoreCleanupEnabled() {
+        return true;
+    }
 
     // REMEMBER TO CALL config.save() YOURSELF!!
 

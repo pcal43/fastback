@@ -70,7 +70,7 @@ public class PushTask extends Task {
             }
             logger.info("starting push");
             if (worldConfig.isSmartPushEnabled()) {
-                doSmartPush(git, branchNameToPush,worldConfig, logger);
+                doSmartPush(git, branchNameToPush, worldConfig, logger);
             } else {
                 doNaivePush(git, branchNameToPush, worldConfig, logger);
             }

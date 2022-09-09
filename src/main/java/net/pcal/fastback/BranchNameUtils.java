@@ -48,6 +48,6 @@ public class BranchNameUtils {
     }
 
     public static String getTempBranchName(String uniqueName) {
-        return "temp/"+uniqueName;
+        return "temp/" + uniqueName;
     }
 }

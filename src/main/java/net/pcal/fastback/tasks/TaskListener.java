@@ -17,7 +17,6 @@ public interface TaskListener {
     }
 
 
-
     public static class NoListener implements TaskListener {
 
         @Override

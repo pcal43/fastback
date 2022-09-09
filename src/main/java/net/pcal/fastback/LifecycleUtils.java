@@ -40,7 +40,7 @@ public class LifecycleUtils {
             } else {
                 logger.info("Shutdown backups disabled.");
             }
-        } catch(IOException e) {
+        } catch (IOException e) {
             logger.error("Shutdown backup failed.", e);
         }
     }
