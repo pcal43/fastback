@@ -7,8 +7,8 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.commands.CommandTaskListener.taskListener;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
+import static net.pcal.fastback.commands.Commands.executeStandard;
 
 public class VersionCommand {
 
@@ -24,7 +24,9 @@ public class VersionCommand {
     }
 
     private int execute(CommandContext<ServerCommandSource> cc) {
-        taskListener(cc).feedback(this.ctx.getFastbackModVersion());
-        return SUCCESS;
+        return executeStandard(this.ctx, cc, (gitc, wc, tali) -> {
+            tali.feedback(this.ctx.getFastbackModVersion());
+            return SUCCESS;
+        });
     }
 }

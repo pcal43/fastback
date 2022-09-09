@@ -45,12 +45,13 @@ abstract public class Task implements Runnable {
     public boolean isFailed() {
         return this.state == FAILED;
     }
+
     public boolean isCompleted() {
         return this.state == COMPLETED;
     }
 
     public Duration getSplitDuration() {
-        switch(this.state) {
+        switch (this.state) {
             case COMPLETED:
             case FAILED:
                 return Duration.ofMillis(this.endTime - this.splitStartTime);
@@ -60,7 +61,7 @@ abstract public class Task implements Runnable {
                 this.splitStartTime = now;
                 return out;
         }
-        throw new IllegalStateException("invalid state "+this.state);
+        throw new IllegalStateException("invalid state " + this.state);
     }
 
     public Duration getDuration() {
@@ -90,6 +91,7 @@ abstract public class Task implements Runnable {
         NEW(Set.of(STARTED));
 
         private final Collection<TaskState> validTransistions;
+
         TaskState(Collection<TaskState> validTransistions) {
             this.validTransistions = requireNonNull(validTransistions);
         }

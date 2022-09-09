@@ -14,7 +14,8 @@ import org.eclipse.jgit.transport.URIish;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.BranchNameUtils.getLastPushedBranchName;
@@ -41,7 +42,7 @@ public class PushTask extends Task {
         super.setStarted();
         try (final Git git = Git.open(this.worldSaveDir.toFile())) {
             final WorldConfig worldConfig = WorldConfig.load(worldSaveDir, git.getRepository().getConfig());
-            final String pushUrl = worldConfig.getRemotePushUri();
+            final String pushUrl = worldConfig.getRemotePushUrl();
             if (pushUrl == null) {
                 final String msg = "Skipping remote backup because no remote url has been configured.";
                 this.logger.warn(msg);
@@ -69,7 +70,7 @@ public class PushTask extends Task {
             }
             logger.info("starting push");
             if (worldConfig.isSmartPushEnabled()) {
-                doSmartPush(git, branchNameToPush,worldConfig, logger);
+                doSmartPush(git, branchNameToPush, worldConfig, logger);
             } else {
                 doNaivePush(git, branchNameToPush, worldConfig, logger);
             }
@@ -83,11 +84,8 @@ public class PushTask extends Task {
         }
     }
 
-
     private static void doSmartPush(final Git git, final String branchNameToPush, final WorldConfig worldConfig, final Loggr logger) throws GitAPIException, IOException {
         final String remoteName = worldConfig.getRemoteName();
-        final boolean tempBranchCleanup = worldConfig.isTempBranchCleanupEnabled();
-        final boolean remoteTempBranchCleanup = worldConfig.isFileRemoteTempBranchCleanupEnabled();
         final String lastPushedBranchName = getLastPushedBranchName(worldConfig.worldUuid());
         if (!GitUtils.isBranchExtant(git, lastPushedBranchName, logger)) {
             logger.warn("** This appears to be the first time this world has been pushed.");
@@ -106,11 +104,11 @@ public class PushTask extends Task {
             git.push().setRemote(remoteName).setRefSpecs(new RefSpec(tempBranchName + ":" + tempBranchName), new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
             logger.debug("checkout restore");
             git.checkout().setName(branchNameToPush).call();
-            if (tempBranchCleanup) {
+            if (worldConfig.isTempBranchCleanupEnabled()) {
                 logger.debug("deleting local temp branch " + tempBranchName);
                 git.branchDelete().setForce(true).setBranchNames(tempBranchName).call();
             }
-            if (remoteTempBranchCleanup) {
+            if (worldConfig.isRemoteTempBranchCleanupEnabled()) {
                 final String remoteTempBranch = "refs/heads/" + tempBranchName;
                 logger.debug("deleting remote temp branch " + remoteTempBranch);
                 final RefSpec deleteRemoteBranchSpec = new RefSpec().setSource(null).setDestination(remoteTempBranch);
@@ -128,40 +126,6 @@ public class PushTask extends Task {
         git.push().setRemote(remoteName).setRefSpecs(new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
         logger.debug(() -> "checking out " + branchNameToPush);
     }
-
-    /**
-     * private static void configureRemoteUpstream(final ModConfig modConfig, final Path worldSaveDir) throws IOException, GitAPIException, URISyntaxException {
-     * final String remoteName = requireNonNull(modConfig.get(PUSH_REMOTE_NAME));
-     * final String remoteUrl = modConfig.get(REMOTE_UPSTREAM_URI);
-     * if (remoteUrl == null || remoteUrl.isEmpty()) {
-     * throw new IOException("Remote push is enabled but " + REMOTE_UPSTREAM_URI + " is not configured.");
-     * }
-     * final URIish remoteUri = new URIish().setRawPath(remoteUrl);
-     * setRemote(remoteName, remoteUri, worldSaveDir);
-     * }
-     * <p>
-     * private static void configureFileUpstream(final ModConfig config, final Path worldSaveDir, Loggr logger) throws IOException, GitAPIException {
-     * // ensure a git repository exists to push at the configured path
-     * final String uuid = getWorldUuid(worldSaveDir);
-     * final Path fupHome = Path.of(config.get(FILE_UPSTREAM_PATH)).resolve(uuid);
-     * final Path fupGitDir = fupHome.resolve("git");
-     * mkdirs(fupGitDir);
-     * Git git = Git.init().setBare(config.getBoolean(FILE_UPSTREAM_BARE)).setDirectory(fupGitDir.toFile()).call();
-     * final String rawConfig = config.get(FILE_UPSTREAM_GIT_CONFIG).replace(';', '\n');
-     * logger.debug("updating upstream git config");
-     * GitUtils.mergeGitConfig(git, rawConfig, logger);
-     * // configure the world save git dir the push to it
-     * final String remoteName = config.get(PUSH_REMOTE_NAME);
-     * final URIish fileUri = new URIish().setScheme("file").setPath(fupGitDir.toString());
-     * setRemote(remoteName, fileUri, worldSaveDir);
-     * }
-     **/
-    /**    private static void setRemote(String remoteName, URIish uri, final Path worldSaveDir) throws IOException, GitAPIException {
-        final Git worldGit = Git.open(worldSaveDir.toFile());
-        worldGit.remoteRemove().setRemoteName(remoteName).call();
-        worldGit.remoteAdd().setName(remoteName).setUri(uri).call();
-    }
-     **/
 
     private static boolean doUuidCheck(Git git, WorldConfig config, Loggr logger) throws GitAPIException, IOException {
         final Set<String> remoteWorldUuids = getWorldUuidsOnRemote(git, config.getRemoteName(), logger);
@@ -184,8 +148,7 @@ public class PushTask extends Task {
         return true;
     }
 
-    //FIXME move this
-    public static Set<String> getWorldUuidsOnRemote(Git worldGit, String remoteName, Loggr logger) throws GitAPIException {
+    private static Set<String> getWorldUuidsOnRemote(Git worldGit, String remoteName, Loggr logger) throws GitAPIException {
         final Set<String> remoteBranchNames = GitUtils.getRemoteBranchNames(worldGit, remoteName, logger);
         final Set<String> out = new HashSet<>();
         for (String branchName : remoteBranchNames) {

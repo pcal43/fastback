@@ -14,31 +14,10 @@ public record WorldConfig(
         boolean isBackupEnabled,
         boolean isShutdownBackupEnabled,
         boolean isRemoteBackupEnabled,
-        String getRemotePushUri) {
+        String getRemotePushUrl) {
 
     public static final String WORLD_UUID_PATH = "world.uuid";
 
-    public String getRemoteName() {
-        return REMOTE_NAME;
-    }
-
-    public boolean isUuidCheckEnabled() {
-        return true;
-    }
-
-    public boolean isTempBranchCleanupEnabled() {
-        return true;
-    }
-
-    public boolean isFileRemoteTempBranchCleanupEnabled() {
-        return true;
-    }
-
-    public boolean isSmartPushEnabled() {
-        return true;
-    }
-
-    public boolean isPostRestoreCleanupEnabled() { return true; }
 
     private static final String REMOTE_NAME = "origin";
     private static final String CONFIG_SECTION = "fastback";
@@ -60,6 +39,36 @@ public record WorldConfig(
                 gitConfig.getBoolean(CONFIG_SECTION, null, CONFIG_REMOTE_BACKUP_ENABLED, false),
                 gitConfig.getString("remote", REMOTE_NAME, "url")
         );
+    }
+
+    // THESE ARE EFFECTIVELY CONSTANTS.  HERE BECAUSE WE MIGHT NEED TO MAKE SOME OF THEM CONFIGURABLE SOMEDAY.
+
+    public String getRemoteName() {
+        return REMOTE_NAME;
+    }
+
+    public boolean isUuidCheckEnabled() {
+        return true;
+    }
+
+    public boolean isTempBranchCleanupEnabled() {
+        return true;
+    }
+
+    public boolean isRemoteTempBranchCleanupEnabled() {
+        return true;
+    }
+
+    public boolean isFileRemoteBare() {
+        return true;
+    }
+
+    public boolean isSmartPushEnabled() {
+        return true;
+    }
+
+    public boolean isPostRestoreCleanupEnabled() {
+        return true;
     }
 
     // REMEMBER TO CALL config.save() YOURSELF!!

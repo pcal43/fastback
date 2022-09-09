@@ -12,6 +12,9 @@ public interface TaskListener {
         error("An unexpected error occurred. See log for details.");
     }
 
+    default void backupsNotEnabled() {
+        error("Backups are not enabled on this world.  Run '/backup enable'");
+    }
 
 
     public static class NoListener implements TaskListener {
