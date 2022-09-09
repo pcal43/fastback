@@ -34,7 +34,4 @@ ide:
 
 .PHONY: pr
 pr:
-	firefox https://github.com/pcal43/fastback/pulls
-
-
-
+	firefox https://github.com/pcal43/gitback/pulls
