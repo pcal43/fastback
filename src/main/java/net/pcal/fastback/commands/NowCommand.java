@@ -36,30 +36,37 @@ public class NowCommand {
     }
 
     private int now(CommandContext<ServerCommandSource> cc) {
-        final MinecraftServer server = cc.getSource().getServer();
-        server.save(false, true, true); // suppressLogs, flush, force
         final TaskListener taskListener = taskListener(cc);
-        final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
-        if (!isGitRepo(worldSaveDir)) {
-            taskListener.error("Run '/backup enable' to enable backups.");
-            return FAILURE;
-        }
         try {
-            final WorldConfig config = WorldConfig.load(worldSaveDir);
-            if (config.isBackupEnabled()) {
-                try {
-                    this.ctx.enableWorldSaving(server, false);
-                    new BackupTask(worldSaveDir, taskListener, logger).run();
-                } finally {
-                    this.ctx.enableWorldSaving(server, true);
-                }
-            } else {
-                taskListener.error("Backups are disabled.  Run '/backup enable' first.");
+            final MinecraftServer server = cc.getSource().getServer();
+            server.save(false, true, true); // suppressLogs, flush, force
+
+            final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
+            if (!isGitRepo(worldSaveDir)) {
+                taskListener.error("Run '/backup enable' to enable backups.");
+                return FAILURE;
             }
-            return SUCCESS;
-        } catch (IOException e) {
+            try {
+                final WorldConfig config = WorldConfig.load(worldSaveDir);
+                if (config.isBackupEnabled()) {
+                    try {
+                        this.ctx.enableWorldSaving(server, false);
+                        new BackupTask(worldSaveDir, taskListener, logger).run();
+                    } finally {
+                        this.ctx.enableWorldSaving(server, true);
+                    }
+                } else {
+                    taskListener.error("Backups are disabled.  Run '/backup enable' first.");
+                }
+                return SUCCESS;
+            } catch (IOException e) {
+                taskListener.internalError();
+                logger.error("Shutdown backup failed.", e);
+                return FAILURE;
+            }
+        } catch (Exception e) {
             taskListener.internalError();
-            logger.error("Shutdown backup failed.", e);
+            logger.error(e);
             return FAILURE;
         }
     }

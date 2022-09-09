@@ -17,6 +17,8 @@ public class Commands {
         StatusCommand.register(fastbackCmd, mctx);
         RestoreCommand.register(fastbackCmd, mctx);
         ListCommand.register(fastbackCmd, mctx);
+        RemoteCommand.register(fastbackCmd, mctx);
+        ShutdownCommand.register(fastbackCmd, mctx);
         UuidCommand.register(fastbackCmd, mctx);
         VersionCommand.register(fastbackCmd, mctx);
         NowCommand.register(fastbackCmd, mctx);

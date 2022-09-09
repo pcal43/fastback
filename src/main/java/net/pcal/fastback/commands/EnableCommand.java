@@ -16,12 +16,12 @@ import org.eclipse.jgit.lib.StoredConfig;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import static net.pcal.fastback.GitUtils.isGitRepo;
 import static net.pcal.fastback.WorldUtils.doWorldMaintenance;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 
 import static java.util.Objects.requireNonNull;
-import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.CommandTaskListener.taskListener;
 
@@ -30,12 +30,7 @@ public class EnableCommand {
     public static void register(final LiteralArgumentBuilder<ServerCommandSource> fastbackCmd, final ModContext ctx) {
         final EnableCommand c = new EnableCommand(ctx);
         fastbackCmd.then(
-                literal("enable").executes(c::enableShutdown).then(
-                        literal("remote").then(
-                                argument("remote-url", StringArgumentType.greedyString()).
-                                        executes(c::enableRemoteUrl))).then(
-                        literal("remote").executes(c::enableRemote)).then(
-                        literal("shutdown").executes(c::enableShutdown)));
+                literal("enable").executes(c::enable));
     }
 
     private final ModContext ctx;
@@ -46,55 +41,26 @@ public class EnableCommand {
         this.logger = ctx.getLogger();
     }
 
-    private int enableRemote(final CommandContext<ServerCommandSource> cc) {
-        return internal_enableRemote(cc, null);
-    }
-
-    private int enableRemoteUrl(final CommandContext<ServerCommandSource> cc) {
-        return internal_enableRemote(cc, requireNonNull(cc.getArgument("remote-url", String.class)));
-    }
-
-    private int internal_enableRemote(final CommandContext<ServerCommandSource> cc, String remoteUrl) {
+    private int enable(final CommandContext<ServerCommandSource> cc) {
         final MinecraftServer server = cc.getSource().getServer();
         final TaskListener taskListener = taskListener(cc);
         final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
         try (final Git git = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
-            doWorldMaintenance(worldSaveDir, logger); // FIXME handoff here could be cleaner
-            final StoredConfig gitConfig = git.getRepository().getConfig();
-            if (remoteUrl == null) {
-                final WorldConfig worldConfig = WorldConfig.load(worldSaveDir, gitConfig);
-                remoteUrl = worldConfig.getRemotePushUri();
-                if (remoteUrl == null) {
-                    taskListener.error("Please specify a remote URL");
-                    return FAILURE;
-                }
-            } else {
-                WorldConfig.setRemoteUrl(gitConfig, remoteUrl);
+            if (!isGitRepo(worldSaveDir)) {
+                doWorldMaintenance(worldSaveDir, logger); // FIXME handoff of git instance could be cleaner
             }
-            WorldConfig.setBackupEnabled(gitConfig, true);
-            WorldConfig.setRemoteBackupEnabled(gitConfig, true);
-            gitConfig.save();
-            taskListener.feedback("Enabled remote backups to " + remoteUrl);
-            return SUCCESS;
-        } catch (GitAPIException | IOException e) {
-            taskListener.internalError();
-            logger.error("Error enabling remote backups", e);
-            return FAILURE;
-        }
-    }
-
-    private int enableShutdown(final CommandContext<ServerCommandSource> cc) {
-        final MinecraftServer server = cc.getSource().getServer();
-        final TaskListener taskListener = taskListener(cc);
-        final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
-        try (final Git git = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
-            doWorldMaintenance(worldSaveDir, logger); // FIXME handoff here could be cleaner
             final StoredConfig config = git.getRepository().getConfig();
-            WorldConfig.setBackupEnabled(config, true);
-            WorldConfig.setShutdownBackupEnabled(config, true);
-            config.save();
-            taskListener.feedback("Enabled automatic local backups on world shutdown.");
-            return SUCCESS;
+            final WorldConfig worldConfig = WorldConfig.load(worldSaveDir, config);
+            if (worldConfig.isBackupEnabled() && worldConfig.isShutdownBackupEnabled()) {
+                taskListener.error("Backups already enabled.");
+                return FAILURE;
+            } else {
+                WorldConfig.setBackupEnabled(config, true);
+                WorldConfig.setShutdownBackupEnabled(config, true);
+                config.save();
+                taskListener.feedback("Enabled automatic local backups on world shutdown.");
+                return SUCCESS;
+            }
         } catch (GitAPIException | IOException e) {
             taskListener.internalError();
             logger.error("Error enabling backups", e);
