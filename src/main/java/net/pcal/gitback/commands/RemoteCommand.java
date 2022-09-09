@@ -20,10 +20,10 @@ public class RemoteCommand {
         final RemoteCommand c = new RemoteCommand(ctx);
         argb.then(
                 literal("remote").executes(c::showRemote).then(
-                        argument("remote-url", StringArgumentType.greedyString()).
-                                executes(c::setRemoteUrl)).then(
                         literal("enable").executes(c::enable)).then(
-                        literal("disable").executes(c::disable))
+                        literal("disable").executes(c::disable)).then(
+                        argument("remote-url", StringArgumentType.greedyString()).
+                                executes(c::setRemoteUrl))
         );
     }
 
@@ -56,7 +56,6 @@ public class RemoteCommand {
 
     private int enable(final CommandContext<ServerCommandSource> cc) {
         return executeStandard(this.ctx, cc, (gitc, wc, tali) -> {
-            final String newUrl = cc.getArgument("remote-url", String.class);
             final String currentUrl = wc.getRemotePushUrl();
             final boolean currentEnabled = wc.isRemoteBackupEnabled();
             if (currentUrl == null) {
@@ -64,11 +63,12 @@ public class RemoteCommand {
                 tali.feedback("Run '/backup remote <remote-url>'");
                 return FAILURE;
             } else if (currentEnabled) {
-                tali.feedback("Remote backups are already enabled to:");
-                tali.feedback(newUrl);
+                tali.error("Remote backups are already enabled.");
                 return FAILURE;
             } else {
-                WorldConfig.setRemoteBackupEnabled(gitc, false);
+                tali.feedback("Remote backups enabled to:");
+                tali.feedback(currentUrl);
+                WorldConfig.setRemoteBackupEnabled(gitc, true);
                 gitc.save();
                 return SUCCESS;
             }
