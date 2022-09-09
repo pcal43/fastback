@@ -3,26 +3,16 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.Loggr;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
-import net.pcal.fastback.tasks.TaskListener;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.StoredConfig;
-
-import java.io.IOException;
-import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.GitUtils.isGitRepo;
-import static net.pcal.fastback.commands.CommandTaskListener.taskListener;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
+import static net.pcal.fastback.commands.Commands.executeStandard;
 
 public class RemoteCommand {
 
@@ -38,17 +28,15 @@ public class RemoteCommand {
     }
 
     private final ModContext ctx;
-    private final Loggr logger;
 
     private RemoteCommand(ModContext context) {
         this.ctx = requireNonNull(context);
-        this.logger = ctx.getLogger();
     }
 
     private int showRemote(final CommandContext<ServerCommandSource> cc) {
-        return execute(cc, (gitConfig, worldConfig, tali) -> {
-            final String remoteUrl = worldConfig.getRemotePushUrl();
-            final boolean enabled = worldConfig.isRemoteBackupEnabled();
+        return executeStandard(this.ctx, cc, (gitc, wc, tali) -> {
+            final String remoteUrl = wc.getRemotePushUrl();
+            final boolean enabled = wc.isRemoteBackupEnabled();
             if (enabled && remoteUrl != null) {
                 tali.feedback("Remote backups are enabled to:");
                 tali.feedback(remoteUrl);
@@ -67,96 +55,70 @@ public class RemoteCommand {
     }
 
     private int enable(final CommandContext<ServerCommandSource> cc) {
-        return execute(cc, (gitConfig, worldConfig, taskListener) -> {
+        return executeStandard(this.ctx, cc, (gitc, wc, tali) -> {
             final String newUrl = cc.getArgument("remote-url", String.class);
-            final String currentUrl = worldConfig.getRemotePushUrl();
-            final boolean currentEnabled = worldConfig.isRemoteBackupEnabled();
+            final String currentUrl = wc.getRemotePushUrl();
+            final boolean currentEnabled = wc.isRemoteBackupEnabled();
             if (currentUrl == null) {
-                taskListener.error("No remote URL is set.");
-                taskListener.feedback("Run '/backup remote <remote-url>'");
+                tali.error("No remote URL is set.");
+                tali.feedback("Run '/backup remote <remote-url>'");
                 return FAILURE;
             } else if (currentEnabled) {
-                taskListener.feedback("Remote backups are already enabled to:");
-                taskListener.feedback(newUrl);
+                tali.feedback("Remote backups are already enabled to:");
+                tali.feedback(newUrl);
                 return FAILURE;
             } else {
-                WorldConfig.setRemoteBackupEnabled(gitConfig, false);
-                gitConfig.save();
+                WorldConfig.setRemoteBackupEnabled(gitc, false);
+                gitc.save();
                 return SUCCESS;
             }
         });
     }
 
     private int disable(final CommandContext<ServerCommandSource> cc) {
-        return execute(cc, (gitConfig, worldConfig, taskListener) -> {
-            final boolean currentEnabled = worldConfig.isRemoteBackupEnabled();
+        return executeStandard(this.ctx, cc, (gitc, wc, tali) -> {
+            final boolean currentEnabled = wc.isRemoteBackupEnabled();
             if (!currentEnabled) {
-                taskListener.error("Remote backups are already disabled.");
+                tali.error("Remote backups are already disabled.");
                 return FAILURE;
             } else {
-                WorldConfig.setRemoteBackupEnabled(gitConfig, false);
-                gitConfig.save();
-                taskListener.feedback("Remote backups disabled.");
+                WorldConfig.setRemoteBackupEnabled(gitc, false);
+                gitc.save();
+                tali.feedback("Remote backups disabled.");
                 return SUCCESS;
             }
         });
     }
 
     private int setRemoteUrl(final CommandContext<ServerCommandSource> cc) {
-        return execute(cc, (gitConfig, worldConfig, taskListener) -> {
+        return executeStandard(this.ctx, cc, (gitc, wc, tali) -> {
             final String newUrl = cc.getArgument("remote-url", String.class);
-            final String currentUrl = worldConfig.getRemotePushUrl();
-            final boolean currentEnable = worldConfig.isRemoteBackupEnabled();
+            final String currentUrl = wc.getRemotePushUrl();
+            final boolean currentEnable = wc.isRemoteBackupEnabled();
             if (currentUrl != null && currentUrl.equals(newUrl)) {
                 if (currentEnable) {
-                    taskListener.feedback("Remote backups are already enabled to:");
-                    taskListener.feedback(newUrl);
+                    tali.feedback("Remote backups are already enabled to:");
+                    tali.feedback(newUrl);
                     return SUCCESS;
                 } else {
-                    WorldConfig.setRemoteBackupEnabled(gitConfig, true);
-                    gitConfig.save();
-                    taskListener.feedback("Enabled remote backups to:");
-                    taskListener.feedback(newUrl);
+                    WorldConfig.setRemoteBackupEnabled(gitc, true);
+                    gitc.save();
+                    tali.feedback("Enabled remote backups to:");
+                    tali.feedback(newUrl);
                 }
             } else {
-                WorldConfig.setRemoteUrl(gitConfig, newUrl);
+                WorldConfig.setRemoteUrl(gitc, newUrl);
                 if (currentEnable) {
-                    taskListener.feedback("Remote backup URL changed to " + newUrl);
+                    tali.feedback("Remote backup URL changed to " + newUrl);
                 } else {
-                    WorldConfig.setRemoteBackupEnabled(gitConfig, true);
-                    taskListener.feedback("Enabled remote backups to:" + newUrl);
-                    taskListener.feedback(newUrl);
+                    WorldConfig.setRemoteBackupEnabled(gitc, true);
+                    tali.feedback("Enabled remote backups to:" + newUrl);
+                    tali.feedback(newUrl);
                 }
-                gitConfig.save();
+                gitc.save();
             }
             return SUCCESS;
         });
     }
 
-    private interface RemoteWork {
-        int execute(StoredConfig gitConfig, WorldConfig worldConfig, TaskListener taskListener) throws IOException, GitAPIException;
-    }
-
-    private int execute(final CommandContext<ServerCommandSource> cc, RemoteWork sub) {
-        final MinecraftServer server = cc.getSource().getServer();
-        final TaskListener taskListener = taskListener(cc);
-        final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
-        if (!isGitRepo(worldSaveDir)) {
-            taskListener.backupsNotEnabled();
-            return FAILURE;
-        }
-        try (final Git git = Git.open(worldSaveDir.toFile())) {
-            final StoredConfig gitConfig = git.getRepository().getConfig();
-            final WorldConfig worldConfig = WorldConfig.load(worldSaveDir, gitConfig);
-            if (!worldConfig.isBackupEnabled()) {
-                taskListener.backupsNotEnabled();
-                return FAILURE;
-            }
-            return sub.execute(gitConfig, worldConfig, taskListener);
-        } catch (Exception e) {
-            taskListener.internalError();
-            logger.error(e);
-            return FAILURE;
-        }
-    }
 }

@@ -24,6 +24,7 @@ import static net.pcal.fastback.GitUtils.isGitRepo;
 import static net.pcal.fastback.commands.CommandTaskListener.taskListener;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
+import static net.pcal.fastback.commands.Commands.executeStandard;
 
 public class CreateFileRemoteCommand {
 
@@ -45,28 +46,28 @@ public class CreateFileRemoteCommand {
     }
 
     private int setFileRemote(final CommandContext<ServerCommandSource> cc) {
-        return execute(cc, (gitConfig, worldConfig, taskListener) -> {
+        return executeStandard(this.ctx, cc, (gitc, wc, tali) -> {
             final String targetPath = cc.getArgument("file-path", String.class);
             final Path fupHome = Path.of(targetPath);
             if (fupHome.toFile().exists()) {
-                taskListener.error("Directory already exists:");
-                taskListener.error(fupHome.toString());
+                tali.error("Directory already exists:");
+                tali.error(fupHome.toString());
                 return FAILURE;
             }
             mkdirs(fupHome);
-            try(Git targetGit = Git.init().setBare(worldConfig.isFileRemoteBare()).setDirectory(fupHome.toFile()).call()) {
-                final StoredConfig targetGitConfig = targetGit.getRepository().getConfig();
-                targetGitConfig.setInt("core", null, "compression", 0);
-                targetGitConfig.setInt("pack", null, "window", 0);
-                targetGitConfig.save();
+            try (Git targetGit = Git.init().setBare(wc.isFileRemoteBare()).setDirectory(fupHome.toFile()).call()) {
+                final StoredConfig targetGitc = targetGit.getRepository().getConfig();
+                targetGitc.setInt("core", null, "compression", 0);
+                targetGitc.setInt("pack", null, "window", 0);
+                targetGitc.save();
             }
-            final String targetUrl = "file://"+fupHome.toAbsolutePath().toString();
-            WorldConfig.setRemoteUrl(gitConfig, targetUrl);
-            WorldConfig.setRemoteBackupEnabled(gitConfig, true);
-            gitConfig.save();
-            taskListener.feedback("Git repository created at "+targetPath);
-            taskListener.feedback("Remote backups enabled to:");
-            taskListener.feedback(targetUrl);
+            final String targetUrl = "file://" + fupHome.toAbsolutePath();
+            WorldConfig.setRemoteUrl(gitc, targetUrl);
+            WorldConfig.setRemoteBackupEnabled(gitc, true);
+            gitc.save();
+            tali.feedback("Git repository created at " + targetPath);
+            tali.feedback("Remote backups enabled to:");
+            tali.feedback(targetUrl);
             return SUCCESS;
         });
     }

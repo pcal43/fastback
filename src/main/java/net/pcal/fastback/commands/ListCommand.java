@@ -16,7 +16,7 @@ import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.GitUtils.isGitRepo;
 import static net.pcal.fastback.commands.CommandTaskListener.taskListener;
 import static net.pcal.fastback.commands.Commands.FAILURE;
-import static net.pcal.fastback.tasks.ListSnapshotsTask.*;
+import static net.pcal.fastback.tasks.ListSnapshotsTask.listSnapshotsForWorld;
 
 public class ListCommand {
 

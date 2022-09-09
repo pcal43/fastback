@@ -1,6 +1,5 @@
 package net.pcal.fastback.commands;
 
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.MinecraftServer;
@@ -16,14 +15,13 @@ import org.eclipse.jgit.lib.StoredConfig;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import static net.pcal.fastback.GitUtils.isGitRepo;
-import static net.pcal.fastback.WorldUtils.doWorldMaintenance;
-import static net.pcal.fastback.commands.Commands.FAILURE;
-import static net.pcal.fastback.commands.Commands.SUCCESS;
-
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
+import static net.pcal.fastback.GitUtils.isGitRepo;
+import static net.pcal.fastback.WorldUtils.doWorldMaintenance;
 import static net.pcal.fastback.commands.CommandTaskListener.taskListener;
+import static net.pcal.fastback.commands.Commands.FAILURE;
+import static net.pcal.fastback.commands.Commands.SUCCESS;
 
 public class EnableCommand {
 
