@@ -51,14 +51,17 @@ public class BackupTask extends Task {
                 doCommit(git, config, newBranchName, logger);
                 final Duration dur = getSplitDuration();
                 logger.info("Local backup complete.  Elapsed time: " + dur.toMinutesPart() + "m " + dur.toSecondsPart() + "s");
-                this.listener.feedback("Local backup complete.");
+                if (config.isRemoteBackupEnabled()) {
+                    this.listener.feedback("Local backup complete, beginning remote backup.");
+                } else {
+                    this.listener.feedback("Local backup complete.");
+                }
             } catch (GitAPIException | IOException e) {
                 listener.internalError();
                 logger.error("Local backup failed.  Unable to commit changes.", e);
                 this.setFailed();
                 return;
             }
-
             if (config.isRemoteBackupEnabled()) {
                 listener.feedback("Beginning remote backup.");
                 final PushTask push = new PushTask(worldSaveDir, newBranchName, this.listener, logger);
@@ -69,7 +72,8 @@ public class BackupTask extends Task {
                 } else {
                     final Duration dur = getSplitDuration();
                     logger.info("Remote backup complete.  Elapsed time: " + dur.toMinutesPart() + "m " + dur.toSecondsPart() + "s");
-                    this.listener.feedback("Remote backup to "+config.getRemotePushUrl()+" complete.");
+                    this.listener.feedback("Remote backup to complete to:");
+                    this.listener.feedback(config.getRemotePushUrl());
                 }
             } else {
                 logger.info("Remote backup disabled.");

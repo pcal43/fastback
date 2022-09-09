@@ -1,6 +1,9 @@
 package net.pcal.fastback.tasks;
 
-import net.pcal.fastback.*;
+import net.pcal.fastback.FileUtils;
+import net.pcal.fastback.GitUtils;
+import net.pcal.fastback.Loggr;
+import net.pcal.fastback.WorldConfig;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 

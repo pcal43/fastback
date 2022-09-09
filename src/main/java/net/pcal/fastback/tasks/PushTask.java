@@ -14,7 +14,8 @@ import org.eclipse.jgit.transport.URIish;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.BranchNameUtils.getLastPushedBranchName;
