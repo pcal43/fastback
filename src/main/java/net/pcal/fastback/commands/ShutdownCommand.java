@@ -63,7 +63,7 @@ public class ShutdownCommand {
                 tali.error("Backup on shutdown is already disabled.");
                 return FAILURE;
             } else {
-                WorldConfig.setShutdownBackupEnabled(gitc, true);
+                WorldConfig.setShutdownBackupEnabled(gitc, false);
                 gitc.save();
                 tali.feedback("Backup on world shutdown disabled.");
                 return SUCCESS;

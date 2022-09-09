@@ -52,7 +52,7 @@ public class BackupTask extends Task {
                 final Duration dur = getSplitDuration();
                 logger.info("Local backup complete.  Elapsed time: " + dur.toMinutesPart() + "m " + dur.toSecondsPart() + "s");
                 if (config.isRemoteBackupEnabled()) {
-                    this.listener.feedback("Local backup complete, beginning remote backup.");
+                    this.listener.feedback("Local backup complete, starting remote backup.");
                 } else {
                     this.listener.feedback("Local backup complete.");
                 }
@@ -63,7 +63,6 @@ public class BackupTask extends Task {
                 return;
             }
             if (config.isRemoteBackupEnabled()) {
-                listener.feedback("Beginning remote backup.");
                 final PushTask push = new PushTask(worldSaveDir, newBranchName, this.listener, logger);
                 push.run();
                 if (push.isFailed()) {
