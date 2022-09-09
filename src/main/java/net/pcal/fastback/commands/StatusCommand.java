@@ -5,14 +5,10 @@ import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.GitUtils;
 import net.pcal.fastback.Loggr;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.tasks.TaskListener;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.transport.URIish;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -56,7 +52,7 @@ public class StatusCommand {
         tl.feedback("Local backup:  " + (config.isBackupEnabled() ? "enabled" : "disabled"));
         tl.feedback("Remote backup: " + (config.isRemoteBackupEnabled() ? "enabled" : "disabled"));
         if (config.isRemoteBackupEnabled()) {
-            String url = config.getRemotePushUri();
+            String url = config.getRemotePushUrl();
             if (url == null) {
                 tl.error("Remote URL: Not Configured.  Run /backup remote [url]");
             } else {

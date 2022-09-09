@@ -47,7 +47,7 @@ public class RemoteCommand {
 
     private int showRemote(final CommandContext<ServerCommandSource> cc) {
         return execute(cc, (gitConfig, worldConfig, tali) -> {
-            final String remoteUrl = worldConfig.getRemotePushUri();
+            final String remoteUrl = worldConfig.getRemotePushUrl();
             final boolean enabled = worldConfig.isRemoteBackupEnabled();
             if (enabled && remoteUrl != null) {
                 tali.feedback("Remote backups are enabled to:");
@@ -69,7 +69,7 @@ public class RemoteCommand {
     private int enable(final CommandContext<ServerCommandSource> cc) {
         return execute(cc, (gitConfig, worldConfig, taskListener) -> {
             final String newUrl = cc.getArgument("remote-url", String.class);
-            final String currentUrl = worldConfig.getRemotePushUri();
+            final String currentUrl = worldConfig.getRemotePushUrl();
             final boolean currentEnabled = worldConfig.isRemoteBackupEnabled();
             if (currentUrl == null) {
                 taskListener.error("No remote URL is set.");
@@ -105,7 +105,7 @@ public class RemoteCommand {
     private int setRemoteUrl(final CommandContext<ServerCommandSource> cc) {
         return execute(cc, (gitConfig, worldConfig, taskListener) -> {
             final String newUrl = cc.getArgument("remote-url", String.class);
-            final String currentUrl = worldConfig.getRemotePushUri();
+            final String currentUrl = worldConfig.getRemotePushUrl();
             final boolean currentEnable = worldConfig.isRemoteBackupEnabled();
             if (currentUrl != null && currentUrl.equals(newUrl)) {
                 if (currentEnable) {

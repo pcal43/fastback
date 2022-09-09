@@ -69,7 +69,7 @@ public class BackupTask extends Task {
                 } else {
                     final Duration dur = getSplitDuration();
                     logger.info("Remote backup complete.  Elapsed time: " + dur.toMinutesPart() + "m " + dur.toSecondsPart() + "s");
-                    this.listener.feedback("Remote backup to "+config.getRemotePushUri()+" complete.");
+                    this.listener.feedback("Remote backup to "+config.getRemotePushUrl()+" complete.");
                 }
             } else {
                 logger.info("Remote backup disabled.");

@@ -19,69 +19,55 @@ import java.nio.file.Path;
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
+import static net.pcal.fastback.FileUtils.mkdirs;
 import static net.pcal.fastback.GitUtils.isGitRepo;
 import static net.pcal.fastback.commands.CommandTaskListener.taskListener;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 
-public class ShutdownCommand {
+public class CreateFileRemoteCommand {
 
     public static void register(final LiteralArgumentBuilder<ServerCommandSource> fastbackCmd, final ModContext ctx) {
-        final ShutdownCommand c = new ShutdownCommand(ctx);
+        final CreateFileRemoteCommand c = new CreateFileRemoteCommand(ctx);
         fastbackCmd.then(
-                literal("shutdown").executes(c::show).then(
-                        literal("enable").executes(c::enable)).then(
-                        literal("disable").executes(c::disable))
+                literal("create-remote").then(
+                        argument("file-path", StringArgumentType.greedyString()).
+                                executes(c::setFileRemote))
         );
     }
 
     private final ModContext ctx;
     private final Loggr logger;
 
-    private ShutdownCommand(ModContext context) {
+    private CreateFileRemoteCommand(ModContext context) {
         this.ctx = requireNonNull(context);
         this.logger = ctx.getLogger();
     }
 
-    private int show(final CommandContext<ServerCommandSource> cc) {
-        return execute(cc, (gitConfig, worldConfig, tali) -> {
-            final boolean enabled = worldConfig.isShutdownBackupEnabled();
-            if (enabled) {
-                tali.feedback("Backup on shutdown is currently enabled.");
-            } else {
-                tali.feedback("Backup on shutdown is currently disabled.");
+    private int setFileRemote(final CommandContext<ServerCommandSource> cc) {
+        return execute(cc, (gitConfig, worldConfig, taskListener) -> {
+            final String targetPath = cc.getArgument("file-path", String.class);
+            final Path fupHome = Path.of(targetPath);
+            if (fupHome.toFile().exists()) {
+                taskListener.error("Directory already exists:");
+                taskListener.error(fupHome.toString());
+                return FAILURE;
             }
+            mkdirs(fupHome);
+            try(Git targetGit = Git.init().setBare(worldConfig.isFileRemoteBare()).setDirectory(fupHome.toFile()).call()) {
+                final StoredConfig targetGitConfig = targetGit.getRepository().getConfig();
+                targetGitConfig.setInt("core", null, "compression", 0);
+                targetGitConfig.setInt("pack", null, "window", 0);
+                targetGitConfig.save();
+            }
+            final String targetUrl = "file://"+fupHome.toAbsolutePath().toString();
+            WorldConfig.setRemoteUrl(gitConfig, targetUrl);
+            WorldConfig.setRemoteBackupEnabled(gitConfig, true);
+            gitConfig.save();
+            taskListener.feedback("Git repository created at "+targetPath);
+            taskListener.feedback("Remote backups enabled to:");
+            taskListener.feedback(targetUrl);
             return SUCCESS;
-        });
-    }
-
-    private int enable(final CommandContext<ServerCommandSource> cc) {
-        return execute(cc, (gitConfig, worldConfig, tali) -> {
-            final boolean enabled = worldConfig.isShutdownBackupEnabled();
-            if (enabled) {
-                tali.error("Backup on world shutdown is already enabled.");
-                return FAILURE;
-            } else {
-                WorldConfig.setShutdownBackupEnabled(gitConfig, true);
-                gitConfig.save();
-                tali.feedback("Backup on world shutdown enabled.");
-                return SUCCESS;
-            }
-        });
-    }
-
-    private int disable(final CommandContext<ServerCommandSource> cc) {
-        return execute(cc, (gitConfig, worldConfig, tali) -> {
-            final boolean enabled = worldConfig.isShutdownBackupEnabled();
-            if (!enabled) {
-                tali.error("Backup on shutdown is already disabled.");
-                return FAILURE;
-            } else {
-                WorldConfig.setShutdownBackupEnabled(gitConfig, true);
-                gitConfig.save();
-                tali.feedback("Backup on world shutdown disabled.");
-                return SUCCESS;
-            }
         });
     }
 
