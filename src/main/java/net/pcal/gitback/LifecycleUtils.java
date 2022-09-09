@@ -3,6 +3,7 @@ package net.pcal.gitback;
 import net.pcal.gitback.commands.Commands;
 import net.pcal.gitback.tasks.BackupTask;
 import net.pcal.gitback.tasks.TaskListener;
+import org.eclipse.jgit.api.Git;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -17,14 +18,14 @@ public class LifecycleUtils {
     }
 
     public static void onWorldStart(final Path worldSaveDir, Loggr logger) {
-        if (!isGitRepo(worldSaveDir)) {
+        if (isGitRepo(worldSaveDir)) {
+            try (final Git git = Git.open(worldSaveDir.toFile())) {
+                WorldUtils.doWorldMaintenance(git, logger);
+            } catch (IOException e) {
+                logger.error("Unable to perform maintenance.  Backups will probably not work correctly", e);
+            }
+        } else {
             logger.info("Backups not enabled; to enable, run '/backup enable'");
-            return;
-        }
-        try {
-            WorldUtils.doWorldMaintenance(worldSaveDir, logger);
-        } catch (IOException e) {
-            logger.error("Unable to perform maintenance.  Backups will probably not work correctly", e);
         }
     }
 

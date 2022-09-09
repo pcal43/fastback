@@ -17,7 +17,6 @@ import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.gitback.GitUtils.isGitRepo;
 import static net.pcal.gitback.WorldUtils.doWorldMaintenance;
 import static net.pcal.gitback.commands.CommandTaskListener.taskListener;
 import static net.pcal.gitback.commands.Commands.FAILURE;
@@ -44,9 +43,7 @@ public class EnableCommand {
         final TaskListener taskListener = taskListener(cc);
         final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
         try (final Git git = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
-            if (!isGitRepo(worldSaveDir)) {
-                doWorldMaintenance(worldSaveDir, logger); // FIXME handoff of git instance could be cleaner
-            }
+            doWorldMaintenance(git, logger);
             final StoredConfig config = git.getRepository().getConfig();
             final WorldConfig worldConfig = WorldConfig.load(worldSaveDir, config);
             if (worldConfig.isBackupEnabled() && worldConfig.isShutdownBackupEnabled()) {
