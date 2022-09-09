@@ -4,8 +4,11 @@ import net.pcal.gitback.FileUtils;
 import net.pcal.gitback.GitUtils;
 import net.pcal.gitback.Loggr;
 import net.pcal.gitback.WorldConfig;
+import net.pcal.gitback.progress.IncrementalProgressMonitor;
+import net.pcal.gitback.progress.LoggingProgressMonitor;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.ProgressMonitor;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -67,8 +70,10 @@ public class RestoreSnapshotTask extends Task {
             targetDirectory = getTargetDir(this.saveDir, worldName, snapshotName);
             String uri = "file://" + this.worldSaveDir.toAbsolutePath();
             taskListener.feedback("Restoring " + this.snapshotName + " to\n" + targetDirectory);
-            try (Git git = Git.cloneRepository().setDirectory(targetDirectory.toFile()).
+            final ProgressMonitor pm = new IncrementalProgressMonitor(new LoggingProgressMonitor(logger), 100);
+            try (Git git = Git.cloneRepository().setProgressMonitor(pm).setDirectory(targetDirectory.toFile()).
                     setBranchesToClone(List.of("refs/heads/" + branchName)).setBranch(branchName).setURI(uri).call()) {
+
             }
         } catch (Exception e) {
             this.taskListener.internalError();
@@ -79,7 +84,7 @@ public class RestoreSnapshotTask extends Task {
         if (config.isPostRestoreCleanupEnabled()) {
             try {
                 FileUtils.rmdir(targetDirectory.resolve(".git"));
-                FileUtils.rmdir(targetDirectory.resolve(WORLD_UUID_PATH));
+                targetDirectory.resolve(WORLD_UUID_PATH).toFile().delete();
             } catch (IOException e) {
                 this.taskListener.error("Restoration finished but an unexpected error " +
                         "occurred during cleanup.  See log for details.");

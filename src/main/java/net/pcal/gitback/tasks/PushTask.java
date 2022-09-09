@@ -2,11 +2,14 @@ package net.pcal.gitback.tasks;
 
 import net.pcal.gitback.BranchNameUtils;
 import net.pcal.gitback.GitUtils;
+import net.pcal.gitback.progress.LoggingProgressMonitor;
 import net.pcal.gitback.Loggr;
+import net.pcal.gitback.progress.IncrementalProgressMonitor;
 import net.pcal.gitback.WorldConfig;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ProgressMonitor;
 import org.eclipse.jgit.merge.ContentMergeStrategy;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.URIish;
@@ -68,7 +71,7 @@ public class PushTask extends Task {
                     return;
                 }
             }
-            logger.info("starting push");
+            logger.info("Pushing to "+worldConfig.getRemotePushUrl());
             if (worldConfig.isSmartPushEnabled()) {
                 doSmartPush(git, branchNameToPush, worldConfig, logger);
             } else {
@@ -87,6 +90,9 @@ public class PushTask extends Task {
     private static void doSmartPush(final Git git, final String branchNameToPush, final WorldConfig worldConfig, final Loggr logger) throws GitAPIException, IOException {
         final String remoteName = worldConfig.getRemoteName();
         final String lastPushedBranchName = getLastPushedBranchName(worldConfig.worldUuid());
+
+        final ProgressMonitor pm = new IncrementalProgressMonitor(new LoggingProgressMonitor(logger), 100);
+
         if (!GitUtils.isBranchExtant(git, lastPushedBranchName, logger)) {
             logger.warn("** This appears to be the first time this world has been pushed.");
             logger.warn("** If the world is large, this may take some time.");
@@ -101,7 +107,7 @@ public class PushTask extends Task {
             git.merge().setContentMergeStrategy(ContentMergeStrategy.OURS).
                     include(branchId).setMessage("Merge " + branchNameToPush + " into " + tempBranchName).call();
             logger.debug("push " + tempBranchName);
-            git.push().setRemote(remoteName).setRefSpecs(new RefSpec(tempBranchName + ":" + tempBranchName), new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
+            git.push().setProgressMonitor(pm).setRemote(remoteName).setRefSpecs(new RefSpec(tempBranchName + ":" + tempBranchName), new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
             logger.debug("checkout restore");
             git.checkout().setName(branchNameToPush).call();
             if (worldConfig.isTempBranchCleanupEnabled()) {
@@ -112,7 +118,8 @@ public class PushTask extends Task {
                 final String remoteTempBranch = "refs/heads/" + tempBranchName;
                 logger.debug("deleting remote temp branch " + remoteTempBranch);
                 final RefSpec deleteRemoteBranchSpec = new RefSpec().setSource(null).setDestination(remoteTempBranch);
-                git.push().setRemote(remoteName).setRefSpecs(deleteRemoteBranchSpec).call();
+
+                git.push().setProgressMonitor(pm).setRemote(remoteName).setRefSpecs(deleteRemoteBranchSpec).call();
             }
             logger.debug("push complete");
         }
