@@ -20,24 +20,16 @@ public class WorldUtils {
             Pair.of("world/dot-gitattributes", Path.of(".gitattributes"))
     );
 
-    public static void doWorldMaintenance(final Path worldSaveDir, final Loggr logger) throws IOException {
-        if (worldSaveDir.resolve(".git").toFile().exists()) {
-            logger.info("Doing world maintenance");
-            ensureWorldHasUuid(worldSaveDir, logger);
-            for (final Pair<String, Path> resource2path : WORLD_RESOURCES_TO_COPY) {
-                writeResourceToFile(resource2path.getLeft(), worldSaveDir.resolve(resource2path.getRight()));
-            }
-            try (final Git git = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
-                final StoredConfig config = git.getRepository().getConfig();
-                config.setInt("core", null, "compression", 0);
-                config.setInt("pack", null, "window", 0);
-                config.save();
-            } catch (GitAPIException e) {
-                logger.error("failed to do world maintenance", e);
-            }
-
-        } else {
-            logger.debug("backups not enabled for world, skipping maintenance");
+    public static void doWorldMaintenance(final Git git, final Loggr logger) throws IOException {
+        logger.info("Doing world maintenance");
+        final Path worldSaveDir = git.getRepository().getWorkTree().toPath();;
+        ensureWorldHasUuid(worldSaveDir, logger);
+        for (final Pair<String, Path> resource2path : WORLD_RESOURCES_TO_COPY) {
+            writeResourceToFile(resource2path.getLeft(), worldSaveDir.resolve(resource2path.getRight()));
         }
+        final StoredConfig config = git.getRepository().getConfig();
+        config.setInt("core", null, "compression", 0);
+        config.setInt("pack", null, "window", 0);
+        config.save();
     }
 }
