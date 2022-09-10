@@ -12,7 +12,7 @@ import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.gitback.WorldConfig.isBackupsAvailable;
+import static net.pcal.gitback.WorldConfig.isBackupsEnabledOn;
 import static net.pcal.gitback.tasks.ListSnapshotsTask.listSnapshotsForWorld;
 
 class SnapshotNameSuggestions implements SuggestionProvider<ServerCommandSource> {
@@ -24,13 +24,13 @@ class SnapshotNameSuggestions implements SuggestionProvider<ServerCommandSource>
     }
 
     @Override
-    public CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> scs,
+    public CompletableFuture<Suggestions> getSuggestions(final CommandContext<ServerCommandSource> scs,
                                                          final SuggestionsBuilder builder) {
         CompletableFuture<Suggestions> completableFuture = new CompletableFuture<>();
         this.ctx.getExecutorService().execute(() -> {
             try {
                 final Path worldSaveDir = ctx.getWorldSaveDirectory(scs.getSource().getServer());
-                if (isBackupsAvailable(worldSaveDir)) {
+                if (isBackupsEnabledOn(worldSaveDir)) {
                     String worldUuid = WorldConfig.getWorldUuid(worldSaveDir);
                     listSnapshotsForWorld(worldSaveDir, worldUuid, builder::suggest, ctx.getLogger()).run();
                     completableFuture.complete(builder.buildFuture().get());

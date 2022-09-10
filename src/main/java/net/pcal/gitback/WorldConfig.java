@@ -108,7 +108,7 @@ public record WorldConfig(
         }
     }
 
-    public static boolean isBackupsAvailable(Path worldSaveDir) {
+    public static boolean isBackupsEnabledOn(Path worldSaveDir) {
         if (!isGitRepo(worldSaveDir)) return false;
         if (!worldSaveDir.resolve(WORLD_UUID_PATH).toFile().exists()) return false;
         return true;
