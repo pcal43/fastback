@@ -10,13 +10,14 @@ import net.pcal.gitback.ModContext;
 import net.pcal.gitback.logging.Logger;
 
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.gitback.GitUtils.isGitRepo;
-import static net.pcal.gitback.commands.Commands.FAILURE;
-import static net.pcal.gitback.commands.Commands.commandLogger;
+import static net.pcal.gitback.commands.Commands.*;
 import static net.pcal.gitback.tasks.ListSnapshotsTask.listSnapshotsForWorld;
+import static net.pcal.gitback.tasks.ListSnapshotsTask.listSnapshotsForWorldSorted;
 
 public class ListCommand {
 
@@ -32,17 +33,22 @@ public class ListCommand {
     }
 
     private int execute(final CommandContext<ServerCommandSource> cc) {
-        final MinecraftServer server = cc.getSource().getServer();
-        final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
-        if (!isGitRepo(worldSaveDir)) {
-            final Logger logger = commandLogger(ctx, cc);
-            logger.notifyError("No backups available for this world.  Run '/backup enable' to enable backups.");
-            return FAILURE;
-        }
-        final Consumer<String> sink = message -> cc.getSource().sendFeedback(Text.literal(message), false);
-        sink.accept("Local snapshots:");
-        this.ctx.getExecutorService().execute(listSnapshotsForWorld(worldSaveDir, sink, ctx.getLogger()));
-        return 1;
+        return executeStandard(ctx, cc, (gitc, wc, log)  -> {
+            final MinecraftServer server = cc.getSource().getServer();
+            final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
+            if (!isGitRepo(worldSaveDir)) {
+                final Logger logger = commandLogger(ctx, cc);
+                logger.notifyError("No backups available for this world.  Run '/backup enable' to enable backups.");
+                return FAILURE;
+            }
+            final Consumer<String> sink = message -> cc.getSource().sendFeedback(Text.literal(message), false);
+            sink.accept("Local snapshots:");
+            this.ctx.getExecutorService().execute(() -> {
+                for(String snapshotName : listSnapshotsForWorldSorted(worldSaveDir, ctx.getLogger())) {
+                    log.notify(snapshotName);
+                }
+            });
+            return SUCCESS;
+        });
     }
-
 }

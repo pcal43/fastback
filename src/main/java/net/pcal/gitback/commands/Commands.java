@@ -30,13 +30,14 @@ public class Commands {
         DisableCommand.register(argb, ctx);
         StatusCommand.register(argb, ctx);
         RestoreCommand.register(argb, ctx);
+        PurgeCommand.register(argb, ctx);
         ListCommand.register(argb, ctx);
         RemoteCommand.register(argb, ctx);
         CreateFileRemoteCommand.register(argb, ctx);
         ShutdownCommand.register(argb, ctx);
         UuidCommand.register(argb, ctx);
         VersionCommand.register(argb, ctx);
-        NowCommand.register(argb, ctx);
+        // NowCommand.register(argb, ctx);
         CommandRegistrationCallback.EVENT.register((dispatcher, regAccess, env) -> dispatcher.register(argb));
     }
 

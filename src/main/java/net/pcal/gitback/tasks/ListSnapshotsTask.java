@@ -8,6 +8,10 @@ import org.eclipse.jgit.lib.Ref;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -23,6 +27,13 @@ public class ListSnapshotsTask extends Task {
     private final Consumer<String> out;
     private final Function<String, String> branchFilter;
     private final Logger logger;
+
+    public static List<String> listSnapshotsForWorldSorted(Path worldSaveDir, Logger log) {
+        final List<String> out = new ArrayList<>();
+        listSnapshotsForWorld(worldSaveDir, s->out.add(s), log).run();
+        Collections.sort(out);
+        return out;
+    }
 
     public static Runnable listSnapshotsForWorld(Path worldSaveDir, Consumer<String> sink, Logger logger) {
         final String worldUuid;
