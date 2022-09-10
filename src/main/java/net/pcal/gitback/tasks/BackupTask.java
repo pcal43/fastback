@@ -55,7 +55,7 @@ public class BackupTask extends Task {
                 return;
             }
             if (config.isRemoteBackupEnabled()) {
-                this.log.notify("Starting remote backup...");
+                this.log.notify("Starting remote backup");
                 final PushTask push = new PushTask(worldSaveDir, newBranchName, log);
                 push.run();
                 if (push.isFailed()) {
