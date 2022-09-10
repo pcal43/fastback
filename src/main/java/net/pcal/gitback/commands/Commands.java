@@ -36,10 +36,12 @@ public class Commands {
         CreateFileRemoteCommand.register(argb, ctx);
         ShutdownCommand.register(argb, ctx);
         UuidCommand.register(argb, ctx);
-        GcCommand.register(argb, ctx);
-        GcInfoCommand.register(argb, ctx);
         VersionCommand.register(argb, ctx);
-        // NowCommand.register(argb, ctx);
+        if (ctx.isUnsafeCommandsEnabled()) {
+            NowCommand.register(argb, ctx);
+            GcCommand.register(argb, ctx);
+            GcInfoCommand.register(argb, ctx);
+        }
         CommandRegistrationCallback.EVENT.register((dispatcher, regAccess, env) -> dispatcher.register(argb));
     }
 

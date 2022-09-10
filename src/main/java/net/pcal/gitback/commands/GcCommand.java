@@ -17,6 +17,13 @@ import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.gitback.commands.Commands.*;
 
+//
+// We basically want to
+//   git reflog expire --expire-unreachable=now --all
+//   git gc --prune=now
+// But jgit gc seems to have bugs or I'm just using it wrong.  Disabling this command
+// until I have time to figure it out.  https://www.eclipse.org/lists/jgit-dev/msg03782.html
+//
 public class GcCommand {
 
     public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
@@ -37,10 +44,9 @@ public class GcCommand {
                         new IncrementalProgressMonitor(new LoggingProgressMonitor(log), 100);
                 try (final Git git = Git.open(wc.worldSaveDir().toFile())) {
                     log.notify("Collecting garbage in local backup...");
-
                     log.info("Stats before gc:");
                     log.info(""+git.gc().getStatistics());
-                    git.gc().setExpire(null).setPreserveOldPacks(true).setPrunePreserved(true).setAggressive(false).setProgressMonitor(pm).call();
+                    git.gc().setExpire(new Date()).setAggressive(false).setProgressMonitor(pm).call();
                     log.notify("Garbage collection complete.");
                     log.info("Stats after gc:");
                     log.info(""+git.gc().getStatistics());

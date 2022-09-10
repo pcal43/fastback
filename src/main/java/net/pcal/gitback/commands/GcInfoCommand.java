@@ -11,6 +11,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ProgressMonitor;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -40,7 +41,8 @@ public class GcInfoCommand {
                         new IncrementalProgressMonitor(new LoggingProgressMonitor(log), 100);
                 try (final Git git = Git.open(wc.worldSaveDir().toFile())) {
                     final Properties stats = git.gc().getStatistics();
-                    List<String> props = List.copyOf(stats.stringPropertyNames());
+                    final List<String> props = new ArrayList<>();
+                    stats.keySet().forEach(k->props.add(String.valueOf(k)));
                     Collections.sort(props);
                     props.forEach(p -> log.notify(p + ": " + stats.get(p)));
                 } catch (GitAPIException | IOException e) {

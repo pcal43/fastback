@@ -34,4 +34,7 @@ public interface ModContext {
         return "backup";
     }
 
+    default boolean isUnsafeCommandsEnabled() {
+        return true;
+    }
 }
