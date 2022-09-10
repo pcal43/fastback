@@ -29,7 +29,7 @@ public class PushTask extends Task {
     private final String branchNameToPush;
     private final Logger logger;
 
-    public PushTask(final Path worldSaveDir,
+        public PushTask(final Path worldSaveDir,
                     final String branchNameToPush,
                     final Logger logger) {
         this.worldSaveDir = requireNonNull(worldSaveDir);

@@ -48,7 +48,7 @@ public class BackupTask extends Task {
                 doCommit(git, config, newBranchName, log);
                 final Duration dur = getSplitDuration();
                 log.info("Local backup complete.  Elapsed time: " + dur.toMinutesPart() + "m " + dur.toSecondsPart() + "s");
-                this.log.notify("Local backup complete.");
+                this.log.notify("Local backup complete");
             } catch (GitAPIException | IOException e) {
                 log.internalError("Local backup failed.  Unable to commit changes.", e);
                 this.setFailed();
