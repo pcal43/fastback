@@ -10,9 +10,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 
+import static java.util.Objects.requireNonNull;
 import static net.pcal.gitback.GitUtils.isGitRepo;
 
 public record WorldConfig(
+        Path worldSaveDir,
         String worldUuid,
         boolean isBackupEnabled,
         boolean isShutdownBackupEnabled,
@@ -36,6 +38,7 @@ public record WorldConfig(
 
     public static WorldConfig load(Path worldSaveDir, Config gitConfig) throws IOException {
         return new WorldConfig(
+                requireNonNull(worldSaveDir),
                 getWorldUuid(worldSaveDir),
                 gitConfig.getBoolean(CONFIG_SECTION, null, CONFIG_BACKUP_ENABLED, false),
                 gitConfig.getBoolean(CONFIG_SECTION, null, CONFIG_SHUTDOWN_BACKUP_ENABLED, false),
