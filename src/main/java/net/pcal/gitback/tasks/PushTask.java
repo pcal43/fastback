@@ -99,10 +99,12 @@ public class PushTask extends Task {
             logger.debug("merge");
             git.merge().setContentMergeStrategy(ContentMergeStrategy.OURS).
                     include(branchId).setMessage("Merge " + branchNameToPush + " into " + tempBranchName).call();
+            logger.debug("checking out "+branchNameToPush);
+            git.checkout().setName(branchNameToPush).call();
             logger.debug("push " + tempBranchName);
             git.push().setProgressMonitor(pm).setRemote(remoteName).setRefSpecs(new RefSpec(tempBranchName + ":" + tempBranchName), new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
             logger.debug("checkout restore");
-            git.checkout().setName(branchNameToPush).call();
+            logger.notify("Cleaning up");
             if (worldConfig.isTempBranchCleanupEnabled()) {
                 logger.debug("deleting local temp branch " + tempBranchName);
                 git.branchDelete().setForce(true).setBranchNames(tempBranchName).call();
