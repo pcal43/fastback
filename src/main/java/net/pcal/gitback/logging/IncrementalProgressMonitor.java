@@ -1,4 +1,4 @@
-package net.pcal.gitback.progress;
+package net.pcal.gitback.logging;
 
 import org.eclipse.jgit.lib.ProgressMonitor;
 

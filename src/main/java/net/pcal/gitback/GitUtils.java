@@ -1,5 +1,6 @@
 package net.pcal.gitback;
 
+import net.pcal.gitback.logging.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.RefNotFoundException;
@@ -34,7 +35,7 @@ public class GitUtils {
 //    }
 
 
-    public static Set<String> getRemoteBranchNames(Git git, String remoteName, Loggr logger) throws GitAPIException {
+    public static Set<String> getRemoteBranchNames(Git git, String remoteName, Logger logger) throws GitAPIException {
         final String UUID_REFNAME_PREFIX = "refs/heads/";
         final Collection<Ref> refs = git.lsRemote().setHeads(true).setTags(false).setRemote(remoteName).call();
         final Set<String> branchNames = new HashSet<>();
@@ -45,12 +46,12 @@ public class GitUtils {
         return branchNames;
     }
 
-    public static URIish getRemoteUri(Git git, String remoteName, Loggr logger) throws GitAPIException {
+    public static URIish getRemoteUri(Git git, String remoteName, Logger logger) throws GitAPIException {
         requireNonNull(git);
         requireNonNull(remoteName);
         final List<RemoteConfig> remotes = git.remoteList().call();
         for (final RemoteConfig remote : remotes) {
-            logger.trace("getRemoteUri " + remote);
+            logger.debug("getRemoteUri " + remote);
             if (remote.getName().equals(remoteName)) {
                 return remote.getPushURIs() != null && !remote.getURIs().isEmpty() ? remote.getURIs().get(0) : null;
             }
@@ -58,12 +59,12 @@ public class GitUtils {
         return null;
     }
 
-    public static boolean isBranchExtant(Git git, String name, Loggr logger) throws GitAPIException {
+    public static boolean isBranchExtant(Git git, String name, Logger logger) throws GitAPIException {
         try {
             git.branchList().setContains(name).call();
             return true;
         } catch (RefNotFoundException e) {
-            logger.trace(() -> name + " doesn't exist", e);
+            logger.debug(name + " doesn't exist", e);
             return false;
         }
     }

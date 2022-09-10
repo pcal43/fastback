@@ -24,18 +24,18 @@ public class StatusCommand {
     }
 
     private int execute(CommandContext<ServerCommandSource> cc) {
-        return executeStandard(this.ctx, cc, (gitc, wc, tali) -> {
-            tali.feedback("Local backup:  " + (wc.isBackupEnabled() ? "enabled" : "disabled"));
-            tali.feedback("Remote backup: " + (wc.isRemoteBackupEnabled() ? "enabled" : "disabled"));
+        return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
+            log.notifyError("Local backup:  " + (wc.isBackupEnabled() ? "enabled" : "disabled"));
+            log.notifyError("Remote backup: " + (wc.isRemoteBackupEnabled() ? "enabled" : "disabled"));
             if (wc.isRemoteBackupEnabled()) {
                 String url = wc.getRemotePushUrl();
                 if (url == null) {
-                    tali.error("Remote URL: Not Configured.  Run /backup remote [url]");
+                    log.notifyError("Remote URL: Not Configured.  Run /backup remote [url]");
                 } else {
-                    tali.feedback("Remote URL: " + url);
+                    log.notify("Remote URL: " + url);
                 }
             }
-            tali.feedback("On shutdown:  " + (wc.isShutdownBackupEnabled() ? "enabled" : "disabled"));
+            log.notify("On shutdown:  " + (wc.isShutdownBackupEnabled() ? "enabled" : "disabled"));
             return SUCCESS;
         });
     }

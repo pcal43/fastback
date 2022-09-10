@@ -4,7 +4,6 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.gitback.Loggr;
 import net.pcal.gitback.ModContext;
 import net.pcal.gitback.WorldConfig;
 import net.pcal.gitback.tasks.BackupTask;
@@ -26,33 +25,31 @@ public class NowCommand {
     }
 
     private final ModContext ctx;
-    private final Loggr logger;
 
-    private NowCommand(ModContext context) {
+    private NowCommand(final ModContext context) {
         this.ctx = requireNonNull(context);
-        this.logger = ctx.getLogger();
     }
 
     private int now(CommandContext<ServerCommandSource> cc) {
-        return executeStandard(this.ctx, cc, (gitc, wc, tali) -> {
+        return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
             final MinecraftServer server = cc.getSource().getServer();
             server.save(false, true, true); // suppressLogs, flush, force
             final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
             if (!isGitRepo(worldSaveDir)) {
-                tali.error("Run '/backup enable' to enable backups.");
+                log.notifyError("Run '/backup enable' to enable backups.");
                 return FAILURE;
             }
             final WorldConfig config = WorldConfig.load(worldSaveDir);
             if (config.isBackupEnabled()) {
                 try {
-                    this.ctx.enableWorldSaving(server, false);
-                    new BackupTask(worldSaveDir, tali, logger).run();
+                    this.ctx.setWorldSaveEnabled(server, false);
+                    new BackupTask(worldSaveDir, log).run();
                 } finally {
-                    this.ctx.enableWorldSaving(server, true);
+                    this.ctx.setWorldSaveEnabled(server, true);
                 }
                 return SUCCESS;
             } else {
-                tali.error("Backups are disabled.  Run '/backup enable' first.");
+                log.notifyError("Backups are disabled.  Run '/backup enable' first.");
                 return FAILURE;
             }
         });

@@ -5,13 +5,18 @@ import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModMetadata;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.MessageScreen;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 import net.minecraft.world.level.storage.LevelStorage;
-import net.pcal.gitback.Loggr;
 import net.pcal.gitback.ModContext;
+import net.pcal.gitback.fabric.mixins.ScreenAccessors;
 import net.pcal.gitback.fabric.mixins.ServerAccessors;
 import net.pcal.gitback.fabric.mixins.SessionAccessors;
+import net.pcal.gitback.logging.Log4jLogger;
+import net.pcal.gitback.logging.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import java.io.IOException;
@@ -25,7 +30,7 @@ import static java.nio.file.Files.createTempDirectory;
 class FabricModContext implements ModContext {
 
     private static final String MOD_ID = "gitback";
-    private final Loggr logger = new Log4jLoggr(LogManager.getLogger(MOD_ID));
+    private final Logger logger = new Log4jLogger(LogManager.getLogger(MOD_ID));
     private final ExecutorService exs = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     private Path tempRestoresDirectory = null;
 
@@ -50,7 +55,7 @@ class FabricModContext implements ModContext {
     }
 
     @Override
-    public Loggr getLogger() {
+    public Logger getLogger() {
         return this.logger;
     }
 
@@ -66,9 +71,20 @@ class FabricModContext implements ModContext {
             return client.getLevelStorage().getSavesDirectory();
         } else {
             if (tempRestoresDirectory == null) {
-                tempRestoresDirectory = createTempDirectory(MOD_ID+"-restore");
+                tempRestoresDirectory = createTempDirectory(MOD_ID + "-restore");
             }
             return tempRestoresDirectory;
+        }
+    }
+
+    @Override
+    public void setSavingScreenText(Text text) {
+        final MinecraftClient client = MinecraftClient.getInstance();
+        if (client != null) {
+            final Screen screen = client.currentScreen;
+            if (screen instanceof MessageScreen) {
+                ((ScreenAccessors) screen).setTitle(text);
+            }
         }
     }
 
@@ -85,7 +101,7 @@ class FabricModContext implements ModContext {
     }
 
     @Override
-    public void enableWorldSaving(MinecraftServer mc, boolean enabled) {
+    public void setWorldSaveEnabled(MinecraftServer mc, boolean enabled) {
         for (ServerWorld serverWorld : mc.getWorlds()) {
             if (serverWorld != null) serverWorld.savingDisabled = !enabled;
         }

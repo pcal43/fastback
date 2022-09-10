@@ -1,5 +1,7 @@
 package net.pcal.gitback;
 
+import net.pcal.gitback.logging.Logger;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -27,7 +29,7 @@ public class BranchNameUtils {
         return SNAPSHOTS_PREFIX + worldUuid + "/last-pushed";
     }
 
-    public static String extractWorldUuid(final String fromSnapshotBranchName, final Loggr logger) {
+    public static String extractWorldUuid(final String fromSnapshotBranchName, final Logger logger) {
         if (fromSnapshotBranchName.startsWith(SNAPSHOTS_PREFIX)) {
             int start = SNAPSHOTS_PREFIX.length();
             int end = fromSnapshotBranchName.indexOf('/');
@@ -39,7 +41,7 @@ public class BranchNameUtils {
         return null;
     }
 
-    public static String filterOnWorldUuid(final String branchName, final String worldUuid, final Loggr logger) {
+    public static String filterOnWorldUuid(final String branchName, final String worldUuid, final Logger logger) {
         final String prefix = SNAPSHOTS_PREFIX + worldUuid + "/";
         if (branchName.startsWith(prefix)) {
             return branchName.substring(prefix.length());

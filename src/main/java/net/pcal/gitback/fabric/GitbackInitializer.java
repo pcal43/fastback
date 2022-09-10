@@ -16,16 +16,12 @@ public class GitbackInitializer implements ModInitializer {
 
         ServerLifecycleEvents.SERVER_STOPPED.register(
                 minecraftServer -> {
-                    LifecycleUtils.onWorldStop(
-                            modContext.getWorldSaveDirectory(minecraftServer),
-                            modContext.getLogger());
+                    LifecycleUtils.onWorldStop(modContext, minecraftServer);
                 }
         );
         ServerLifecycleEvents.SERVER_STARTING.register(
                 minecraftServer -> {
-                    LifecycleUtils.onWorldStart(
-                            modContext.getWorldSaveDirectory(minecraftServer),
-                            modContext.getLogger());
+                    LifecycleUtils.onWorldStart(modContext, minecraftServer);
                 }
         );
         LifecycleUtils.onMinecraftStart(modContext);

@@ -25,11 +25,11 @@ public class DisableCommand {
     }
 
     private int execute(final CommandContext<ServerCommandSource> cc) {
-        return executeStandard(this.ctx, cc, (gitc, wc, tali) -> {
+        return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
             WorldConfig.setBackupEnabled(gitc, false);
             WorldConfig.setShutdownBackupEnabled(gitc, false);
             gitc.save();
-            tali.feedback("Backups disabled.");
+            log.notify("Backups disabled.");
             return SUCCESS;
         });
     }

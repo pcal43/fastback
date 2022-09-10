@@ -2,10 +2,10 @@ package net.pcal.gitback.tasks;
 
 import net.pcal.gitback.BranchNameUtils;
 import net.pcal.gitback.GitUtils;
-import net.pcal.gitback.progress.LoggingProgressMonitor;
-import net.pcal.gitback.Loggr;
-import net.pcal.gitback.progress.IncrementalProgressMonitor;
 import net.pcal.gitback.WorldConfig;
+import net.pcal.gitback.logging.IncrementalProgressMonitor;
+import net.pcal.gitback.logging.LoggingProgressMonitor;
+import net.pcal.gitback.logging.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
@@ -27,16 +27,13 @@ public class PushTask extends Task {
 
     private final Path worldSaveDir;
     private final String branchNameToPush;
-    private final TaskListener listener;
-    private final Loggr logger;
+    private final Logger logger;
 
-    public PushTask(final Path worldSaveDir,
+        public PushTask(final Path worldSaveDir,
                     final String branchNameToPush,
-                    final TaskListener listener,
-                    final Loggr logger) {
+                    final Logger logger) {
         this.worldSaveDir = requireNonNull(worldSaveDir);
         this.branchNameToPush = requireNonNull(branchNameToPush);
-        this.listener = requireNonNull(listener);
         this.logger = requireNonNull(logger);
     }
 
@@ -49,7 +46,6 @@ public class PushTask extends Task {
             if (pushUrl == null) {
                 final String msg = "Skipping remote backup because no remote url has been configured.";
                 this.logger.warn(msg);
-                this.listener.error(msg);
                 super.setFailed();
                 return;
             }
@@ -58,20 +54,18 @@ public class PushTask extends Task {
                 try {
                     uuidCheckResult = doUuidCheck(git, worldConfig, logger);
                 } catch (final GitAPIException | IOException e) {
-                    logger.error("Skipping remote backup due to failed uuid check", e);
-                    listener.internalError();
+                    logger.internalError("Skipping remote backup due to failed uuid check", e);
                     super.setFailed();
                     return;
                 }
                 if (!uuidCheckResult) {
                     final String msg = "Skipping remote backup due to world mismatch.";
-                    logger.error(msg);
-                    listener.error(msg);
+                    logger.notifyError(msg);
                     super.setFailed();
                     return;
                 }
             }
-            logger.info("Pushing to "+worldConfig.getRemotePushUrl());
+            logger.info("Pushing to " + worldConfig.getRemotePushUrl());
             if (worldConfig.isSmartPushEnabled()) {
                 doSmartPush(git, branchNameToPush, worldConfig, logger);
             } else {
@@ -81,13 +75,12 @@ public class PushTask extends Task {
             final Duration duration = super.getDuration();
             logger.info("Remote backup complete.  Elapsed time: " + duration.toMinutesPart() + "m " + duration.toSecondsPart() + "s");
         } catch (GitAPIException | IOException e) {
-            logger.error("Remote backup failed unexpectedly", e);
-            listener.internalError();
+            logger.internalError("Remote backup failed unexpectedly", e);
             super.setFailed();
         }
     }
 
-    private static void doSmartPush(final Git git, final String branchNameToPush, final WorldConfig worldConfig, final Loggr logger) throws GitAPIException, IOException {
+    private static void doSmartPush(final Git git, final String branchNameToPush, final WorldConfig worldConfig, final Logger logger) throws GitAPIException, IOException {
         final String remoteName = worldConfig.getRemoteName();
         final String lastPushedBranchName = getLastPushedBranchName(worldConfig.worldUuid());
 
@@ -96,7 +89,7 @@ public class PushTask extends Task {
         if (!GitUtils.isBranchExtant(git, lastPushedBranchName, logger)) {
             logger.warn("** This appears to be the first time this world has been pushed.");
             logger.warn("** If the world is large, this may take some time.");
-            git.push().setRemote(remoteName).call();
+            git.push().setProgressMonitor(pm).setRemote(remoteName).call();
         } else {
             logger.debug("checkout");
             final String tempBranchName = BranchNameUtils.getTempBranchName(branchNameToPush);
@@ -127,14 +120,14 @@ public class PushTask extends Task {
         git.branchCreate().setForce(true).setName(lastPushedBranchName).call();
     }
 
-    private static void doNaivePush(final Git git, final String branchNameToPush, final WorldConfig config, final Loggr logger) throws IOException, GitAPIException {
+    private static void doNaivePush(final Git git, final String branchNameToPush, final WorldConfig config, final Logger logger) throws IOException, GitAPIException {
         final String remoteName = config.getRemoteName();
         logger.debug("doing naive push");
         git.push().setRemote(remoteName).setRefSpecs(new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
-        logger.debug(() -> "checking out " + branchNameToPush);
+        logger.debug("checking out " + branchNameToPush);
     }
 
-    private static boolean doUuidCheck(Git git, WorldConfig config, Loggr logger) throws GitAPIException, IOException {
+    private static boolean doUuidCheck(Git git, WorldConfig config, Logger logger) throws GitAPIException, IOException {
         final Set<String> remoteWorldUuids = getWorldUuidsOnRemote(git, config.getRemoteName(), logger);
         final String localUuid = config.worldUuid();
         if (remoteWorldUuids.size() > 2) {
@@ -145,9 +138,9 @@ public class PushTask extends Task {
         } else {
             if (!remoteWorldUuids.contains(localUuid)) {
                 final URIish remoteUri = GitUtils.getRemoteUri(git, config.getRemoteName(), logger);
-                logger.error("Remote at " + remoteUri + " is a backup target for a different world.");
-                logger.error("Please configure a new remote for backing up this world.");
-                logger.error("local: " + localUuid + ", remote: " + remoteWorldUuids);
+                logger.notifyError("Remote at " + remoteUri + " is a backup target for a different world.");
+                logger.notifyError("Please configure a new remote for backing up this world.");
+                logger.notifyError("local: " + localUuid + ", remote: " + remoteWorldUuids);
                 return false;
             }
         }
@@ -155,7 +148,7 @@ public class PushTask extends Task {
         return true;
     }
 
-    private static Set<String> getWorldUuidsOnRemote(Git worldGit, String remoteName, Loggr logger) throws GitAPIException {
+    private static Set<String> getWorldUuidsOnRemote(Git worldGit, String remoteName, Logger logger) throws GitAPIException {
         final Set<String> remoteBranchNames = GitUtils.getRemoteBranchNames(worldGit, remoteName, logger);
         final Set<String> out = new HashSet<>();
         for (String branchName : remoteBranchNames) {

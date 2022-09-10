@@ -5,7 +5,8 @@
   "compatibilityLevel": "JAVA_16",
   "mixins": [
     "ServerAccessors",
-    "SessionAccessors"
+    "SessionAccessors",
+    "ScreenAccessors"
   ],
   "injectors": {
     "defaultRequire": 1

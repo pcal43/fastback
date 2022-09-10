@@ -1,7 +1,7 @@
 package net.pcal.gitback.tasks;
 
-import net.pcal.gitback.Loggr;
 import net.pcal.gitback.WorldConfig;
+import net.pcal.gitback.logging.Logger;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
@@ -23,71 +23,60 @@ import static net.pcal.gitback.BranchNameUtils.getLatestBranchName;
 public class BackupTask extends Task {
 
     private final Path worldSaveDir;
-    private final TaskListener listener;
-    private final Loggr logger;
+    private final Logger log;
 
-    public BackupTask(final Path worldSaveDir, TaskListener listener, final Loggr logger) {
+    public BackupTask(final Path worldSaveDir, final Logger log) {
         this.worldSaveDir = requireNonNull(worldSaveDir);
-        this.listener = requireNonNull(listener);
-        this.logger = requireNonNull(logger);
+        this.log = requireNonNull(log);
     }
 
     public void run() {
         this.setStarted();
-        this.listener.feedback("Starting backup.");
+        this.log.notify("Saving local backup");
         try (Git git = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
             final WorldConfig config;
             try {
                 config = WorldConfig.load(worldSaveDir, git.getRepository().getConfig());
             } catch (IOException e) {
-                listener.internalError();
-                logger.error("Local backup failed.  Could not determine world-uuid.", e);
+                log.internalError("Local backup failed.  Could not determine world-uuid.", e);
                 this.setFailed();
                 return;
             }
             final String newBranchName = createNewSnapshotBranchName(config.worldUuid());
-            logger.info("Committing " + newBranchName);
+            log.info("Committing " + newBranchName);
             try {
-                doCommit(git, config, newBranchName, logger);
+                doCommit(git, config, newBranchName, log);
                 final Duration dur = getSplitDuration();
-                logger.info("Local backup complete.  Elapsed time: " + dur.toMinutesPart() + "m " + dur.toSecondsPart() + "s");
-                if (config.isRemoteBackupEnabled()) {
-                    this.listener.feedback("Local backup complete, starting remote backup.");
-                } else {
-                    this.listener.feedback("Local backup complete.");
-                }
+                log.info("Local backup complete.  Elapsed time: " + dur.toMinutesPart() + "m " + dur.toSecondsPart() + "s");
+                this.log.notify("Local backup complete");
             } catch (GitAPIException | IOException e) {
-                listener.internalError();
-                logger.error("Local backup failed.  Unable to commit changes.", e);
+                log.internalError("Local backup failed.  Unable to commit changes.", e);
                 this.setFailed();
                 return;
             }
             if (config.isRemoteBackupEnabled()) {
-                final PushTask push = new PushTask(worldSaveDir, newBranchName, this.listener, logger);
+                this.log.notify("Starting remote backup");
+                final PushTask push = new PushTask(worldSaveDir, newBranchName, log);
                 push.run();
                 if (push.isFailed()) {
-                    logger.error("Local backup succeeded but remote backup failed.");
-                    listener.error("Local backup succeeded but remote backup failed.  See log for details.");
+                    log.notifyError("Local backup succeeded but remote backup failed.  See log for details.");
                 } else {
                     final Duration dur = getSplitDuration();
-                    logger.info("Remote backup complete.  Elapsed time: " + dur.toMinutesPart() + "m " + dur.toSecondsPart() + "s");
-                    this.listener.feedback("Remote backup to complete to:");
-                    this.listener.feedback(config.getRemotePushUrl());
+                    log.notify("Remote backup to complete");
+                    log.info("Elapsed time: " + dur.toMinutesPart() + "m " + dur.toSecondsPart() + "s");
                 }
             } else {
-                logger.info("Remote backup disabled.");
+                log.info("Remote backup disabled.");
             }
         } catch (GitAPIException e) {
-            listener.internalError();
-            logger.error(e);
+            log.internalError("Backup failed unexpectedly", e);
             this.setFailed();
             return;
         }
         this.setCompleted();
     }
 
-    private static void doCommit(Git git, WorldConfig config, String newBranchName, final Loggr logger) throws GitAPIException, IOException {
-        logger.info("Starting local backup.");
+    private static void doCommit(Git git, WorldConfig config, String newBranchName, final Logger logger) throws GitAPIException, IOException {
         logger.debug("doing commit");
         logger.debug("checkout");
         git.checkout().setOrphan(true).setName(newBranchName).call();
@@ -103,12 +92,12 @@ public class BackupTask extends Task {
 
         final AddCommand gitAdd = git.add();
         for (String file : status.getModified()) {
-            logger.debug(() -> "add modified " + file);
+            logger.debug("add modified " + file);
             gitAdd.addFilepattern(file);
         }
         for (String file : status.getUntracked()) {
             gitAdd.addFilepattern(file);
-            logger.debug(() -> "add untracked " + file);
+            logger.debug("add untracked " + file);
         }
         logger.debug("doing add");
         gitAdd.call();
@@ -120,7 +109,7 @@ public class BackupTask extends Task {
             final RmCommand gitRm = git.rm();
             for (final String file : toDelete) {
                 gitRm.addFilepattern(file);
-                logger.debug(() -> "removed " + file);
+                logger.debug("removed " + file);
             }
             logger.debug("doing rm");
             gitRm.call();

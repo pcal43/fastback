@@ -24,8 +24,8 @@ public class UuidCommand {
     }
 
     private int execute(CommandContext<ServerCommandSource> cc) {
-        return executeStandard(this.ctx, cc, (gitc, wc, tl) -> {
-            tl.feedback(wc.worldUuid());
+        return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
+            log.notify(wc.worldUuid());
             return SUCCESS;
         });
     }

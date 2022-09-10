@@ -30,42 +30,42 @@ public class ShutdownCommand {
     }
 
     private int show(final CommandContext<ServerCommandSource> cc) {
-        return executeStandard(this.ctx, cc, (gitc, wc, tali) -> {
+        return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
             final boolean enabled = wc.isShutdownBackupEnabled();
             if (enabled) {
-                tali.feedback("Backup on shutdown is currently enabled.");
+                log.notify("Backup on shutdown is currently enabled.");
             } else {
-                tali.feedback("Backup on shutdown is currently disabled.");
+                log.notify("Backup on shutdown is currently disabled.");
             }
             return SUCCESS;
         });
     }
 
     private int enable(final CommandContext<ServerCommandSource> cc) {
-        return executeStandard(this.ctx, cc, (gitc, wc, tali) -> {
+        return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
             final boolean enabled = wc.isShutdownBackupEnabled();
             if (enabled) {
-                tali.error("Backup on world shutdown is already enabled.");
+                log.notifyError("Backup on world shutdown is already enabled.");
                 return FAILURE;
             } else {
                 WorldConfig.setShutdownBackupEnabled(gitc, true);
                 gitc.save();
-                tali.feedback("Backup on world shutdown enabled.");
+                log.notify("Backup on world shutdown enabled.");
                 return SUCCESS;
             }
         });
     }
 
     private int disable(final CommandContext<ServerCommandSource> cc) {
-        return executeStandard(this.ctx, cc, (gitc, wc, tali) -> {
+        return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
             final boolean enabled = wc.isShutdownBackupEnabled();
             if (!enabled) {
-                tali.error("Backup on shutdown is already disabled.");
+                log.notifyError("Backup on shutdown is already disabled.");
                 return FAILURE;
             } else {
                 WorldConfig.setShutdownBackupEnabled(gitc, false);
                 gitc.save();
-                tali.feedback("Backup on world shutdown disabled.");
+                log.notify("Backup on world shutdown disabled.");
                 return SUCCESS;
             }
         });
