@@ -86,33 +86,37 @@ public class BackupTask extends Task {
 
         logger.debug("add");
 
+        //
+        // Figure out what files to add and remove.  We don't just 'git add .' because this:
         // https://bugs.eclipse.org/bugs/show_bug.cgi?id=494323
         //
-        // One workaround would be to first fire a jgit status to find the modified and new files and then do a jgit add with explicit patches. That should be fast.
-
-        final AddCommand gitAdd = git.add();
-        for (String file : status.getModified()) {
-            logger.debug("add modified " + file);
-            gitAdd.addFilepattern(file);
-        }
-        for (String file : status.getUntracked()) {
-            gitAdd.addFilepattern(file);
-            logger.debug("add untracked " + file);
-        }
-        logger.debug("doing add");
-        gitAdd.call();
-
-        final Collection<String> toDelete = new ArrayList<>();
-        toDelete.addAll(status.getRemoved());
-        toDelete.addAll(status.getMissing());
-        if (!toDelete.isEmpty()) {
-            final RmCommand gitRm = git.rm();
-            for (final String file : toDelete) {
-                gitRm.addFilepattern(file);
-                logger.debug("removed " + file);
+        {
+            final Collection<String> toAdd = new ArrayList<>();
+            toAdd.addAll(status.getModified());
+            toAdd.addAll(status.getUntracked());
+            if (!toAdd.isEmpty()) {
+                final AddCommand gitAdd = git.add();
+                logger.debug("doing add");
+                for (final String file : toAdd) {
+                    logger.debug("add  " + file);
+                    gitAdd.addFilepattern(file);
+                }
+                gitAdd.call();
             }
-            logger.debug("doing rm");
-            gitRm.call();
+        }
+        {
+            final Collection<String> toDelete = new ArrayList<>();
+            toDelete.addAll(status.getRemoved());
+            toDelete.addAll(status.getMissing());
+            if (!toDelete.isEmpty()) {
+                logger.debug("doing rm");
+                final RmCommand gitRm = git.rm();
+                for (final String file : toDelete) {
+                    logger.debug("rm  " + file);
+                    gitRm.addFilepattern(file);
+                }
+                gitRm.call();
+            }
         }
         logger.debug("commit");
         git.commit().setMessage(newBranchName).call();

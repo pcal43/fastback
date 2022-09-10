@@ -25,7 +25,7 @@ public class IncrementalProgressMonitor implements ProgressMonitor {
 
     @Override
     public void beginTask(String taskName, int totalWork) {
-        this.delegate.beginTask(taskName, totalWork == 0 ? 0 : totalWork);
+        this.delegate.beginTask(taskName, totalWork);
         this.totalWork = totalWork;
         this.workComplete = 0;
         this.workCompleteScaled = 0;
