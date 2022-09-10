@@ -13,6 +13,7 @@ import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.gitback.GitUtils.isGitRepo;
+import static net.pcal.gitback.WorldConfig.isBackupsAvailable;
 
 public class LifecycleUtils {
 
@@ -38,7 +39,7 @@ public class LifecycleUtils {
     public static void onWorldStop(final ModContext ctx, final MinecraftServer server) {
         final Logger logger = ctx.getLogger();
         final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
-        if (!isGitRepo(worldSaveDir)) {
+        if (!isBackupsAvailable(worldSaveDir)) {
             logger.info("Backups not enabled; to enable, run '/backup enable'");
             return;
         }

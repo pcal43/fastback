@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
+import static net.pcal.gitback.WorldConfig.getWorldUuid;
 
 public class GitUtils {
 
@@ -73,5 +74,4 @@ public class GitUtils {
         final File dotGit = worldSaveDir.resolve(".git").toFile();
         return dotGit.exists() && dotGit.isDirectory();
     }
-
 }

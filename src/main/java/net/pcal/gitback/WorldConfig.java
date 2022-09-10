@@ -10,6 +10,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 
+import static net.pcal.gitback.GitUtils.isGitRepo;
+
 public record WorldConfig(
         String worldUuid,
         boolean isBackupEnabled,
@@ -106,6 +108,11 @@ public record WorldConfig(
         }
     }
 
+    public static boolean isBackupsAvailable(Path worldSaveDir) {
+        if (!isGitRepo(worldSaveDir)) return false;
+        if (!worldSaveDir.resolve(WORLD_UUID_PATH).toFile().exists()) return false;
+        return true;
+    }
 }
 
 
