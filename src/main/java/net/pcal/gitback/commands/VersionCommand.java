@@ -24,8 +24,8 @@ public class VersionCommand {
     }
 
     private int execute(CommandContext<ServerCommandSource> cc) {
-        return executeStandard(this.ctx, cc, (gitc, wc, tali) -> {
-            tali.feedback(this.ctx.getModVersion());
+        return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
+            log.notify(this.ctx.getModVersion());
             return SUCCESS;
         });
     }

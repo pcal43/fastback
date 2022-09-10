@@ -3,25 +3,18 @@ package net.pcal.gitback.commands;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.gitback.Loggr;
 import net.pcal.gitback.ModContext;
 import net.pcal.gitback.WorldConfig;
-import net.pcal.gitback.tasks.TaskListener;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.StoredConfig;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.gitback.FileUtils.mkdirs;
-import static net.pcal.gitback.GitUtils.isGitRepo;
-import static net.pcal.gitback.commands.CommandTaskListener.taskListener;
 import static net.pcal.gitback.commands.Commands.FAILURE;
 import static net.pcal.gitback.commands.Commands.SUCCESS;
 import static net.pcal.gitback.commands.Commands.executeStandard;
@@ -38,20 +31,18 @@ public class CreateFileRemoteCommand {
     }
 
     private final ModContext ctx;
-    private final Loggr logger;
 
-    private CreateFileRemoteCommand(ModContext context) {
+    private CreateFileRemoteCommand(final ModContext context) {
         this.ctx = requireNonNull(context);
-        this.logger = ctx.getLogger();
     }
 
     private int setFileRemote(final CommandContext<ServerCommandSource> cc) {
-        return executeStandard(this.ctx, cc, (gitc, wc, tali) -> {
+        return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
             final String targetPath = cc.getArgument("file-path", String.class);
             final Path fupHome = Path.of(targetPath);
             if (fupHome.toFile().exists()) {
-                tali.error("Directory already exists:");
-                tali.error(fupHome.toString());
+                log.notifyError("Directory already exists:");
+                log.notifyError(fupHome.toString());
                 return FAILURE;
             }
             mkdirs(fupHome);
@@ -65,37 +56,10 @@ public class CreateFileRemoteCommand {
             WorldConfig.setRemoteUrl(gitc, targetUrl);
             WorldConfig.setRemoteBackupEnabled(gitc, true);
             gitc.save();
-            tali.feedback("Git repository created at " + targetPath);
-            tali.feedback("Remote backups enabled to:");
-            tali.feedback(targetUrl);
+            log.notify("Git repository created at " + targetPath);
+            log.notify("Remote backups enabled to:");
+            log.notify(targetUrl);
             return SUCCESS;
         });
-    }
-
-    private interface RemoteWork {
-        int execute(StoredConfig gitConfig, WorldConfig worldConfig, TaskListener taskListener) throws IOException, GitAPIException;
-    }
-
-    private int execute(final CommandContext<ServerCommandSource> cc, RemoteWork sub) {
-        final MinecraftServer server = cc.getSource().getServer();
-        final TaskListener taskListener = taskListener(cc);
-        final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
-        if (!isGitRepo(worldSaveDir)) {
-            taskListener.backupsNotEnabled();
-            return FAILURE;
-        }
-        try (final Git git = Git.open(worldSaveDir.toFile())) {
-            final StoredConfig gitConfig = git.getRepository().getConfig();
-            final WorldConfig worldConfig = WorldConfig.load(worldSaveDir, gitConfig);
-            if (!worldConfig.isBackupEnabled()) {
-                taskListener.backupsNotEnabled();
-                return FAILURE;
-            }
-            return sub.execute(gitConfig, worldConfig, taskListener);
-        } catch (Exception e) {
-            taskListener.internalError();
-            logger.error(e);
-            return FAILURE;
-        }
     }
 }

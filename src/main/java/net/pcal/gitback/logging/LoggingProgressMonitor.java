@@ -1,18 +1,17 @@
-package net.pcal.gitback.progress;
+package net.pcal.gitback.logging;
 
-import net.pcal.gitback.Loggr;
 import org.eclipse.jgit.lib.ProgressMonitor;
 
 import static java.util.Objects.requireNonNull;
 
 public class LoggingProgressMonitor implements ProgressMonitor {
 
-    private final Loggr logger;
+    private final Logger logger;
     private String currentTask;
     private int currentTotalWork;
     private int totalCompleted;
 
-    public LoggingProgressMonitor(Loggr logger) {
+    public LoggingProgressMonitor(Logger logger) {
         this.logger = requireNonNull(logger);
     }
 
@@ -32,12 +31,12 @@ public class LoggingProgressMonitor implements ProgressMonitor {
     public void update(int completed) {
         this.totalCompleted += completed;
         int percent = (this.totalCompleted * 100) / this.currentTotalWork;
-        this.logger.info(currentTask + " " + percent + "%");
+        this.logger.progressComplete(currentTask, percent);
     }
 
     @Override
     public void endTask() {
-        this.logger.info(currentTask + " done.");
+        this.logger.progressComplete(currentTask);
     }
 
     @Override

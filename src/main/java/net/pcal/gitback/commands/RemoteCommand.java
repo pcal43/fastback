@@ -34,20 +34,20 @@ public class RemoteCommand {
     }
 
     private int showRemote(final CommandContext<ServerCommandSource> cc) {
-        return executeStandard(this.ctx, cc, (gitc, wc, tali) -> {
+        return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
             final String remoteUrl = wc.getRemotePushUrl();
             final boolean enabled = wc.isRemoteBackupEnabled();
             if (enabled && remoteUrl != null) {
-                tali.feedback("Remote backups are enabled to:");
-                tali.feedback(remoteUrl);
+                log.notify("Remote backups are enabled to:");
+                log.notify(remoteUrl);
                 return SUCCESS;
             } else {
-                tali.error("Remote backups are disabled.");
+                log.notifyError("Remote backups are disabled.");
                 if (remoteUrl != null) {
-                    tali.feedback("Run '/backup remote enable' to enable remote backups to:");
-                    tali.feedback(remoteUrl);
+                    log.notify("Run '/backup remote enable' to enable remote backups to:");
+                    log.notify(remoteUrl);
                 } else {
-                    tali.feedback("Run '/backup remote <remote-url>' to enable remote backups.");
+                    log.notify("Run '/backup remote <remote-url>' to enable remote backups.");
                 }
                 return FAILURE;
             }
@@ -55,19 +55,19 @@ public class RemoteCommand {
     }
 
     private int enable(final CommandContext<ServerCommandSource> cc) {
-        return executeStandard(this.ctx, cc, (gitc, wc, tali) -> {
+        return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
             final String currentUrl = wc.getRemotePushUrl();
             final boolean currentEnabled = wc.isRemoteBackupEnabled();
             if (currentUrl == null) {
-                tali.error("No remote URL is set.");
-                tali.feedback("Run '/backup remote <remote-url>'");
+                log.notifyError("No remote URL is set.");
+                log.notify("Run '/backup remote <remote-url>'");
                 return FAILURE;
             } else if (currentEnabled) {
-                tali.error("Remote backups are already enabled.");
+                log.notifyError("Remote backups are already enabled.");
                 return FAILURE;
             } else {
-                tali.feedback("Remote backups enabled to:");
-                tali.feedback(currentUrl);
+                log.notify("Remote backups enabled to:");
+                log.notify(currentUrl);
                 WorldConfig.setRemoteBackupEnabled(gitc, true);
                 gitc.save();
                 return SUCCESS;
@@ -76,44 +76,44 @@ public class RemoteCommand {
     }
 
     private int disable(final CommandContext<ServerCommandSource> cc) {
-        return executeStandard(this.ctx, cc, (gitc, wc, tali) -> {
+        return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
             final boolean currentEnabled = wc.isRemoteBackupEnabled();
             if (!currentEnabled) {
-                tali.error("Remote backups are already disabled.");
+                log.notifyError("Remote backups are already disabled.");
                 return FAILURE;
             } else {
                 WorldConfig.setRemoteBackupEnabled(gitc, false);
                 gitc.save();
-                tali.feedback("Remote backups disabled.");
+                log.notifyError("Remote backups disabled.");
                 return SUCCESS;
             }
         });
     }
 
     private int setRemoteUrl(final CommandContext<ServerCommandSource> cc) {
-        return executeStandard(this.ctx, cc, (gitc, wc, tali) -> {
+        return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
             final String newUrl = cc.getArgument("remote-url", String.class);
             final String currentUrl = wc.getRemotePushUrl();
             final boolean currentEnable = wc.isRemoteBackupEnabled();
             if (currentUrl != null && currentUrl.equals(newUrl)) {
                 if (currentEnable) {
-                    tali.feedback("Remote backups are already enabled to:");
-                    tali.feedback(newUrl);
+                    log.notify("Remote backups are already enabled to:");
+                    log.notify(newUrl);
                     return SUCCESS;
                 } else {
                     WorldConfig.setRemoteBackupEnabled(gitc, true);
                     gitc.save();
-                    tali.feedback("Enabled remote backups to:");
-                    tali.feedback(newUrl);
+                    log.notify("Enabled remote backups to:");
+                    log.notify(newUrl);
                 }
             } else {
                 WorldConfig.setRemoteUrl(gitc, newUrl);
                 if (currentEnable) {
-                    tali.feedback("Remote backup URL changed to " + newUrl);
+                    log.notify("Remote backup URL changed to " + newUrl);
                 } else {
                     WorldConfig.setRemoteBackupEnabled(gitc, true);
-                    tali.feedback("Enabled remote backups to:" + newUrl);
-                    tali.feedback(newUrl);
+                    log.notify("Enabled remote backups to:" + newUrl);
+                    log.notify(newUrl);
                 }
                 gitc.save();
             }

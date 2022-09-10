@@ -1,8 +1,8 @@
 package net.pcal.gitback;
 
+import net.pcal.gitback.logging.Logger;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.StoredConfig;
 
 import java.io.IOException;
@@ -20,9 +20,10 @@ public class WorldUtils {
             Pair.of("world/dot-gitattributes", Path.of(".gitattributes"))
     );
 
-    public static void doWorldMaintenance(final Git git, final Loggr logger) throws IOException {
+    public static void doWorldMaintenance(final Git git, final Logger logger) throws IOException {
         logger.info("Doing world maintenance");
-        final Path worldSaveDir = git.getRepository().getWorkTree().toPath();;
+        final Path worldSaveDir = git.getRepository().getWorkTree().toPath();
+        ;
         ensureWorldHasUuid(worldSaveDir, logger);
         for (final Pair<String, Path> resource2path : WORLD_RESOURCES_TO_COPY) {
             writeResourceToFile(resource2path.getLeft(), worldSaveDir.resolve(resource2path.getRight()));

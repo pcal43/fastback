@@ -2,10 +2,10 @@ package net.pcal.gitback.tasks;
 
 import net.pcal.gitback.FileUtils;
 import net.pcal.gitback.GitUtils;
-import net.pcal.gitback.Loggr;
 import net.pcal.gitback.WorldConfig;
-import net.pcal.gitback.progress.IncrementalProgressMonitor;
-import net.pcal.gitback.progress.LoggingProgressMonitor;
+import net.pcal.gitback.logging.IncrementalProgressMonitor;
+import net.pcal.gitback.logging.LoggingProgressMonitor;
+import net.pcal.gitback.logging.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ProgressMonitor;
@@ -25,25 +25,22 @@ public class RestoreSnapshotTask extends Task {
     private final String snapshotName;
     private final String worldName;
     private final Path saveDir;
-    private final TaskListener taskListener;
     private final boolean doClean = true;
-    private final Loggr logger;
+    private final Logger logger;
 
     public static Runnable create(Path worldSaveDir,
                                   String snapshotName,
                                   String worldName,
                                   Path saveDir,
-                                  TaskListener tl,
-                                  Loggr logger) {
-        return new RestoreSnapshotTask(worldSaveDir, snapshotName, worldName, saveDir, tl, logger);
+                                  Logger logger) {
+        return new RestoreSnapshotTask(worldSaveDir, snapshotName, worldName, saveDir, logger);
     }
 
-    private RestoreSnapshotTask(Path worldSaveDir, String snapshotName, String worldName, Path saveDir, TaskListener tl, Loggr logger) {
+    private RestoreSnapshotTask(Path worldSaveDir, String snapshotName, String worldName, Path saveDir, Logger logger) {
         this.worldSaveDir = requireNonNull(worldSaveDir);
         this.snapshotName = requireNonNull(snapshotName);
         this.worldName = requireNonNull(worldName);
         this.saveDir = requireNonNull(saveDir);
-        this.taskListener = requireNonNull(tl);
         this.logger = requireNonNull(logger);
     }
 
@@ -55,12 +52,11 @@ public class RestoreSnapshotTask extends Task {
             config = WorldConfig.load(worldSaveDir, git.getRepository().getConfig());
             branchName = getSnapshotBranchName(config.worldUuid(), this.snapshotName);
             if (!GitUtils.isBranchExtant(git, branchName, logger)) {
-                taskListener.error("No such snapshot " + snapshotName);
+                logger.notifyError("No such snapshot " + snapshotName);
                 return;
             }
         } catch (IOException | GitAPIException e) {
-            this.taskListener.internalError();
-            logger.error("Unexpected error looking up branch names", e);
+            logger.internalError("Unexpected error looking up branch names", e);
             setFailed();
             return;
         }
@@ -69,15 +65,14 @@ public class RestoreSnapshotTask extends Task {
         try {
             targetDirectory = getTargetDir(this.saveDir, worldName, snapshotName);
             String uri = "file://" + this.worldSaveDir.toAbsolutePath();
-            taskListener.feedback("Restoring " + this.snapshotName + " to\n" + targetDirectory);
+            logger.notify("Restoring " + this.snapshotName + " to\n" + targetDirectory);
             final ProgressMonitor pm = new IncrementalProgressMonitor(new LoggingProgressMonitor(logger), 100);
             try (Git git = Git.cloneRepository().setProgressMonitor(pm).setDirectory(targetDirectory.toFile()).
                     setBranchesToClone(List.of("refs/heads/" + branchName)).setBranch(branchName).setURI(uri).call()) {
 
             }
         } catch (Exception e) {
-            this.taskListener.internalError();
-            logger.error("Restoration clone of " + branchName + " failed.", e);
+            logger.internalError("Restoration clone of " + branchName + " failed.", e);
             setFailed();
             return;
         }
@@ -86,14 +81,14 @@ public class RestoreSnapshotTask extends Task {
                 FileUtils.rmdir(targetDirectory.resolve(".git"));
                 targetDirectory.resolve(WORLD_UUID_PATH).toFile().delete();
             } catch (IOException e) {
-                this.taskListener.error("Restoration finished but an unexpected error " +
-                        "occurred during cleanup.  See log for details.");
-                logger.error("Unexpected error cleaning restored snapshot", e);
+                logger.notifyError("Restoration finished but an unexpected error " +
+                        "occurred during cleanup.");
+                logger.internalError("Unexpected error cleaning restored snapshot", e);
                 setFailed();
                 return;
             }
         }
-        taskListener.feedback("Restoration complete");
+        logger.notify("Restoration complete");
         setCompleted();
     }
 

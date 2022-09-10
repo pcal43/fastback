@@ -7,7 +7,9 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.gitback.ModContext;
 import net.pcal.gitback.WorldConfig;
-import net.pcal.gitback.tasks.TaskListener;
+import net.pcal.gitback.logging.ChatLogger;
+import net.pcal.gitback.logging.CompositeLogger;
+import net.pcal.gitback.logging.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.StoredConfig;
@@ -16,7 +18,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 import static net.pcal.gitback.GitUtils.isGitRepo;
-import static net.pcal.gitback.commands.CommandTaskListener.taskListener;
 
 public class Commands {
 
@@ -39,31 +40,36 @@ public class Commands {
         CommandRegistrationCallback.EVENT.register((dispatcher, regAccess, env) -> dispatcher.register(argb));
     }
 
+    public static Logger commandLogger(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
+        return CompositeLogger.of(
+                ctx.getLogger(),
+                new ChatLogger(cc.getSource())
+        );
+    }
 
     interface CommandLogic {
-        int execute(StoredConfig gitConfig, WorldConfig worldConfig, TaskListener taskListener)
+        int execute(StoredConfig gitConfig, WorldConfig worldConfig, Logger logger)
                 throws IOException, GitAPIException;
     }
 
     static int executeStandard(final ModContext ctx, final CommandContext<ServerCommandSource> cc, CommandLogic sub) {
         final MinecraftServer server = cc.getSource().getServer();
-        final TaskListener taskListener = taskListener(cc);
+        final Logger logger = commandLogger(ctx, cc);
         final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
         if (!isGitRepo(worldSaveDir)) {
-            taskListener.backupsNotEnabled();
+            logger.notifyError("Backups are not enabled on this world.  Run '/backup enable'");
             return FAILURE;
         }
         try (final Git git = Git.open(worldSaveDir.toFile())) {
             final StoredConfig gitConfig = git.getRepository().getConfig();
             final WorldConfig worldConfig = WorldConfig.load(worldSaveDir, gitConfig);
             if (!worldConfig.isBackupEnabled()) {
-                taskListener.backupsNotEnabled();
+                logger.notifyError("Backups are not enabled on this world.  Run '/backup enable'");
                 return FAILURE;
             }
-            return sub.execute(gitConfig, worldConfig, taskListener);
+            return sub.execute(gitConfig, worldConfig, logger);
         } catch (Exception e) {
-            taskListener.internalError();
-            ctx.getLogger().error(e);
+            logger.internalError("Command execution failed.", e);
             return FAILURE;
         }
     }

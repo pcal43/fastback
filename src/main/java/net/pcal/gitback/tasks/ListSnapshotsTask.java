@@ -1,7 +1,7 @@
 package net.pcal.gitback.tasks;
 
-import net.pcal.gitback.Loggr;
 import net.pcal.gitback.WorldConfig;
+import net.pcal.gitback.logging.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
@@ -22,26 +22,26 @@ public class ListSnapshotsTask extends Task {
     private final Path worldSaveDir;
     private final Consumer<String> out;
     private final Function<String, String> branchFilter;
-    private final Loggr logger;
+    private final Logger logger;
 
-    public static Runnable listSnapshotsForWorld(Path worldSaveDir, Consumer<String> sink, Loggr logger) {
+    public static Runnable listSnapshotsForWorld(Path worldSaveDir, Consumer<String> sink, Logger logger) {
         final String worldUuid;
         try {
             worldUuid = WorldConfig.getWorldUuid(worldSaveDir);
         } catch (IOException e) {
             sink.accept("Internal error encountered.  See logs for details.");
-            logger.error("Could not load world Uuid", e);
+            logger.internalError("Could not load world Uuid", e);
             return null;//FIXME
         }
         return listSnapshotsForWorld(worldSaveDir, worldUuid, sink, logger);
     }
 
-    public static Runnable listSnapshotsForWorld(Path worldSaveDir, String worldUuid, Consumer<String> sink, Loggr logger) {
+    public static Runnable listSnapshotsForWorld(Path worldSaveDir, String worldUuid, Consumer<String> sink, Logger logger) {
         final Function<String, String> branchFilter = branchName -> filterOnWorldUuid(branchName, worldUuid, logger);
         return new ListSnapshotsTask(worldSaveDir, branchFilter, sink, logger);
     }
 
-    private ListSnapshotsTask(Path worldSaveDir, Function<String, String> branchFilter, Consumer<String> sink, Loggr logger) {
+    private ListSnapshotsTask(Path worldSaveDir, Function<String, String> branchFilter, Consumer<String> sink, Logger logger) {
         this.worldSaveDir = requireNonNull(worldSaveDir);
         this.out = requireNonNull(sink);
         this.branchFilter = requireNonNull(branchFilter);

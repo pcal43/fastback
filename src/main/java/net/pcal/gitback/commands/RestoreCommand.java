@@ -12,8 +12,8 @@ import net.pcal.gitback.tasks.RestoreSnapshotTask;
 import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.gitback.commands.CommandTaskListener.taskListener;
 import static net.pcal.gitback.commands.Commands.SUCCESS;
+import static net.pcal.gitback.commands.Commands.commandLogger;
 import static net.pcal.gitback.commands.Commands.executeStandard;
 
 public class RestoreCommand {
@@ -39,8 +39,7 @@ public class RestoreCommand {
             final String worldName = this.ctx.getWorldName(server);
             final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
             this.ctx.getExecutorService().execute(
-                    RestoreSnapshotTask.create(worldSaveDir, snapshotName, worldName,
-                            restoresDir, taskListener(cc), this.ctx.getLogger()));
+                    RestoreSnapshotTask.create(worldSaveDir, snapshotName, worldName, restoresDir, commandLogger(ctx, cc)));
             return SUCCESS;
         });
     }

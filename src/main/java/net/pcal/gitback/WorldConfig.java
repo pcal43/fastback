@@ -1,5 +1,6 @@
 package net.pcal.gitback;
 
+import net.pcal.gitback.logging.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Config;
 
@@ -93,7 +94,7 @@ public record WorldConfig(
         return Files.readString(worldSaveDir.resolve(Path.of(WORLD_UUID_PATH))).trim();
     }
 
-    public static void ensureWorldHasUuid(final Path worldSaveDir, final Loggr logger) throws IOException {
+    public static void ensureWorldHasUuid(final Path worldSaveDir, final Logger logger) throws IOException {
         final Path worldUuidpath = worldSaveDir.resolve(WORLD_UUID_PATH);
         if (!worldUuidpath.toFile().exists()) {
             final String newUuid = UUID.randomUUID().toString();
