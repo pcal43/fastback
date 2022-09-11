@@ -11,7 +11,7 @@
     "sources": "https://github.com/pcal43/gitback"
   },
   "license": "GPL-2",
-  "icon": "",
+  "icon": "fastback-icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
