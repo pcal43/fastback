@@ -25,12 +25,12 @@ import static java.util.Objects.requireNonNull;
 class FabricFrameworkProvider implements ModContext.ModFrameworkProvider {
 
     private static final String MOD_ID = "fastback";
-    private FabricClientProvider clientSpi;
+    private FabricClientProvider clientProvider;
     final Logger logger = new Log4jLogger(LogManager.getLogger(MOD_ID));
 
     void setClientProvider(FabricClientProvider clientSpi) {
-        if (this.clientSpi != null) throw new IllegalStateException();
-        this.clientSpi = requireNonNull(clientSpi);
+        if (this.clientProvider != null) throw new IllegalStateException();
+        this.clientProvider = requireNonNull(clientSpi);
     }
 
     @Override
@@ -59,10 +59,9 @@ class FabricFrameworkProvider implements ModContext.ModFrameworkProvider {
     }
 
     @Override
-    public Path getClientSavesDir() throws IOException {
-        final MinecraftClient client = MinecraftClient.getInstance();
-        if (this.clientSpi != null) {
-            Path restoreDir = clientSpi.getClientRestoreDir();
+    public Path getClientSavesDir() {
+        if (this.clientProvider != null) {
+            Path restoreDir = clientProvider.getClientRestoreDir();
             if (restoreDir != null) return restoreDir;
             this.logger.warn("getClientRestoreDir unexpectedly null, using temp dir");
         }
@@ -71,8 +70,8 @@ class FabricFrameworkProvider implements ModContext.ModFrameworkProvider {
 
     @Override
     public void setClientSavingScreenText(final Text text) {
-        if (this.clientSpi != null) {
-            this.clientSpi.consumeSaveScreenText(text);
+        if (this.clientProvider != null) {
+            this.clientProvider.consumeSaveScreenText(text);
         }
     }
 
