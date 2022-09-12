@@ -65,12 +65,6 @@ public class LifecycleUtils {
         }
 
         @Override
-        public void notify(String message) {
-
-            this.ctx.setSavingScreenText(Text.literal(message));
-        }
-
-        @Override
         public void progressComplete(String message, int percentage) {
             if (message.contains("Writing objects")) {
                 message = "Uploading remote backup";
@@ -89,8 +83,13 @@ public class LifecycleUtils {
         }
 
         @Override
-        public void notifyError(String message) {
-            this.ctx.setSavingScreenText(Text.literal(message));
+        public void notify(Text message) {
+            this.ctx.setSavingScreenText(message);
+        }
+
+        @Override
+        public void notifyError(Text message) {
+            this.ctx.setSavingScreenText(message);
         }
 
         @Override

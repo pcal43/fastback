@@ -1,0 +1,5 @@
+{
+  "commands.fastback.help.subcommands": "Available subcommands:\n%s\nFor detailed help on a subcommand, run\n/backup help [subcommand]",
+  "commands.fastback.enable.help": "%sEnable local backups and on-shutdown backups on this world.",
+  "commands.fastback.disable.help": "%sDisable backups on this world."
+}

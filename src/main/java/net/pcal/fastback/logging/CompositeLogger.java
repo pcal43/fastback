@@ -1,5 +1,7 @@
 package net.pcal.fastback.logging;
 
+import net.minecraft.text.Text;
+
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
@@ -17,7 +19,7 @@ public class CompositeLogger implements Logger {
     }
 
     @Override
-    public void notify(String message) {
+    public void notify(Text message) {
         this.delegates.forEach(d -> d.notify(message));
     }
 
@@ -32,7 +34,7 @@ public class CompositeLogger implements Logger {
     }
 
     @Override
-    public void notifyError(String message) {
+    public void notifyError(Text message) {
         this.delegates.forEach(d -> d.notifyError(message));
     }
 

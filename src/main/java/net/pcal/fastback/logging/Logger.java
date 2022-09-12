@@ -1,14 +1,16 @@
 package net.pcal.fastback.logging;
 
-public interface Logger {
+import net.minecraft.text.Text;
 
-    void notify(String message);
+public interface Logger {
 
     void progressComplete(String message, int percentage);
 
     void progressComplete(String message);
 
-    void notifyError(String message);
+    void notify(Text message);
+
+    void notifyError(Text message);
 
     void internalError(String message, Throwable t);
 
@@ -20,4 +22,13 @@ public interface Logger {
 
     void debug(String message, Throwable t);
 
+    @Deprecated
+    default void notify(String message) {
+        this.notify(Text.literal(message));
+    }
+
+    @Deprecated
+    default void notifyError(String message) {
+        this.notifyError(Text.literal(message));
+    }
 }

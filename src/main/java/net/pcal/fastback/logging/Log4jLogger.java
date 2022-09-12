@@ -1,5 +1,7 @@
 package net.pcal.fastback.logging;
 
+import net.minecraft.text.Text;
+
 import static java.util.Objects.requireNonNull;
 
 public class Log4jLogger implements Logger {
@@ -11,13 +13,13 @@ public class Log4jLogger implements Logger {
     }
 
     @Override
-    public void notify(String message) {
-        this.log4j.info("[NOTIFY] " + message);
+    public void notify(Text message) {
+        this.log4j.info("[NOTIFY] " + message.getString());
     }
 
     @Override
-    public void notifyError(String message) {
-        this.log4j.error("[NOTIFY-ERROR]" + message);
+    public void notifyError(Text message) {
+        this.log4j.info("[NOTIFY-ERROR] " + message.getString());
     }
 
     @Override
