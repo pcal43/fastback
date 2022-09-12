@@ -25,8 +25,8 @@ public class StatusCommand {
 
     private int execute(CommandContext<ServerCommandSource> cc) {
         return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
-            log.notifyError("Local backup:  " + (wc.isBackupEnabled() ? "enabled" : "disabled"));
-            log.notifyError("Remote backup: " + (wc.isRemoteBackupEnabled() ? "enabled" : "disabled"));
+            log.notify("Local backup:  " + (wc.isBackupEnabled() ? "enabled" : "disabled"));
+            log.notify("Remote backup: " + (wc.isRemoteBackupEnabled() ? "enabled" : "disabled"));
             if (wc.isRemoteBackupEnabled()) {
                 String url = wc.getRemotePushUrl();
                 if (url == null) {

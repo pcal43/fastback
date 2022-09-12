@@ -37,6 +37,7 @@ public class Commands {
         ShutdownCommand.register(argb, ctx);
         UuidCommand.register(argb, ctx);
         VersionCommand.register(argb, ctx);
+        HelpCommand.register(argb, ctx);
         if (ctx.isUnsafeCommandsEnabled()) {
             NowCommand.register(argb, ctx);
             GcCommand.register(argb, ctx);
