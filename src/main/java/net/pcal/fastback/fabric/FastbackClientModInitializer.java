@@ -1,6 +1,7 @@
 package net.pcal.fastback.fabric;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.MessageScreen;
@@ -19,6 +20,11 @@ public class FastbackClientModInitializer implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        ClientLifecycleEvents.CLIENT_STARTED.register(
+                minecraftClient -> {
+                    this.modContext.getLogger().info("CLIENT STARTED");
+                }
+        );
         ServerLifecycleEvents.SERVER_STOPPED.register(
                 minecraftServer -> {
                     LifecycleUtils.onWorldStop(modContext, minecraftServer);
@@ -49,6 +55,14 @@ public class FastbackClientModInitializer implements ClientModInitializer {
         @Override
         public Path getClientRestoreDir() {
             return null;
+        }
+
+        @Override
+        public void sendClientChatMessage(Text text) {
+            final MinecraftClient client = MinecraftClient.getInstance();
+            if (client != null) {
+                client.inGameHud.getChatHud().addMessage(text);
+            }
         }
     }
 }

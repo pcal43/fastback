@@ -4,7 +4,6 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModMetadata;
 import net.minecraft.SharedConstants;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
@@ -16,7 +15,6 @@ import net.pcal.fastback.logging.Log4jLogger;
 import net.pcal.fastback.logging.Logger;
 import org.apache.logging.log4j.LogManager;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 
@@ -59,6 +57,11 @@ class FabricFrameworkProvider implements ModContext.ModFrameworkProvider {
     }
 
     @Override
+    public boolean isClient() {
+        return this.clientProvider != null;
+    }
+
+    @Override
     public Path getClientSavesDir() {
         if (this.clientProvider != null) {
             Path restoreDir = clientProvider.getClientRestoreDir();
@@ -72,6 +75,13 @@ class FabricFrameworkProvider implements ModContext.ModFrameworkProvider {
     public void setClientSavingScreenText(final Text text) {
         if (this.clientProvider != null) {
             this.clientProvider.consumeSaveScreenText(text);
+        }
+    }
+
+    @Override
+    public void sendClientChatMessage(final Text text) {
+        if (this.clientProvider != null) {
+            this.clientProvider.sendClientChatMessage(text);
         }
     }
 

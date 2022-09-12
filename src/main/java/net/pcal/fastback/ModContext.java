@@ -45,6 +45,10 @@ public class ModContext {
         return false;
     }
 
+    public boolean isStartupNotificationEnabled() {
+        return true;
+    }
+
     public Path getRestoresDir() throws IOException {
         Path restoreDir = this.spi.getClientSavesDir();
         if (restoreDir != null) return restoreDir;
@@ -72,8 +76,16 @@ public class ModContext {
         this.spi.setWorldSaveEnabled(mc, enabled);
     }
 
-    void setSavingScreenText(Text text) {
+    public boolean isClient() {
+        return spi.isClient();
+    }
+
+    public void setSavingScreenText(Text text) {
         this.spi.setClientSavingScreenText(text);
+    }
+
+    public void sendClientChatMessage(Text text) {
+        this.spi.sendClientChatMessage(text);
     }
 
     public Path getWorldSaveDirectory(MinecraftServer server) {
@@ -106,6 +118,10 @@ public class ModContext {
 
         void setClientSavingScreenText(Text text);
 
+        void sendClientChatMessage(Text text);
+
         Path getClientSavesDir() throws IOException;
+
+        boolean isClient();
     }
 }

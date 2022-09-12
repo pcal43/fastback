@@ -9,4 +9,6 @@ interface FabricClientProvider {
     void consumeSaveScreenText(Text text);
 
     Path getClientRestoreDir();
+
+    void sendClientChatMessage(Text text);
 }
