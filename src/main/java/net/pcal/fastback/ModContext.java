@@ -35,6 +35,6 @@ public interface ModContext {
     }
 
     default boolean isUnsafeCommandsEnabled() {
-        return true;
+        return false;
     }
 }
