@@ -1,5 +1,6 @@
 package net.pcal.fastback.fabric;
 
+import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModMetadata;
@@ -26,13 +27,19 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static java.nio.file.Files.createTempDirectory;
+import static java.util.Objects.requireNonNull;
 
 class FabricModContext implements ModContext {
 
     private static final String MOD_ID = "fastback";
     private final Logger logger = new Log4jLogger(LogManager.getLogger(MOD_ID));
     private final ExecutorService exs = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    private final EnvType envType;
     private Path tempRestoresDirectory = null;
+
+    FabricModContext(EnvType envType) {
+        this.envType = requireNonNull(envType);
+    }
 
     @Override
     public String getMinecraftVersion() {
@@ -79,11 +86,13 @@ class FabricModContext implements ModContext {
 
     @Override
     public void setSavingScreenText(Text text) {
-        final MinecraftClient client = MinecraftClient.getInstance();
-        if (client != null) {
-            final Screen screen = client.currentScreen;
-            if (screen instanceof MessageScreen) {
-                ((ScreenAccessors) screen).setTitle(text);
+        if (envType == EnvType.CLIENT) {
+            final MinecraftClient client = MinecraftClient.getInstance();
+            if (client != null) {
+                final Screen screen = client.currentScreen;
+                if (screen instanceof MessageScreen) {
+                    ((ScreenAccessors) screen).setTitle(text);
+                }
             }
         }
     }
