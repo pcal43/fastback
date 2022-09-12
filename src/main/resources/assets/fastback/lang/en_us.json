@@ -3,7 +3,7 @@
   "commands.fastback.enable.help": "%sEnable local backups and on-shutdown backups on this world.",
   "commands.fastback.disable.help": "%sDisable backups on this world.",
 
-  "fastback.notify.startup-suggest-enable": "Backups are disabled. To enable, run '/backup enable'",
+  "fastback.notify.suggest-enable": "Backups are disabled. To enable, run '/backup enable'",
   "fastback.notify.internal-error": "An unexpected backup error occurred. See log for details.",
 
   "fastback.savescreen.remote-preparing": "Preparing remote backup %d%%",

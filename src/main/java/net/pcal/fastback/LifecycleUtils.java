@@ -38,7 +38,7 @@ public class LifecycleUtils {
             }
         }
         if (ctx.isStartupNotificationEnabled()) {
-            logger.notify(translatable("fastback.notify.startup-suggest-enable"));
+            logger.notify(translatable("fastback.notify.suggest-enable"));
         }
     }
 
@@ -47,7 +47,7 @@ public class LifecycleUtils {
                 : ctx.getLogger();
         final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
         if (!isBackupsEnabledOn(worldSaveDir)) {
-            logger.info("Backups not enabled; to enable, run '/backup enable'");
+            logger.notify(translatable("fastback.notify.suggest-enable"));
             return;
         }
         try {
