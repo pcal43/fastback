@@ -5,14 +5,11 @@ import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModMetadata;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.MessageScreen;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.world.level.storage.LevelStorage;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.fabric.mixins.ScreenAccessors;
 import net.pcal.fastback.fabric.mixins.ServerAccessors;
 import net.pcal.fastback.fabric.mixins.SessionAccessors;
 import net.pcal.fastback.logging.Log4jLogger;
@@ -24,8 +21,10 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 
 import static java.nio.file.Files.createTempDirectory;
+import static java.util.Objects.requireNonNull;
 
 class FabricModContext implements ModContext {
 
@@ -33,6 +32,12 @@ class FabricModContext implements ModContext {
     private final Logger logger = new Log4jLogger(LogManager.getLogger(MOD_ID));
     private final ExecutorService exs = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     private Path tempRestoresDirectory = null;
+    private Consumer<Text> saveScreenHandler = null;
+
+    void installSaveScreenhandler(Consumer<Text> handler) {
+        if (this.saveScreenHandler != null) throw new IllegalStateException();
+        this.saveScreenHandler = requireNonNull(handler);
+    }
 
     @Override
     public String getMinecraftVersion() {
@@ -79,12 +84,8 @@ class FabricModContext implements ModContext {
 
     @Override
     public void setSavingScreenText(Text text) {
-        final MinecraftClient client = MinecraftClient.getInstance();
-        if (client != null) {
-            final Screen screen = client.currentScreen;
-            if (screen instanceof MessageScreen) {
-                ((ScreenAccessors) screen).setTitle(text);
-            }
+        if (this.saveScreenHandler != null) {
+            this.saveScreenHandler.accept(text);
         }
     }
 

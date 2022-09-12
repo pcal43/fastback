@@ -1,19 +1,15 @@
 package net.pcal.fastback.fabric;
 
-import net.fabricmc.api.ModInitializer;
+import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.pcal.fastback.LifecycleUtils;
 
-public class FstbackInitializer implements ModInitializer {
+public class FastbackDedicatedServerModInitializer implements DedicatedServerModInitializer {
 
-    // ===================================================================================
-    // ModInitializer implementation
+    private final FabricModContext modContext = new FabricModContext();
 
     @Override
-    public void onInitialize() {
-        final FabricModContext modContext = new FabricModContext();
-
-
+    public void onInitializeServer() {
         ServerLifecycleEvents.SERVER_STOPPED.register(
                 minecraftServer -> {
                     LifecycleUtils.onWorldStop(modContext, minecraftServer);
@@ -26,6 +22,4 @@ public class FstbackInitializer implements ModInitializer {
         );
         LifecycleUtils.onMinecraftStart(modContext);
     }
-
-
 }
