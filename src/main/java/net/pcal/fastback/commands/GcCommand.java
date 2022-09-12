@@ -15,7 +15,8 @@ import java.util.Date;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.commands.Commands.*;
+import static net.pcal.fastback.commands.Commands.SUCCESS;
+import static net.pcal.fastback.commands.Commands.executeStandard;
 
 //
 // We basically want to
@@ -45,11 +46,11 @@ public class GcCommand {
                 try (final Git git = Git.open(wc.worldSaveDir().toFile())) {
                     log.notify("Collecting garbage in local backup...");
                     log.info("Stats before gc:");
-                    log.info(""+git.gc().getStatistics());
+                    log.info("" + git.gc().getStatistics());
                     git.gc().setExpire(new Date()).setAggressive(false).setProgressMonitor(pm).call();
                     log.notify("Garbage collection complete.");
                     log.info("Stats after gc:");
-                    log.info(""+git.gc().getStatistics());
+                    log.info("" + git.gc().getStatistics());
 
                 } catch (IOException | GitAPIException e) {
                     log.internalError("Failed to gc", e);

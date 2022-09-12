@@ -4,8 +4,8 @@ import net.pcal.fastback.BranchNameUtils;
 import net.pcal.fastback.GitUtils;
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.IncrementalProgressMonitor;
-import net.pcal.fastback.logging.LoggingProgressMonitor;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.LoggingProgressMonitor;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
@@ -29,7 +29,7 @@ public class PushTask extends Task {
     private final String branchNameToPush;
     private final Logger logger;
 
-        public PushTask(final Path worldSaveDir,
+    public PushTask(final Path worldSaveDir,
                     final String branchNameToPush,
                     final Logger logger) {
         this.worldSaveDir = requireNonNull(worldSaveDir);
@@ -99,7 +99,7 @@ public class PushTask extends Task {
             logger.debug("merge");
             git.merge().setContentMergeStrategy(ContentMergeStrategy.OURS).
                     include(branchId).setMessage("Merge " + branchNameToPush + " into " + tempBranchName).call();
-            logger.debug("checking out "+branchNameToPush);
+            logger.debug("checking out " + branchNameToPush);
             git.checkout().setName(branchNameToPush).call();
             logger.debug("push " + tempBranchName);
             git.push().setProgressMonitor(pm).setRemote(remoteName).setRefSpecs(new RefSpec(tempBranchName + ":" + tempBranchName), new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();

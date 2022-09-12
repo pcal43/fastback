@@ -32,9 +32,9 @@ public class HelpCommand {
     public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         final HelpCommand c = new HelpCommand(ctx);
         argb.then(literal("help").executes(c::help).then(
-                        argument("subcommand", StringArgumentType.word()).
-                                suggests(new HelpTopicSuggestions(ctx)).
-                                executes(c::helpSubcommand))
+                argument("subcommand", StringArgumentType.word()).
+                        suggests(new HelpTopicSuggestions(ctx)).
+                        executes(c::helpSubcommand))
         );
     }
 
@@ -70,7 +70,7 @@ public class HelpCommand {
     private int help(CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc);
         StringWriter subcommands = null;
-        for(final String available : getSubcommandNames(cc)) {
+        for (final String available : getSubcommandNames(cc)) {
             if (subcommands == null) {
                 subcommands = new StringWriter();
             } else {
@@ -86,23 +86,22 @@ public class HelpCommand {
         final Logger log = commandLogger(ctx, cc);
         final Collection<CommandNode<ServerCommandSource>> subcommands = cc.getNodes().get(0).getNode().getChildren();
         final String subcommand = cc.getLastChild().getArgument("subcommand", String.class);
-        for(String available : getSubcommandNames(cc)) {
+        for (String available : getSubcommandNames(cc)) {
             if (subcommand.equals(available)) {
-                final String prefix = "/backup "+subcommand+": ";
-                log.notify(translatable("commands.fastback."+subcommand+".help", prefix));
+                final String prefix = "/backup " + subcommand + ": ";
+                log.notify(translatable("commands.fastback." + subcommand + ".help", prefix));
                 return SUCCESS;
             }
         }
-        log.notifyError(Text.literal("Invalid subcommand '"+subcommand+"'"));
+        log.notifyError(Text.literal("Invalid subcommand '" + subcommand + "'"));
         return FAILURE;
     }
 
     private static List<String> getSubcommandNames(CommandContext<ServerCommandSource> cc) {
         final List<String> out = new ArrayList<>();
-        cc.getNodes().get(0).getNode().getChildren().forEach(node->out.add(node.getName()));
+        cc.getNodes().get(0).getNode().getChildren().forEach(node -> out.add(node.getName()));
         return out;
     }
-
 
 
 }

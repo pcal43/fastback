@@ -14,8 +14,10 @@ import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.GitUtils.isGitRepo;
-import static net.pcal.fastback.commands.Commands.*;
-import static net.pcal.fastback.tasks.ListSnapshotsTask.listSnapshotsForWorld;
+import static net.pcal.fastback.commands.Commands.FAILURE;
+import static net.pcal.fastback.commands.Commands.SUCCESS;
+import static net.pcal.fastback.commands.Commands.commandLogger;
+import static net.pcal.fastback.commands.Commands.executeStandard;
 import static net.pcal.fastback.tasks.ListSnapshotsTask.listSnapshotsForWorldSorted;
 
 public class ListCommand {
@@ -32,7 +34,7 @@ public class ListCommand {
     }
 
     private int execute(final CommandContext<ServerCommandSource> cc) {
-        return executeStandard(ctx, cc, (gitc, wc, log)  -> {
+        return executeStandard(ctx, cc, (gitc, wc, log) -> {
             final MinecraftServer server = cc.getSource().getServer();
             final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
             if (!isGitRepo(worldSaveDir)) {
@@ -43,7 +45,7 @@ public class ListCommand {
             final Consumer<String> sink = message -> cc.getSource().sendFeedback(Text.literal(message), false);
             sink.accept("Local snapshots:");
             this.ctx.getExecutorService().execute(() -> {
-                for(String snapshotName : listSnapshotsForWorldSorted(worldSaveDir, ctx.getLogger())) {
+                for (String snapshotName : listSnapshotsForWorldSorted(worldSaveDir, ctx.getLogger())) {
                     log.notify(snapshotName);
                 }
             });

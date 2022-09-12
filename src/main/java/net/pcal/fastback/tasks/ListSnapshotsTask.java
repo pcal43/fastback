@@ -29,7 +29,7 @@ public class ListSnapshotsTask extends Task {
 
     public static List<String> listSnapshotsForWorldSorted(Path worldSaveDir, Logger log) {
         final List<String> out = new ArrayList<>();
-        listSnapshotsForWorld(worldSaveDir, s->out.add(s), log).run();
+        listSnapshotsForWorld(worldSaveDir, s -> out.add(s), log).run();
         Collections.sort(out);
         return out;
     }

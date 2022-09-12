@@ -42,7 +42,7 @@ public class GcInfoCommand {
                 try (final Git git = Git.open(wc.worldSaveDir().toFile())) {
                     final Properties stats = git.gc().getStatistics();
                     final List<String> props = new ArrayList<>();
-                    stats.keySet().forEach(k->props.add(String.valueOf(k)));
+                    stats.keySet().forEach(k -> props.add(String.valueOf(k)));
                     Collections.sort(props);
                     props.forEach(p -> log.notify(p + ": " + stats.get(p)));
                 } catch (GitAPIException | IOException e) {
