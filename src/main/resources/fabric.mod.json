@@ -14,8 +14,11 @@
   "icon": "fastback-icon.png",
   "environment": "*",
   "entrypoints": {
-    "main": [
-      "net.pcal.fastback.fabric.FastbackInitializer"
+    "client": [
+      "net.pcal.fastback.fabric.FastbackClientModInitializer"
+    ],
+    "server": [
+      "net.pcal.fastback.fabric.FastbackDedicatedServerModInitializer"
     ]
   },
   "mixins": [
