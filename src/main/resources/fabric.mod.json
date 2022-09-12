@@ -1,25 +1,25 @@
 {
   "schemaVersion": 1,
-  "id": "gitback",
+  "id": "fastback",
   "version": "${version}",
-  "name": "Git Backups",
-  "description": "Fast, incremental world backups based on git",
+  "name": "Fast Backups",
+  "description": "Fast, incremental world backups powered by git",
   "authors": ["pcal.net"],
 
   "contact": {
-    "homepage": "https://github.com/pcal43/gitback",
-    "sources": "https://github.com/pcal43/gitback"
+    "homepage": "https://github.com/pcal43/fastback",
+    "sources": "https://github.com/pcal43/fastback"
   },
   "license": "GPL-2",
   "icon": "fastback-icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.pcal.gitback.fabric.GitbackInitializer"
+      "net.pcal.fastback.fabric.FstbackInitializer"
     ]
   },
   "mixins": [
-    "gitback.mixins.json"
+    "fastback.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.11.3",
