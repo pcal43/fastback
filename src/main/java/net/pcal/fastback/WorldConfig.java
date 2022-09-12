@@ -100,7 +100,7 @@ public record WorldConfig(
     public static void ensureWorldHasUuid(final Path worldSaveDir, final Logger logger) throws IOException {
         final Path worldUuidpath = worldSaveDir.resolve(WORLD_UUID_PATH);
         if (!worldUuidpath.toFile().exists()) {
-            FileUtils.mkdirs(worldUuidpath);
+            FileUtils.mkdirs(worldUuidpath.getParent());
             final String newUuid = UUID.randomUUID().toString();
             try (final FileWriter fw = new FileWriter(worldUuidpath.toFile())) {
                 fw.append(newUuid);
