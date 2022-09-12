@@ -19,24 +19,23 @@ import org.apache.logging.log4j.LogManager;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.function.Consumer;
 
-import static java.nio.file.Files.createTempDirectory;
 import static java.util.Objects.requireNonNull;
 
-class FabricModContext implements ModContext {
+class FabricFrameworkProvider implements ModContext.ModFrameworkProvider {
 
     private static final String MOD_ID = "fastback";
-    private final Logger logger = new Log4jLogger(LogManager.getLogger(MOD_ID));
-    private final ExecutorService exs = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-    private Path tempRestoresDirectory = null;
-    private Consumer<Text> saveScreenHandler = null;
+    private FabricClientProvider clientSpi;
+    final Logger logger = new Log4jLogger(LogManager.getLogger(MOD_ID));
 
-    void installSaveScreenhandler(Consumer<Text> handler) {
-        if (this.saveScreenHandler != null) throw new IllegalStateException();
-        this.saveScreenHandler = requireNonNull(handler);
+    void setClientProvider(FabricClientProvider clientSpi) {
+        if (this.clientSpi != null) throw new IllegalStateException();
+        this.clientSpi = requireNonNull(clientSpi);
+    }
+
+    @Override
+    public Logger getLogger(){
+        return this.logger;
     }
 
     @Override
@@ -60,49 +59,37 @@ class FabricModContext implements ModContext {
     }
 
     @Override
-    public Logger getLogger() {
-        return this.logger;
-    }
-
-    @Override
-    public ExecutorService getExecutorService() {
-        return this.exs;
-    }
-
-    @Override
-    public Path getRestoresDir() throws IOException {
+    public Path getClientSavesDir() throws IOException {
         final MinecraftClient client = MinecraftClient.getInstance();
-        if (client != null) {
-            return client.getLevelStorage().getSavesDirectory();
-        } else {
-            if (tempRestoresDirectory == null) {
-                tempRestoresDirectory = createTempDirectory(MOD_ID + "-restore");
-            }
-            return tempRestoresDirectory;
+        if (this.clientSpi != null) {
+            Path restoreDir = clientSpi.getClientRestoreDir();
+            if (restoreDir != null) return restoreDir;
+            this.logger.warn("getClientRestoreDir unexpectedly null, using temp dir");
+        }
+        return null;
+    }
+
+    @Override
+    public void setClientSavingScreenText(final Text text) {
+        if (this.clientSpi != null) {
+            this.clientSpi.consumeSaveScreenText(text);
         }
     }
 
     @Override
-    public void setSavingScreenText(Text text) {
-        if (this.saveScreenHandler != null) {
-            this.saveScreenHandler.accept(text);
-        }
-    }
-
-    @Override
-    public Path getWorldSaveDirectory(MinecraftServer server) {
+    public Path getWorldDirectory(final MinecraftServer server) {
         final LevelStorage.Session session = ((ServerAccessors) server).getSession();
         return ((SessionAccessors) session).getDirectory().path();
     }
 
     @Override
-    public String getWorldName(MinecraftServer server) {
+    public String getWorldName(final MinecraftServer server) {
         final LevelStorage.Session session = ((ServerAccessors) server).getSession();
         return session.getLevelSummary().getLevelInfo().getLevelName();
     }
 
     @Override
-    public void setWorldSaveEnabled(MinecraftServer mc, boolean enabled) {
+    public void setWorldSaveEnabled(final MinecraftServer mc, final boolean enabled) {
         for (ServerWorld serverWorld : mc.getWorlds()) {
             if (serverWorld != null) serverWorld.savingDisabled = !enabled;
         }
