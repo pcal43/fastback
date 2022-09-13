@@ -1,4 +1,4 @@
-package net.pcal.fastback;
+package net.pcal.fastback.utils;
 
 import java.io.File;
 import java.io.FileNotFoundException;

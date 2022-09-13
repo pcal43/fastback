@@ -1,7 +1,7 @@
 package net.pcal.fastback.tasks;
 
-import net.pcal.fastback.BranchNameUtils;
-import net.pcal.fastback.GitUtils;
+import net.pcal.fastback.utils.BranchNameUtils;
+import net.pcal.fastback.utils.GitUtils;
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.IncrementalProgressMonitor;
 import net.pcal.fastback.logging.Logger;
@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.BranchNameUtils.getLastPushedBranchName;
+import static net.pcal.fastback.utils.BranchNameUtils.getLastPushedBranchName;
 
 public class PushTask extends Task {
 

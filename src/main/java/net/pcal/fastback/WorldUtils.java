@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
-import static net.pcal.fastback.FileUtils.writeResourceToFile;
+import static net.pcal.fastback.utils.FileUtils.writeResourceToFile;
 import static net.pcal.fastback.WorldConfig.ensureWorldHasUuid;
 
 @SuppressWarnings("FieldCanBeLocal")

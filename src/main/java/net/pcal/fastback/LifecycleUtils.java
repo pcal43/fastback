@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 import static net.minecraft.text.Text.translatable;
-import static net.pcal.fastback.GitUtils.isGitRepo;
+import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 import static net.pcal.fastback.WorldConfig.isBackupsEnabledOn;
 
 public class LifecycleUtils {

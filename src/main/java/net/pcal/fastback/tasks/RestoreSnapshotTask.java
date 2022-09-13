@@ -1,7 +1,7 @@
 package net.pcal.fastback.tasks;
 
-import net.pcal.fastback.FileUtils;
-import net.pcal.fastback.GitUtils;
+import net.pcal.fastback.utils.FileUtils;
+import net.pcal.fastback.utils.GitUtils;
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.IncrementalProgressMonitor;
 import net.pcal.fastback.logging.Logger;
@@ -15,7 +15,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.BranchNameUtils.getSnapshotBranchName;
+import static net.pcal.fastback.utils.BranchNameUtils.getSnapshotBranchName;
 import static net.pcal.fastback.WorldConfig.WORLD_UUID_PATH;
 
 @SuppressWarnings("FieldCanBeLocal")

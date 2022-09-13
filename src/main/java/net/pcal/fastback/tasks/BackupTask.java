@@ -16,8 +16,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.BranchNameUtils.createNewSnapshotBranchName;
-import static net.pcal.fastback.BranchNameUtils.getLatestBranchName;
+import static net.pcal.fastback.utils.BranchNameUtils.createNewSnapshotBranchName;
+import static net.pcal.fastback.utils.BranchNameUtils.getLatestBranchName;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class BackupTask extends Task {

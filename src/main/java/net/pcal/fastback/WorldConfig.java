@@ -1,6 +1,7 @@
 package net.pcal.fastback;
 
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.utils.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Config;
 
@@ -11,7 +12,7 @@ import java.nio.file.Path;
 import java.util.UUID;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.GitUtils.isGitRepo;
+import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
 public record WorldConfig(
         Path worldSaveDir,

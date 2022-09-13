@@ -1,4 +1,4 @@
-package net.pcal.fastback;
+package net.pcal.fastback.utils;
 
 import net.pcal.fastback.logging.Logger;
 import org.eclipse.jgit.api.Git;

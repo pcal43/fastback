@@ -13,7 +13,7 @@ import java.nio.file.Path;
 import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.GitUtils.isGitRepo;
+import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;

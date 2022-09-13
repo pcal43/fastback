@@ -17,7 +17,7 @@ import org.eclipse.jgit.lib.StoredConfig;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import static net.pcal.fastback.GitUtils.isGitRepo;
+import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
 public class Commands {
 

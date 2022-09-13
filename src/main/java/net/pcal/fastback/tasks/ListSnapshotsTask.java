@@ -15,7 +15,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.BranchNameUtils.filterOnWorldUuid;
+import static net.pcal.fastback.utils.BranchNameUtils.filterOnWorldUuid;
 import static net.pcal.fastback.tasks.Task.TaskState.COMPLETED;
 import static net.pcal.fastback.tasks.Task.TaskState.FAILED;
 import static net.pcal.fastback.tasks.Task.TaskState.STARTED;

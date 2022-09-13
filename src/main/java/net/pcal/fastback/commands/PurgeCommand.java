@@ -5,7 +5,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.BranchNameUtils;
+import net.pcal.fastback.utils.BranchNameUtils;
 import net.pcal.fastback.ModContext;
 import org.eclipse.jgit.api.Git;
 
