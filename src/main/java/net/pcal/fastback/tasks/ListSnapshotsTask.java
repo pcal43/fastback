@@ -2,7 +2,6 @@ package net.pcal.fastback.tasks;
 
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.WorldConfig;
-import net.pcal.fastback.WorldUtils;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.GitUtils;
 import net.pcal.fastback.utils.SnapshotId;
@@ -19,7 +18,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.tasks.PushTask.getSnapshotsPerWorld;
+import static net.pcal.fastback.utils.SnapshotId.getSnapshotsPerWorld;
 import static net.pcal.fastback.tasks.Task.TaskState.COMPLETED;
 import static net.pcal.fastback.tasks.Task.TaskState.FAILED;
 import static net.pcal.fastback.tasks.Task.TaskState.STARTED;
@@ -66,8 +65,8 @@ public class ListSnapshotsTask extends Task {
     public void run() {
         super.setState(STARTED);
         try (final Git git = Git.open(worldSaveDir.toFile())) {
-            Collection<String> branchNames = GitUtils.getLocalBranchNames(git, logger);
-            ListMultimap<String, SnapshotId> snapshotsPerWorld = getSnapshotsPerWorld(branchNames, logger);
+            Collection<Ref> localBranchRefs = git.branchList().call();
+            ListMultimap<String, SnapshotId> snapshotsPerWorld = getSnapshotsPerWorld(localBranchRefs, logger);
             List<SnapshotId> snapshots = snapshotsPerWorld.get(worldUuid);
             snapshots.forEach(sid -> this.out.accept(sid.getBranchName()));
         } catch (GitAPIException | IOException e) {

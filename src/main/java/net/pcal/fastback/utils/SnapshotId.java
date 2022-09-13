@@ -1,6 +1,10 @@
 package net.pcal.fastback.utils;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.logging.Logger;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Ref;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.DateFormat;
@@ -33,6 +37,22 @@ public record SnapshotId(String worldUuid, Date snapshotDate) implements Compara
         return out;
     }
 
+    public static ListMultimap<String, SnapshotId> getSnapshotsPerWorld(Iterable<Ref> refs, Logger logger) throws GitAPIException {
+        final ListMultimap<String, SnapshotId> out = ArrayListMultimap.create();
+        for (final Ref ref : refs) {
+            final String branchName = GitUtils.getBranchName(ref);
+            if (branchName == null) continue;
+            try {
+                final SnapshotId sid = fromBranch(branchName);
+                if (sid != null) out.put(sid.worldUuid(), sid);
+            } catch (ParseException e) {
+                logger.warn("Ignoring unexpected branch name " + branchName);
+            }
+        }
+        return out;
+    }
+
+
     public static SnapshotId fromBranch(String rawBranch) throws ParseException {
         if (!rawBranch.startsWith(PREFIX + SEP)) return null;
         final String[] segments = rawBranch.split(SEP);
@@ -49,6 +69,7 @@ public record SnapshotId(String worldUuid, Date snapshotDate) implements Compara
     public static SnapshotId fromUuidAndName(String worldUuid, String snapshoDate) throws ParseException {
         return new SnapshotId(worldUuid, DATE_FORMAT.parse(snapshoDate));
     }
+
 
     public String getBranchName() {
         final String formattedDate = DATE_FORMAT.format(this.snapshotDate);

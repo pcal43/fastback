@@ -1,6 +1,5 @@
 package net.pcal.fastback.tasks;
 
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.utils.GitUtils;
 import net.pcal.fastback.WorldConfig;
@@ -12,13 +11,13 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ProgressMonitor;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.merge.ContentMergeStrategy;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.URIish;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.text.ParseException;
 import java.time.Duration;
 import java.util.*;
 
@@ -55,9 +54,10 @@ public class PushTask extends Task {
                 super.setFailed();
                 return;
             }
-            final ListMultimap<String, SnapshotId> snapshotsPerWorld = getSnapshotsPerWorld(
-                    GitUtils.getRemoteBranchNames(git, worldConfig.getRemoteName(), logger), logger);
-
+            final Collection<Ref> remoteBranchRefs = git.lsRemote().setHeads(true).setTags(false).
+                    setRemote(worldConfig.getRemoteName()).call();
+            final ListMultimap<String, SnapshotId> snapshotsPerWorld =
+                    SnapshotId.getSnapshotsPerWorld(remoteBranchRefs, logger);
             if (worldConfig.isUuidCheckEnabled()) {
                 final boolean uuidCheckResult;
                 try {
@@ -99,10 +99,11 @@ public class PushTask extends Task {
             doNaivePush(git, branchNameToPush, worldConfig, logger);
             return;
         } else {
-            final Set<String> localBranches = GitUtils.getLocalBranchNames(git, logger);
-            final ListMultimap<String, SnapshotId> localSnapshotsPerWorld = getSnapshotsPerWorld(localBranches, logger);
+            final Collection<Ref> localBranchRefs = git.branchList().call();
+            final ListMultimap<String, SnapshotId> localSnapshotsPerWorld =
+                    SnapshotId.getSnapshotsPerWorld(localBranchRefs, logger);
             final List<SnapshotId> localSnapshots = localSnapshotsPerWorld.get(worldUuid);
-            if (localSnapshots != null && !localSnapshots.isEmpty()) remoteSnapshots.removeAll(localSnapshots);
+            remoteSnapshots.removeAll(localSnapshots);
             if (remoteSnapshots.isEmpty()) {
                 logger.warn("No common snapshots found between local and remote.");
                 logger.warn("Doing a full push.  This may take some time.");
@@ -173,16 +174,4 @@ public class PushTask extends Task {
         return true;
     }
 
-    public static ListMultimap<String, SnapshotId> getSnapshotsPerWorld(Iterable<String> branchNames, Logger logger) throws GitAPIException {
-        final ListMultimap<String, SnapshotId> out = ArrayListMultimap.create();
-        for (final String branchName : branchNames) {
-            try {
-                final SnapshotId sid = SnapshotId.fromBranch(branchName);
-                if (sid != null) out.put(sid.worldUuid(), sid);
-            } catch (ParseException e) {
-                logger.warn("Ignoring unexpected branch name " + branchName);
-            }
-        }
-        return out;
-    }
 }
