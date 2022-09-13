@@ -1,5 +1,13 @@
 {
   "commands.fastback.help.subcommands": "Available subcommands:\n%s\nFor detailed help on a subcommand, run\n/backup help [subcommand]",
   "commands.fastback.enable.help": "%sEnable local backups and on-shutdown backups on this world.",
-  "commands.fastback.disable.help": "%sDisable backups on this world."
+  "commands.fastback.disable.help": "%sDisable backups on this world.",
+
+  "fastback.notify.suggest-enable": "Backups are disabled. To enable, run '/backup enable'",
+  "fastback.notify.internal-error": "An unexpected backup error occurred. See log for details.",
+
+  "fastback.savescreen.remote-preparing": "Preparing remote backup %d%%",
+  "fastback.savescreen.remote-uploading": "Uploading remote backup %d%%",
+  "fastback.savescreen.remote-done": "Remote backup complete"
+
 }

@@ -7,7 +7,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
-import net.pcal.fastback.logging.ChatLogger;
+import net.pcal.fastback.logging.CommandSourceLogger;
 import net.pcal.fastback.logging.CompositeLogger;
 import net.pcal.fastback.logging.Logger;
 import org.eclipse.jgit.api.Git;
@@ -49,7 +49,7 @@ public class Commands {
     public static Logger commandLogger(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
         return CompositeLogger.of(
                 ctx.getLogger(),
-                new ChatLogger(cc.getSource())
+                new CommandSourceLogger(cc.getSource())
         );
     }
 

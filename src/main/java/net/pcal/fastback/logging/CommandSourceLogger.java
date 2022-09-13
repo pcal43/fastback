@@ -1,32 +1,32 @@
 package net.pcal.fastback.logging;
 
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
-import net.pcal.fastback.ModContext;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.text.Text.translatable;
 
-public class ChatLogger implements Logger {
+public class CommandSourceLogger implements Logger {
 
-    private final ModContext ctx;
+    private final ServerCommandSource scs;
 
-    public ChatLogger(ModContext ctx) {
-        this.ctx = requireNonNull(ctx);
+    public CommandSourceLogger(ServerCommandSource scs) {
+        this.scs = requireNonNull(scs);
     }
 
     @Override
     public void notify(Text message) {
-        ctx.sendClientChatMessage(message);
+        scs.sendFeedback(message, false);
     }
 
     @Override
     public void notifyError(Text message) {
-        ctx.sendClientChatMessage(message);
+        scs.sendError(message);
     }
 
     @Override
     public void internalError(String message, Throwable t) {
-        ctx.sendClientChatMessage(translatable("fastback.notify.internal-error"));
+        scs.sendError(translatable("fastback.notify.internal-error"));
     }
 
     @Override
