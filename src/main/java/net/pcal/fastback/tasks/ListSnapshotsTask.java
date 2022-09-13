@@ -1,7 +1,9 @@
 package net.pcal.fastback.tasks;
 
+import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
@@ -9,23 +11,22 @@ import org.eclipse.jgit.lib.Ref;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.utils.BranchNameUtils.filterOnWorldUuid;
-import static net.pcal.fastback.tasks.Task.TaskState.COMPLETED;
-import static net.pcal.fastback.tasks.Task.TaskState.FAILED;
-import static net.pcal.fastback.tasks.Task.TaskState.STARTED;
+import static net.pcal.fastback.tasks.Task.TaskState.*;
+import static net.pcal.fastback.utils.SnapshotId.getSnapshotsPerWorld;
 
 public class ListSnapshotsTask extends Task {
 
     private final Path worldSaveDir;
     private final Consumer<String> out;
-    private final Function<String, String> branchFilter;
+    private final String worldUuid;
     private final Logger logger;
+
 
     public static List<String> listSnapshotsForWorldSorted(Path worldSaveDir, Logger log) {
         final List<String> out = new ArrayList<>();
@@ -47,33 +48,24 @@ public class ListSnapshotsTask extends Task {
     }
 
     public static Runnable listSnapshotsForWorld(Path worldSaveDir, String worldUuid, Consumer<String> sink, Logger logger) {
-        final Function<String, String> branchFilter = branchName -> filterOnWorldUuid(branchName, worldUuid, logger);
-        return new ListSnapshotsTask(worldSaveDir, branchFilter, sink, logger);
+        return new ListSnapshotsTask(worldSaveDir, worldUuid, sink, logger);
     }
 
-    private ListSnapshotsTask(Path worldSaveDir, Function<String, String> branchFilter, Consumer<String> sink, Logger logger) {
+    private ListSnapshotsTask(Path worldSaveDir, String worlduuid, Consumer<String> sink, Logger logger) {
+        this.worldUuid = requireNonNull(worlduuid);
         this.worldSaveDir = requireNonNull(worldSaveDir);
         this.out = requireNonNull(sink);
-        this.branchFilter = requireNonNull(branchFilter);
         this.logger = requireNonNull(logger);
     }
-
-    private static final String BRANCH_NAME_PREFIX = "refs/heads";
 
     @Override
     public void run() {
         super.setState(STARTED);
         try (final Git git = Git.open(worldSaveDir.toFile())) {
-            for (Ref branch : git.branchList().call()) {
-                String branchName = branch.getName();
-                if (!branchName.startsWith(BRANCH_NAME_PREFIX)) {
-                    this.logger.warn("Unexpected ref name " + branchName);
-                } else {
-                    branchName = branchName.substring(BRANCH_NAME_PREFIX.length() + 1);
-                }
-                branchName = this.branchFilter.apply(branchName);
-                if (branchName != null) this.out.accept(branchName);
-            }
+            Collection<Ref> localBranchRefs = git.branchList().call();
+            ListMultimap<String, SnapshotId> snapshotsPerWorld = getSnapshotsPerWorld(localBranchRefs, logger);
+            List<SnapshotId> snapshots = snapshotsPerWorld.get(worldUuid);
+            snapshots.forEach(sid -> this.out.accept(sid.getBranchName()));
         } catch (GitAPIException | IOException e) {
             super.setState(FAILED);
             throw new RuntimeException(e);

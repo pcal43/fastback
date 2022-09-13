@@ -32,7 +32,7 @@ class FabricFrameworkProvider implements ModContext.ModFrameworkProvider {
     }
 
     @Override
-    public Logger getLogger(){
+    public Logger getLogger() {
         return this.logger;
     }
 

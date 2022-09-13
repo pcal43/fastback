@@ -1,21 +1,22 @@
 package net.pcal.fastback.tasks;
 
-import net.pcal.fastback.utils.FileUtils;
-import net.pcal.fastback.utils.GitUtils;
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.IncrementalProgressMonitor;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.LoggingProgressMonitor;
+import net.pcal.fastback.utils.FileUtils;
+import net.pcal.fastback.utils.GitUtils;
+import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ProgressMonitor;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.text.ParseException;
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.utils.BranchNameUtils.getSnapshotBranchName;
 import static net.pcal.fastback.WorldConfig.WORLD_UUID_PATH;
 
 @SuppressWarnings("FieldCanBeLocal")
@@ -50,12 +51,13 @@ public class RestoreSnapshotTask extends Task {
         final String branchName;
         try (final Git git = Git.open(this.worldSaveDir.toFile())) {
             config = WorldConfig.load(worldSaveDir, git.getRepository().getConfig());
-            branchName = getSnapshotBranchName(config.worldUuid(), this.snapshotName);
+            SnapshotId sid = SnapshotId.fromUuidAndName(config.worldUuid(), this.snapshotName);
+            branchName = sid.getBranchName();
             if (!GitUtils.isBranchExtant(git, branchName, logger)) {
                 logger.notifyError("No such snapshot " + snapshotName);
                 return;
             }
-        } catch (IOException | GitAPIException e) {
+        } catch (IOException | GitAPIException | ParseException e) {
             logger.internalError("Unexpected error looking up branch names", e);
             setFailed();
             return;

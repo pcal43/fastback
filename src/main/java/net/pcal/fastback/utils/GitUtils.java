@@ -34,16 +34,14 @@ public class GitUtils {
 //        return tempGit;
 //    }
 
-
-    public static Set<String> getRemoteBranchNames(Git git, String remoteName, Logger logger) throws GitAPIException {
-        final String UUID_REFNAME_PREFIX = "refs/heads/";
-        final Collection<Ref> refs = git.lsRemote().setHeads(true).setTags(false).setRemote(remoteName).call();
-        final Set<String> branchNames = new HashSet<>();
-        for (final Ref ref : refs) {
-            logger.debug("ls-remote  " + ref);
-            branchNames.add(ref.getName().substring(UUID_REFNAME_PREFIX.length()));
+    public static String getBranchName(Ref fromBranchRef) {
+        final String REFS_HEADS = "refs/heads/";
+        final String name = fromBranchRef.getName();
+        if (name.startsWith(REFS_HEADS)) {
+            return name.substring(REFS_HEADS.length());
+        } else {
+            return null;
         }
-        return branchNames;
     }
 
     public static URIish getRemoteUri(Git git, String remoteName, Logger logger) throws GitAPIException {
