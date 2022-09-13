@@ -46,6 +46,16 @@ public class GitUtils {
         return branchNames;
     }
 
+    public static Set<String> getLocalBranchNames(Git git, Logger logger) throws GitAPIException {
+        final String UUID_REFNAME_PREFIX = "refs/heads/";
+        final Collection<Ref> refs = git.branchList().call();
+        final Set<String> branchNames = new HashSet<>();
+        for (final Ref ref : refs) {
+            branchNames.add(ref.getName().substring(UUID_REFNAME_PREFIX.length()));
+        }
+        return branchNames;
+    }
+
     public static URIish getRemoteUri(Git git, String remoteName, Logger logger) throws GitAPIException {
         requireNonNull(git);
         requireNonNull(remoteName);

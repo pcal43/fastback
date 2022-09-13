@@ -2,6 +2,7 @@ package net.pcal.fastback.tasks;
 
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
@@ -16,8 +17,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.utils.BranchNameUtils.createNewSnapshotBranchName;
-import static net.pcal.fastback.utils.BranchNameUtils.getLatestBranchName;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class BackupTask extends Task {
@@ -42,7 +41,8 @@ public class BackupTask extends Task {
                 this.setFailed();
                 return;
             }
-            final String newBranchName = createNewSnapshotBranchName(config.worldUuid());
+            final SnapshotId newSid = SnapshotId.create(config.worldUuid());
+            final String newBranchName = newSid.getBranchName();
             log.info("Committing " + newBranchName);
             try {
                 doCommit(git, config, newBranchName, log);
@@ -120,8 +120,5 @@ public class BackupTask extends Task {
         }
         logger.debug("commit");
         git.commit().setMessage(newBranchName).call();
-        final String latestBranchName = getLatestBranchName(config.worldUuid());
-        logger.debug("Updating " + latestBranchName);
-        git.branchCreate().setForce(true).setName(latestBranchName).call();
     }
 }

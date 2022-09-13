@@ -1,11 +1,13 @@
 package net.pcal.fastback.tasks;
 
-import net.pcal.fastback.utils.BranchNameUtils;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.utils.GitUtils;
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.IncrementalProgressMonitor;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.LoggingProgressMonitor;
+import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
@@ -16,12 +18,12 @@ import org.eclipse.jgit.transport.URIish;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.text.ParseException;
 import java.time.Duration;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.utils.BranchNameUtils.getLastPushedBranchName;
+import static net.minecraft.text.Text.literal;
 
 public class PushTask extends Task {
 
@@ -37,6 +39,10 @@ public class PushTask extends Task {
         this.logger = requireNonNull(logger);
     }
 
+    private static String getTempBranchName(String uniqueName) {
+        return "temp/" + uniqueName;
+    }
+
     @Override
     public void run() {
         super.setStarted();
@@ -49,10 +55,13 @@ public class PushTask extends Task {
                 super.setFailed();
                 return;
             }
+            final ListMultimap<String, SnapshotId> snapshotsPerWorld = getSnapshotsPerWorld(
+                    GitUtils.getRemoteBranchNames(git, worldConfig.getRemoteName(), logger), logger);
+
             if (worldConfig.isUuidCheckEnabled()) {
                 final boolean uuidCheckResult;
                 try {
-                    uuidCheckResult = doUuidCheck(git, worldConfig, logger);
+                    uuidCheckResult = doUuidCheck(git, snapshotsPerWorld.keySet(), worldConfig, logger);
                 } catch (final GitAPIException | IOException e) {
                     logger.internalError("Skipping remote backup due to failed uuid check", e);
                     super.setFailed();
@@ -67,7 +76,7 @@ public class PushTask extends Task {
             }
             logger.info("Pushing to " + worldConfig.getRemotePushUrl());
             if (worldConfig.isSmartPushEnabled()) {
-                doSmartPush(git, branchNameToPush, worldConfig, logger);
+                doSmartPush(git, snapshotsPerWorld.get(worldConfig.worldUuid()), branchNameToPush, worldConfig, logger);
             } else {
                 doNaivePush(git, branchNameToPush, worldConfig, logger);
             }
@@ -80,57 +89,71 @@ public class PushTask extends Task {
         }
     }
 
-    private static void doSmartPush(final Git git, final String branchNameToPush, final WorldConfig worldConfig, final Logger logger) throws GitAPIException, IOException {
+    private static void doSmartPush(final Git git, List<SnapshotId> remoteSnapshots, final String branchNameToPush, final WorldConfig worldConfig, final Logger logger) throws GitAPIException, IOException {
         final String remoteName = worldConfig.getRemoteName();
-        final String lastPushedBranchName = getLastPushedBranchName(worldConfig.worldUuid());
-
-        final ProgressMonitor pm = new IncrementalProgressMonitor(new LoggingProgressMonitor(logger), 100);
-
-        if (!GitUtils.isBranchExtant(git, lastPushedBranchName, logger)) {
+        final String worldUuid = worldConfig.worldUuid();
+        final SnapshotId latestCommonSnapshot;
+        if (remoteSnapshots.isEmpty()) {
             logger.warn("** This appears to be the first time this world has been pushed.");
             logger.warn("** If the world is large, this may take some time.");
-            git.push().setProgressMonitor(pm).setRemote(remoteName).call();
+            doNaivePush(git, branchNameToPush, worldConfig, logger);
+            return;
         } else {
-            logger.debug("checkout");
-            final String tempBranchName = BranchNameUtils.getTempBranchName(branchNameToPush);
-            logger.debug("checkout temp");
-            git.checkout().setCreateBranch(true).setName(tempBranchName).call();
-            final ObjectId branchId = git.getRepository().resolve(lastPushedBranchName);
-            logger.debug("merge");
-            git.merge().setContentMergeStrategy(ContentMergeStrategy.OURS).
-                    include(branchId).setMessage("Merge " + branchNameToPush + " into " + tempBranchName).call();
-            logger.debug("checking out " + branchNameToPush);
-            git.checkout().setName(branchNameToPush).call();
-            logger.debug("push " + tempBranchName);
-            git.push().setProgressMonitor(pm).setRemote(remoteName).setRefSpecs(new RefSpec(tempBranchName + ":" + tempBranchName), new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
-            logger.debug("checkout restore");
-            logger.notify("Cleaning up");
-            if (worldConfig.isTempBranchCleanupEnabled()) {
-                logger.debug("deleting local temp branch " + tempBranchName);
-                git.branchDelete().setForce(true).setBranchNames(tempBranchName).call();
+            final Set<String> localBranches = GitUtils.getLocalBranchNames(git, logger);
+            final ListMultimap<String, SnapshotId> localSnapshotsPerWorld = getSnapshotsPerWorld(localBranches, logger);
+            final List<SnapshotId> localSnapshots = localSnapshotsPerWorld.get(worldUuid);
+            if (localSnapshots != null && !localSnapshots.isEmpty()) remoteSnapshots.removeAll(localSnapshots);
+            if (remoteSnapshots.isEmpty()) {
+                logger.warn("No common snapshots found between local and remote.");
+                logger.warn("Doing a full push.  This may take some time.");
+                doNaivePush(git, branchNameToPush, worldConfig, logger);
+                return;
+            } else {
+                Collections.sort(remoteSnapshots);
+                latestCommonSnapshot = remoteSnapshots.get(0);
+                logger.info("Using existing snapshot " + latestCommonSnapshot + " for common history");
             }
-            if (worldConfig.isRemoteTempBranchCleanupEnabled()) {
-                final String remoteTempBranch = "refs/heads/" + tempBranchName;
-                logger.debug("deleting remote temp branch " + remoteTempBranch);
-                final RefSpec deleteRemoteBranchSpec = new RefSpec().setSource(null).setDestination(remoteTempBranch);
-
-                git.push().setProgressMonitor(pm).setRemote(remoteName).setRefSpecs(deleteRemoteBranchSpec).call();
-            }
-            logger.debug("push complete");
         }
-        logger.debug("Updating " + lastPushedBranchName);
-        git.branchCreate().setForce(true).setName(lastPushedBranchName).call();
+
+        final String tempBranchName = getTempBranchName(branchNameToPush);
+        logger.debug("Creating out temp branch "+tempBranchName);
+        git.checkout().setCreateBranch(true).setName(tempBranchName).call();
+        final ObjectId branchId = git.getRepository().resolve(latestCommonSnapshot.getBranchName());
+        logger.debug("Merging "+latestCommonSnapshot.getBranchName());
+        git.merge().setContentMergeStrategy(ContentMergeStrategy.OURS).
+                include(branchId).setMessage("Merge " + branchId + " into " + tempBranchName).call();
+        logger.debug("Checking out " + branchNameToPush);
+        git.checkout().setName(branchNameToPush).call();
+        logger.debug("Pushing " + tempBranchName);
+        final ProgressMonitor pm = new IncrementalProgressMonitor(new LoggingProgressMonitor(logger), 100);
+        git.push().setProgressMonitor(pm).setRemote(remoteName).
+                setRefSpecs(new RefSpec(tempBranchName + ":" + tempBranchName),
+                        new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
+        logger.debug("checkout restore");
+        logger.notify(literal("Cleaning up"));
+        if (worldConfig.isTempBranchCleanupEnabled()) {
+            logger.debug("deleting local temp branch " + tempBranchName);
+            git.branchDelete().setForce(true).setBranchNames(tempBranchName).call();
+        }
+        if (worldConfig.isRemoteTempBranchCleanupEnabled()) {
+            final String remoteTempBranch = "refs/heads/" + tempBranchName;
+            logger.debug("deleting remote temp branch " + remoteTempBranch);
+            final RefSpec deleteRemoteBranchSpec = new RefSpec().setSource(null).setDestination(remoteTempBranch);
+
+            git.push().setProgressMonitor(pm).setRemote(remoteName).setRefSpecs(deleteRemoteBranchSpec).call();
+        }
+        logger.debug("push complete");
     }
 
     private static void doNaivePush(final Git git, final String branchNameToPush, final WorldConfig config, final Logger logger) throws IOException, GitAPIException {
+        final ProgressMonitor pm = new IncrementalProgressMonitor(new LoggingProgressMonitor(logger), 100);
         final String remoteName = config.getRemoteName();
-        logger.debug("doing naive push");
-        git.push().setRemote(remoteName).setRefSpecs(new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
-        logger.debug("checking out " + branchNameToPush);
+        logger.info("Doing naive push of " + branchNameToPush);
+        git.push().setProgressMonitor(pm).setRemote(remoteName).
+                setRefSpecs(new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
     }
 
-    private static boolean doUuidCheck(Git git, WorldConfig config, Logger logger) throws GitAPIException, IOException {
-        final Set<String> remoteWorldUuids = getWorldUuidsOnRemote(git, config.getRemoteName(), logger);
+    private static boolean doUuidCheck(Git git, Set<String> remoteWorldUuids, WorldConfig config, Logger logger) throws GitAPIException, IOException {
         final String localUuid = config.worldUuid();
         if (remoteWorldUuids.size() > 2) {
             logger.warn("Remote has more than one world-uuid.  This is unusual. " + remoteWorldUuids);
@@ -150,14 +173,16 @@ public class PushTask extends Task {
         return true;
     }
 
-    private static Set<String> getWorldUuidsOnRemote(Git worldGit, String remoteName, Logger logger) throws GitAPIException {
-        final Set<String> remoteBranchNames = GitUtils.getRemoteBranchNames(worldGit, remoteName, logger);
-        final Set<String> out = new HashSet<>();
-        for (String branchName : remoteBranchNames) {
-            final String worldUuid = BranchNameUtils.extractWorldUuid(branchName, logger);
-            if (worldUuid != null) out.add(worldUuid);
+    public static ListMultimap<String, SnapshotId> getSnapshotsPerWorld(Iterable<String> branchNames, Logger logger) throws GitAPIException {
+        final ListMultimap<String, SnapshotId> out = ArrayListMultimap.create();
+        for (final String branchName : branchNames) {
+            try {
+                final SnapshotId sid = SnapshotId.fromBranch(branchName);
+                if (sid != null) out.put(sid.worldUuid(), sid);
+            } catch (ParseException e) {
+                logger.warn("Ignoring unexpected branch name " + branchName);
+            }
         }
         return out;
     }
-
 }

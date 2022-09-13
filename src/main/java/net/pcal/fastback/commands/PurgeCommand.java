@@ -5,8 +5,8 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.utils.BranchNameUtils;
 import net.pcal.fastback.ModContext;
+import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
 
 import java.nio.file.Path;
@@ -39,7 +39,8 @@ public class PurgeCommand {
     private int execute(CommandContext<ServerCommandSource> cc) {
         return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
             final String snapshotName = cc.getLastChild().getArgument(SNAPSHOT_ARG, String.class);
-            final String branchName = BranchNameUtils.getSnapshotBranchName(wc.worldUuid(), snapshotName);
+            final SnapshotId sid = SnapshotId.fromUuidAndName(wc.worldUuid(), snapshotName);
+            final String branchName = sid.getBranchName();
             final MinecraftServer server = cc.getSource().getServer();
             final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
             this.ctx.getExecutorService().execute(() -> {

@@ -16,6 +16,7 @@ import org.eclipse.jgit.lib.StoredConfig;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.text.ParseException;
 
 import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
@@ -55,7 +56,7 @@ public class Commands {
 
     interface CommandLogic {
         int execute(StoredConfig gitConfig, WorldConfig worldConfig, Logger logger)
-                throws IOException, GitAPIException;
+                throws IOException, GitAPIException, ParseException;
     }
 
     static int executeStandard(final ModContext ctx, final CommandContext<ServerCommandSource> cc, CommandLogic sub) {
