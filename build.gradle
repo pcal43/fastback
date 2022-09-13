@@ -46,7 +46,7 @@ dependencies {
 
 	include group: 'org.apache.sshd', name: 'sshd-core', version: versions.apache_sshd
 	include group: 'org.apache.sshd', name: 'sshd-common', version: versions.apache_sshd
-	include group: 'com.googlecode.javaewah', name: 'JavaEWAH', version: versions.JavaEWAHw
+	include group: 'com.googlecode.javaewah', name: 'JavaEWAH', version: versions.JavaEWAH
 
 //	modRuntimeOnly group: 'org.slf4j', name: 'jcl-over-slf4j'
 	//include group: 'org.slf4j', name: ' slf4j-api', version: '1.7.30'
