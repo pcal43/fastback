@@ -106,7 +106,7 @@ public class PushTask extends Task {
             final ListMultimap<String, SnapshotId> localSnapshotsPerWorld =
                     SnapshotId.getSnapshotsPerWorld(localBranchRefs, logger);
             final List<SnapshotId> localSnapshots = localSnapshotsPerWorld.get(worldUuid);
-            remoteSnapshots.removeAll(localSnapshots);
+            remoteSnapshots.retainAll(localSnapshots);
             if (remoteSnapshots.isEmpty()) {
                 logger.warn("No common snapshots found between local and remote.");
                 logger.warn("Doing a full push.  This may take some time.");
@@ -114,11 +114,11 @@ public class PushTask extends Task {
                 return;
             } else {
                 Collections.sort(remoteSnapshots);
-                latestCommonSnapshot = remoteSnapshots.get(0);
+                latestCommonSnapshot = remoteSnapshots.get(remoteSnapshots.size() - 1);
                 logger.info("Using existing snapshot " + latestCommonSnapshot + " for common history");
             }
         }
-
+        // ok, we have a common snapshot that we can use to create a fake merge history.
         final String tempBranchName = getTempBranchName(branchNameToPush);
         logger.debug("Creating out temp branch " + tempBranchName);
         git.checkout().setCreateBranch(true).setName(tempBranchName).call();
