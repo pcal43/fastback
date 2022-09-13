@@ -18,9 +18,9 @@ public class SaveScreenLogger implements Logger {
     @Override
     public void progressComplete(String message, int percentage) {
         Text text = null;
-        if (message.contains("Writing objects")) {
+        if (message.contains("Finding sources")) {
             text = translatable("fastback.savescreen.remote-preparing", percentage);
-        } else if (message.contains("Finding sources")) {
+        } else if (message.contains("Writing objects")) {
             text = translatable("fastback.savescreen.remote-uploading", percentage);
         }
         if (text == null) text = literal(message + " " + percentage + "%");
