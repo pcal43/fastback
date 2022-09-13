@@ -1,11 +1,11 @@
 package net.pcal.fastback.tasks;
 
 import com.google.common.collect.ListMultimap;
-import net.pcal.fastback.utils.GitUtils;
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.IncrementalProgressMonitor;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.LoggingProgressMonitor;
+import net.pcal.fastback.utils.GitUtils;
 import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -19,7 +19,10 @@ import org.eclipse.jgit.transport.URIish;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.text.Text.literal;
@@ -117,10 +120,10 @@ public class PushTask extends Task {
         }
 
         final String tempBranchName = getTempBranchName(branchNameToPush);
-        logger.debug("Creating out temp branch "+tempBranchName);
+        logger.debug("Creating out temp branch " + tempBranchName);
         git.checkout().setCreateBranch(true).setName(tempBranchName).call();
         final ObjectId branchId = git.getRepository().resolve(latestCommonSnapshot.getBranchName());
-        logger.debug("Merging "+latestCommonSnapshot.getBranchName());
+        logger.debug("Merging " + latestCommonSnapshot.getBranchName());
         git.merge().setContentMergeStrategy(ContentMergeStrategy.OURS).
                 include(branchId).setMessage("Merge " + branchId + " into " + tempBranchName).call();
         logger.debug("Checking out " + branchNameToPush);

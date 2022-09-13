@@ -10,7 +10,9 @@ import org.jetbrains.annotations.NotNull;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 
@@ -30,8 +32,8 @@ public record SnapshotId(String worldUuid, Date snapshotDate) implements Compara
             try {
                 SnapshotId snb = SnapshotId.fromBranch(rawBranch);
                 if (snb != null && worldUuid.equals(snb.worldUuid())) out.add(snb);
-            } catch(ParseException pe){
-                logger.warn("unexpected branch name "+rawBranch);
+            } catch (ParseException pe) {
+                logger.warn("unexpected branch name " + rawBranch);
             }
         }
         return out;
@@ -56,7 +58,7 @@ public record SnapshotId(String worldUuid, Date snapshotDate) implements Compara
     public static SnapshotId fromBranch(String rawBranch) throws ParseException {
         if (!rawBranch.startsWith(PREFIX + SEP)) return null;
         final String[] segments = rawBranch.split(SEP);
-        if (segments.length < 3) throw new ParseException("too few segments "+rawBranch, segments.length);
+        if (segments.length < 3) throw new ParseException("too few segments " + rawBranch, segments.length);
         final String worldUuid = segments[1];
         final Date date = DATE_FORMAT.parse(segments[2]);
         return new SnapshotId(worldUuid, date);

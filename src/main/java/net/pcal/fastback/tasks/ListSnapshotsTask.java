@@ -3,7 +3,6 @@ package net.pcal.fastback.tasks;
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.utils.GitUtils;
 import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -18,10 +17,8 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
+import static net.pcal.fastback.tasks.Task.TaskState.*;
 import static net.pcal.fastback.utils.SnapshotId.getSnapshotsPerWorld;
-import static net.pcal.fastback.tasks.Task.TaskState.COMPLETED;
-import static net.pcal.fastback.tasks.Task.TaskState.FAILED;
-import static net.pcal.fastback.tasks.Task.TaskState.STARTED;
 
 public class ListSnapshotsTask extends Task {
 

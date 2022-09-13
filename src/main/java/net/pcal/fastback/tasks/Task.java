@@ -6,10 +6,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.tasks.Task.TaskState.COMPLETED;
-import static net.pcal.fastback.tasks.Task.TaskState.FAILED;
-import static net.pcal.fastback.tasks.Task.TaskState.NEW;
-import static net.pcal.fastback.tasks.Task.TaskState.STARTED;
+import static net.pcal.fastback.tasks.Task.TaskState.*;
 
 @SuppressWarnings("FieldCanBeLocal")
 abstract public class Task implements Runnable {
