@@ -27,7 +27,8 @@ configurations {
 
 project.ext.versions = [
     jgit         : '6.2.0.202206071550-r',
-    apache_sshd  : '2.8.0'
+    apache_sshd  : '2.8.0',
+	JavaEWAH     : '1.1.13'
 ]
 
 dependencies {
@@ -45,6 +46,7 @@ dependencies {
 
 	include group: 'org.apache.sshd', name: 'sshd-core', version: versions.apache_sshd
 	include group: 'org.apache.sshd', name: 'sshd-common', version: versions.apache_sshd
+	include group: 'com.googlecode.javaewah', name: 'JavaEWAH', version: versions.JavaEWAH
 
 //	modRuntimeOnly group: 'org.slf4j', name: 'jcl-over-slf4j'
 	//include group: 'org.slf4j', name: ' slf4j-api', version: '1.7.30'
