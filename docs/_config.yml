@@ -1,0 +1,16 @@
+title: FastBack - Minecraft World Backups
+logo: /fastback-icon.png
+remote_theme: just-the-docs/just-the-docs
+search_enabled: true
+color_scheme: dark
+
+aux_links:
+  "Download":
+    - "https://www.curseforge.com/minecraft/mc-mods/fastback/files"
+  "Source":
+    - "https://github.com/pcal43/fastback"
+  "Issues":
+    - "https://github.com/pcal43/fastback/issues"
+  "Discord":
+    - "https://discord.gg/rVa47bYD"
+
