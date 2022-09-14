@@ -115,7 +115,7 @@ public class HelpCommand {
         for (String available : getSubcommandNames(cc)) {
             if (subcommand.equals(available)) {
                 final String prefix = "/backup " + subcommand + ": ";
-                log.notify(translatable("commands.fastback." + subcommand + ".help", prefix));
+                log.notify(translatable("commands.fastback.help." + subcommand, prefix));
                 return SUCCESS;
             }
         }
@@ -130,11 +130,12 @@ public class HelpCommand {
     }
 
     private static void writeMarkdownReference(CommandContext<ServerCommandSource> cc, PrintWriter out) {
-        out.println("Command          | Use");
-        out.println("---------------- | ---");
+        out.println();
+        out.println("Command            | Use");
+        out.println("------------------ | ---");
         for (final String sub : getSubcommandNames(cc)) {
-            Text shortHelp = translatable("commands.fastback." + sub + ".help");
-            String paddedSub = String.format("%-" + 16 + "s", sub);
+            Text shortHelp = translatable("commands.fastback.help." + sub);
+            String paddedSub = String.format("%-" + 18 + "s", "`" + sub + "`");
             out.println(paddedSub + " | " + shortHelp.getString());
         }
     }
