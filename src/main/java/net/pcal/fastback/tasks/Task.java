@@ -24,7 +24,10 @@ import java.util.Collections;
 import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.tasks.Task.TaskState.*;
+import static net.pcal.fastback.tasks.Task.TaskState.COMPLETED;
+import static net.pcal.fastback.tasks.Task.TaskState.FAILED;
+import static net.pcal.fastback.tasks.Task.TaskState.NEW;
+import static net.pcal.fastback.tasks.Task.TaskState.STARTED;
 
 @SuppressWarnings("FieldCanBeLocal")
 abstract public class Task implements Runnable {

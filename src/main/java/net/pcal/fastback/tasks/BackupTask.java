@@ -21,7 +21,11 @@ package net.pcal.fastback.tasks;
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.SnapshotId;
-import org.eclipse.jgit.api.*;
+import org.eclipse.jgit.api.AddCommand;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ResetCommand;
+import org.eclipse.jgit.api.RmCommand;
+import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.IOException;

@@ -35,7 +35,9 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.tasks.Task.TaskState.*;
+import static net.pcal.fastback.tasks.Task.TaskState.COMPLETED;
+import static net.pcal.fastback.tasks.Task.TaskState.FAILED;
+import static net.pcal.fastback.tasks.Task.TaskState.STARTED;
 import static net.pcal.fastback.utils.SnapshotId.getSnapshotsPerWorld;
 
 public class ListSnapshotsTask extends Task {

@@ -20,16 +20,20 @@ package net.pcal.fastback;
 
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.FileUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Config;
+import org.eclipse.jgit.lib.StoredConfig;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.UUID;
 
 import static java.util.Objects.requireNonNull;
+import static net.pcal.fastback.utils.FileUtils.writeResourceToFile;
 import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
 public record WorldConfig(
@@ -47,6 +51,11 @@ public record WorldConfig(
     private static final String CONFIG_SHUTDOWN_BACKUP_ENABLED = "shutdown-backup-enabled";
     private static final String CONFIG_REMOTE_BACKUP_ENABLED = "remote-backup-enabled";
 
+    private static final Iterable<Pair<String, Path>> WORLD_RESOURCES = List.of(
+            Pair.of("world/dot-gitignore", Path.of(".gitignore")),
+            Pair.of("world/dot-gitattributes", Path.of(".gitattributes"))
+    );
+
     public static WorldConfig load(Path worldSaveDir) throws IOException {
         try (Git git = Git.open(worldSaveDir.toFile())) {
             return load(worldSaveDir, git.getRepository().getConfig());
@@ -63,6 +72,8 @@ public record WorldConfig(
                 gitConfig.getString("remote", REMOTE_NAME, "url")
         );
     }
+
+
 
     // THESE ARE EFFECTIVELY CONSTANTS.  HERE BECAUSE WE MIGHT NEED TO MAKE SOME OF THEM CONFIGURABLE SOMEDAY.
 
@@ -116,7 +127,26 @@ public record WorldConfig(
         return Files.readString(worldSaveDir.resolve(WORLD_UUID_PATH)).trim();
     }
 
-    public static void ensureWorldHasUuid(final Path worldSaveDir, final Logger logger) throws IOException {
+    public static boolean isBackupsEnabledOn(Path worldSaveDir) {
+        if (!isGitRepo(worldSaveDir)) return false;
+        if (!worldSaveDir.resolve(WORLD_UUID_PATH).toFile().exists()) return false;
+        return true;
+    }
+
+    public static void doWorldMaintenance(final Git git, final Logger logger) throws IOException {
+        logger.info("Doing world maintenance");
+        final Path worldSaveDir = git.getRepository().getWorkTree().toPath();
+        ensureWorldHasUuid(worldSaveDir, logger);
+        for (final Pair<String, Path> resource2path : WORLD_RESOURCES) {
+            writeResourceToFile(resource2path.getLeft(), worldSaveDir.resolve(resource2path.getRight()));
+        }
+        final StoredConfig config = git.getRepository().getConfig();
+        config.setInt("core", null, "compression", 0);
+        config.setInt("pack", null, "window", 0);
+        config.save();
+    }
+
+    private static void ensureWorldHasUuid(final Path worldSaveDir, final Logger logger) throws IOException {
         final Path worldUuidpath = worldSaveDir.resolve(WORLD_UUID_PATH);
         if (!worldUuidpath.toFile().exists()) {
             FileUtils.mkdirs(worldUuidpath.getParent());
@@ -129,11 +159,7 @@ public record WorldConfig(
         }
     }
 
-    public static boolean isBackupsEnabledOn(Path worldSaveDir) {
-        if (!isGitRepo(worldSaveDir)) return false;
-        if (!worldSaveDir.resolve(WORLD_UUID_PATH).toFile().exists()) return false;
-        return true;
-    }
+
 }
 
 

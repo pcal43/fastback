@@ -47,7 +47,7 @@ public class LifecycleUtils {
         final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
         if (isGitRepo(worldSaveDir)) {
             try (final Git git = Git.open(worldSaveDir.toFile())) {
-                WorldUtils.doWorldMaintenance(git, logger);
+                WorldConfig.doWorldMaintenance(git, logger);
                 if (WorldConfig.load(worldSaveDir).isBackupEnabled()) {
                     return;
                 }

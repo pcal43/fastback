@@ -31,7 +31,10 @@ import java.nio.file.Path;
 import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.commands.Commands.*;
+import static net.pcal.fastback.commands.Commands.FAILURE;
+import static net.pcal.fastback.commands.Commands.SUCCESS;
+import static net.pcal.fastback.commands.Commands.commandLogger;
+import static net.pcal.fastback.commands.Commands.executeStandard;
 import static net.pcal.fastback.tasks.ListSnapshotsTask.listSnapshotsForWorldSorted;
 import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
