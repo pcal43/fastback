@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import static java.util.Objects.requireNonNull;
+import static net.minecraft.text.Text.translatable;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class BackupTask extends Task {
@@ -27,7 +28,7 @@ public class BackupTask extends Task {
 
     public void run() {
         this.setStarted();
-        this.log.notify("Saving local backup");
+        this.log.notify(translatable("fastback.notify.local-preparing"));
         try (Git git = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
             final WorldConfig config;
             try {
@@ -72,15 +73,15 @@ public class BackupTask extends Task {
         this.setCompleted();
     }
 
-    private static void doCommit(Git git, WorldConfig config, String newBranchName, final Logger logger) throws GitAPIException, IOException {
-        logger.debug("doing commit");
-        logger.debug("checkout");
+    private static void doCommit(Git git, WorldConfig config, String newBranchName, final Logger log) throws GitAPIException, IOException {
+        log.debug("doing commit");
+        log.debug("checkout");
         git.checkout().setOrphan(true).setName(newBranchName).call();
         git.reset().setMode(ResetCommand.ResetType.SOFT).call();
-        logger.debug("status");
+        log.debug("status");
         final Status status = git.status().call();
 
-        logger.debug("add");
+        log.debug("add");
 
         //
         // Figure out what files to add and remove.  We don't just 'git add .' because this:
@@ -92,9 +93,9 @@ public class BackupTask extends Task {
             toAdd.addAll(status.getUntracked());
             if (!toAdd.isEmpty()) {
                 final AddCommand gitAdd = git.add();
-                logger.debug("doing add");
+                log.debug("doing add");
                 for (final String file : toAdd) {
-                    logger.debug("add  " + file);
+                    log.debug("add  " + file);
                     gitAdd.addFilepattern(file);
                 }
                 gitAdd.call();
@@ -105,16 +106,18 @@ public class BackupTask extends Task {
             toDelete.addAll(status.getRemoved());
             toDelete.addAll(status.getMissing());
             if (!toDelete.isEmpty()) {
-                logger.debug("doing rm");
+                log.debug("doing rm");
                 final RmCommand gitRm = git.rm();
                 for (final String file : toDelete) {
-                    logger.debug("rm  " + file);
+                    log.debug("rm  " + file);
                     gitRm.addFilepattern(file);
                 }
                 gitRm.call();
             }
         }
-        logger.debug("commit");
+        log.debug("commit");
+        log.notify(translatable("fastback.notify.local-saving"));
         git.commit().setMessage(newBranchName).call();
+        log.notify(translatable("fastback.notify.local-done"));
     }
 }
