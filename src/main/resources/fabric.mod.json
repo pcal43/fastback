@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "fastback",
   "version": "${version}",
-  "name": "Fast Backups",
+  "name": "FastBack",
   "description": "Fast, incremental world backups powered by git",
   "authors": ["pcal.net"],
 
