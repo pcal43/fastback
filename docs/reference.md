@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Subcommand Reference
+title: Reference
 nav_order: 80
 ---
 
