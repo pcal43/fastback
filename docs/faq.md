@@ -25,6 +25,11 @@ try and let us know!
 But if you're running a server with a 200GB world, you're probably better off sticking with rsync (or whatever
 you're using).
 
+## I just turned it on and it's taking a while.  I thought you said this thing was fast?
+
+The first time you back up, it's going to take a while to establish a 'base' snapshot.  The *next* time you 
+back up on top of that base, it will be a lot faster.
+
 ## Where are the backups stored?
 
 The backups are stored inside your world folder, in a secret directory called `.git`. You won't see any files
@@ -35,6 +40,7 @@ in there that you recognize; to get your backups out, you need to use the `/back
 The first time you do a backup, all the files are backed up in the world folder under `.git`.  But the next
 time you back up, only changed files will be backed up.  See question above about incremental backups.
 
+*Technical detail: It's just a regular git repository, no shenanigans.*
 
 ## Can I back up my world to github?
 
@@ -55,5 +61,5 @@ software developers can run into a lot of problems if they carelessly mix binary
 For this reason, most people think that "git is bad for binary files."  But with careful handling, git can actually 
 be used to store just about anything.
 
-*Details: FastBack tries to minimize compression and repacking in the git repo.  It also stores each backup 
+*Technical detail: FastBack tries to minimize compression and repacking in the git repo.  It also stores each backup
 snapshot in an orphan branch so that unused blobs can be garbage collected when snapshots are pruned.*
