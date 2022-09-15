@@ -56,15 +56,7 @@ public class ModContext {
     }
 
     public String getCommandName() {
-        return "backup";
-    }
-
-    public boolean isUnsafeCommandsEnabled() {
-        return false;
-    }
-
-    public boolean isStartupNotificationEnabled() {
-        return true;
+        return "backup"; // TODO i18n?
     }
 
     public Path getRestoresDir() throws IOException {
@@ -116,6 +108,20 @@ public class ModContext {
 
     public Logger getLogger() {
         return this.spi.getLogger();
+    }
+
+    // TODO make these configurable via properties
+
+    public boolean isUnsafeCommandsEnabled() {
+        return false;
+    }
+
+    public boolean isStartupNotificationEnabled() {
+        return true;
+    }
+
+    public boolean isCommandDumpEnabled() {
+        return true;
     }
 
     public interface ModFrameworkProvider {

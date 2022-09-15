@@ -30,6 +30,7 @@ import net.minecraft.text.Text;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
 
+import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -97,6 +98,13 @@ public class HelpCommand {
             subcommands.append(available);
         }
         log.notify(translatable("commands.fastback.help.subcommands", String.valueOf(subcommands)));
+
+        if (this.ctx.isCommandDumpEnabled()) {
+            final StringWriter sink = new StringWriter();
+            writeMarkdownReference(cc, new PrintWriter(sink));
+            log.info(sink.toString());
+        }
+
         return SUCCESS;
     }
 
@@ -107,7 +115,7 @@ public class HelpCommand {
         for (String available : getSubcommandNames(cc)) {
             if (subcommand.equals(available)) {
                 final String prefix = "/backup " + subcommand + ": ";
-                log.notify(translatable("commands.fastback." + subcommand + ".help", prefix));
+                log.notify(translatable("commands.fastback.help." + subcommand, prefix));
                 return SUCCESS;
             }
         }
@@ -121,5 +129,14 @@ public class HelpCommand {
         return out;
     }
 
-
+    private static void writeMarkdownReference(CommandContext<ServerCommandSource> cc, PrintWriter out) {
+        out.println();
+        out.println("Command            | Use");
+        out.println("------------------ | ---");
+        for (final String sub : getSubcommandNames(cc)) {
+            Text shortHelp = translatable("commands.fastback.help." + sub);
+            String paddedSub = String.format("%-" + 18 + "s", "`" + sub + "`");
+            out.println(paddedSub + " | " + shortHelp.getString());
+        }
+    }
 }
