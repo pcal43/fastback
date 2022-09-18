@@ -1,3 +1,7 @@
+0.1.1+1.19.2
+ - integrate fabric-permissions-api / LuckPerms support
+ - 18-SEP-2022
+
 0.1.0+1.19.2
 - first public release
 - 15-SEP-2022
