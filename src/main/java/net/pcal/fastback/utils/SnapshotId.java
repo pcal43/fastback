@@ -86,5 +86,4 @@ public record SnapshotId(String worldUuid, Date snapshotDate) implements Compara
     public String toString() {
         return getBranchName();
     }
-
 }
