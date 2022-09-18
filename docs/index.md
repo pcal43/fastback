@@ -40,7 +40,6 @@ of disk space.
 ## Current Limitations
 
 FastBack is currently an alpha release.  It has missing features and limitations, including:
-* No user permissions to restrict who can run backups
 * Backups can only run when the world is shutting down.
 * Garbage collection does not happen correctly when pruning old snapshots.
 * For more, see [Issues](https://github.com/pcal43/fastback/issues)
