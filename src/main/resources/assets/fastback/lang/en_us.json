@@ -27,6 +27,11 @@
 
   "fastback.notify.list-local-snapshots-header" : "Local snapshots:",
 
+  "fastback.notify.gc-start" : "Collecting garbage in local backup...",
+  "fastback.notify.gc-done" : "Garbage collection complete.",
+
+  "fastback.notify.purge-done" : "Deleted snapshot %",
+
   "fastback.notify.remote-enabled" : "Enabled remote backups to:\n%s",
   "fastback.notify.remote-disabled" : "Remote backups are disabled.",
   "fastback.notify.remote-already-enabled" : "\"Remote backups are already enabled to:\n%s",
@@ -37,6 +42,14 @@
 
   "fastback.savescreen.remote-preparing": "Preparing remote backup %d%%",
   "fastback.savescreen.remote-uploading": "Uploading remote backup %d%%",
-  "fastback.savescreen.remote-done": "Remote backup complete"
+  "fastback.savescreen.remote-done": "Remote backup complete",
+
+  "fastback.shutdown.currently-enabled": "Backup on world shutdown is currently enabled.",
+  "fastback.shutdown.enabled":  "Backup on world shutdown is now enabled.",
+
+  "fastback.shutdown.currently-disabled": "Backup on shutdown is currently disabled.",
+  "fastback.shutdown.disabled": "Backup on shutdown is now disabled."
+
+
 
 }

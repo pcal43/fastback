@@ -21,6 +21,7 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.Text;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.IncrementalProgressMonitor;
 import net.pcal.fastback.logging.LoggingProgressMonitor;
@@ -33,6 +34,7 @@ import java.util.Date;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.text.Text.translatable;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.executeStandard;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
@@ -69,11 +71,11 @@ public class GcCommand {
                 final ProgressMonitor pm =
                         new IncrementalProgressMonitor(new LoggingProgressMonitor(log), 100);
                 try (final Git git = Git.open(wc.worldSaveDir().toFile())) {
-                    log.notify("Collecting garbage in local backup...");
+                    log.notify(translatable("fastback.notify.gc-start"));
                     log.info("Stats before gc:");
                     log.info("" + git.gc().getStatistics());
                     git.gc().setExpire(new Date()).setAggressive(false).setProgressMonitor(pm).call();
-                    log.notify("Garbage collection complete.");
+                    log.notify(translatable("fastback.notify.gc-done"));
                     log.info("Stats after gc:");
                     log.info("" + git.gc().getStatistics());
 
