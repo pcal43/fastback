@@ -17,6 +17,8 @@ repositories {
 	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
 	// for more information about repositories.
 	maven { url 'https://maven.nucleoid.xyz' }
+	maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+
 }
 
 
@@ -26,51 +28,23 @@ configurations {
 }
 
 project.ext.versions = [
-    jgit         : '6.2.0.202206071550-r',
-    apache_sshd  : '2.8.0',
-	JavaEWAH     : '1.1.13'
+    jgit                : '6.2.0.202206071550-r',
+    apache_sshd         : '2.8.0',
+	JavaEWAH            : '1.1.13',
+	fabric_permissions  : '0.2-SNAPSHOT'
 ]
 
 dependencies {
+
 	// Fabric & Minecraft
-	modImplementation  group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: versions.jgit
-	include  group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: versions.jgit
-
-	modRuntimeOnly  group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.ssh.jsch', version: versions.jgit
-	include group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.ssh.jsch', version: versions.jgit
-
-	// WORKS ON IF ONLY STUFF ABOVE HERE
-
-	//modRuntimeOnly group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.ssh.apache', version: versions.jgit
+	include(modImplementation  group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: versions.jgit)
+	include(modRuntimeOnly  group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.ssh.jsch', version: versions.jgit)
 	include group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.ssh.apache', version: versions.jgit
-
 	include group: 'org.apache.sshd', name: 'sshd-core', version: versions.apache_sshd
 	include group: 'org.apache.sshd', name: 'sshd-common', version: versions.apache_sshd
 	include group: 'com.googlecode.javaewah', name: 'JavaEWAH', version: versions.JavaEWAH
 
-//	modRuntimeOnly group: 'org.slf4j', name: 'jcl-over-slf4j'
-	//include group: 'org.slf4j', name: ' slf4j-api', version: '1.7.30'
-
-	/**
-
-	//https://download.eclipse.org/jgit/site/6.2.0.202206071550-r/org.eclipse.jgit.ssh.apache/dependencies.html
-
-	modRuntimeOnly group: 'org.apache.sshd', name: 'sshd-core', version: versions.apache_sshd
-	include group: 'org.apache.sshd', name: 'sshd-core', version: versions.apache_sshd
-
-	modRuntimeOnly group: 'org.apache.sshd', name: 'sshd-sftp', version: versions.apache_sshd
-	include group: 'org.apache.sshd', name: 'sshd-sftp', version: versions.apache_sshd
-	/**
-	modRuntimeOnly group: 'org.apache.sshd', name: 'sshd-common', version: versions.apache_sshd
-	//include group: 'org.apache.sshd', name: 'sshd-common', version: versions.apache_sshd
-
-	 modRuntimeOnly group: 'org.slf4j', name: 'jcl-over-slf4j'
-	 //include group: 'org.slf4j', name: 'jcl-over-slf4j', version: '1.7.32'
-
-	//modImplementation
-	//runtimeOnly group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.ui', version: versions.jgit
-	//runtimeOnly group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.gpg.bc', version: versions.jgit
-**/
+	include(modImplementation group: 'me.lucko', name: 'fabric-permissions-api', version: versions.fabric_permissions)
 
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"

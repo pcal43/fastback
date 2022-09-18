@@ -38,13 +38,18 @@ import static net.pcal.fastback.WorldConfig.doWorldMaintenance;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
+import static net.pcal.fastback.commands.Commands.subcommandPermission;
 
 public class EnableCommand {
+
+    private static final String COMMAND_NAME = "enable";
 
     public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         final EnableCommand c = new EnableCommand(ctx);
         argb.then(
-                literal("enable").executes(c::enable));
+                literal(COMMAND_NAME).
+                        requires(subcommandPermission(COMMAND_NAME)).
+                        executes(c::enable));
     }
 
     private final ModContext ctx;

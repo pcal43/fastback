@@ -32,12 +32,16 @@ import static net.pcal.fastback.commands.Commands.executeStandard;
 
 public class ShutdownCommand {
 
+    private static final String COMMAND_NAME = "shutdown";
+    private static final String ENABLE_ARGUMENT = "enable";
+    private static final String DISABLE_ARGUMENT = "disable";
+
     public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         final ShutdownCommand c = new ShutdownCommand(ctx);
         argb.then(
-                literal("shutdown").executes(c::show).then(
-                        literal("enable").executes(c::enable)).then(
-                        literal("disable").executes(c::disable))
+                literal(COMMAND_NAME).executes(c::show).then(
+                        literal(ENABLE_ARGUMENT).executes(c::enable)).then(
+                        literal(DISABLE_ARGUMENT).executes(c::disable))
         );
     }
 

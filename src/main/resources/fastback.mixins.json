@@ -4,9 +4,9 @@
   "package": "net.pcal.fastback.fabric.mixins",
   "compatibilityLevel": "JAVA_16",
   "mixins": [
+    "ScreenAccessors",
     "ServerAccessors",
-    "SessionAccessors",
-    "ScreenAccessors"
+    "SessionAccessors"
   ],
   "injectors": {
     "defaultRequire": 1

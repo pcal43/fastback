@@ -20,6 +20,7 @@ package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
@@ -31,14 +32,21 @@ import net.pcal.fastback.logging.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.StoredConfig;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.text.ParseException;
+import java.util.function.Predicate;
 
 import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
 public class Commands {
+
+    /**
+     * Minecraft Permission Level required by default.
+     */
+    static int DEFAULT_PERM_LEVEL = 4;
 
     static int FAILURE = 0;
     static int SUCCESS = 1;
@@ -70,6 +78,10 @@ public class Commands {
                 ctx.getLogger(),
                 new CommandSourceLogger(cc.getSource())
         );
+    }
+
+    public static @NotNull Predicate<ServerCommandSource> subcommandPermission(String subcommandName) {
+        return Permissions.require("fastback.commands." + subcommandName, DEFAULT_PERM_LEVEL);
     }
 
     interface CommandLogic {

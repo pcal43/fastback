@@ -34,18 +34,20 @@ import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.executeStandard;
+import static net.pcal.fastback.commands.Commands.subcommandPermission;
 
 public class PurgeCommand {
 
-
-    private static final String SNAPSHOT_ARG = "snapshot";
+    private static final String COMMAND_NAME = "purge";
+    private static final String ARGUMENT = "snapshot";
 
     public static void register(LiteralArgumentBuilder<ServerCommandSource> argb, ModContext ctx) {
         final PurgeCommand rc = new PurgeCommand(ctx);
-        argb.then(literal("purge").
-                then(argument(SNAPSHOT_ARG, StringArgumentType.string()).
-                        suggests(new SnapshotNameSuggestions(ctx)).
-                        executes(rc::execute)));
+        argb.then(literal(COMMAND_NAME).
+                requires(subcommandPermission(COMMAND_NAME)).then(
+                        argument(ARGUMENT, StringArgumentType.string()).
+                                suggests(new SnapshotNameSuggestions(ctx)).
+                                executes(rc::execute)));
     }
 
     private final ModContext ctx;
@@ -56,7 +58,7 @@ public class PurgeCommand {
 
     private int execute(CommandContext<ServerCommandSource> cc) {
         return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
-            final String snapshotName = cc.getLastChild().getArgument(SNAPSHOT_ARG, String.class);
+            final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
             final SnapshotId sid = SnapshotId.fromUuidAndName(wc.worldUuid(), snapshotName);
             final String branchName = sid.getBranchName();
             final MinecraftServer server = cc.getSource().getServer();

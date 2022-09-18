@@ -34,13 +34,18 @@ import static net.pcal.fastback.commands.Commands.executeStandard;
 
 public class RemoteCommand {
 
+    private static final String COMMAND_NAME = "remote";
+    private static final String ENABLE_ARGUMENT = "enable";
+    private static final String DISABLE_ARGUMENT = "disable";
+    private static final String URL_ARGUMENT = "remote-url";
+
     public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         final RemoteCommand c = new RemoteCommand(ctx);
         argb.then(
-                literal("remote").executes(c::showRemote).then(
-                        literal("enable").executes(c::enable)).then(
-                        literal("disable").executes(c::disable)).then(
-                        argument("remote-url", StringArgumentType.greedyString()).
+                literal(COMMAND_NAME).executes(c::showRemote).then(
+                        literal(ENABLE_ARGUMENT).executes(c::enable)).then(
+                        literal(DISABLE_ARGUMENT).executes(c::disable)).then(
+                        argument(URL_ARGUMENT, StringArgumentType.greedyString()).
                                 executes(c::setRemoteUrl))
         );
     }
@@ -110,7 +115,7 @@ public class RemoteCommand {
 
     private int setRemoteUrl(final CommandContext<ServerCommandSource> cc) {
         return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
-            final String newUrl = cc.getArgument("remote-url", String.class);
+            final String newUrl = cc.getArgument(URL_ARGUMENT, String.class);
             final String currentUrl = wc.getRemotePushUrl();
             final boolean currentEnable = wc.isRemoteBackupEnabled();
             if (currentUrl != null && currentUrl.equals(newUrl)) {

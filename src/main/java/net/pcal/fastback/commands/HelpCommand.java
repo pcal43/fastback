@@ -45,15 +45,24 @@ import static net.minecraft.text.Text.translatable;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
+import static net.pcal.fastback.commands.Commands.subcommandPermission;
 
 public class HelpCommand {
 
+    private static final String COMMAND_NAME = "help";
+    private static final String ARGUMENT = "subcommand";
+
     public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         final HelpCommand c = new HelpCommand(ctx);
-        argb.then(literal("help").executes(c::help).then(
-                argument("subcommand", StringArgumentType.word()).
-                        suggests(new HelpTopicSuggestions(ctx)).
-                        executes(c::helpSubcommand))
+        argb.then(
+                literal(COMMAND_NAME).
+                        requires(subcommandPermission(COMMAND_NAME)).
+                        executes(c::help).
+                        then(
+                                argument(ARGUMENT, StringArgumentType.word()).
+                                        suggests(new HelpTopicSuggestions(ctx)).
+                                        executes(c::helpSubcommand)
+                        )
         );
     }
 
@@ -111,7 +120,7 @@ public class HelpCommand {
     private int helpSubcommand(CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc);
         final Collection<CommandNode<ServerCommandSource>> subcommands = cc.getNodes().get(0).getNode().getChildren();
-        final String subcommand = cc.getLastChild().getArgument("subcommand", String.class);
+        final String subcommand = cc.getLastChild().getArgument(ARGUMENT, String.class);
         for (String available : getSubcommandNames(cc)) {
             if (subcommand.equals(available)) {
                 final String prefix = "/backup " + subcommand + ": ";

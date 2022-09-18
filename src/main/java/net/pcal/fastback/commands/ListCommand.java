@@ -21,7 +21,6 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.pcal.fastback.ModContext;
@@ -31,18 +30,26 @@ import java.nio.file.Path;
 import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
+import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.executeStandard;
+import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.tasks.ListSnapshotsTask.listSnapshotsForWorldSorted;
 import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
 public class ListCommand {
 
+    private static final String COMMAND_NAME = "list";
+
     public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         final ListCommand rc = new ListCommand(ctx);
-        argb.then(CommandManager.literal("list").executes(rc::execute));
+        argb.then(
+                literal(COMMAND_NAME).
+                        requires(subcommandPermission(COMMAND_NAME)).
+                        executes(rc::execute)
+        );
     }
 
     private final ModContext ctx;
