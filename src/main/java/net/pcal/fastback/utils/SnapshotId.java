@@ -68,6 +68,10 @@ public record SnapshotId(String worldUuid, Date snapshotDate) implements Compara
         return new SnapshotId(worldUuid, DATE_FORMAT.parse(snapshoDate));
     }
 
+    public String getName() {
+        return DATE_FORMAT.format(this.snapshotDate);
+    }
+
     public String getBranchName() {
         final String formattedDate = DATE_FORMAT.format(this.snapshotDate);
         return PREFIX + "/" + this.worldUuid + "/" + formattedDate;
@@ -82,4 +86,5 @@ public record SnapshotId(String worldUuid, Date snapshotDate) implements Compara
     public String toString() {
         return getBranchName();
     }
+
 }

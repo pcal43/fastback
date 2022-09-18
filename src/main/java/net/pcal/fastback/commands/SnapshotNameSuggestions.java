@@ -25,6 +25,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.utils.SnapshotId;
 
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
@@ -51,8 +52,8 @@ class SnapshotNameSuggestions implements SuggestionProvider<ServerCommandSource>
                 final Logger logger = commandLogger(ctx, scs);
                 final Path worldSaveDir = ctx.getWorldSaveDirectory(scs.getSource().getServer());
                 if (isBackupsEnabledOn(worldSaveDir)) {
-                    for (String s : listSnapshotsForWorldSorted(worldSaveDir, logger)) {
-                        builder.suggest(s);
+                    for (SnapshotId sid : listSnapshotsForWorldSorted(worldSaveDir, logger)) {
+                        builder.suggest(sid.getName());
                     }
                     completableFuture.complete(builder.buildFuture().get());
                 }

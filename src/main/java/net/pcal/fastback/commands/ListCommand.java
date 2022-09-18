@@ -25,6 +25,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.utils.SnapshotId;
 
 import java.nio.file.Path;
 import java.util.function.Consumer;
@@ -70,8 +71,8 @@ public class ListCommand {
             final Consumer<String> sink = message -> cc.getSource().sendFeedback(Text.literal(message), false);
             sink.accept("Local snapshots:");
             this.ctx.getExecutorService().execute(() -> {
-                for (String snapshotName : listSnapshotsForWorldSorted(worldSaveDir, ctx.getLogger())) {
-                    log.notify(snapshotName);
+                for (SnapshotId sid : listSnapshotsForWorldSorted(worldSaveDir, ctx.getLogger())) {
+                    log.notify(Text.literal(sid.getName()));
                 }
             });
             return SUCCESS;
