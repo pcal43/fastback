@@ -28,6 +28,7 @@ import net.pcal.fastback.WorldConfig;
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.text.Text.translatable;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.executeStandard;
@@ -64,16 +65,14 @@ public class RemoteCommand {
             final String remoteUrl = wc.getRemotePushUrl();
             final boolean enabled = wc.isRemoteBackupEnabled();
             if (enabled && remoteUrl != null) {
-                log.notify("Remote backups are enabled to:");
-                log.notify(remoteUrl);
+                log.notify(translatable("fastback.notify.remote-enabled", remoteUrl));
                 return SUCCESS;
             } else {
-                log.notifyError("Remote backups are disabled.");
+                log.notifyError(translatable("fastback.notify.remote-disabled"));
                 if (remoteUrl != null) {
-                    log.notify("Run '/backup remote enable' to enable remote backups to:");
-                    log.notify(remoteUrl);
+                    log.notifyError(translatable("fastback.notify.remote-how-to-enable", remoteUrl));
                 } else {
-                    log.notify("Run '/backup remote <remote-url>' to enable remote backups.");
+                    log.notify(translatable("fastback.notify.remote-how-to-enable-no-url"));
                 }
                 return FAILURE;
             }
@@ -85,15 +84,13 @@ public class RemoteCommand {
             final String currentUrl = wc.getRemotePushUrl();
             final boolean currentEnabled = wc.isRemoteBackupEnabled();
             if (currentUrl == null) {
-                log.notifyError("No remote URL is set.");
-                log.notify("Run '/backup remote <remote-url>'");
+                log.notifyError(translatable("fastback.notify.remote-no-url"));
                 return FAILURE;
             } else if (currentEnabled) {
-                log.notifyError("Remote backups are already enabled.");
+                log.notifyError(translatable("fastback.notify.remote-already-enabled", currentUrl));
                 return FAILURE;
             } else {
-                log.notify("Remote backups enabled to:");
-                log.notify(currentUrl);
+                log.notify(translatable("fastback.notify.remote-enabled", currentUrl));
                 WorldConfig.setRemoteBackupEnabled(gitc, true);
                 gitc.save();
                 return SUCCESS;
@@ -123,23 +120,20 @@ public class RemoteCommand {
             final boolean currentEnable = wc.isRemoteBackupEnabled();
             if (currentUrl != null && currentUrl.equals(newUrl)) {
                 if (currentEnable) {
-                    log.notify("Remote backups are already enabled to:");
-                    log.notify(newUrl);
+                    log.notify(translatable("fastback.notify.remote-already-enabled", newUrl));
                     return SUCCESS;
                 } else {
                     WorldConfig.setRemoteBackupEnabled(gitc, true);
                     gitc.save();
-                    log.notify("Enabled remote backups to:");
-                    log.notify(newUrl);
+                    log.notify(translatable("fastback.notify.remote-enabled", newUrl));
                 }
             } else {
                 WorldConfig.setRemoteUrl(gitc, newUrl);
                 if (currentEnable) {
-                    log.notify("Remote backup URL changed to " + newUrl);
+                    log.notify(translatable("fastback.notify.remote-changed", newUrl));
                 } else {
                     WorldConfig.setRemoteBackupEnabled(gitc, true);
-                    log.notify("Enabled remote backups to:" + newUrl);
-                    log.notify(newUrl);
+                    log.notify(translatable("fastback.notify.remote-enabled", newUrl));
                 }
                 gitc.save();
             }

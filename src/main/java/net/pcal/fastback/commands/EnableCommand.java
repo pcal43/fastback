@@ -34,6 +34,7 @@ import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.text.Text.translatable;
 import static net.pcal.fastback.WorldConfig.doWorldMaintenance;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
@@ -73,7 +74,7 @@ public class EnableCommand {
                 WorldConfig.setBackupEnabled(config, true);
                 WorldConfig.setShutdownBackupEnabled(config, true);
                 config.save();
-                logger.notify("Enabled automatic local backups on world shutdown.");
+                logger.notify(translatable("fastback.notify.backups-enabled"));
                 return SUCCESS;
             }
         } catch (GitAPIException | IOException e) {
