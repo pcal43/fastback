@@ -18,7 +18,6 @@ repositories {
 	// for more information about repositories.
 	maven { url 'https://maven.nucleoid.xyz' }
 	maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
-
 }
 
 
@@ -30,8 +29,8 @@ configurations {
 project.ext.versions = [
     jgit                : '6.2.0.202206071550-r',
     apache_sshd         : '2.8.0',
-	JavaEWAH            : '1.1.13',
-	fabric_permissions  : '0.2-SNAPSHOT'
+    JavaEWAH            : '1.1.13',
+    fabric_permissions  : '0.2-SNAPSHOT'
 ]
 
 dependencies {
