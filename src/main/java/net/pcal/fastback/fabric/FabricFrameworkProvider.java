@@ -36,17 +36,22 @@ import org.apache.logging.log4j.LogManager;
 import java.nio.file.Path;
 import java.util.Optional;
 
-import static java.util.Objects.requireNonNull;
-
 class FabricFrameworkProvider implements ModContext.ModFrameworkProvider {
 
     private static final String MOD_ID = "fastback";
-    private FabricClientProvider clientProvider;
+    private final FabricClientProvider clientProvider;
     final Logger logger = new Log4jLogger(LogManager.getLogger(MOD_ID));
 
-    void setClientProvider(FabricClientProvider clientSpi) {
-        if (this.clientProvider != null) throw new IllegalStateException();
-        this.clientProvider = requireNonNull(clientSpi);
+    static FabricFrameworkProvider forServer() {
+        return new FabricFrameworkProvider(null);
+    }
+
+    static FabricFrameworkProvider forClient(FabricClientProvider clientProvider) {
+        return new FabricFrameworkProvider(clientProvider);
+    }
+
+    private FabricFrameworkProvider(FabricClientProvider clientProviderOrNull) {
+        this.clientProvider = clientProviderOrNull;
     }
 
     @Override

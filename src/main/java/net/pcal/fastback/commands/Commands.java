@@ -78,8 +78,12 @@ public class Commands {
         );
     }
 
+    public static String subcommandPermName(String subcommandName) {
+        return "fastback.command." + subcommandName;
+    }
+
     public static @NotNull Predicate<ServerCommandSource> subcommandPermission(ModContext ctx, String subcommandName) {
-        return Permissions.require("fastback.commands." + subcommandName, ctx.getDefaultPermLevel());
+        return Permissions.require(subcommandPermName(subcommandName), ctx.getDefaultPermLevel());
     }
 
     interface CommandLogic {

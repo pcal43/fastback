@@ -42,9 +42,11 @@ import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.minecraft.text.Text.translatable;
+import static net.pcal.fastback.commands.Commands.BACKUP_COMMAND_PERM;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
+import static net.pcal.fastback.commands.Commands.subcommandPermName;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 
 public class HelpCommand {
@@ -146,6 +148,15 @@ public class HelpCommand {
             Text shortHelp = translatable("commands.fastback.help." + sub);
             String paddedSub = String.format("%-" + 18 + "s", "`" + sub + "`");
             out.println(paddedSub + " | " + shortHelp.getString());
+        }
+        out.println();
+        out.println("Permission                       ");
+        out.println("-------------------------------- ");
+        out.println("`" + BACKUP_COMMAND_PERM + "`");
+        for (final String sub : getSubcommandNames(cc)) {
+            String permName = subcommandPermName(sub);
+            String paddedPerm = String.format("%-" + 32 + "s", "`" + permName + "`");
+            out.println(paddedPerm);
         }
     }
 }
