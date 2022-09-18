@@ -54,5 +54,6 @@ FastBack includes the following software components:
 * [JGit](https://www.eclipse.org/jgit/) from The Eclipse Software Foundation
 * [sshd](https://mina.apache.org/sshd-project/) from The Apache Software Foundation
 * [JavaEWAH](https://github.com/lemire/javaewah) from Daniel Lemire, et al.
+* [fabric-permissions-api](https://github.com/lucko/fabric-permissions-api) from lucko
 
 Many thanks to the committers on those projects, whose work made FastBack possible.
