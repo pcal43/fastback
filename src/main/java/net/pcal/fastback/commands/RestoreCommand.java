@@ -45,7 +45,7 @@ public class RestoreCommand {
         final RestoreCommand rc = new RestoreCommand(ctx);
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(COMMAND_NAME)).then(
+                        requires(subcommandPermission(ctx, COMMAND_NAME)).then(
                                 argument(ARGUMENT, StringArgumentType.string()).
                                         suggests(new SnapshotNameSuggestions(ctx)).
                                         executes(rc::execute)

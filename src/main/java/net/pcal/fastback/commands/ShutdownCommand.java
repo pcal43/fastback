@@ -29,6 +29,7 @@ import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.executeStandard;
+import static net.pcal.fastback.commands.Commands.subcommandPermission;
 
 public class ShutdownCommand {
 
@@ -39,9 +40,11 @@ public class ShutdownCommand {
     public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         final ShutdownCommand c = new ShutdownCommand(ctx);
         argb.then(
-                literal(COMMAND_NAME).executes(c::show).then(
-                        literal(ENABLE_ARGUMENT).executes(c::enable)).then(
-                        literal(DISABLE_ARGUMENT).executes(c::disable))
+                literal(COMMAND_NAME).
+                        requires(subcommandPermission(ctx, COMMAND_NAME)).
+                        executes(c::show).then(
+                                literal(ENABLE_ARGUMENT).executes(c::enable)).then(
+                                literal(DISABLE_ARGUMENT).executes(c::disable))
         );
     }
 

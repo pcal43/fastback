@@ -56,7 +56,7 @@ public class HelpCommand {
         final HelpCommand c = new HelpCommand(ctx);
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(COMMAND_NAME)).
+                        requires(subcommandPermission(ctx, COMMAND_NAME)).
                         executes(c::help).
                         then(
                                 argument(ARGUMENT, StringArgumentType.word()).

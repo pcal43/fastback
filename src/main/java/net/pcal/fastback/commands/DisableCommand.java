@@ -38,7 +38,7 @@ public class DisableCommand {
         final DisableCommand rc = new DisableCommand(ctx);
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(COMMAND_NAME)).
+                        requires(subcommandPermission(ctx, COMMAND_NAME)).
                         executes(rc::execute)
         );
     }

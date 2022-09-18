@@ -48,7 +48,7 @@ public class GcInfoCommand {
         final GcInfoCommand c = new GcInfoCommand(ctx);
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(COMMAND_NAME)).
+                        requires(subcommandPermission(ctx, COMMAND_NAME)).
                         executes(c::now)
         );
     }

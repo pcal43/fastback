@@ -37,7 +37,7 @@ public class StatusCommand {
         final StatusCommand rc = new StatusCommand(ctx);
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(COMMAND_NAME)).
+                        requires(subcommandPermission(ctx, COMMAND_NAME)).
                         executes(rc::execute));
     }
 

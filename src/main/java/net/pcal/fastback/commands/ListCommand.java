@@ -47,7 +47,7 @@ public class ListCommand {
         final ListCommand rc = new ListCommand(ctx);
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(COMMAND_NAME)).
+                        requires(subcommandPermission(ctx, COMMAND_NAME)).
                         executes(rc::execute)
         );
     }

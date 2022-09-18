@@ -124,6 +124,10 @@ public class ModContext {
         return true;
     }
 
+    public int getDefaultPermLevel() {
+        return 3;
+    }
+
     public interface ModFrameworkProvider {
 
         Logger getLogger();

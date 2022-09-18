@@ -44,7 +44,7 @@ public class PurgeCommand {
     public static void register(LiteralArgumentBuilder<ServerCommandSource> argb, ModContext ctx) {
         final PurgeCommand rc = new PurgeCommand(ctx);
         argb.then(literal(COMMAND_NAME).
-                requires(subcommandPermission(COMMAND_NAME)).then(
+                requires(subcommandPermission(ctx, COMMAND_NAME)).then(
                         argument(ARGUMENT, StringArgumentType.string()).
                                 suggests(new SnapshotNameSuggestions(ctx)).
                                 executes(rc::execute)));

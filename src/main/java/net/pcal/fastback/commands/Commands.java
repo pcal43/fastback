@@ -46,13 +46,16 @@ public class Commands {
     /**
      * Minecraft Permission Level required by default.
      */
-    static int DEFAULT_PERM_LEVEL = 4;
+    static int DEFAULT_PERM_LEVEL = 3;
+
+    static String BACKUP_COMMAND_PERM = "fastback.command";
 
     static int FAILURE = 0;
     static int SUCCESS = 1;
 
     public static void registerCommands(final ModContext ctx, final String cmd) {
-        final LiteralArgumentBuilder<ServerCommandSource> argb = LiteralArgumentBuilder.literal(cmd);
+        final LiteralArgumentBuilder<ServerCommandSource> argb = LiteralArgumentBuilder.<ServerCommandSource>literal(cmd).
+                requires(Permissions.require(BACKUP_COMMAND_PERM, ctx.getDefaultPermLevel()));
         EnableCommand.register(argb, ctx);
         DisableCommand.register(argb, ctx);
         StatusCommand.register(argb, ctx);
@@ -80,8 +83,8 @@ public class Commands {
         );
     }
 
-    public static @NotNull Predicate<ServerCommandSource> subcommandPermission(String subcommandName) {
-        return Permissions.require("fastback.commands." + subcommandName, DEFAULT_PERM_LEVEL);
+    public static @NotNull Predicate<ServerCommandSource> subcommandPermission(ModContext ctx, String subcommandName) {
+        return Permissions.require("fastback.commands." + subcommandName, ctx.getDefaultPermLevel());
     }
 
     interface CommandLogic {
