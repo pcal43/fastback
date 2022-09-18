@@ -36,9 +36,14 @@ import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
 public class LifecycleUtils {
 
-    public static void onMinecraftStart(final ModContext ctx) {
+    public static void onClientStart(final ModContext ctx) {
         Commands.registerCommands(ctx, ctx.getCommandName());
-        ctx.getLogger().info(ctx.getModId() + " initialized");
+        ctx.getLogger().info(ctx.getModId() + " server initialized");
+    }
+
+    public static void onServerStart(final ModContext ctx) {
+        Commands.registerCommands(ctx, ctx.getCommandName());
+        ctx.getLogger().info(ctx.getModId() + " client initialized");
     }
 
     public static void onWorldStart(final ModContext ctx, final MinecraftServer server) {

@@ -53,7 +53,7 @@ public class FastbackClientModInitializer implements ClientModInitializer {
                     LifecycleUtils.onWorldStart(modContext, minecraftServer);
                 }
         );
-        LifecycleUtils.onMinecraftStart(modContext);
+        LifecycleUtils.onClientStart(modContext);
         fabricProvider.setClientProvider(new FabricClientProviderImpl());
     }
 

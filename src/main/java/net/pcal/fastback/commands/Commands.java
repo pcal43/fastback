@@ -43,11 +43,6 @@ import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
 public class Commands {
 
-    /**
-     * Minecraft Permission Level required by default.
-     */
-    static int DEFAULT_PERM_LEVEL = 3;
-
     static String BACKUP_COMMAND_PERM = "fastback.command";
 
     static int FAILURE = 0;

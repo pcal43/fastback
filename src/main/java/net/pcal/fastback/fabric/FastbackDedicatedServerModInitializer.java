@@ -39,6 +39,6 @@ public class FastbackDedicatedServerModInitializer implements DedicatedServerMod
                     LifecycleUtils.onWorldStart(modContext, minecraftServer);
                 }
         );
-        LifecycleUtils.onMinecraftStart(modContext);
+        LifecycleUtils.onServerStart(modContext);
     }
 }
