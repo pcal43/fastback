@@ -6,15 +6,15 @@ nav_order: 70
 
 # Permissions
 
-When playing in single-player mode, the `/backup` command can be run without enabling cheats.
+In single-player mode, `/backup` can be run without enabling cheats.
 
-On a dedicated server, only operators with minecraft permission level 4 will be able to run
-the `/backup` command.
+On a dedicated server, only level 4 operators will be able to run `/backup`.
 
 
-## Custom Permissions
+### LuckPerms Support
 
-FastBack supports fine-grained permissions via the [fabric-permissions-api](https://github.com/lucko/fabric-permissions-api).
+FastBack exposes fine-grained permissions via the [fabric-permissions-api](https://github.com/lucko/fabric-permissions-api)
+so that you can do access control in [LuckPerms](https://luckperms.net/).
 
 Supported Permissions:
 * `fastback.command` (top-level /backup command)   

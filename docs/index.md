@@ -23,6 +23,7 @@ of disk space.
 * Easily restore backup snapshots
 * Works on clients and dedicated servers
 * Works on Linux, Mac and Windows
+* LuckPerms support
 * ..all with easy-to-use minecraft commands
 
 
