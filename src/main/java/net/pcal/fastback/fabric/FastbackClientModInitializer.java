@@ -33,7 +33,7 @@ import java.nio.file.Path;
 
 public class FastbackClientModInitializer implements ClientModInitializer {
 
-    private final FabricFrameworkProvider fabricProvider = new FabricFrameworkProvider();
+    private final FabricFrameworkProvider fabricProvider = FabricFrameworkProvider.forClient(new FabricClientProviderImpl());
     private final ModContext modContext = ModContext.create(fabricProvider);
 
     @Override
@@ -53,8 +53,7 @@ public class FastbackClientModInitializer implements ClientModInitializer {
                     LifecycleUtils.onWorldStart(modContext, minecraftServer);
                 }
         );
-        LifecycleUtils.onMinecraftStart(modContext);
-        fabricProvider.setClientProvider(new FabricClientProviderImpl());
+        LifecycleUtils.onClientStart(modContext);
     }
 
     private static class FabricClientProviderImpl implements FabricClientProvider {

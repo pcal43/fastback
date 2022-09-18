@@ -35,16 +35,21 @@ import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.executeStandard;
+import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.utils.FileUtils.mkdirs;
 
 public class CreateFileRemoteCommand {
 
+    private static final String COMMAND_NAME = "create-remote";
+    private static final String ARGUMENT = "file-path";
+
     public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         final CreateFileRemoteCommand c = new CreateFileRemoteCommand(ctx);
         argb.then(
-                literal("create-remote").then(
-                        argument("file-path", StringArgumentType.greedyString()).
-                                executes(c::setFileRemote))
+                literal(COMMAND_NAME).
+                        requires(subcommandPermission(ctx, COMMAND_NAME)).then(
+                                argument(ARGUMENT, StringArgumentType.greedyString()).
+                                        executes(c::setFileRemote))
         );
     }
 
@@ -56,7 +61,7 @@ public class CreateFileRemoteCommand {
 
     private int setFileRemote(final CommandContext<ServerCommandSource> cc) {
         return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
-            final String targetPath = cc.getArgument("file-path", String.class);
+            final String targetPath = cc.getArgument(ARGUMENT, String.class);
             final Path fupHome = Path.of(targetPath);
             if (fupHome.toFile().exists()) {
                 log.notifyError("Directory already exists:");

@@ -20,9 +20,7 @@ package net.pcal.fastback;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
-import net.pcal.fastback.logging.Log4jLogger;
 import net.pcal.fastback.logging.Logger;
-import org.apache.logging.log4j.LogManager;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -35,20 +33,17 @@ import static java.util.Objects.requireNonNull;
 public class ModContext {
 
     private final ModFrameworkProvider spi;
-    private final Logger log;
     private final ExecutorService exs;
     private Path tempRestoresDirectory = null;
 
     public static ModContext create(ModFrameworkProvider spi) {
-        final Logger logger = new Log4jLogger(LogManager.getLogger(spi.getModId()));
         final ExecutorService exs = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        return new ModContext(spi, exs, logger);
+        return new ModContext(spi, exs);
     }
 
-    private ModContext(ModFrameworkProvider spi, ExecutorService exs, Logger log) {
+    private ModContext(ModFrameworkProvider spi, ExecutorService exs) {
         this.spi = requireNonNull(spi);
         this.exs = requireNonNull(exs);
-        this.log = requireNonNull(log);
     }
 
     public ExecutorService getExecutorService() {
@@ -122,6 +117,10 @@ public class ModContext {
 
     public boolean isCommandDumpEnabled() {
         return true;
+    }
+
+    public int getDefaultPermLevel() {
+        return spi.isClient() ? 0 : 4;
     }
 
     public interface ModFrameworkProvider {

@@ -33,13 +33,20 @@ import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.executeStandard;
+import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
 public class NowCommand {
 
+    private static final String COMMAND_NAME = "now";
+
     public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         final NowCommand c = new NowCommand(ctx);
-        argb.then(literal("now").executes(c::now));
+        argb.then(
+                literal(COMMAND_NAME).
+                        requires(subcommandPermission(ctx, COMMAND_NAME)).
+                        executes(c::now)
+        );
     }
 
     private final ModContext ctx;

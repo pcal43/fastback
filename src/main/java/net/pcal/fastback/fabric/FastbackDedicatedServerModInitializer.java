@@ -25,7 +25,7 @@ import net.pcal.fastback.ModContext;
 
 public class FastbackDedicatedServerModInitializer implements DedicatedServerModInitializer {
 
-    private final ModContext modContext = ModContext.create(new FabricFrameworkProvider());
+    private final ModContext modContext = ModContext.create(FabricFrameworkProvider.forServer());
 
     @Override
     public void onInitializeServer() {
@@ -39,6 +39,6 @@ public class FastbackDedicatedServerModInitializer implements DedicatedServerMod
                     LifecycleUtils.onWorldStart(modContext, minecraftServer);
                 }
         );
-        LifecycleUtils.onMinecraftStart(modContext);
+        LifecycleUtils.onServerStart(modContext);
     }
 }

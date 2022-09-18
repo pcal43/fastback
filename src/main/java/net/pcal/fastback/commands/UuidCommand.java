@@ -20,19 +20,25 @@ package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 
 import static java.util.Objects.requireNonNull;
+import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.executeStandard;
+import static net.pcal.fastback.commands.Commands.subcommandPermission;
 
 public class UuidCommand {
 
+    private static final String COMMAND_NAME = "uuid";
+
     public static void register(LiteralArgumentBuilder<ServerCommandSource> argb, ModContext ctx) {
         final UuidCommand rc = new UuidCommand(ctx);
-        argb.then(CommandManager.literal("uuid").executes(rc::execute));
+        argb.then(
+                literal(COMMAND_NAME).
+                        requires(subcommandPermission(ctx, COMMAND_NAME)).
+                        executes(rc::execute));
     }
 
     private final ModContext ctx;

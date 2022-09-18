@@ -42,18 +42,29 @@ import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.minecraft.text.Text.translatable;
+import static net.pcal.fastback.commands.Commands.BACKUP_COMMAND_PERM;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
+import static net.pcal.fastback.commands.Commands.subcommandPermName;
+import static net.pcal.fastback.commands.Commands.subcommandPermission;
 
 public class HelpCommand {
 
+    private static final String COMMAND_NAME = "help";
+    private static final String ARGUMENT = "subcommand";
+
     public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         final HelpCommand c = new HelpCommand(ctx);
-        argb.then(literal("help").executes(c::help).then(
-                argument("subcommand", StringArgumentType.word()).
-                        suggests(new HelpTopicSuggestions(ctx)).
-                        executes(c::helpSubcommand))
+        argb.then(
+                literal(COMMAND_NAME).
+                        requires(subcommandPermission(ctx, COMMAND_NAME)).
+                        executes(c::help).
+                        then(
+                                argument(ARGUMENT, StringArgumentType.word()).
+                                        suggests(new HelpTopicSuggestions(ctx)).
+                                        executes(c::helpSubcommand)
+                        )
         );
     }
 
@@ -111,7 +122,7 @@ public class HelpCommand {
     private int helpSubcommand(CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc);
         final Collection<CommandNode<ServerCommandSource>> subcommands = cc.getNodes().get(0).getNode().getChildren();
-        final String subcommand = cc.getLastChild().getArgument("subcommand", String.class);
+        final String subcommand = cc.getLastChild().getArgument(ARGUMENT, String.class);
         for (String available : getSubcommandNames(cc)) {
             if (subcommand.equals(available)) {
                 final String prefix = "/backup " + subcommand + ": ";
@@ -137,6 +148,15 @@ public class HelpCommand {
             Text shortHelp = translatable("commands.fastback.help." + sub);
             String paddedSub = String.format("%-" + 18 + "s", "`" + sub + "`");
             out.println(paddedSub + " | " + shortHelp.getString());
+        }
+        out.println();
+        out.println("Permission                       ");
+        out.println("-------------------------------- ");
+        out.println("`" + BACKUP_COMMAND_PERM + "`");
+        for (final String sub : getSubcommandNames(cc)) {
+            String permName = subcommandPermName(sub);
+            String paddedPerm = String.format("%-" + 32 + "s", "`" + permName + "`");
+            out.println(paddedPerm);
         }
     }
 }

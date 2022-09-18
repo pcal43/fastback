@@ -20,6 +20,7 @@ package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
@@ -31,20 +32,25 @@ import net.pcal.fastback.logging.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.StoredConfig;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.text.ParseException;
+import java.util.function.Predicate;
 
 import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
 public class Commands {
 
+    static String BACKUP_COMMAND_PERM = "fastback.command";
+
     static int FAILURE = 0;
     static int SUCCESS = 1;
 
     public static void registerCommands(final ModContext ctx, final String cmd) {
-        final LiteralArgumentBuilder<ServerCommandSource> argb = LiteralArgumentBuilder.literal(cmd);
+        final LiteralArgumentBuilder<ServerCommandSource> argb = LiteralArgumentBuilder.<ServerCommandSource>literal(cmd).
+                requires(Permissions.require(BACKUP_COMMAND_PERM, ctx.getDefaultPermLevel()));
         EnableCommand.register(argb, ctx);
         DisableCommand.register(argb, ctx);
         StatusCommand.register(argb, ctx);
@@ -70,6 +76,14 @@ public class Commands {
                 ctx.getLogger(),
                 new CommandSourceLogger(cc.getSource())
         );
+    }
+
+    public static String subcommandPermName(String subcommandName) {
+        return "fastback.command." + subcommandName;
+    }
+
+    public static @NotNull Predicate<ServerCommandSource> subcommandPermission(ModContext ctx, String subcommandName) {
+        return Permissions.require(subcommandPermName(subcommandName), ctx.getDefaultPermLevel());
     }
 
     interface CommandLogic {

@@ -52,11 +52,11 @@ You can restore your world from any snapshot in the backup by running
 ```
 /backup restore 2022-10-02_10-11-12
 Restoring 2022-10-02_10-11-12 to
-/home/pcal43/minecraft/saves/MyWorld-2022-10-02_10-11-12
+/home/pcal/minecraft/saves/MyWorld-2022-10-02_10-11-12
 ```
 
-This will create a copy of your world as it was when that snapshot was made.  Note that a restored snapshots is 
-created as *new* in your `saves` directory; the files in the current world are untouched.
+This will create a copy of your world as it was when that snapshot was made.  Note that a restored snapshot is 
+created as a *new* world in your `saves` directory; the files in the current world are never touched by `restore`.
 
 To look at the restored snapshot, quit the current world and open the restored snapshot world.
 

@@ -34,15 +34,23 @@ import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.executeStandard;
+import static net.pcal.fastback.commands.Commands.subcommandPermission;
 
 public class RestoreCommand {
 
+    private static final String COMMAND_NAME = "restore";
+    private static final String ARGUMENT = "snapshot";
+
     public static void register(LiteralArgumentBuilder<ServerCommandSource> argb, ModContext ctx) {
         final RestoreCommand rc = new RestoreCommand(ctx);
-        argb.then(literal("restore").
-                then(argument("snapshot", StringArgumentType.string()).
-                        suggests(new SnapshotNameSuggestions(ctx)).
-                        executes(rc::execute)));
+        argb.then(
+                literal(COMMAND_NAME).
+                        requires(subcommandPermission(ctx, COMMAND_NAME)).then(
+                                argument(ARGUMENT, StringArgumentType.string()).
+                                        suggests(new SnapshotNameSuggestions(ctx)).
+                                        executes(rc::execute)
+                        )
+        );
     }
 
     private final ModContext ctx;
@@ -53,7 +61,7 @@ public class RestoreCommand {
 
     private int execute(CommandContext<ServerCommandSource> cc) {
         return executeStandard(this.ctx, cc, (gitc, wc, tali) -> {
-            final String snapshotName = cc.getLastChild().getArgument("snapshot", String.class);
+            final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
             final Path restoresDir = this.ctx.getRestoresDir();
             final MinecraftServer server = cc.getSource().getServer();
             final String worldName = this.ctx.getWorldName(server);
