@@ -102,12 +102,12 @@ public class RemoteCommand {
         return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
             final boolean currentEnabled = wc.isRemoteBackupEnabled();
             if (!currentEnabled) {
-                log.notifyError("Remote backups are already disabled.");
+                log.notifyError(translatable("fastback.notify.remote-already-disabled"));
                 return FAILURE;
             } else {
                 WorldConfig.setRemoteBackupEnabled(gitc, false);
                 gitc.save();
-                log.notifyError("Remote backups disabled.");
+                log.notifyError(translatable("fastback.notify.remote-disabled" ));
                 return SUCCESS;
             }
         });
