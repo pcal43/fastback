@@ -60,9 +60,9 @@ public class ShutdownCommand {
         return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
             final boolean enabled = wc.isShutdownBackupEnabled();
             if (enabled) {
-                log.notify(translatable("fastback.shutdown.currently-enabled"));
+                log.notify(translatable("fastback.notify.shutdown-currently-enabled"));
             } else {
-                log.notify(translatable("fastback.shutdown.currently-disabled"));
+                log.notify(translatable("fastback.notify.shutdown-currently-disabled"));
             }
             return SUCCESS;
         });
@@ -72,12 +72,12 @@ public class ShutdownCommand {
         return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
             final boolean enabled = wc.isShutdownBackupEnabled();
             if (enabled) {
-                log.notifyError(translatable("fastback.shutdown.currently-enabled"));
+                log.notifyError(translatable("fastback.notify.shutdown-currently-enabled"));
                 return FAILURE;
             } else {
                 WorldConfig.setShutdownBackupEnabled(gitc, true);
                 gitc.save();
-                log.notifyError(translatable("fastback.shutdown.enabled"));
+                log.notifyError(translatable("fastback.notify.shutdown-enabled"));
                 return SUCCESS;
             }
         });
@@ -87,12 +87,12 @@ public class ShutdownCommand {
         return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
             final boolean enabled = wc.isShutdownBackupEnabled();
             if (!enabled) {
-                log.notifyError(translatable("fastback.shutdown.currently-disabled"));
+                log.notifyError(translatable("fastback.notify.shutdown-currently-disabled"));
                 return FAILURE;
             } else {
                 WorldConfig.setShutdownBackupEnabled(gitc, false);
                 gitc.save();
-                log.notifyError(translatable("fastback.shutdown.disabled"));
+                log.notifyError(translatable("fastback.notify.shutdown-disabled"));
                 return SUCCESS;
             }
         });

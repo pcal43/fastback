@@ -25,6 +25,7 @@ import net.pcal.fastback.ModContext;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.text.Text.translatable;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.executeStandard;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
@@ -49,17 +50,29 @@ public class StatusCommand {
 
     private int execute(CommandContext<ServerCommandSource> cc) {
         return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
-            log.notify("Local backup:  " + (wc.isBackupEnabled() ? "enabled" : "disabled"));
-            log.notify("Remote backup: " + (wc.isRemoteBackupEnabled() ? "enabled" : "disabled"));
+            if (wc.isBackupEnabled()) {
+                log.notify(translatable("fastback.notify.status-local-enabled"));
+            } else {
+                log.notify(translatable("fastback.notify.status-local-disabled"));
+            }
+            if (wc.isRemoteBackupEnabled()) {
+                log.notify(translatable("fastback.notify.status-remote-enabled"));
+            } else {
+                log.notify(translatable("fastback.notify.status-remote-disabled"));
+            }
             if (wc.isRemoteBackupEnabled()) {
                 String url = wc.getRemotePushUrl();
                 if (url == null) {
-                    log.notifyError("Remote URL: Not Configured.  Run /backup remote [url]");
+                    log.notifyError(translatable("fastback.notify.status-remote-url-missing"));
                 } else {
-                    log.notify("Remote URL: " + url);
+                    log.notify(translatable("fastback.notify.status-remote-url", url));
                 }
             }
-            log.notify("On shutdown:  " + (wc.isShutdownBackupEnabled() ? "enabled" : "disabled"));
+            if (wc.isShutdownBackupEnabled()) {
+                log.notify(translatable("fastback.notify.status-shutdown-enabled"));
+            } else {
+                log.notify(translatable("fastback.notify.status-shutdown-disabled"));
+            }
             return SUCCESS;
         });
     }
