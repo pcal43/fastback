@@ -32,6 +32,7 @@ import java.nio.file.Path;
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.text.Text.translatable;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.executeStandard;
@@ -64,8 +65,7 @@ public class CreateFileRemoteCommand {
             final String targetPath = cc.getArgument(ARGUMENT, String.class);
             final Path fupHome = Path.of(targetPath);
             if (fupHome.toFile().exists()) {
-                log.notifyError("Directory already exists:");
-                log.notifyError(fupHome.toString());
+                log.notifyError(translatable("fastback.notify.file-remote-dir-exists", fupHome.toString()));
                 return FAILURE;
             }
             mkdirs(fupHome);
@@ -79,9 +79,7 @@ public class CreateFileRemoteCommand {
             WorldConfig.setRemoteUrl(gitc, targetUrl);
             WorldConfig.setRemoteBackupEnabled(gitc, true);
             gitc.save();
-            log.notify("Git repository created at " + targetPath);
-            log.notify("Remote backups enabled to:");
-            log.notify(targetUrl);
+            log.notify(translatable("fastback.notify.file-remote-created", targetPath, targetUrl));
             return SUCCESS;
         });
     }

@@ -22,6 +22,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.Text;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.tasks.BackupTask;
@@ -30,6 +31,7 @@ import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.text.Text.*;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.executeStandard;
@@ -61,7 +63,7 @@ public class NowCommand {
             server.save(false, true, true); // suppressLogs, flush, force
             final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
             if (!isGitRepo(worldSaveDir)) {
-                log.notifyError("Run '/backup enable' to enable backups.");
+                log.notifyError(translatable("fastback.notify.not-enabled"));
                 return FAILURE;
             }
             final WorldConfig config = WorldConfig.load(worldSaveDir);
@@ -74,7 +76,7 @@ public class NowCommand {
                 }
                 return SUCCESS;
             } else {
-                log.notifyError("Backups are disabled.  Run '/backup enable' first.");
+                log.notifyError(translatable("fastback.notify.not-enabled"));
                 return FAILURE;
             }
         });

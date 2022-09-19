@@ -26,6 +26,7 @@ import net.pcal.fastback.WorldConfig;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.text.Text.translatable;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.executeStandard;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
@@ -54,7 +55,7 @@ public class DisableCommand {
             WorldConfig.setBackupEnabled(gitc, false);
             WorldConfig.setShutdownBackupEnabled(gitc, false);
             gitc.save();
-            log.notify("Backups disabled.");
+            log.notify(translatable("fastback.notify.disable-done"));
             return SUCCESS;
         });
     }

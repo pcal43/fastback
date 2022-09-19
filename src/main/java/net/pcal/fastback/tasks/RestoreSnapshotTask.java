@@ -18,6 +18,7 @@
 
 package net.pcal.fastback.tasks;
 
+import net.minecraft.text.Text;
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.IncrementalProgressMonitor;
 import net.pcal.fastback.logging.Logger;
@@ -35,6 +36,7 @@ import java.text.ParseException;
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
+import static net.minecraft.text.Text.translatable;
 import static net.pcal.fastback.WorldConfig.WORLD_UUID_PATH;
 
 @SuppressWarnings("FieldCanBeLocal")
@@ -72,7 +74,7 @@ public class RestoreSnapshotTask extends Task {
             SnapshotId sid = SnapshotId.fromUuidAndName(config.worldUuid(), this.snapshotName);
             branchName = sid.getBranchName();
             if (!GitUtils.isBranchExtant(git, branchName, logger)) {
-                logger.notifyError("No such snapshot " + snapshotName);
+                logger.notifyError(translatable("fastback.notify.restore-nosuch", snapshotName));
                 return;
             }
         } catch (IOException | GitAPIException | ParseException e) {
@@ -85,11 +87,10 @@ public class RestoreSnapshotTask extends Task {
         try {
             targetDirectory = getTargetDir(this.saveDir, worldName, snapshotName);
             String uri = "file://" + this.worldSaveDir.toAbsolutePath();
-            logger.notify("Restoring " + this.snapshotName + " to\n" + targetDirectory);
+            logger.notify(translatable("fastback.notify.restore-start", this.snapshotName, targetDirectory));
             final ProgressMonitor pm = new IncrementalProgressMonitor(new LoggingProgressMonitor(logger), 100);
             try (Git git = Git.cloneRepository().setProgressMonitor(pm).setDirectory(targetDirectory.toFile()).
                     setBranchesToClone(List.of("refs/heads/" + branchName)).setBranch(branchName).setURI(uri).call()) {
-
             }
         } catch (Exception e) {
             logger.internalError("Restoration clone of " + branchName + " failed.", e);
@@ -101,14 +102,12 @@ public class RestoreSnapshotTask extends Task {
                 FileUtils.rmdir(targetDirectory.resolve(".git"));
                 targetDirectory.resolve(WORLD_UUID_PATH).toFile().delete();
             } catch (IOException e) {
-                logger.notifyError("Restoration finished but an unexpected error " +
-                        "occurred during cleanup.");
                 logger.internalError("Unexpected error cleaning restored snapshot", e);
                 setFailed();
                 return;
             }
         }
-        logger.notify("Restoration complete");
+        logger.notify(translatable("fastback.notify.restore-done"));
         setCompleted();
     }
 

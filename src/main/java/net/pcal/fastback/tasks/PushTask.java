@@ -44,6 +44,7 @@ import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.text.Text.literal;
+import static net.minecraft.text.Text.translatable;
 
 public class PushTask extends Task {
 
@@ -89,8 +90,7 @@ public class PushTask extends Task {
                     return;
                 }
                 if (!uuidCheckResult) {
-                    final String msg = "Skipping remote backup due to world mismatch.";
-                    logger.notifyError(msg);
+                    logger.warn("Skipping remote backup due to world mismatch.");
                     super.setFailed();
                     return;
                 }
@@ -151,8 +151,7 @@ public class PushTask extends Task {
         git.push().setProgressMonitor(pm).setRemote(remoteName).
                 setRefSpecs(new RefSpec(tempBranchName + ":" + tempBranchName),
                         new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
-        logger.debug("checkout restore");
-        logger.notify(literal("Cleaning up"));
+        logger.notify(translatable("fastback.notify.push-cleanup"));
         if (worldConfig.isTempBranchCleanupEnabled()) {
             logger.debug("deleting local temp branch " + tempBranchName);
             git.branchDelete().setForce(true).setBranchNames(tempBranchName).call();
@@ -185,14 +184,12 @@ public class PushTask extends Task {
         } else {
             if (!remoteWorldUuids.contains(localUuid)) {
                 final URIish remoteUri = GitUtils.getRemoteUri(git, config.getRemoteName(), logger);
-                logger.notifyError("Remote at " + remoteUri + " is a backup target for a different world.");
-                logger.notifyError("Please configure a new remote for backing up this world.");
-                logger.notifyError("local: " + localUuid + ", remote: " + remoteWorldUuids);
+                logger.notifyError(translatable("fastback.notify.push-uuid-mismatch", remoteUri));
+                logger.info("local: " + localUuid + ", remote: " + remoteWorldUuids);
                 return false;
             }
         }
         logger.debug("world-uuid check passed.");
         return true;
     }
-
 }

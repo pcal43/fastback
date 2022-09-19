@@ -28,7 +28,6 @@ import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.SnapshotId;
 
 import java.nio.file.Path;
-import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -65,11 +64,10 @@ public class ListCommand {
             final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
             if (!isGitRepo(worldSaveDir)) {
                 final Logger logger = commandLogger(ctx, cc);
-                logger.notifyError("No backups available for this world.  Run '/backup enable' to enable backups.");
+                logger.notifyError(Text.translatable("fastback.notify.not-enabled"));
                 return FAILURE;
             }
-            final Consumer<String> sink = message -> cc.getSource().sendFeedback(Text.literal(message), false);
-            sink.accept("Local snapshots:");
+            log.notify(Text.translatable("fastback.notify.list-local-snapshots-header"));
             this.ctx.getExecutorService().execute(() -> {
                 for (SnapshotId sid : listSnapshotsForWorldSorted(worldSaveDir, ctx.getLogger())) {
                     log.notify(Text.literal(sid.getName()));

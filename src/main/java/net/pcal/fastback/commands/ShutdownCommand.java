@@ -21,11 +21,13 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.Text;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.text.Text.translatable;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.executeStandard;
@@ -58,9 +60,9 @@ public class ShutdownCommand {
         return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
             final boolean enabled = wc.isShutdownBackupEnabled();
             if (enabled) {
-                log.notify("Backup on shutdown is currently enabled.");
+                log.notify(translatable("fastback.notify.shutdown-currently-enabled"));
             } else {
-                log.notify("Backup on shutdown is currently disabled.");
+                log.notify(translatable("fastback.notify.shutdown-currently-disabled"));
             }
             return SUCCESS;
         });
@@ -70,12 +72,12 @@ public class ShutdownCommand {
         return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
             final boolean enabled = wc.isShutdownBackupEnabled();
             if (enabled) {
-                log.notifyError("Backup on world shutdown is already enabled.");
+                log.notifyError(translatable("fastback.notify.shutdown-currently-enabled"));
                 return FAILURE;
             } else {
                 WorldConfig.setShutdownBackupEnabled(gitc, true);
                 gitc.save();
-                log.notify("Backup on world shutdown enabled.");
+                log.notifyError(translatable("fastback.notify.shutdown-enabled"));
                 return SUCCESS;
             }
         });
@@ -85,12 +87,12 @@ public class ShutdownCommand {
         return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
             final boolean enabled = wc.isShutdownBackupEnabled();
             if (!enabled) {
-                log.notifyError("Backup on shutdown is already disabled.");
+                log.notifyError(translatable("fastback.notify.shutdown-currently-disabled"));
                 return FAILURE;
             } else {
                 WorldConfig.setShutdownBackupEnabled(gitc, false);
                 gitc.save();
-                log.notify("Backup on world shutdown disabled.");
+                log.notifyError(translatable("fastback.notify.shutdown-disabled"));
                 return SUCCESS;
             }
         });

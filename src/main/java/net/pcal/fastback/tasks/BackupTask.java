@@ -67,21 +67,21 @@ public class BackupTask extends Task {
                 doCommit(git, config, newBranchName, log);
                 final Duration dur = getSplitDuration();
                 log.info("Local backup complete.  Elapsed time: " + dur.toMinutesPart() + "m " + dur.toSecondsPart() + "s");
-                this.log.notify("Local backup complete");
+                this.log.notify(translatable("fastback.notify.local-done"));
             } catch (GitAPIException | IOException e) {
                 log.internalError("Local backup failed.  Unable to commit changes.", e);
                 this.setFailed();
                 return;
             }
             if (config.isRemoteBackupEnabled()) {
-                this.log.notify("Starting remote backup");
+                this.log.notify(translatable("fastback.notify.push-started"));
                 final PushTask push = new PushTask(worldSaveDir, newBranchName, log);
                 push.run();
                 if (push.isFailed()) {
-                    log.notifyError("Local backup succeeded but remote backup failed.  See log for details.");
+                    log.notifyError(translatable("fastback.notify.push-failed"));
                 } else {
                     final Duration dur = getSplitDuration();
-                    log.notify("Remote backup to complete");
+                    log.info("Remote backup to complete");
                     log.info("Elapsed time: " + dur.toMinutesPart() + "m " + dur.toSecondsPart() + "s");
                 }
             } else {

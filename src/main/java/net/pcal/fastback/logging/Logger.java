@@ -39,14 +39,4 @@ public interface Logger {
     void debug(String message);
 
     void debug(String message, Throwable t);
-
-    @Deprecated
-    default void notify(String message) {
-        this.notify(Text.literal(message));
-    }
-
-    @Deprecated
-    default void notifyError(String message) {
-        this.notifyError(Text.literal(message));
-    }
 }
