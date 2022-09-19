@@ -4,6 +4,7 @@
   "package": "net.pcal.fastback.fabric.mixins",
   "compatibilityLevel": "JAVA_16",
   "mixins": [
+    "MinecraftServerMixin",
     "ServerAccessors",
     "SessionAccessors",
     "ScreenAccessors"

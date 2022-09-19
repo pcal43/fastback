@@ -60,7 +60,6 @@ public class NowCommand {
     private int now(CommandContext<ServerCommandSource> cc) {
         return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
             final MinecraftServer server = cc.getSource().getServer();
-            server.save(false, true, true); // suppressLogs, flush, force
             final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
             if (!isGitRepo(worldSaveDir)) {
                 log.notifyError(translatable("fastback.notify.not-enabled"));
@@ -68,12 +67,8 @@ public class NowCommand {
             }
             final WorldConfig config = WorldConfig.load(worldSaveDir);
             if (config.isBackupEnabled()) {
-                try {
-                    this.ctx.setWorldSaveEnabled(server, false);
-                    new BackupTask(worldSaveDir, log).run();
-                } finally {
-                    this.ctx.setWorldSaveEnabled(server, true);
-                }
+                server.saveAll(false, true, true); // suppressLogs, flush, force
+                new BackupTask(ctx, worldSaveDir, log).run();
                 return SUCCESS;
             } else {
                 log.notifyError(translatable("fastback.notify.not-enabled"));

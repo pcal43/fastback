@@ -18,6 +18,7 @@
 
 package net.pcal.fastback.tasks;
 
+import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.SnapshotId;
@@ -40,10 +41,12 @@ import static net.minecraft.text.Text.translatable;
 @SuppressWarnings("FieldCanBeLocal")
 public class BackupTask extends Task {
 
+    private final ModContext ctx;
     private final Path worldSaveDir;
     private final Logger log;
 
-    public BackupTask(final Path worldSaveDir, final Logger log) {
+    public BackupTask(final ModContext ctx, final Path worldSaveDir, final Logger log) {
+        this.ctx = requireNonNull(ctx);
         this.worldSaveDir = requireNonNull(worldSaveDir);
         this.log = requireNonNull(log);
     }
@@ -64,7 +67,7 @@ public class BackupTask extends Task {
             final String newBranchName = newSid.getBranchName();
             log.info("Committing " + newBranchName);
             try {
-                doCommit(git, config, newBranchName, log);
+                doCommit(git, ctx, newBranchName, log);
                 final Duration dur = getSplitDuration();
                 log.info("Local backup complete.  Elapsed time: " + dur.toMinutesPart() + "m " + dur.toSecondsPart() + "s");
                 this.log.notify(translatable("fastback.notify.local-done"));
@@ -95,7 +98,7 @@ public class BackupTask extends Task {
         this.setCompleted();
     }
 
-    private static void doCommit(Git git, WorldConfig config, String newBranchName, final Logger log) throws GitAPIException, IOException {
+    private static void doCommit(Git git, ModContext ctx, String newBranchName, final Logger log) throws GitAPIException, IOException {
         log.debug("doing commit");
         log.debug("checkout");
         git.checkout().setOrphan(true).setName(newBranchName).call();
@@ -104,38 +107,45 @@ public class BackupTask extends Task {
         final Status status = git.status().call();
 
         log.debug("add");
+        try {
+            log.info("Disabling world auto-save for 'git add'");
+            ctx.setWorldSaveEnabled(false);
 
-        //
-        // Figure out what files to add and remove.  We don't just 'git add .' because this:
-        // https://bugs.eclipse.org/bugs/show_bug.cgi?id=494323
-        //
-        {
-            final Collection<String> toAdd = new ArrayList<>();
-            toAdd.addAll(status.getModified());
-            toAdd.addAll(status.getUntracked());
-            if (!toAdd.isEmpty()) {
-                final AddCommand gitAdd = git.add();
-                log.debug("doing add");
-                for (final String file : toAdd) {
-                    log.debug("add  " + file);
-                    gitAdd.addFilepattern(file);
+            //
+            // Figure out what files to add and remove.  We don't just 'git add .' because this:
+            // https://bugs.eclipse.org/bugs/show_bug.cgi?id=494323
+            //
+            {
+                final Collection<String> toAdd = new ArrayList<>();
+                toAdd.addAll(status.getModified());
+                toAdd.addAll(status.getUntracked());
+                if (!toAdd.isEmpty()) {
+                    final AddCommand gitAdd = git.add();
+                    log.debug("doing add");
+                    for (final String file : toAdd) {
+                        log.debug("add  " + file);
+                        gitAdd.addFilepattern(file);
+                    }
+                    gitAdd.call();
                 }
-                gitAdd.call();
             }
-        }
-        {
-            final Collection<String> toDelete = new ArrayList<>();
-            toDelete.addAll(status.getRemoved());
-            toDelete.addAll(status.getMissing());
-            if (!toDelete.isEmpty()) {
-                log.debug("doing rm");
-                final RmCommand gitRm = git.rm();
-                for (final String file : toDelete) {
-                    log.debug("rm  " + file);
-                    gitRm.addFilepattern(file);
+            {
+                final Collection<String> toDelete = new ArrayList<>();
+                toDelete.addAll(status.getRemoved());
+                toDelete.addAll(status.getMissing());
+                if (!toDelete.isEmpty()) {
+                    log.debug("doing rm");
+                    final RmCommand gitRm = git.rm();
+                    for (final String file : toDelete) {
+                        log.debug("rm  " + file);
+                        gitRm.addFilepattern(file);
+                    }
+                    gitRm.call();
                 }
-                gitRm.call();
             }
+        } finally {
+            ctx.setWorldSaveEnabled(true);
+            log.info("World auto-save re-enabled.");
         }
         log.debug("commit");
         log.notify(translatable("fastback.notify.local-saving"));

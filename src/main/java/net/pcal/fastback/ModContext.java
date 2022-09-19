@@ -77,8 +77,8 @@ public class ModContext {
         return this.spi.getMinecraftVersion();
     }
 
-    public void setWorldSaveEnabled(MinecraftServer mc, boolean enabled) {
-        this.spi.setWorldSaveEnabled(mc, enabled);
+    public void setWorldSaveEnabled(boolean enabled) {
+        this.spi.setWorldSaveEnabled(enabled);
     }
 
     public boolean isClient() {
@@ -137,8 +137,6 @@ public class ModContext {
 
         String getWorldName(MinecraftServer server);
 
-        void setWorldSaveEnabled(MinecraftServer mc, boolean enabled);
-
         void setClientSavingScreenText(Text text);
 
         void sendClientChatMessage(Text text);
@@ -146,5 +144,9 @@ public class ModContext {
         Path getClientSavesDir() throws IOException;
 
         boolean isClient();
+
+        boolean isWorldSaveEnabled();
+
+        void setWorldSaveEnabled(boolean enabled);
     }
 }
