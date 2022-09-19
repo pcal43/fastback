@@ -12,8 +12,13 @@
   "commands.fastback.help.subcommands": "Available subcommands:\n%s\nFor detailed help on a subcommand, run\n/backup help [subcommand]\nor go to https://pcal43.github.io/fastback",
   "commands.fastback.help.uuid": "Show the uuid for this world backup.",
   "commands.fastback.help.version": "Show mod version.",
+
   "fastback.notify.backups-disabled": "Backups disabled.",
+  "fastback.notify.backups-currently-disabled": "Backups already disabled.",
+
   "fastback.notify.backups-enabled": "Enabled automatic local backups on world shutdown.",
+  "fastback.notify.backups-currently-enabled" : "Backups already enabled.",
+
   "fastback.notify.file-remote-created": "Git repository created at %s\nRemote backups enabled to:\n%s",
   "fastback.notify.gc-done" : "Garbage collection complete.",
   "fastback.notify.gc-start" : "Collecting garbage in local backup...",
