@@ -65,7 +65,8 @@ public class Commands {
         UuidCommand.register(argb, ctx);
         VersionCommand.register(argb, ctx);
         HelpCommand.register(argb, ctx);
-        if (ctx.isUnsafeCommandsEnabled()) {
+        if (ctx.isExperimentalCommandsEnabled()) {
+            SaveCommand.register(argb, ctx);
             GcCommand.register(argb, ctx);
             GcInfoCommand.register(argb, ctx);
         }

@@ -102,7 +102,7 @@ public class FabricFrameworkProvider implements ModContext.ModFrameworkProvider 
 
     @Override
     public void setWorldSaveEnabled(boolean enabled) {
-
+        this.isWorldSaveEnabled = enabled;
     }
 
     @Override

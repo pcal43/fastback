@@ -97,6 +97,8 @@ public class ModContext {
         return this.spi.getWorldDirectory(server);
     }
 
+    public boolean isWorldSaveEnabled() { return this.spi.isWorldSaveEnabled(); }
+
     public String getWorldName(MinecraftServer server) {
         return this.spi.getWorldName(server);
     }
@@ -107,7 +109,7 @@ public class ModContext {
 
     // TODO make these configurable via properties
 
-    public boolean isUnsafeCommandsEnabled() {
+    public boolean isExperimentalCommandsEnabled() {
         return false;
     }
 

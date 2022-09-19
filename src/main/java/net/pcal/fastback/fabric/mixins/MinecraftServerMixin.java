@@ -30,21 +30,30 @@ public class MinecraftServerMixin {
 
     @Inject( at = @At("HEAD"), method="save(ZZZ)Z", cancellable = true)
     public void save(boolean suppressLogs, boolean flush, boolean force, CallbackInfoReturnable<Boolean> ci) {
-        final FabricFrameworkProvider ctx = FabricFrameworkProvider.getInstance();
-        if (ctx.isWorldSaveEnabled()) {
-            ctx.getLogger().info("Skipping save because a backup is in progress.");
-            ci.setReturnValue(false);
-            ci.cancel();
+        synchronized (this) {
+            final FabricFrameworkProvider ctx = FabricFrameworkProvider.getInstance();
+            if (ctx.isWorldSaveEnabled()) {
+                ctx.getLogger().debug("world saves are enabled, doing requested save");
+            } else {
+                ctx.getLogger().warn("Skipping requested save because a backup is in progress.");
+                ci.setReturnValue(false);
+                ci.cancel();
+            }
         }
     }
 
     @Inject( at = @At("HEAD"), method="saveAll(ZZZ)Z", cancellable = true)
     public void saveAll(boolean suppressLogs, boolean flush, boolean force, CallbackInfoReturnable<Boolean> ci) {
-        final FabricFrameworkProvider ctx = FabricFrameworkProvider.getInstance();
-        if (ctx.isWorldSaveEnabled()) {
-            ctx.getLogger().info("Skipping saveAll because a backup is in progress.");
-            ci.setReturnValue(false);
-            ci.cancel();
+        synchronized(this) {
+            final FabricFrameworkProvider ctx = FabricFrameworkProvider.getInstance();
+            if (ctx.isWorldSaveEnabled()) {
+                ctx.getLogger().debug("world saves are enabled, doing requested saveAll");
+                //TODO should call save here to ensure all synced?
+            } else {
+                ctx.getLogger().warn("Skipping requested saveAll because a backup is in progress.");
+                ci.setReturnValue(false);
+                ci.cancel();
+            }
         }
     }
 }

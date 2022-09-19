@@ -106,11 +106,9 @@ public class BackupTask extends Task {
         log.debug("status");
         final Status status = git.status().call();
 
-        log.debug("add");
         try {
-            log.info("Disabling world auto-save for 'git add'");
+            log.info("Disabling world save for 'git add'");
             ctx.setWorldSaveEnabled(false);
-
             //
             // Figure out what files to add and remove.  We don't just 'git add .' because this:
             // https://bugs.eclipse.org/bugs/show_bug.cgi?id=494323
@@ -120,8 +118,8 @@ public class BackupTask extends Task {
                 toAdd.addAll(status.getModified());
                 toAdd.addAll(status.getUntracked());
                 if (!toAdd.isEmpty()) {
+                    log.info("Adding "+toAdd.size()+" new or modified files to index");
                     final AddCommand gitAdd = git.add();
-                    log.debug("doing add");
                     for (final String file : toAdd) {
                         log.debug("add  " + file);
                         gitAdd.addFilepattern(file);
@@ -134,7 +132,7 @@ public class BackupTask extends Task {
                 toDelete.addAll(status.getRemoved());
                 toDelete.addAll(status.getMissing());
                 if (!toDelete.isEmpty()) {
-                    log.debug("doing rm");
+                    log.info("Removing "+toDelete.size()+ " deleted files from index");
                     final RmCommand gitRm = git.rm();
                     for (final String file : toDelete) {
                         log.debug("rm  " + file);
@@ -145,7 +143,7 @@ public class BackupTask extends Task {
             }
         } finally {
             ctx.setWorldSaveEnabled(true);
-            log.info("World auto-save re-enabled.");
+            log.info("World save re-enabled.");
         }
         log.debug("commit");
         log.notify(translatable("fastback.notify.local-saving"));

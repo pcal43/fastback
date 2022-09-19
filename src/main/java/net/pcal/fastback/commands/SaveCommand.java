@@ -20,57 +20,41 @@ package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.Text;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.WorldConfig;
-import net.pcal.fastback.tasks.BackupTask;
-
-import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.minecraft.text.Text.translatable;
 import static net.pcal.fastback.commands.Commands.*;
-import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
-public class NowCommand {
+public class SaveCommand {
 
-    private static final String COMMAND_NAME = "now";
+    private static final String COMMAND_NAME = "save";
 
-    public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
-        final NowCommand c = new NowCommand(ctx);
+    public static void register(LiteralArgumentBuilder<ServerCommandSource> argb, ModContext ctx) {
+        final SaveCommand rc = new SaveCommand(ctx);
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(c::now)
-        );
+                        executes(rc::execute));
     }
 
     private final ModContext ctx;
 
-    private NowCommand(final ModContext context) {
+    private SaveCommand(ModContext context) {
         this.ctx = requireNonNull(context);
     }
 
-    private int now(CommandContext<ServerCommandSource> cc) {
+    private int execute(CommandContext<ServerCommandSource> cc) {
         return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
-            final MinecraftServer server = cc.getSource().getServer();
-            final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
-            if (!isGitRepo(worldSaveDir)) {
-                log.notifyError(translatable("fastback.notify.not-enabled"));
-                return FAILURE;
-            }
-            final WorldConfig config = WorldConfig.load(worldSaveDir);
-            if (config.isBackupEnabled()) {
-                ctx.getExecutorService().execute(() -> {
-                    log.info("Saving before backup");
-                    server.saveAll(false, true, true); // suppressLogs, flush, force
-                    new BackupTask(ctx, worldSaveDir, log).run();
-                });
+            if (this.ctx.isWorldSaveEnabled()) {
+                cc.getSource().getServer().saveAll(false, true, true);
+                log.notify(Text.literal("World saved (NOT backed up)."));
                 return SUCCESS;
             } else {
-                log.notifyError(translatable("fastback.notify.not-enabled"));
+                log.notifyError(Text.literal("world save disabled!"));
                 return FAILURE;
             }
         });
