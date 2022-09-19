@@ -65,8 +65,7 @@ public class CreateFileRemoteCommand {
             final String targetPath = cc.getArgument(ARGUMENT, String.class);
             final Path fupHome = Path.of(targetPath);
             if (fupHome.toFile().exists()) {
-                log.notifyError("Directory already exists:");
-                log.notifyError(fupHome.toString());
+                log.notifyError(translatable("fastback.notify.file-remote-dir-exists", fupHome.toString()));
                 return FAILURE;
             }
             mkdirs(fupHome);

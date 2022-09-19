@@ -59,7 +59,9 @@
   "fastback.notify.status-remote-url" : "Remote URL: %s",
   "fastback.notify.status-remote-url-missing" : "Remote URL: Not Configured.  Run /backup remote [url]",
 
-  "fastback.notify.not-enabled" : "Backups are not enabled on this world.  Run '/backup enable'"
+  "fastback.notify.not-enabled" : "Backups are not enabled on this world.  Run '/backup enable'",
+
+  "fastback.notify.file-remote-dir-exists" : "Directory already exists:\n%s"
 
 
 
