@@ -13,11 +13,11 @@
   "commands.fastback.help.uuid": "Show the uuid for this world backup.",
   "commands.fastback.help.version": "Show mod version.",
 
-  "fastback.notify.backups-disabled": "Backups disabled.",
-  "fastback.notify.backups-currently-disabled": "Backups already disabled.",
+  "fastback.notify.disable-done": "Backups disabled.",
+  "fastback.notify.disable-already-disabled": "Backups already disabled.",
 
-  "fastback.notify.backups-enabled": "Enabled automatic local backups on world shutdown.",
-  "fastback.notify.backups-currently-enabled" : "Backups already enabled.",
+  "fastback.notify.enable-done": "Enabled automatic local backups on world shutdown.",
+  "fastback.notify.enable-already-enabled" : "Backups already enabled.",
 
   "fastback.notify.file-remote-created": "Git repository created at %s\nRemote backups enabled to:\n%s",
   "fastback.notify.gc-done" : "Garbage collection complete.",
@@ -57,7 +57,10 @@
   "fastback.notify.status-shutdown-enabled" : "Shutdown backup: enabled",
   "fastback.notify.status-shutdown-disabled" : "Shutdown backup: disabled",
   "fastback.notify.status-remote-url" : "Remote URL: %s",
-  "fastback.notify.status-remote-url-missing" : "Remote URL: Not Configured.  Run /backup remote [url]"
+  "fastback.notify.status-remote-url-missing" : "Remote URL: Not Configured.  Run /backup remote [url]",
+
+  "fastback.notify.not-enabled" : "Backups are not enabled on this world.  Run '/backup enable'"
+
 
 
 }

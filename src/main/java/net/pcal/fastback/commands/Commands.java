@@ -24,6 +24,7 @@ import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.Text;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.CommandSourceLogger;
@@ -96,14 +97,14 @@ public class Commands {
         final Logger logger = commandLogger(ctx, cc);
         final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
         if (!isGitRepo(worldSaveDir)) {
-            logger.notifyError("Backups are not enabled on this world.  Run '/backup enable'");
+            logger.notifyError(Text.translatable("fastback.notify.not-enabled"));
             return FAILURE;
         }
         try (final Git git = Git.open(worldSaveDir.toFile())) {
             final StoredConfig gitConfig = git.getRepository().getConfig();
             final WorldConfig worldConfig = WorldConfig.load(worldSaveDir, gitConfig);
             if (!worldConfig.isBackupEnabled()) {
-                logger.notifyError("Backups are not enabled on this world.  Run '/backup enable'");
+                logger.notifyError(Text.translatable("fastback.notify.not-enabled"));
                 return FAILURE;
             }
             return sub.execute(gitConfig, worldConfig, logger);

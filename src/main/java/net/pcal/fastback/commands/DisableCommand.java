@@ -55,7 +55,7 @@ public class DisableCommand {
             WorldConfig.setBackupEnabled(gitc, false);
             WorldConfig.setShutdownBackupEnabled(gitc, false);
             gitc.save();
-            log.notify(translatable("fastback.notify.backups-disabled"));
+            log.notify(translatable("fastback.notify.disable-done"));
             return SUCCESS;
         });
     }

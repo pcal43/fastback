@@ -68,13 +68,13 @@ public class EnableCommand {
             final StoredConfig config = git.getRepository().getConfig();
             final WorldConfig worldConfig = WorldConfig.load(worldSaveDir, config);
             if (worldConfig.isBackupEnabled() && worldConfig.isShutdownBackupEnabled()) {
-                logger.notifyError(translatable("fastback.notify.backups-currently-enabled"));
+                logger.notifyError(translatable("fastback.notify.enable-already-enabled"));
                 return FAILURE;
             } else {
                 WorldConfig.setBackupEnabled(config, true);
                 WorldConfig.setShutdownBackupEnabled(config, true);
                 config.save();
-                logger.notify(translatable("fastback.notify.backups-enabled"));
+                logger.notify(translatable("fastback.notify.enable-done"));
                 return SUCCESS;
             }
         } catch (GitAPIException | IOException e) {

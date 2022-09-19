@@ -64,7 +64,7 @@ public class ListCommand {
             final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
             if (!isGitRepo(worldSaveDir)) {
                 final Logger logger = commandLogger(ctx, cc);
-                logger.notifyError("No backups available for this world.  Run '/backup enable' to enable backups.");
+                logger.notifyError(Text.translatable("fastback.notify.not-enabled"));
                 return FAILURE;
             }
             log.notify(Text.translatable("fastback.notify.list-local-snapshots-header"));
