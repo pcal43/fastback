@@ -1,6 +1,7 @@
 plugins {
 	id 'fabric-loom' version '0.12-SNAPSHOT'
 	id 'maven-publish'
+	id "com.modrinth.minotaur" version "2.+"
 }
 
 sourceCompatibility = JavaVersion.VERSION_17
@@ -36,15 +37,15 @@ project.ext.versions = [
 dependencies {
 
 	// Fabric & Minecraft
-	include(modImplementation  group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: versions.jgit)
-	include(modRuntimeOnly  group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.ssh.jsch', version: versions.jgit)
+	include(modImplementation(group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: versions.jgit))
+	include(modRuntimeOnly(group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.ssh.jsch', version: versions.jgit))
 	include group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.ssh.apache', version: versions.jgit
 	include group: 'org.apache.sshd', name: 'sshd-core', version: versions.apache_sshd
 	include group: 'org.apache.sshd', name: 'sshd-common', version: versions.apache_sshd
 	include group: 'com.googlecode.javaewah', name: 'JavaEWAH', version: versions.JavaEWAH
 
 	// https://github.com/lucko/fabric-permissions-api
-	include(modImplementation group: 'me.lucko', name: 'fabric-permissions-api', version: versions.fabric_permissions)
+	include(modImplementation(group: 'me.lucko', name: 'fabric-permissions-api', version: versions.fabric_permissions))
 
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
@@ -89,24 +90,18 @@ jar {
 	from("LICENSE") {
 		rename { "${it}_${project.archivesBaseName}"}
 	}
-//	from {
-//		configurations.include.collect { it.isDirectory() ? it : zipTree(it) }
-	//}
 }
 
-// configure the maven publication
-publishing {
-	publications {
-		mavenJava(MavenPublication) {
-			from components.java
-		}
-	}
-
-	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
-	repositories {
-		// Add repositories to publish to here.
-		// Notice: This block does NOT have the same function as the block in the top level.
-		// The repositories here will be used for publishing your artifact, not for
-		// retrieving dependencies.
+// https://github.com/modrinth/minotaur
+modrinth {
+	token = System.getenv("MODRINTH_TOKEN")
+	projectId = "fastback"
+	versionNumber = project.mod_version
+	versionType = "alpha"
+	uploadFile = remapJar
+	gameVersions = ["1.19.2"]
+	loaders = ["fabric"]
+	dependencies {
+		required.project "fabric-api"
 	}
 }
