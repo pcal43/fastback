@@ -26,7 +26,7 @@
   "fastback.notify.local-preparing"            : "Preparing local backup",
   "fastback.notify.local-saving"               : "Saving local backup",
   "fastback.notify.not-enabled"                : "Backups are not enabled on this world.  Run '/backup enable'",
-  "fastback.notify.purge-done"                 : "Deleted snapshot %",
+  "fastback.notify.purge-done"                 : "Deleted snapshot %s",
   "fastback.notify.push-cleanup"               : "Cleaning up",
   "fastback.notify.push-failed"                : "Local backup succeeded but remote backup failed.  See log for details.",
   "fastback.notify.push-started"               : "Starting remote backup",
