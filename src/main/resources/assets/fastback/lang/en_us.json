@@ -30,6 +30,7 @@
   "fastback.notify.purge-done" : "Deleted snapshot %",
   "fastback.notify.push-cleanup" : "Cleaning up",
   "fastback.notify.push-started" : "Starting remote backup",
+  "fastback.notify.push-failed" : "Local backup succeeded but remote backup failed.  See log for details.",
   "fastback.notify.push-uuid-mismatch" : "Remote at %s is a backup target for a different world.\nPlease configure a new remote for backing up this world.",
   "fastback.notify.remote-already-enabled" : "\"Remote backups are already enabled to:\n%s",
   "fastback.notify.remote-changed" : "Remote backup URL changed to:\n%s",

@@ -78,7 +78,7 @@ public class BackupTask extends Task {
                 final PushTask push = new PushTask(worldSaveDir, newBranchName, log);
                 push.run();
                 if (push.isFailed()) {
-                    log.notifyError("Local backup succeeded but remote backup failed.  See log for details.");
+                    log.notifyError(translatable("fastback.notify.push-failed"));
                 } else {
                     final Duration dur = getSplitDuration();
                     log.info("Remote backup to complete");
