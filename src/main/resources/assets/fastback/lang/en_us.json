@@ -40,6 +40,10 @@
   "fastback.notify.remote-how-to-enable" : "Run '/backup remote enable' to enable remote backups to:\n%s",
   "fastback.notify.remote-how-to-enable-no-url" : "Run '/backup remote <remote-url>' to enable remote backups.",
 
+  "fastback.notify.push-started" : "Starting remote backup",
+  "fastback.notify.push-cleanup" : "Cleaning up",
+  "fastback.notify.push-uuid-mismatch" : "Remote at %s is a backup target for a different world.\nPlease configure a new remote for backing up this world.",
+
   "fastback.savescreen.remote-preparing": "Preparing remote backup %d%%",
   "fastback.savescreen.remote-uploading": "Uploading remote backup %d%%",
   "fastback.savescreen.remote-done": "Remote backup complete",
