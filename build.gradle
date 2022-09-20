@@ -99,6 +99,7 @@ modrinth {
 	versionNumber = project.mod_version
 	versionType = "alpha"
 	uploadFile = remapJar
+	changelog = "https://github.com/pcal43/fastback/releases/tag/${project.mod_version}"
 	gameVersions = ["1.19.2"]
 	loaders = ["fabric"]
 	dependencies {
