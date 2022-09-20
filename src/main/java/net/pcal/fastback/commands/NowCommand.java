@@ -66,6 +66,7 @@ public class NowCommand {
                 ctx.getExecutorService().execute(() -> {
                     log.info("Saving before backup");
                     server.saveAll(false, true, true); // suppressLogs, flush, force
+                    log.info("Starting backup");
                     new BackupTask(ctx, worldSaveDir, log).run();
                 });
                 return SUCCESS;

@@ -43,7 +43,6 @@ import java.util.List;
 import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
-import static net.minecraft.text.Text.literal;
 import static net.minecraft.text.Text.translatable;
 
 public class PushTask extends Task {
@@ -163,6 +162,7 @@ public class PushTask extends Task {
 
             git.push().setProgressMonitor(pm).setRemote(remoteName).setRefSpecs(deleteRemoteBranchSpec).call();
         }
+        logger.notify(translatable("fastback.savescreen.remote-done"));
         logger.debug("push complete");
     }
 

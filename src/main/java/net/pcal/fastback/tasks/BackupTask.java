@@ -67,10 +67,9 @@ public class BackupTask extends Task {
             final String newBranchName = newSid.getBranchName();
             log.info("Committing " + newBranchName);
             try {
-                doCommit(git, ctx, newBranchName, log);
+                doLocalBackup(git, ctx, newBranchName, log);
                 final Duration dur = getSplitDuration();
                 log.info("Local backup complete.  Elapsed time: " + dur.toMinutesPart() + "m " + dur.toSecondsPart() + "s");
-                this.log.notify(translatable("fastback.notify.local-done"));
             } catch (GitAPIException | IOException e) {
                 log.internalError("Local backup failed.  Unable to commit changes.", e);
                 this.setFailed();
@@ -95,10 +94,11 @@ public class BackupTask extends Task {
             this.setFailed();
             return;
         }
+        log.notify(translatable("fastback.notify.backup-complete"));
         this.setCompleted();
     }
 
-    private static void doCommit(Git git, ModContext ctx, String newBranchName, final Logger log) throws GitAPIException, IOException {
+    private static void doLocalBackup(Git git, ModContext ctx, String newBranchName, final Logger log) throws GitAPIException, IOException {
         log.debug("doing commit");
         log.debug("checkout");
         git.checkout().setOrphan(true).setName(newBranchName).call();
