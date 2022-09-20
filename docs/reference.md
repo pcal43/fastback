@@ -8,7 +8,7 @@ nav_order: 80
 
 Command            | Use
 ------------------ | ---
-`enable`           | Enable local backups backups on this world.
+`enable`           | Enable backups backups on this world.
 `disable`          | Disable backups on this world.
 `status`           | Summarize current backup settings.
 `restore`          | Restore a backup snapshot.
@@ -16,8 +16,7 @@ Command            | Use
 `now`              | Perform a backup immediately.
 `list`             | List backup snapshots for this world.
 `remote`           | Set the url for remote backups.
-`file-remote`    | Create a remote backup target on the file system.
-`shutdown`         | Enable or disable backups on shutdown.
+`file-remote`      | Create a remote backup target on the file system.
 `uuid`             | Show the uuid for this world backup.
 `version`          | Show mod version.
 `help`             | Get help on commands.
