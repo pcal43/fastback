@@ -16,7 +16,7 @@ Command            | Use
 `now`              | Perform a backup immediately.
 `list`             | List backup snapshots for this world.
 `remote`           | Set the url for remote backups.
-`create-remote`    | Create a remote backup target on the file system.
+`file-remote`    | Create a remote backup target on the file system.
 `shutdown`         | Enable or disable backups on shutdown.
 `uuid`             | Show the uuid for this world backup.
 `version`          | Show mod version.
