@@ -26,7 +26,6 @@ import net.pcal.fastback.ModContext;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.minecraft.text.Text.translatable;
 import static net.pcal.fastback.commands.Commands.*;
 
 public class SaveCommand {
