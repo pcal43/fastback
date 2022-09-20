@@ -2,7 +2,7 @@
   "commands.fastback.help.subcommands": "Список доступных аргументов:\n%s\nДля подробного описания аргумента выполните\n/backup help [аргумент]\nили перейдите на https://pcal43.github.io/fastback",
   "commands.fastback.help.enable": "Включить локальное резервирование этого мира.",
   "commands.fastback.help.disable": "Отключить резервирование этого мира.",
-  "commands.fastback.help.create-remote": "Создать шаблон для удалённого резервирования в файловой системе.",
+  "commands.fastback.help.file-remote": "Создать шаблон для удалённого резервирования в файловой системе.",
   "commands.fastback.help.list": "Показать список точек восстановления этого мира.",
   "commands.fastback.help.purge": "Удалить точку восстановления.",
   "commands.fastback.help.remote": "Установить адрес для удалённого резервирования.",
