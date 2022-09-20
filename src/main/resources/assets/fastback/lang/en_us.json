@@ -1,5 +1,5 @@
 {
-  "commands.fastback.help.create-remote"       : "Create a remote backup target on the file system.",
+  "commands.fastback.help.file-remote"       : "Create a remote backup target on the file system.",
   "commands.fastback.help.disable"             : "Disable backups on this world.",
   "commands.fastback.help.enable"              : "Enable local backups backups on this world.",
   "commands.fastback.help.help"                : "Get help on commands.",

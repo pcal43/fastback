@@ -39,13 +39,13 @@ import static net.pcal.fastback.commands.Commands.executeStandard;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.utils.FileUtils.mkdirs;
 
-public class CreateFileRemoteCommand {
+public class FileRemoteCommand {
 
-    private static final String COMMAND_NAME = "create-remote";
+    private static final String COMMAND_NAME = "file-remote";
     private static final String ARGUMENT = "file-path";
 
     public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
-        final CreateFileRemoteCommand c = new CreateFileRemoteCommand(ctx);
+        final FileRemoteCommand c = new FileRemoteCommand(ctx);
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).then(
@@ -56,7 +56,7 @@ public class CreateFileRemoteCommand {
 
     private final ModContext ctx;
 
-    private CreateFileRemoteCommand(final ModContext context) {
+    private FileRemoteCommand(final ModContext context) {
         this.ctx = requireNonNull(context);
     }
 
