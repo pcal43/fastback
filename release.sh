@@ -35,16 +35,26 @@ rm gradle.properties
 mv gradle.properties.temp gradle.properties
 
 rm -rf build/libs
-./gradlew remapJar
 
+./gradlew remapJar
 
 git commit -am "Release ${RELEASE_VERSION}"
 #git tag "${RELEASE_VERSION}"
 git push
 
-# this is always creating a draft release for some reason
-gh release create --title "${RELEASE_VERSION}" --notes "release ${RELEASE_VERSION}" ${RELEASE_VERSION} build/libs/*
+#
+# Do github release
+#
+gh release create --generate-notes --title "${RELEASE_VERSION}" --notes "release ${RELEASE_VERSION}" ${RELEASE_VERSION} build/libs/*
 
+#
+# Do modrinth release
+#
+./gradlew modrinth
+
+#
+# Bump version number and prepare for next release
+#
 BUILD_METADATA=$(echo ${RELEASE_VERSION} | awk '{split($NF,v,/[+]/); $NF=v[2]}1')
 BUILD_METADATA="${BUILD_METADATA}-prerelease"
 NEXT_MOD_VERSION=$(echo ${RELEASE_VERSION} | awk '{split($NF,v,/[.]/); $NF=v[1]"."v[2]"."++v[3]}1')
