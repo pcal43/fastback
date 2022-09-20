@@ -26,9 +26,14 @@ import net.pcal.fastback.logging.IncrementalProgressMonitor;
 import net.pcal.fastback.logging.LoggingProgressMonitor;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.internal.storage.file.FileRepository;
+import org.eclipse.jgit.internal.storage.file.GC;
 import org.eclipse.jgit.lib.ProgressMonitor;
+import org.eclipse.jgit.storage.pack.PackConfig;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.util.Collections;
 import java.util.Date;
 
 import static java.util.Objects.requireNonNull;
@@ -73,12 +78,26 @@ public class GcCommand {
                     log.notify(translatable("fastback.notify.gc-start"));
                     log.info("Stats before gc:");
                     log.info("" + git.gc().getStatistics());
-                    git.gc().setExpire(new Date()).setAggressive(false).setProgressMonitor(pm).call();
+
+
+                    final GC gc = new GC(((FileRepository)git.getRepository()));
+                    gc.setExpireAgeMillis(0);
+                    gc.setPackExpireAgeMillis(0);
+                    gc.setAuto(false);
+  //                  gc.setPackConfig(PackConfig);
+                    gc.gc();
+                    final PackConfig pc = new PackConfig();
+                    pc.setDeltaCompress(true);
+                    pc.setCompressionLevel(0);
+                    gc.setPackConfig(pc);
+//                    gc.prune(Collections.emptySet());
+//                    gc.gc();
+                    //git.gc().setExpire(new Date()).setAggressive(false).setProgressMonitor(pm).call();
                     log.notify(translatable("fastback.notify.gc-done"));
                     log.info("Stats after gc:");
                     log.info("" + git.gc().getStatistics());
 
-                } catch (IOException | GitAPIException e) {
+                } catch (IOException | GitAPIException | ParseException e) {
                     log.internalError("Failed to gc", e);
                 }
             });
