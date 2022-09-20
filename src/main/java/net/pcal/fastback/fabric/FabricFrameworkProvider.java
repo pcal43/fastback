@@ -36,18 +36,29 @@ import org.apache.logging.log4j.LogManager;
 import java.nio.file.Path;
 import java.util.Optional;
 
-class FabricFrameworkProvider implements ModContext.ModFrameworkProvider {
+public class FabricFrameworkProvider implements ModContext.ModFrameworkProvider {
+
+    private static FabricFrameworkProvider INSTANCE;
+
+
+    public static FabricFrameworkProvider getInstance() {
+        if (INSTANCE == null) throw new IllegalStateException("not initialized");
+        return INSTANCE;
+    }
 
     private static final String MOD_ID = "fastback";
+    private boolean isWorldSaveEnabled = true;
     private final FabricClientProvider clientProvider;
-    final Logger logger = new Log4jLogger(LogManager.getLogger(MOD_ID));
+    private final Logger logger = new Log4jLogger(LogManager.getLogger(MOD_ID));
 
     static FabricFrameworkProvider forServer() {
-        return new FabricFrameworkProvider(null);
+        if (INSTANCE != null) throw new IllegalStateException();
+        return INSTANCE = new FabricFrameworkProvider(null);
     }
 
     static FabricFrameworkProvider forClient(FabricClientProvider clientProvider) {
-        return new FabricFrameworkProvider(clientProvider);
+        if (INSTANCE != null) throw new IllegalStateException();
+        return INSTANCE = new FabricFrameworkProvider(clientProvider);
     }
 
     private FabricFrameworkProvider(FabricClientProvider clientProviderOrNull) {
@@ -85,6 +96,16 @@ class FabricFrameworkProvider implements ModContext.ModFrameworkProvider {
     }
 
     @Override
+    public boolean isWorldSaveEnabled() {
+        return this.isWorldSaveEnabled;
+    }
+
+    @Override
+    public void setWorldSaveEnabled(boolean enabled) {
+        this.isWorldSaveEnabled = enabled;
+    }
+
+    @Override
     public Path getClientSavesDir() {
         if (this.clientProvider != null) {
             Path restoreDir = clientProvider.getClientRestoreDir();
@@ -118,12 +139,5 @@ class FabricFrameworkProvider implements ModContext.ModFrameworkProvider {
     public String getWorldName(final MinecraftServer server) {
         final LevelStorage.Session session = ((ServerAccessors) server).getSession();
         return session.getLevelSummary().getLevelInfo().getLevelName();
-    }
-
-    @Override
-    public void setWorldSaveEnabled(final MinecraftServer mc, final boolean enabled) {
-        for (ServerWorld serverWorld : mc.getWorlds()) {
-            if (serverWorld != null) serverWorld.savingDisabled = !enabled;
-        }
     }
 }

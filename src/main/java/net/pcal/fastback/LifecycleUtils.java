@@ -77,7 +77,7 @@ public class LifecycleUtils {
             final WorldConfig config = WorldConfig.load(worldSaveDir);
             if (config.isShutdownBackupEnabled()) {
                 final Logger screenLogger = CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx));
-                new BackupTask(worldSaveDir, screenLogger).run();
+                new BackupTask(ctx, worldSaveDir, screenLogger).run();
             } else {
                 logger.info("Shutdown backups disabled.");
             }
