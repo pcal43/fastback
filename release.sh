@@ -14,12 +14,6 @@ if [ -n "$(git status --porcelain)" ]; then
   exit 1
 fi
 
-set -x
-if [ -z "${MODRINTH_TOKEN:-}" ]; then
-    echo "Set MODRINTH_TOKEN"
-    exit 1
-fi
-
 if [ -z "${CURRENT_BRANCH}" != 'main' ]; then
   echo "Releases must be performed on main.  Currently on '${CURRENT_BRANCH}'"
   exit 1
