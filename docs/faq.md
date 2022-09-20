@@ -19,7 +19,7 @@ That's what FastBack does.
 
 ## How big of a world can I back up?
 
-FastBack is designed for worlds up to about 10GB.  It may work ok with worlds larger than that; please give it a 
+FastBack is designed for worlds up to about 5GB.  It may work ok with worlds larger than that; please give it a 
 try and let us know!
 
 But if you're running a server with a 200GB world, you're probably better off sticking with rsync (or whatever
