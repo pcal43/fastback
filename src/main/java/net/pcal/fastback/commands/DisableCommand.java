@@ -27,20 +27,22 @@ import net.pcal.fastback.WorldConfig;
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.minecraft.text.Text.translatable;
-import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.executeStandard;
-import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.commands.Commands.*;
 
 public class DisableCommand {
 
     private static final String COMMAND_NAME = "disable";
+    private static final String SHUTDOWN = "shutdown";
+    private static final String REMOTE = "remote";
 
     public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
-        final DisableCommand rc = new DisableCommand(ctx);
+        final DisableCommand c = new DisableCommand(ctx);
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(rc::execute)
+                        executes(c::disable).then(
+                                literal(SHUTDOWN).executes(c::disableShutdown)).then(
+                                literal(REMOTE).executes(c::disableRemote))
         );
     }
 
@@ -50,7 +52,7 @@ public class DisableCommand {
         this.ctx = requireNonNull(context);
     }
 
-    private int execute(final CommandContext<ServerCommandSource> cc) {
+    private int disable(final CommandContext<ServerCommandSource> cc) {
         return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
             WorldConfig.setBackupEnabled(gitc, false);
             WorldConfig.setShutdownBackupEnabled(gitc, false);
@@ -59,4 +61,35 @@ public class DisableCommand {
             return SUCCESS;
         });
     }
+
+    private int disableShutdown(final CommandContext<ServerCommandSource> cc) {
+        return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
+            final boolean enabled = wc.isShutdownBackupEnabled();
+            if (!enabled) {
+                log.notifyError(translatable("fastback.notify.shutdown-currently-disabled"));
+                return FAILURE;
+            } else {
+                WorldConfig.setShutdownBackupEnabled(gitc, false);
+                gitc.save();
+                log.notifyError(translatable("fastback.notify.shutdown-disabled"));
+                return SUCCESS;
+            }
+        });
+    }
+
+    private int disableRemote(final CommandContext<ServerCommandSource> cc) {
+        return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
+            final boolean currentEnabled = wc.isRemoteBackupEnabled();
+            if (!currentEnabled) {
+                log.notifyError(translatable("fastback.notify.remote-already-disabled"));
+                return FAILURE;
+            } else {
+                WorldConfig.setRemoteBackupEnabled(gitc, false);
+                gitc.save();
+                log.notifyError(translatable("fastback.notify.remote-disabled"));
+                return SUCCESS;
+            }
+        });
+    }
 }
+

@@ -37,8 +37,6 @@ import static net.pcal.fastback.commands.Commands.subcommandPermission;
 public class RemoteCommand {
 
     private static final String COMMAND_NAME = "remote";
-    private static final String ENABLE_ARGUMENT = "enable";
-    private static final String DISABLE_ARGUMENT = "disable";
     private static final String URL_ARGUMENT = "remote-url";
 
     public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
@@ -47,8 +45,6 @@ public class RemoteCommand {
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
                         executes(c::showRemote).then(
-                                literal(ENABLE_ARGUMENT).executes(c::enable)).then(
-                                literal(DISABLE_ARGUMENT).executes(c::disable)).then(
                                 argument(URL_ARGUMENT, StringArgumentType.greedyString()).
                                         executes(c::setRemoteUrl))
         );
@@ -79,66 +75,14 @@ public class RemoteCommand {
         });
     }
 
-    private int enable(final CommandContext<ServerCommandSource> cc) {
-        return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
-            final String currentUrl = wc.getRemotePushUrl();
-            final boolean currentEnabled = wc.isRemoteBackupEnabled();
-            if (currentUrl == null) {
-                log.notifyError(translatable("fastback.notify.remote-no-url"));
-                return FAILURE;
-            } else if (currentEnabled) {
-                log.notifyError(translatable("fastback.notify.remote-already-enabled", currentUrl));
-                return FAILURE;
-            } else {
-                log.notify(translatable("fastback.notify.remote-enabled", currentUrl));
-                WorldConfig.setRemoteBackupEnabled(gitc, true);
-                gitc.save();
-                return SUCCESS;
-            }
-        });
-    }
-
-    private int disable(final CommandContext<ServerCommandSource> cc) {
-        return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
-            final boolean currentEnabled = wc.isRemoteBackupEnabled();
-            if (!currentEnabled) {
-                log.notifyError(translatable("fastback.notify.remote-already-disabled"));
-                return FAILURE;
-            } else {
-                WorldConfig.setRemoteBackupEnabled(gitc, false);
-                gitc.save();
-                log.notifyError(translatable("fastback.notify.remote-disabled"));
-                return SUCCESS;
-            }
-        });
-    }
-
     private int setRemoteUrl(final CommandContext<ServerCommandSource> cc) {
         return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
             final String newUrl = cc.getArgument(URL_ARGUMENT, String.class);
-            final String currentUrl = wc.getRemotePushUrl();
-            final boolean currentEnable = wc.isRemoteBackupEnabled();
-            if (currentUrl != null && currentUrl.equals(newUrl)) {
-                if (currentEnable) {
-                    log.notify(translatable("fastback.notify.remote-already-enabled", newUrl));
-                    return SUCCESS;
-                } else {
-                    WorldConfig.setRemoteBackupEnabled(gitc, true);
-                    gitc.save();
-                    log.notify(translatable("fastback.notify.remote-enabled", newUrl));
-                }
-            } else {
-                WorldConfig.setRemoteUrl(gitc, newUrl);
-                if (currentEnable) {
-                    log.notify(translatable("fastback.notify.remote-changed", newUrl));
-                } else {
-                    WorldConfig.setRemoteBackupEnabled(gitc, true);
-                    log.notify(translatable("fastback.notify.remote-enabled", newUrl));
-                }
-                gitc.save();
-            }
+            WorldConfig.setRemoteBackupEnabled(gitc, true);
+            WorldConfig.setRemoteUrl(gitc, newUrl);
+            gitc.save();
+            log.notify(translatable("fastback.notify.remote-enabled", newUrl));
             return SUCCESS;
         });
     }
-
 }
