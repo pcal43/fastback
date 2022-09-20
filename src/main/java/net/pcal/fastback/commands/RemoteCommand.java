@@ -107,7 +107,7 @@ public class RemoteCommand {
             } else {
                 WorldConfig.setRemoteBackupEnabled(gitc, false);
                 gitc.save();
-                log.notifyError(translatable("fastback.notify.remote-disabled" ));
+                log.notifyError(translatable("fastback.notify.remote-disabled"));
                 return SUCCESS;
             }
         });

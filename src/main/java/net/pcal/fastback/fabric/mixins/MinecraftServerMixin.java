@@ -19,7 +19,7 @@
 package net.pcal.fastback.fabric.mixins;
 
 import net.minecraft.server.MinecraftServer;
-import net.pcal.fastback.fabric.FabricFrameworkProvider;
+import net.pcal.fastback.fabric.FabricServiceProvider;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -28,10 +28,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(MinecraftServer.class)
 public class MinecraftServerMixin {
 
-    @Inject( at = @At("HEAD"), method="save(ZZZ)Z", cancellable = true)
+    @Inject(at = @At("HEAD"), method = "save(ZZZ)Z", cancellable = true)
     public void save(boolean suppressLogs, boolean flush, boolean force, CallbackInfoReturnable<Boolean> ci) {
         synchronized (this) {
-            final FabricFrameworkProvider ctx = FabricFrameworkProvider.getInstance();
+            final FabricServiceProvider ctx = FabricServiceProvider.getInstance();
             if (ctx.isWorldSaveEnabled()) {
                 ctx.getLogger().debug("world saves are enabled, doing requested save");
             } else {
@@ -42,10 +42,10 @@ public class MinecraftServerMixin {
         }
     }
 
-    @Inject( at = @At("HEAD"), method="saveAll(ZZZ)Z", cancellable = true)
+    @Inject(at = @At("HEAD"), method = "saveAll(ZZZ)Z", cancellable = true)
     public void saveAll(boolean suppressLogs, boolean flush, boolean force, CallbackInfoReturnable<Boolean> ci) {
-        synchronized(this) {
-            final FabricFrameworkProvider ctx = FabricFrameworkProvider.getInstance();
+        synchronized (this) {
+            final FabricServiceProvider ctx = FabricServiceProvider.getInstance();
             if (ctx.isWorldSaveEnabled()) {
                 ctx.getLogger().debug("world saves are enabled, doing requested saveAll");
                 //TODO should call save here to ensure all synced?

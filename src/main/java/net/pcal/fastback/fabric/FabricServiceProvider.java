@@ -23,7 +23,6 @@ import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModMetadata;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.world.level.storage.LevelStorage;
 import net.pcal.fastback.ModContext;
@@ -36,12 +35,11 @@ import org.apache.logging.log4j.LogManager;
 import java.nio.file.Path;
 import java.util.Optional;
 
-public class FabricFrameworkProvider implements ModContext.ModFrameworkProvider {
+public class FabricServiceProvider implements ModContext.FrameworkServiceProvider {
 
-    private static FabricFrameworkProvider INSTANCE;
+    private static FabricServiceProvider INSTANCE;
 
-
-    public static FabricFrameworkProvider getInstance() {
+    public static FabricServiceProvider getInstance() {
         if (INSTANCE == null) throw new IllegalStateException("not initialized");
         return INSTANCE;
     }
@@ -51,17 +49,17 @@ public class FabricFrameworkProvider implements ModContext.ModFrameworkProvider 
     private final FabricClientProvider clientProvider;
     private final Logger logger = new Log4jLogger(LogManager.getLogger(MOD_ID));
 
-    static FabricFrameworkProvider forServer() {
+    static FabricServiceProvider forServer() {
         if (INSTANCE != null) throw new IllegalStateException();
-        return INSTANCE = new FabricFrameworkProvider(null);
+        return INSTANCE = new FabricServiceProvider(null);
     }
 
-    static FabricFrameworkProvider forClient(FabricClientProvider clientProvider) {
+    static FabricServiceProvider forClient(FabricClientProvider clientProvider) {
         if (INSTANCE != null) throw new IllegalStateException();
-        return INSTANCE = new FabricFrameworkProvider(clientProvider);
+        return INSTANCE = new FabricServiceProvider(clientProvider);
     }
 
-    private FabricFrameworkProvider(FabricClientProvider clientProviderOrNull) {
+    private FabricServiceProvider(FabricClientProvider clientProviderOrNull) {
         this.clientProvider = clientProviderOrNull;
     }
 

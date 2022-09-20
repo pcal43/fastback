@@ -74,7 +74,6 @@ public record WorldConfig(
     }
 
 
-
     // THESE ARE EFFECTIVELY CONSTANTS.  HERE BECAUSE WE MIGHT NEED TO MAKE SOME OF THEM CONFIGURABLE SOMEDAY.
 
     public String getRemoteName() {
