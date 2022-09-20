@@ -18,7 +18,6 @@
 
 package net.pcal.fastback.tasks;
 
-import net.minecraft.text.Text;
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.IncrementalProgressMonitor;
 import net.pcal.fastback.logging.Logger;

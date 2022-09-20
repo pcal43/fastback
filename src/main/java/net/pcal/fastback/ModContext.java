@@ -32,16 +32,16 @@ import static java.util.Objects.requireNonNull;
 
 public class ModContext {
 
-    private final ModFrameworkProvider spi;
+    private final FrameworkServiceProvider spi;
     private final ExecutorService exs;
     private Path tempRestoresDirectory = null;
 
-    public static ModContext create(ModFrameworkProvider spi) {
+    public static ModContext create(FrameworkServiceProvider spi) {
         final ExecutorService exs = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         return new ModContext(spi, exs);
     }
 
-    private ModContext(ModFrameworkProvider spi, ExecutorService exs) {
+    private ModContext(FrameworkServiceProvider spi, ExecutorService exs) {
         this.spi = requireNonNull(spi);
         this.exs = requireNonNull(exs);
     }
@@ -97,7 +97,9 @@ public class ModContext {
         return this.spi.getWorldDirectory(server);
     }
 
-    public boolean isWorldSaveEnabled() { return this.spi.isWorldSaveEnabled(); }
+    public boolean isWorldSaveEnabled() {
+        return this.spi.isWorldSaveEnabled();
+    }
 
     public String getWorldName(MinecraftServer server) {
         return this.spi.getWorldName(server);
@@ -125,7 +127,7 @@ public class ModContext {
         return spi.isClient() ? 0 : 4;
     }
 
-    public interface ModFrameworkProvider {
+    public interface FrameworkServiceProvider {
 
         Logger getLogger();
 

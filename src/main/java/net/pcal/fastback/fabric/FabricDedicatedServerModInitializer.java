@@ -23,9 +23,9 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.pcal.fastback.LifecycleUtils;
 import net.pcal.fastback.ModContext;
 
-public class FastbackDedicatedServerModInitializer implements DedicatedServerModInitializer {
+public class FabricDedicatedServerModInitializer implements DedicatedServerModInitializer {
 
-    private final ModContext modContext = ModContext.create(FabricFrameworkProvider.forServer());
+    private final ModContext modContext = ModContext.create(FabricServiceProvider.forServer());
 
     @Override
     public void onInitializeServer() {

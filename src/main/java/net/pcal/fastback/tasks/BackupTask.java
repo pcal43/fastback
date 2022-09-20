@@ -118,7 +118,7 @@ public class BackupTask extends Task {
                 toAdd.addAll(status.getModified());
                 toAdd.addAll(status.getUntracked());
                 if (!toAdd.isEmpty()) {
-                    log.info("Adding "+toAdd.size()+" new or modified files to index");
+                    log.info("Adding " + toAdd.size() + " new or modified files to index");
                     final AddCommand gitAdd = git.add();
                     for (final String file : toAdd) {
                         log.debug("add  " + file);
@@ -132,7 +132,7 @@ public class BackupTask extends Task {
                 toDelete.addAll(status.getRemoved());
                 toDelete.addAll(status.getMissing());
                 if (!toDelete.isEmpty()) {
-                    log.info("Removing "+toDelete.size()+ " deleted files from index");
+                    log.info("Removing " + toDelete.size() + " deleted files from index");
                     final RmCommand gitRm = git.rm();
                     for (final String file : toDelete) {
                         log.debug("rm  " + file);

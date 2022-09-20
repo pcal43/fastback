@@ -31,9 +31,9 @@ import net.pcal.fastback.fabric.mixins.ScreenAccessors;
 
 import java.nio.file.Path;
 
-public class FastbackClientModInitializer implements ClientModInitializer {
+public class FabricClientModInitializer implements ClientModInitializer {
 
-    private final FabricFrameworkProvider fabricProvider = FabricFrameworkProvider.forClient(new FabricClientProviderImpl());
+    private final FabricServiceProvider fabricProvider = FabricServiceProvider.forClient(new FabricClientProviderImpl());
     private final ModContext modContext = ModContext.create(fabricProvider);
 
     @Override
