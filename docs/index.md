@@ -28,9 +28,7 @@ of disk space.
 
 
 ## Road Map
-* Live backups (while world is running)
 * Scheduled backups
-* User allow-list
 * UI for managing backups from the title screen
 * Better management of remote snapshots
 * Automatic snapshot purging strategies
