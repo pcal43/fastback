@@ -14,8 +14,7 @@ if [ -n "$(git status --porcelain)" ]; then
   exit 1
 fi
 
-
-if [ -z "${MODRINTH_TOKEN:-}" ]; then
+if [ -n "${MODRINTH_TOKEN:-}" ]; then
     echo "Set MODRINTH_TOKEN"
     exit 1
 fi
