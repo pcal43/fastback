@@ -12,7 +12,7 @@
 ROOT=$(git rev-parse --show-toplevel)
 
 if [ ! -f "$ROOT/fastback/world.uuid" ]; then
-    echo 'This command should only be run in a minecraft world that has been backed up with fastback.'
+    echo 'This command should only be run in a Minecraft world that has been backed up with FastBack.'
     exit 1
 fi
 
