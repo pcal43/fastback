@@ -74,6 +74,11 @@ public class FabricServiceProvider implements ModContext.FrameworkServiceProvide
     }
 
     @Override
+    public Path getConfigDir() {
+        return FabricLoader.getInstance().getConfigDir();
+    }
+
+    @Override
     public String getModId() {
         return MOD_ID;
     }

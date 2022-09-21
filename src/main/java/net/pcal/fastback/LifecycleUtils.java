@@ -32,18 +32,21 @@ import java.nio.file.Path;
 
 import static net.minecraft.text.Text.translatable;
 import static net.pcal.fastback.WorldConfig.isBackupsEnabledOn;
+import static net.pcal.fastback.utils.FileUtils.writeResourceToFile;
 import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
 public class LifecycleUtils {
 
-    public static void onClientStart(final ModContext ctx) {
+    public static void onClientStart(final ModContext ctx) throws IOException {
         Commands.registerCommands(ctx, ctx.getCommandName());
-        ctx.getLogger().info(ctx.getModId() + " server initialized");
+        copyConfigResources(ctx);
+        ctx.getLogger().info(ctx.getModId() + " client initialized");
     }
 
-    public static void onServerStart(final ModContext ctx) {
+    public static void onServerStart(final ModContext ctx) throws IOException {
         Commands.registerCommands(ctx, ctx.getCommandName());
-        ctx.getLogger().info(ctx.getModId() + " client initialized");
+        copyConfigResources(ctx);
+        ctx.getLogger().info(ctx.getModId() + " server initialized");
     }
 
     public static void onWorldStart(final ModContext ctx, final MinecraftServer server) {
@@ -83,6 +86,20 @@ public class LifecycleUtils {
             }
         } catch (IOException e) {
             logger.internalError("Shutdown backup failed.", e);
+        }
+    }
+
+    private static final Path[] CONFIG_RESOURCES = {
+            Path.of("config/fastback/bin/enable"),
+            Path.of("config/fastback/bin/git-hard-purge"),
+    };
+
+    private static void copyConfigResources(final ModContext ctx) throws IOException {
+        final Path configDir = ctx.getConfigDir();
+        for (final Path resourcePath : CONFIG_RESOURCES) {
+            ctx.getLogger().debug("writing "+resourcePath);
+            Path configPath = Path.of("config").relativize(resourcePath);
+            writeResourceToFile(resourcePath.toString(), configDir.resolve(configPath));
         }
     }
 }

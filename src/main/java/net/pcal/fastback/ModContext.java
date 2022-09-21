@@ -77,6 +77,10 @@ public class ModContext {
         return this.spi.getMinecraftVersion();
     }
 
+    public Path getConfigDir() {
+        return this.spi.getConfigDir();
+    }
+
     public void setWorldSaveEnabled(boolean enabled) {
         this.spi.setWorldSaveEnabled(enabled);
     }
@@ -134,6 +138,8 @@ public class ModContext {
         String getModId();
 
         String getModVersion();
+
+        Path getConfigDir();
 
         String getMinecraftVersion();
 

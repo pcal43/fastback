@@ -1,0 +1,16 @@
+#!/bin/bash
+
+#
+# USE WITH CAUTION.  DO NOT USE WHILE YOUR WORLD IS RUNNING
+#
+# Run 'source enable' to put the tools on your PATH.
+#
+# If you're on MacOS and it complains about realpath, brew install coreutils
+# If you're on Windows, godspeed.
+#
+
+SCRIPT_FILE=$(realpath "$0")
+SCRIPT_DIR=$(dirname "$SCRIPT_FILE")
+export PATH=$SCRIPT_DIR:$PATH
+echo "Added $SCRIPT_DIR to PATH"
+echo "Fastback git extensions enabled.  USE WITH CAUTION.  DO NOT USE WHILE YOUR WORLD IS RUNNING"
