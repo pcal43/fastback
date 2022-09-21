@@ -53,7 +53,6 @@ public class FileUtils {
         return org.apache.commons.io.FileUtils.byteCountToDisplaySize(gitDirSize);
     }
 
-
     public static void writeResourceToFile(String resourcePath, Path targetFile) throws IOException {
         final String rawResource;
         try (InputStream in = FileUtils.class.getClassLoader().getResourceAsStream(resourcePath)) {
