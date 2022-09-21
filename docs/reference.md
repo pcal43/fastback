@@ -8,12 +8,13 @@ nav_order: 80
 
 Command            | Use
 ------------------ | ---
-`enable`           | Enable backups backups on this world.
+`enable`           | Enable backups on this world.
 `disable`          | Disable backups on this world.
-`status`           | Summarize current backup settings.
+`now`              | Perform a backup immediately.
+`status`           | Summarize current backup status.
 `restore`          | Restore a backup snapshot.
 `purge`            | Remove a backup snapshot.
-`now`              | Perform a backup immediately.
+`gc`               | Run garbage collection to free up disk space.
 `list`             | List backup snapshots for this world.
 `remote`           | Set the url for remote backups.
 `file-remote`      | Create a remote backup target on the file system.

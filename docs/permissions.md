@@ -20,6 +20,7 @@ Supported Permissions:
 * `fastback.command.disable`
 * `fastback.command.enable`
 * `fastback.command.file-remote`
+* `fastback.command.gc` 
 * `fastback.command.help`
 * `fastback.command.list`
 * `fastback.command.now`
