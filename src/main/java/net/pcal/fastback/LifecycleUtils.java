@@ -93,16 +93,16 @@ public class LifecycleUtils {
 
     private static final Iterable<Pair<String, Path>> CONFIG_RESOURCES = List.of(
             Pair.of("config/fastback/bin/enable", Path.of("bin/enable")),
-            Pair.of("config/fastback/bin/git-hard-purge", Path.of("bin/git-hard-purge"))
+            Pair.of("config/fastback/bin/git-hard-gc", Path.of("bin/git-hard-gc"))
     );
 
     private static void copyConfigResources(final ModContext ctx) {
-        final Path configDir = ctx.getConfigDir();
+        final Path configDir = ctx.getMinecraftConfigDir();
         for (final Pair<String, Path> pair : CONFIG_RESOURCES) {
             final String resourcePath = pair.getLeft();
             final Path targetFilePath = pair.getRight();
             ctx.getLogger().debug("writing "+resourcePath + " to "+targetFilePath);
-            final Path configPath = Path.of("config/fastback").relativize(targetFilePath);
+            final Path configPath = configDir.resolve("fastback").resolve(targetFilePath);
             try {
                 writeResourceToFile(resourcePath, configDir.resolve(configPath));
             } catch (IOException e) {

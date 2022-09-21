@@ -77,7 +77,7 @@ public class ModContext {
         return this.spi.getMinecraftVersion();
     }
 
-    public Path getConfigDir() {
+    public Path getMinecraftConfigDir() {
         return this.spi.getConfigDir();
     }
 
