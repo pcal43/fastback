@@ -24,6 +24,7 @@ import net.pcal.fastback.logging.Logger;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -133,6 +134,10 @@ public class ModContext {
 
     public int getDefaultPermLevel() {
         return spi.isClient() ? 0 : 4;
+    }
+
+    public TimeZone getTimeZone() {
+        return TimeZone.getDefault();
     }
 
     public interface FrameworkServiceProvider {

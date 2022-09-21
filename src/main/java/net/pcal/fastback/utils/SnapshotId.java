@@ -78,6 +78,7 @@ public record SnapshotId(String worldUuid, Date snapshotDate) implements Compara
         return PREFIX + "/" + this.worldUuid + "/" + formattedDate;
     }
 
+
     @Override
     public int compareTo(@NotNull SnapshotId o) {
         return this.snapshotDate.compareTo(o.snapshotDate);
