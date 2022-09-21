@@ -21,14 +21,16 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.Text;
 import net.pcal.fastback.ModContext;
+
+import java.io.File;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.minecraft.text.Text.translatable;
-import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.executeStandard;
-import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.commands.Commands.*;
+import static net.pcal.fastback.utils.FileUtils.getDirDisplaySize;
 
 public class StatusCommand {
 
@@ -49,30 +51,34 @@ public class StatusCommand {
     }
 
     private int execute(CommandContext<ServerCommandSource> cc) {
-        return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
-            if (wc.isBackupEnabled()) {
-                log.notify(translatable("fastback.notify.status-local-enabled"));
-            } else {
-                log.notify(translatable("fastback.notify.status-local-disabled"));
-            }
-            if (wc.isRemoteBackupEnabled()) {
-                log.notify(translatable("fastback.notify.status-remote-enabled"));
-            } else {
-                log.notify(translatable("fastback.notify.status-remote-disabled"));
-            }
-            if (wc.isRemoteBackupEnabled()) {
-                String url = wc.getRemotePushUrl();
-                if (url == null) {
-                    log.notifyError(translatable("fastback.notify.status-remote-url-missing"));
+        return executeStandardNew(this.ctx, cc, (git, wc, log) -> {
+            this.ctx.getExecutorService().execute(() -> {
+                if (wc.isBackupEnabled()) {
+                    log.notify(translatable("fastback.notify.status-local-enabled"));
                 } else {
-                    log.notify(translatable("fastback.notify.status-remote-url", url));
+                    log.notify(translatable("fastback.notify.status-local-disabled"));
                 }
-            }
-            if (wc.isShutdownBackupEnabled()) {
-                log.notify(translatable("fastback.notify.status-shutdown-enabled"));
-            } else {
-                log.notify(translatable("fastback.notify.status-shutdown-disabled"));
-            }
+                if (wc.isRemoteBackupEnabled()) {
+                    log.notify(translatable("fastback.notify.status-remote-enabled"));
+                } else {
+                    log.notify(translatable("fastback.notify.status-remote-disabled"));
+                }
+                if (wc.isRemoteBackupEnabled()) {
+                    String url = wc.getRemotePushUrl();
+                    if (url == null) {
+                        log.notifyError(translatable("fastback.notify.status-remote-url-missing"));
+                    } else {
+                        log.notify(translatable("fastback.notify.status-remote-url", url));
+                    }
+                }
+                if (wc.isShutdownBackupEnabled()) {
+                    log.notify(translatable("fastback.notify.status-shutdown-enabled"));
+                } else {
+                    log.notify(translatable("fastback.notify.status-shutdown-disabled"));
+                }
+                final File gitDir = git.getRepository().getDirectory();
+                log.notify(translatable("fastback.notify.status-backup-size", getDirDisplaySize(gitDir)));
+            });
             return SUCCESS;
         });
     }

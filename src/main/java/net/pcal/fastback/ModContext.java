@@ -127,6 +127,10 @@ public class ModContext {
         return true;
     }
 
+    public boolean isReflogDeletionEnabled() {
+        return true;
+    }
+
     public int getDefaultPermLevel() {
         return spi.isClient() ? 0 : 4;
     }
