@@ -81,7 +81,7 @@ But if you don't have a git server, no problem.  You can also do remote backups 
 your computer.  Just type something like
 
 ```
-/backup file-remote /path/to/network/volume/minecraft-backups/myworld
+/backup create-remote /path/to/network/volume/minecraft-backups/myworld
 ```
 
 You can configure this for any valid path on your file system (but it makes the most sense to do your

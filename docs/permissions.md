@@ -26,7 +26,7 @@ Supported Permissions:
   `fastback.command.now`          
   `fastback.command.list`         
   `fastback.command.remote`       
-  `fastback.command.file-remote`  
+  `fastback.command.create-remote`  
   `fastback.command.shutdown`     
   `fastback.command.uuid`         
   `fastback.command.version`      
