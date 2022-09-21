@@ -19,7 +19,7 @@ That's what FastBack does.
 
 ## How big of a world can I back up?
 
-FastBack is designed for worlds up to about 10GB.  It may work ok with worlds larger than that; please give it a 
+FastBack is designed for worlds up to about 5GB.  It may work ok with worlds larger than that; please give it a 
 try and let us know!
 
 But if you're running a server with a 200GB world, you're probably better off sticking with rsync (or whatever
@@ -46,8 +46,7 @@ time you back up, only changed files will be backed up.  See question above abou
 
 You can do a remote backup to any git server, including github.
 
-But because github has certain [size restrictions]
-(https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github),
+But because github has certain [size restrictions](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github),
 we'd only recommend using it for smaller worlds (under 500MB).
 
 ## I thought git was bad for backups?
