@@ -96,9 +96,10 @@ public class LifecycleUtils {
 
     private static void copyConfigResources(final ModContext ctx) throws IOException {
         final Path configDir = ctx.getConfigDir();
-        for (final Path path : CONFIG_RESOURCES) {
-            ctx.getLogger().debug("writing "+path);
-            writeResourceToFile(path.toString(), configDir.resolve(path.relativize(Path.of("config"))));
+        for (final Path resourcePath : CONFIG_RESOURCES) {
+            ctx.getLogger().debug("writing "+resourcePath);
+            Path configPath = Path.of("config").relativize(resourcePath);
+            writeResourceToFile(resourcePath.toString(), configDir.resolve(configPath));
         }
     }
 }
