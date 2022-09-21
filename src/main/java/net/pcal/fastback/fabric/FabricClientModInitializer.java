@@ -55,11 +55,7 @@ public class FabricClientModInitializer implements ClientModInitializer {
                     LifecycleUtils.onWorldStart(modContext, minecraftServer);
                 }
         );
-        try {
-            LifecycleUtils.onClientStart(modContext);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        LifecycleUtils.onClientStart(modContext);
     }
 
     private static class FabricClientProviderImpl implements FabricClientProvider {

@@ -25,10 +25,12 @@ import net.pcal.fastback.logging.CompositeLogger;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.SaveScreenLogger;
 import net.pcal.fastback.tasks.BackupTask;
+import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.jgit.api.Git;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 
 import static net.minecraft.text.Text.translatable;
 import static net.pcal.fastback.WorldConfig.isBackupsEnabledOn;
@@ -37,13 +39,13 @@ import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
 public class LifecycleUtils {
 
-    public static void onClientStart(final ModContext ctx) throws IOException {
+    public static void onClientStart(final ModContext ctx) {
         Commands.registerCommands(ctx, ctx.getCommandName());
         copyConfigResources(ctx);
         ctx.getLogger().info(ctx.getModId() + " client initialized");
     }
 
-    public static void onServerStart(final ModContext ctx) throws IOException {
+    public static void onServerStart(final ModContext ctx) {
         Commands.registerCommands(ctx, ctx.getCommandName());
         copyConfigResources(ctx);
         ctx.getLogger().info(ctx.getModId() + " server initialized");
@@ -89,17 +91,23 @@ public class LifecycleUtils {
         }
     }
 
-    private static final Path[] CONFIG_RESOURCES = {
-            Path.of("config/fastback/bin/enable"),
-            Path.of("config/fastback/bin/git-hard-purge"),
-    };
+    private static final Iterable<Pair<String, Path>> CONFIG_RESOURCES = List.of(
+            Pair.of("config/fastback/bin/enable", Path.of("bin/enable")),
+            Pair.of("config/fastback/bin/git-hard-purge", Path.of("bin/git-hard-purge"))
+    );
 
-    private static void copyConfigResources(final ModContext ctx) throws IOException {
+    private static void copyConfigResources(final ModContext ctx) {
         final Path configDir = ctx.getConfigDir();
-        for (final Path resourcePath : CONFIG_RESOURCES) {
-            ctx.getLogger().debug("writing "+resourcePath);
-            Path configPath = Path.of("config").relativize(resourcePath);
-            writeResourceToFile(resourcePath.toString(), configDir.resolve(configPath));
+        for (final Pair<String, Path> pair : CONFIG_RESOURCES) {
+            final String resourcePath = pair.getLeft();
+            final Path targetFilePath = pair.getRight();
+            ctx.getLogger().debug("writing "+resourcePath + " to "+targetFilePath);
+            final Path configPath = Path.of("config/fastback").relativize(targetFilePath);
+            try {
+                writeResourceToFile(resourcePath, configDir.resolve(configPath));
+            } catch (IOException e) {
+                ctx.getLogger().internalError("failed to output resource "+resourcePath, e);
+            }
         }
     }
 }
