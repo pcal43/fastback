@@ -21,6 +21,7 @@ package net.pcal.fastback.fabric;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.MessageScreen;
 import net.minecraft.client.gui.screen.Screen;
@@ -76,7 +77,7 @@ public class FabricClientModInitializer implements ClientModInitializer {
 
         @Override
         public Path getClientRestoreDir() {
-            return null;
+            return FabricLoader.getInstance().getGameDir().resolve("saves");
         }
 
         @Override
