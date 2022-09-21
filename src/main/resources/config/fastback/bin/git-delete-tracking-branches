@@ -1,0 +1,10 @@
+#!/bin/bash
+
+#
+# USE WITH CAUTION.
+#
+# Deletes all remote tracking branches from the current repo.  If you hose yourself with this,
+# you can probably recover by simply doing a 'git fetch', assuming your fetchspec still lists
+# all of the stuff you care about.
+#
+git branch -r | xargs -L 1 git branch -rD
