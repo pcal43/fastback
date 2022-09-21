@@ -46,8 +46,7 @@ time you back up, only changed files will be backed up.  See question above abou
 
 You can do a remote backup to any git server, including github.
 
-But because github has certain [size restrictions]
-(https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github),
+But because github has certain [size restrictions](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github),
 we'd only recommend using it for smaller worlds (under 500MB).
 
 ## I thought git was bad for backups?
