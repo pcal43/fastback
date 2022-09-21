@@ -86,9 +86,6 @@ public class GcCommand {
                     //
                     final File gitDir = git.getRepository().getDirectory();
                     log.notify(translatable("fastback.notify.gc-size-before", getDirDisplaySize(gitDir)));
-                    log.notify(translatable("fastback.notify.gc-size-after", getDirDisplaySize(gitDir)));
-
-                    log.notify(Text.literal("Backup size before gc: " + getDirDisplaySize(gitDir)));
                     if (ctx.isReflogDeletionEnabled()) {
                         final Path reflogsDir = gitDir.toPath().resolve("logs");
                         log.info("Deleting reflogs " + reflogsDir);

@@ -116,7 +116,7 @@ public class ModContext {
     // TODO make these configurable via properties
 
     public boolean isExperimentalCommandsEnabled() {
-        return true;
+        return false;
     }
 
     public boolean isStartupNotificationEnabled() {
