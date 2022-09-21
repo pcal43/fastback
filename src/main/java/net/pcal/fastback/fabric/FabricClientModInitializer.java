@@ -29,6 +29,7 @@ import net.pcal.fastback.LifecycleUtils;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.fabric.mixins.ScreenAccessors;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
 public class FabricClientModInitializer implements ClientModInitializer {
@@ -53,7 +54,11 @@ public class FabricClientModInitializer implements ClientModInitializer {
                     LifecycleUtils.onWorldStart(modContext, minecraftServer);
                 }
         );
-        LifecycleUtils.onClientStart(modContext);
+        try {
+            LifecycleUtils.onClientStart(modContext);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static class FabricClientProviderImpl implements FabricClientProvider {

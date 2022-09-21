@@ -1,0 +1,52 @@
+#!/bin/bash
+
+#
+# FastBack - Fast, incremental Minecraft backups powered by Git.
+# Copyright (C) 2022 pcal.net
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; If not, see <http://www.gnu.org/licenses/>.
+#
+
+#
+# USE WITH CAUTION.  DO NOT USE WHILE YOUR WORLD IS RUNNING.
+# IF YOU DON"T UNDERSTAND WHAT THIS DOES, YOU PROBABLY SHOULDN'T
+# USE IT.
+#
+# Attempts to reclaim space by removing any extraneous objects that may be
+# referencing purged snapshot commits.
+#
+
+ROOT=$(git rev-parse --show-toplevel)
+
+if [ ! -f "$ROOT/fastback/world.uuid" ]; then
+    echo 'This command should only be run in a minecraft world that has been backed up with fastback.'
+    exit 1
+fi
+
+echo 'Size before:'
+du -sh "$ROOT/.git"
+echo
+
+# delete all tracking branches
+git branch -r | xargs -L 1 git branch -rD
+
+# expire all reflogs
+git reflog expire --expire=all --all
+
+# gc, pruning all unreferenced loose objects
+git gc --prune=now
+
+echo
+echo 'Size after:'
+du -sh "$ROOT/.git"

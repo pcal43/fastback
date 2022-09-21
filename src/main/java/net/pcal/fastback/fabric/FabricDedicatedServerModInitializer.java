@@ -23,6 +23,8 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.pcal.fastback.LifecycleUtils;
 import net.pcal.fastback.ModContext;
 
+import java.io.IOException;
+
 public class FabricDedicatedServerModInitializer implements DedicatedServerModInitializer {
 
     private final ModContext modContext = ModContext.create(FabricServiceProvider.forServer());
@@ -39,6 +41,10 @@ public class FabricDedicatedServerModInitializer implements DedicatedServerModIn
                     LifecycleUtils.onWorldStart(modContext, minecraftServer);
                 }
         );
-        LifecycleUtils.onServerStart(modContext);
+        try {
+            LifecycleUtils.onServerStart(modContext);
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
