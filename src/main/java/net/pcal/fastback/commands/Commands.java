@@ -61,7 +61,6 @@ public class Commands {
         ListCommand.register(argb, ctx);
         RemoteCommand.register(argb, ctx);
         FileRemoteCommand.register(argb, ctx);
-        ShutdownCommand.register(argb, ctx);
         UuidCommand.register(argb, ctx);
         VersionCommand.register(argb, ctx);
         HelpCommand.register(argb, ctx);
