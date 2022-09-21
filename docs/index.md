@@ -35,12 +35,9 @@ of disk space.
 * Forge support (maybe)
 
 
-## Current Limitations
+## Limitations
 
-FastBack is currently an alpha release.  It has missing features and limitations, including:
-* Garbage collection does not happen correctly when pruning old snapshots.
-* For more, see [Issues](https://github.com/pcal43/fastback/issues)
-
+FastBack is currently an alpha release.  It has missing features and limitations.  For more information, see [Issues](https://github.com/pcal43/fastback/issues)
 
 
 ## Legal

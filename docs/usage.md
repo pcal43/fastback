@@ -66,7 +66,7 @@ To look at the restored snapshot, quit the current world and open the restored s
 If you care about your world, you really should keep a backup of it on a *different* computer.  FastBack makes
 that easy.
 
-If you have a git server already running (GitHub, for example), then all you need to do is
+If you have a git server already running (GitHub, for example), all you need to do is
 * create a repository on the server to store your world's backups
 * get the URL to the repository (e.g., `ssh://192.168.0.99/mygitserver/myworld`)
 
@@ -77,15 +77,15 @@ Then, with your world running in Minecraft, type
 
 ## Configuring remote backups without a git server
 
-But if you don't have a git server, no problem.  You can also do remote backups to any network drive on 
+If you don't have a git server, no problem.  You can also do remote backups to any network drive on 
 your computer.  Just type something like
 
 ```
 /backup file-remote /path/to/network/volume/minecraft-backups/myworld
 ```
 
-You can configure this for any valid path on your file system (but it makes the most sense to do your
-backups to another machine on your network).
+You can configure this to be any valid path on your file system.  But it makes the most sense to do your
+backups to another machine on your network.
 
-Note that you can only have one remote backup configured at a time.
+Note that you can only have one remote configured at a time.
 
