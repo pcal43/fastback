@@ -21,22 +21,29 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.Text;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.IncrementalProgressMonitor;
 import net.pcal.fastback.logging.LoggingProgressMonitor;
+import net.pcal.fastback.utils.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.internal.storage.file.FileRepository;
+import org.eclipse.jgit.internal.storage.file.GC;
 import org.eclipse.jgit.lib.ProgressMonitor;
+import org.eclipse.jgit.storage.pack.PackConfig;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.Date;
+import java.nio.file.Path;
+import java.text.ParseException;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.minecraft.text.Text.translatable;
-import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.executeStandard;
-import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.commands.Commands.*;
+import static net.pcal.fastback.utils.FileUtils.getDirDisplaySize;
+
 
 //
 // We basically want to
@@ -73,12 +80,31 @@ public class GcCommand {
                     log.notify(translatable("fastback.notify.gc-start"));
                     log.info("Stats before gc:");
                     log.info("" + git.gc().getStatistics());
-                    git.gc().setExpire(new Date()).setAggressive(false).setProgressMonitor(pm).call();
+                    //
+                    // reflogs aren't very useful in our case and cause old snapshots to get retained
+                    // longer than people expect.
+                    //
+                    final File gitDir = git.getRepository().getDirectory();
+                    log.notify(translatable("fastback.notify.gc-size-before", getDirDisplaySize(gitDir)));
+                    if (ctx.isReflogDeletionEnabled()) {
+                        final Path reflogsDir = gitDir.toPath().resolve("logs");
+                        log.info("Deleting reflogs " + reflogsDir);
+                        FileUtils.rmdir(reflogsDir);
+                    }
+                    final GC gc = new GC(((FileRepository) git.getRepository()));
+                    gc.setExpireAgeMillis(0);
+                    gc.setPackExpireAgeMillis(0);
+                    gc.setAuto(false);
+                    PackConfig pc = new PackConfig();
+                    pc.setCompressionLevel(0);
+                    pc.setDeltaCompress(false);
+                    gc.setPackConfig(pc);
+                    gc.gc();
                     log.notify(translatable("fastback.notify.gc-done"));
                     log.info("Stats after gc:");
                     log.info("" + git.gc().getStatistics());
-
-                } catch (IOException | GitAPIException e) {
+                    log.notify(Text.literal("Backup size after after gc: " + getDirDisplaySize(gitDir)));
+                } catch (IOException | GitAPIException | ParseException e) {
                     log.internalError("Failed to gc", e);
                 }
             });

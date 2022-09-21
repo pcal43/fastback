@@ -26,6 +26,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
+
 public class FileUtils {
 
     public static void mkdirs(final Path path) throws IOException {
@@ -44,6 +46,11 @@ public class FileUtils {
 
     public static void rmdir(final Path path) throws IOException {
         org.apache.commons.io.FileUtils.deleteDirectory(path.toFile());
+    }
+
+    public static String getDirDisplaySize(File dir) {
+        final long gitDirSize = org.apache.commons.io.FileUtils.sizeOfDirectory(dir);
+        return org.apache.commons.io.FileUtils.byteCountToDisplaySize(gitDirSize);
     }
 
     public static void writeResourceToFile(String resourcePath, Path targetFile) throws IOException {

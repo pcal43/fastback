@@ -54,10 +54,11 @@ public class Commands {
                 requires(Permissions.require(BACKUP_COMMAND_PERM, ctx.getDefaultPermLevel()));
         EnableCommand.register(argb, ctx);
         DisableCommand.register(argb, ctx);
+        NowCommand.register(argb, ctx);
         StatusCommand.register(argb, ctx);
         RestoreCommand.register(argb, ctx);
         PurgeCommand.register(argb, ctx);
-        NowCommand.register(argb, ctx);
+        GcCommand.register(argb, ctx);
         ListCommand.register(argb, ctx);
         RemoteCommand.register(argb, ctx);
         FileRemoteCommand.register(argb, ctx);
@@ -66,7 +67,6 @@ public class Commands {
         HelpCommand.register(argb, ctx);
         if (ctx.isExperimentalCommandsEnabled()) {
             SaveCommand.register(argb, ctx);
-            GcCommand.register(argb, ctx);
             GcInfoCommand.register(argb, ctx);
         }
         CommandRegistrationCallback.EVENT.register((dispatcher, regAccess, env) -> dispatcher.register(argb));
@@ -87,8 +87,13 @@ public class Commands {
         return Permissions.require(subcommandPermName(subcommandName), ctx.getDefaultPermLevel());
     }
 
-    interface CommandLogic {
+    interface CommandLogic { //TODO KILL.  DUMBASS
         int execute(StoredConfig gitConfig, WorldConfig worldConfig, Logger logger)
+                throws IOException, GitAPIException, ParseException;
+    }
+
+    interface CommandLogicNew {
+        int execute(Git git, WorldConfig worldConfig, Logger logger)
                 throws IOException, GitAPIException, ParseException;
     }
 
@@ -113,4 +118,30 @@ public class Commands {
             return FAILURE;
         }
     }
+
+    static int executeStandardNew(final ModContext ctx, final CommandContext<ServerCommandSource> cc, CommandLogicNew sub) {
+        final MinecraftServer server = cc.getSource().getServer();
+        final Logger logger = commandLogger(ctx, cc);
+        final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
+        if (!isGitRepo(worldSaveDir)) {
+            logger.notifyError(Text.translatable("fastback.notify.not-enabled"));
+            return FAILURE;
+        }
+        try (final Git git = Git.open(worldSaveDir.toFile())) {
+            final StoredConfig gitConfig = git.getRepository().getConfig();
+            final WorldConfig worldConfig = WorldConfig.load(worldSaveDir, gitConfig);
+            if (!worldConfig.isBackupEnabled()) {
+                logger.notifyError(Text.translatable("fastback.notify.not-enabled"));
+                return FAILURE;
+            }
+            return sub.execute(git, worldConfig, logger);
+        } catch (Exception e) {
+            logger.internalError("Command execution failed.", e);
+            return FAILURE;
+        }
+    }
+
+
 }
+
+
