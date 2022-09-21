@@ -1,10 +1,12 @@
 ---
 layout: default
-title: Reference
+title: Commands
 nav_order: 80
 ---
 
-# /backup Subcommand Reference
+# Commands
+
+Type `/backup` followed by one of these subcommands:
 
 Command            | Use
 ------------------ | ---
