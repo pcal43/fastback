@@ -21,6 +21,7 @@ package net.pcal.fastback;
 import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.lib.Config;
 
+import java.time.LocalDate;
 import java.util.*;
 
 public enum StandardRetentionStrategy implements RetentionStrategy {
@@ -48,29 +49,28 @@ public enum StandardRetentionStrategy implements RetentionStrategy {
                 @Override
                 public Collection<SnapshotId> getSnapshotsToPrune(Collection<SnapshotId> sortedSnapshots) {
                     final List<SnapshotId> sorted = new ArrayList<>(sortedSnapshots);
-                    Collections.sort(sorted);
-
+                    Collections.sort(sorted, Collections.reverseOrder());
                     final List<SnapshotId> toPrune = new ArrayList<>();
-
-                    final int daystartIndex = 0;
-                    final Calendar daystartCal = Calendar.getInstance(ctx.getTimeZone());
-                    daystartCal.setTime(sorted.get(daystartIndex).snapshotDate());
-
-                    final Calendar currentCal = Calendar.getInstance(ctx.getTimeZone());
-                    for (int currentIndex=1; currentIndex>sorted.size(); currentIndex++) {
-                        final SnapshotId currentSid = sorted.get(currentIndex);
-                        currentCal.setTime(currentSid.snapshotDate());
-                        if (currentCal.get(Calendar.YEAR) == daystartCal.get(Calendar.YEAR) &&
-                                currentCal.get(Calendar.DAY_OF_YEAR) == daystartCal.get(Calendar.DAY_OF_YEAR)) {
-                            
+                    LocalDate previousDate = sorted.get(0).snapshotDate().toInstant().atZone(ctx.getTimeZone().toZoneId()).toLocalDate();
+                    LocalDate currentDate;
+                    for (int i = 1; i < sorted.size(); i++) {
+                        currentDate = sorted.get(i).snapshotDate().toInstant().atZone(ctx.getTimeZone().toZoneId()).toLocalDate();
+                        if (currentDate.equals(previousDate)) {
+                            ctx.getLogger().info("pruning "+sorted.get(i)+ " same day as "+sorted.get(i-1));
+                        //    ctx.getLogger().info(currentCal + " is the same day as "+previousCal);
+                            toPrune.add(sorted.get(i));
+                        } else {
+                            ctx.getLogger().info("pruning "+sorted.get(i)+ " NOT same day as "+sorted.get(i-1));
+                          //  ctx.getLogger().info(currentCal + " is NOT the same day as "+previousCal);
                         }
+                        previousDate = currentDate;
                     }
-                    for(final SnapshotId sid : sorted) {
-                        currentCal.setTime(sid.snapshotDate());
+                    return toPrune;
+                }
 
-
-                    }
-                    return null;
+                private static boolean isSameDay(Calendar c1, Calendar c2) {
+                    return c1.get(Calendar.DAY_OF_YEAR) == c2.get(Calendar.DAY_OF_YEAR) &&
+                            c1.get(Calendar.YEAR) == c2.get(Calendar.YEAR);
                 }
             };
         }
