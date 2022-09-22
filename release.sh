@@ -58,6 +58,11 @@ gh release create --generate-notes --title "${RELEASE_VERSION}" --notes "release
 ./gradlew modrinth
 
 #
+# Do curseforge release
+#
+./gradlew curseforge
+
+#
 # Bump version number and prepare for next release
 #
 BUILD_METADATA=$(echo ${RELEASE_VERSION} | awk '{split($NF,v,/[+]/); $NF=v[2]}1')
