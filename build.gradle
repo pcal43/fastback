@@ -1,8 +1,14 @@
+import com.matthewprenger.cursegradle.CurseExtension
+
 plugins {
 	id 'fabric-loom' version '0.12-SNAPSHOT'
 	id 'maven-publish'
 	id "com.modrinth.minotaur" version "2.+"
+	id "com.matthewprenger.cursegradle" version "1.4.0"
+
 }
+
+apply plugin: 'com.matthewprenger.cursegradle'
 
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
@@ -99,10 +105,39 @@ modrinth {
 	versionNumber = project.mod_version
 	versionType = "alpha"
 	uploadFile = remapJar
-	changelog = "https://github.com/pcal43/fastback/releases/tag/${project.mod_version}"
+	changelog = "<p><a href='https://github.com/pcal43/fastback/releases/tag/${project.mod_version}'>https://github.com/pcal43/fastback/releases/tag/${project.mod_version}</a></p>"
 	gameVersions = ["1.19.2"]
 	loaders = ["fabric"]
 	dependencies {
 		required.project "fabric-api"
+	}
+}
+
+
+ curseforge {
+	apiKey = System.getenv("CURSEFORGE_TOKEN") ?: 'CURSEFORGE_TOKEN NOT_SET'
+
+	project {
+		id = "667417"
+		releaseType = "release"
+		changelog = "https://github.com/pcal43/fastback/releases/tag/${project.mod_version}"
+		changelogType = "markdown"
+		mod_version = project.mod_version
+		releaseType = "beta"
+		addGameVersion ((String) project.minecraft_version)
+		addGameVersion "Fabric"
+		mainArtifact(remapJar)
+
+		afterEvaluate {
+			uploadTask.dependsOn("remapJar")
+		}
+	}
+
+	options {
+		forgeGradleIntegration = false
+	}
+
+	remapJar {
+		finalizedBy project.tasks.curseforge
 	}
 }
