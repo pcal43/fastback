@@ -13,7 +13,7 @@ it only saves the parts of your world that changed.
 This means backups are fast.  It also means you can keep snapshots of your world without using up a lot
 of disk space.
 
-## Current Features
+## Features
 
 * Incrementally backup just the changed files
 * Faster, smaller backups than zipping
@@ -34,20 +34,24 @@ of disk space.
 * Automatic snapshot purging strategies
 * Forge support (maybe)
 
-
 ## Limitations
 
 FastBack is currently an alpha release.  It has missing features and limitations.  For more information, see [Issues](https://github.com/pcal43/fastback/issues)
+
+## Credits
+
+Fastback's Russian localization provided by [Felix14-v2](https://github.com/Felix14-v2). (Thanks!) 
+
+FastBack includes several other software components.  Many thanks to the committers on these 
+projects, whose work made FastBack possible:
+* [JGit](https://www.eclipse.org/jgit/) from The Eclipse Software Foundation
+* [sshd](https://mina.apache.org/sshd-project/) from The Apache Software Foundation
+* [JavaEWAH](https://github.com/lemire/javaewah) from Daniel Lemire, et al.
+* [fabric-permissions-api](https://github.com/lucko/fabric-permissions-api) from lucko
 
 
 ## Legal
  
 FastBack is distributed under [GNU Public License version 2](https://github.com/pcal43/fastback/blob/main/LICENSE). 
 
-FastBack includes the following software components: 
-* [JGit](https://www.eclipse.org/jgit/) from The Eclipse Software Foundation
-* [sshd](https://mina.apache.org/sshd-project/) from The Apache Software Foundation
-* [JavaEWAH](https://github.com/lemire/javaewah) from Daniel Lemire, et al.
-* [fabric-permissions-api](https://github.com/lucko/fabric-permissions-api) from lucko
-
-Many thanks to the committers on those projects, whose work made FastBack possible.
+You can put it in a modpack but please include attribution with a link to this page.

@@ -54,11 +54,12 @@ we'd only recommend using it for smaller worlds (under 500MB).
 Git is a popular source code management tool used by software developers.  And it's *really* good at storing text
 files, such as program source code. 
 
-But it's much less-good when it comes to storing binary files, such as images or (say) minecraft region files.  And 
-software developers can run into a lot of problems if they carelessly mix binary files with their source code in git.
+But when it comes to binary files - images or, say, minecraft region files - git's text file magic doesn't work.
+And software developers can run into a lot of problems if they carelessly mix binary files with source code in a 
+git repo.
 
 For this reason, most people think that "git is bad for binary files."  But with careful handling, git can actually 
 be used to store just about anything.
 
-*Technical detail: FastBack tries to minimize compression and repacking in the git repo.  It also stores each backup
-snapshot in an orphan branch so that unused blobs can be garbage collected when snapshots are pruned.*
+Technical detail: FastBack disables delta compression, stores each backup snapshot in an orphan branch and 
+aggressively prunes reflogs and tracking branches.*
