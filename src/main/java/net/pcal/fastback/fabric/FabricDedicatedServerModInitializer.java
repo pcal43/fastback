@@ -41,10 +41,6 @@ public class FabricDedicatedServerModInitializer implements DedicatedServerModIn
                     LifecycleUtils.onWorldStart(modContext, minecraftServer);
                 }
         );
-        try {
-            LifecycleUtils.onServerStart(modContext);
-        } catch (final IOException e) {
-            throw new RuntimeException(e);
-        }
+        LifecycleUtils.onServerStart(modContext);
     }
 }
