@@ -1,13 +1,13 @@
+import com.matthewprenger.cursegradle.CurseExtension
+
 plugins {
 	id 'fabric-loom' version '0.12-SNAPSHOT'
 	id 'maven-publish'
 	id "com.modrinth.minotaur" version "2.+"
-//	id 'net.minecraftforge.gradle.forge' version '2.0.2'
 	id "com.matthewprenger.cursegradle" version "1.4.0"
 
 }
 
-//apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'com.matthewprenger.cursegradle'
 
 sourceCompatibility = JavaVersion.VERSION_17
@@ -25,7 +25,6 @@ repositories {
 	// for more information about repositories.
 	maven { url 'https://maven.nucleoid.xyz' }
 	maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
-	maven { url "https://cursemaven.com" }
 }
 
 
@@ -115,7 +114,7 @@ modrinth {
 }
 
 
-curseforge {
+ curseforge {
 	apiKey = System.getenv("CURSEFORGE_TOKEN") ?: 'CURSEFORGE_TOKEN NOT_SET'
 
 	project {
@@ -141,7 +140,4 @@ curseforge {
 	remapJar {
 		finalizedBy project.tasks.curseforge
 	}
-
-
-
 }
