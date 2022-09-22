@@ -42,6 +42,7 @@ public record WorldConfig(
         boolean isBackupEnabled,
         boolean isShutdownBackupEnabled,
         boolean isRemoteBackupEnabled,
+        String retentionPolicy,
         String getRemotePushUrl) {
 
     public static final Path WORLD_UUID_PATH = Path.of("fastback/world.uuid");
@@ -50,6 +51,7 @@ public record WorldConfig(
     private static final String CONFIG_BACKUP_ENABLED = "backup-enabled";
     private static final String CONFIG_SHUTDOWN_BACKUP_ENABLED = "shutdown-backup-enabled";
     private static final String CONFIG_REMOTE_BACKUP_ENABLED = "remote-backup-enabled";
+    private static final String CONFIG_RETENTION_POLICY = "retention-policy";
 
     private static final Iterable<Pair<String, Path>> WORLD_RESOURCES = List.of(
             Pair.of("world/dot-gitignore", Path.of(".gitignore")),
@@ -69,6 +71,7 @@ public record WorldConfig(
                 gitConfig.getBoolean(CONFIG_SECTION, null, CONFIG_BACKUP_ENABLED, false),
                 gitConfig.getBoolean(CONFIG_SECTION, null, CONFIG_SHUTDOWN_BACKUP_ENABLED, false),
                 gitConfig.getBoolean(CONFIG_SECTION, null, CONFIG_REMOTE_BACKUP_ENABLED, false),
+                gitConfig.getString(CONFIG_SECTION, null, CONFIG_RETENTION_POLICY),
                 gitConfig.getString("remote", REMOTE_NAME, "url")
         );
     }
@@ -120,6 +123,10 @@ public record WorldConfig(
 
     public static void setRemoteBackupEnabled(Config gitConfig, boolean value) {
         gitConfig.setBoolean(CONFIG_SECTION, null, CONFIG_REMOTE_BACKUP_ENABLED, value);
+    }
+
+    public static void setRetentionPolicy(Config gitConfig, String value) {
+        gitConfig.setString(CONFIG_SECTION, null, CONFIG_RETENTION_POLICY, value);
     }
 
     public static String getWorldUuid(Path worldSaveDir) throws IOException {

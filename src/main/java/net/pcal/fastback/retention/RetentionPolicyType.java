@@ -16,25 +16,20 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback;
+package net.pcal.fastback.retention;
 
-import net.pcal.fastback.utils.SnapshotId;
-import org.eclipse.jgit.lib.Config;
+import net.pcal.fastback.ModContext;
 
-import java.util.Collection;
+import java.util.Properties;
 import java.util.Set;
 
-public interface RetentionStrategy {
+public interface RetentionPolicyType {
 
-    String getConfigName();
+    String getConfigKey();
 
     Set<String> getConfigParams();
 
-    String getNameKey();
+    String getCommandKey();
 
-    Pruner createPruner(ModContext ctx, Config gitConfig);
-
-    public interface Pruner {
-        Collection<SnapshotId> getSnapshotsToPrune(Collection<SnapshotId> fromSnapshots);
-    }
+    RetentionPolicy createPolicy(ModContext ctx, Properties gitConfig);
 }
