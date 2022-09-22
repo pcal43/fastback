@@ -9,6 +9,9 @@ jar:
 	./gradlew remapJar
 	ls -1 build/libs
 
+test:
+	./gradlew test
+
 
 .PHONY: release
 release:
