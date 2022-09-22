@@ -7,13 +7,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
-public class RetentionStrategyTests {
+public class DatilyRetentionPolicyTest {
 
     @Test
     public void testDailyStrat() throws ParseException {
@@ -26,11 +22,9 @@ public class RetentionStrategyTests {
         final SnapshotId TOMORROW = SnapshotId.fromUuidAndName(uuid, "2022-09-04_01-01-01");
         Collection<SnapshotId> snapshots = Set.of(LAST_YEAR, YESTERDAY, TODAY1, TODAY2, TODAY3, TOMORROW);
         ModContext ctx = MockModContext.create();
-        RetentionPolicy policy = DailyRetentionPolicyType.INSTANCE.createPolicy(ctx, new Properties());
+        RetentionPolicy policy = DailyRetentionPolicyType.INSTANCE.createPolicy(ctx, Collections.emptyMap());
         Collection<SnapshotId> toPrune = policy.getSnapshotsToPrune(snapshots);
         Assertions.assertEquals(2, toPrune.size());
         Assertions.assertEquals(List.of(TODAY2, TODAY1), toPrune);
     }
-
-
 }

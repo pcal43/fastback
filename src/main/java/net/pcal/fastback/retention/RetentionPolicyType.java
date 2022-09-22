@@ -20,16 +20,21 @@ package net.pcal.fastback.retention;
 
 import net.pcal.fastback.ModContext;
 
-import java.util.Properties;
-import java.util.Set;
+import java.util.List;
+import java.util.Map;
 
 public interface RetentionPolicyType {
 
-    String getConfigKey();
+    record Parameter(String name, Class<?> type) {}
 
-    Set<String> getConfigParams();
+    String getName();
 
-    String getCommandKey();
+    List<Parameter> getParameters();
 
-    RetentionPolicy createPolicy(ModContext ctx, Properties gitConfig);
+    RetentionPolicy createPolicy(ModContext ctx, Map<String, String> config);
+
+    default String getEncodedName() { return getName(); }
+
+    default String getCommandName()  { return getName(); }
+
 }

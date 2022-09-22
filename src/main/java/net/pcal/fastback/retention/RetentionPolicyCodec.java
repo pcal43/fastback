@@ -18,47 +18,100 @@
 
 package net.pcal.fastback.retention;
 
-import com.google.common.collect.ImmutableList;
 import net.pcal.fastback.ModContext;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
+import static java.util.Objects.requireNonNull;
+
+/**
+ * Singleton which can encode a policy identifier and a small set of simple configuration values into a single-line
+ * string that can easily be saved in git config.
+ *
+ * @author pcal
+ * @since 0.1.5
+ */
 public enum RetentionPolicyCodec {
 
     INSTANCE;
 
-    private final List<RetentionPolicyType> POLICY_TYPES = ImmutableList.of(
-            DailyRetentionPolicyType.INSTANCE
-    );
-
-    private final Map<String, RetentionPolicyType> key2enum;
-
-    RetentionPolicyCodec() {
-        key2enum = new HashMap<>();
-        for(DailyRetentionPolicyType type : DailyRetentionPolicyType.values()) {
-            key2enum.put(type.getConfigKey(), type);
+    public RetentionPolicy decodePolicy(final ModContext ctx,
+                                        final List<RetentionPolicyType> availablePolicyTypes,
+                                        final String encodedPolicy) {
+        requireNonNull(ctx);
+        requireNonNull(availablePolicyTypes);
+        requireNonNull(encodedPolicy);
+        int firstSpace = encodedPolicy.indexOf(' ');
+        final Map<String, String> config;
+        final String encodedTypeName;
+        if (firstSpace == -1) {
+            config = null;
+            encodedTypeName = encodedPolicy.trim();
+        } else {
+            encodedTypeName = encodedPolicy.substring(0, firstSpace).trim();
+            config = decodeMap(ctx, encodedPolicy.substring(firstSpace));
         }
-    }
-
-    public List<RetentionPolicyType> getPolicyTypes() {
-        return POLICY_TYPES;
-    }
-
-    public RetentionPolicy decodePolicy(final ModContext ctx, final String encodedPolicy) {
-        final String typeConfigKey = encodedPolicy.trim(); //FIXME
-        final RetentionPolicyType type = this.key2enum.get(typeConfigKey);
-        if (type == null) {
-            ctx.getLogger().warn("Invalid retention policy configuration: " + typeConfigKey);
+        for(final RetentionPolicyType rtp : availablePolicyTypes) {
+            if (rtp.getEncodedName().equals(encodedTypeName)) {
+                return rtp.createPolicy(ctx, config);
+            }
         }
-        final Properties decodedProperties = new Properties(); //TODO
-        return type.createPolicy(ctx, decodedProperties);
+        ctx.getLogger().internalError("Invalid retention policy "+encodedPolicy, new Exception());
+        return null;
     }
 
-    public String encodePolicy(final ModContext ctx, RetentionPolicy policy) {
-        final Properties decodedProperties = policy.getProperties(); //TODO
-        return policy.getType().getConfigKey();
+    public String encodePolicy(final ModContext ctx,
+                               final RetentionPolicyType policyType,
+                               final Map<String, String> config) {
+        return policyType.getEncodedName() + " " + encodeMap(ctx, config);
+    }
+
+    // ====================================================================
+    // Package-private methods
+
+    static final String encodeMap(ModContext ctx, Map<String, String> map) {
+        final StringBuilder out = new StringBuilder();
+        List<String> keys = new ArrayList<>(map.keySet());
+        Collections.sort(keys);
+        boolean isFirst = true;
+        for (final String key : keys) {
+            if (!isValidForEncode(key)) {
+                ctx.getLogger().internalError("Ignoring invalid key " + key, new Exception());
+                continue;
+            }
+            final String value = map.get(key);
+            if (!isValidForEncode(value)) {
+                ctx.getLogger().internalError("Ignoring invalid value " + value, new Exception());
+                continue;
+            }
+            if (!isFirst) {
+                out.append(' ');
+            } else {
+                isFirst = false;
+            }
+            out.append(key);
+            out.append('=');
+            out.append(value);
+
+        }
+        return out.toString();
+    }
+
+    static final Map<String, String> decodeMap(ModContext ctx, String encodedMap) {
+        final Map<String, String> out = new HashMap<>();
+        final String[] tokens = encodedMap.split(" ");
+        for (final String token : tokens) {
+            final String[] keyVal = token.split("=");
+            if (keyVal.length != 2) {
+                ctx.getLogger().internalError("Ignoring invalid token " + Arrays.toString(keyVal), new Exception());
+                continue;
+            }
+            out.put(keyVal[0].trim(), keyVal[1].trim());
+        }
+        return out;
+    }
+
+    private static boolean isValidForEncode(String keyOrVal) {
+        return !(keyOrVal.contains("=") || keyOrVal.contains(" "));
     }
 }

@@ -21,15 +21,9 @@ package net.pcal.fastback.retention;
 import net.pcal.fastback.utils.SnapshotId;
 
 import java.util.Collection;
-import java.util.Properties;
 
 
 interface RetentionPolicy {
 
     Collection<SnapshotId> getSnapshotsToPrune(final Collection<SnapshotId> fromSnapshots);
-
-    Properties getProperties();
-
-    RetentionPolicyType getType();
-
 }

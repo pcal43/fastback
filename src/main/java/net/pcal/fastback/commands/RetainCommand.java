@@ -50,15 +50,15 @@ public class RetainCommand {
         LiteralArgumentBuilder<ServerCommandSource> retain = literal(COMMAND_NAME).
                 requires(subcommandPermission(ctx, COMMAND_NAME)).
                 executes(c::showRetain);
-        for (final RetentionPolicyType rpt : RetentionPolicyCodec.INSTANCE.getPolicyTypes()) {
-            retain = retain.then(literal(rpt.getCommandKey()).executes(cc-> {
+        for (final RetentionPolicyType rpt : ctx.getAvailableRetentionPolicyTypes()) {
+            retain = retain.then(literal(rpt.getCommandName()).executes(cc-> {
                 final MinecraftServer server = cc.getSource().getServer();
                 final Logger logger = commandLogger(ctx, cc);
                 final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
                 logger.notify(Text.literal("ok"));
                 try (final Git git = Git.open(worldSaveDir.toFile())) {
                     final StoredConfig gitConfig = git.getRepository().getConfig();
-                    WorldConfig.setRetentionPolicy(gitConfig, rpt.getConfigKey());
+                    WorldConfig.setRetentionPolicy(gitConfig, rpt.getEncodedName());
                     gitConfig.save();
                 } catch (Exception e) {
                     logger.internalError("Command execution failed.", e);
