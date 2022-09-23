@@ -57,6 +57,7 @@ public class Commands {
         NowCommand.register(argb, ctx);
         StatusCommand.register(argb, ctx);
         RestoreCommand.register(argb, ctx);
+        PruneCommand.register(argb, ctx);
         PurgeCommand.register(argb, ctx);
         GcCommand.register(argb, ctx);
         ListCommand.register(argb, ctx);

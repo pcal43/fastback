@@ -58,7 +58,7 @@ public enum DailyRetentionPolicyType implements RetentionPolicyType {
             @Override
             public Collection<SnapshotId> getSnapshotsToPrune(Collection<SnapshotId> snapshots) {
                 int gracePeriodDays = DEFAULT_GRACE_PERIOD_DAYS;
-                if (config.containsKey(GRACE_PERIOD_DAYS)) {
+                if (config != null && config.containsKey(GRACE_PERIOD_DAYS)) {
                     try {
                         gracePeriodDays = Integer.parseInt(config.get(GRACE_PERIOD_DAYS));
                     } catch(NumberFormatException nfe) {

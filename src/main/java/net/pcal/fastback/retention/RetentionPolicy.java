@@ -23,7 +23,7 @@ import net.pcal.fastback.utils.SnapshotId;
 import java.util.Collection;
 
 
-interface RetentionPolicy {
+public interface RetentionPolicy {
 
     Collection<SnapshotId> getSnapshotsToPrune(final Collection<SnapshotId> fromSnapshots);
 }

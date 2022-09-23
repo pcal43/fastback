@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
-public class DatilyRetentionPolicyTest {
+public class DailyRetentionPolicyTest {
 
     private static final long HOUR_MILLIS = 1000 * 60 * 60;
     private static final long DAY_MILLIS = HOUR_MILLIS * 24;
@@ -39,14 +39,12 @@ public class DatilyRetentionPolicyTest {
                 new Date(now + now % DAY_MILLIS - (4 * HOUR_MILLIS)));
         final SnapshotId todayMorning = SnapshotId.create(uuid,
                 new Date(todayEvening.snapshotDate().getTime() - (DAY_MILLIS / 2)));
-
         final SnapshotId yesterdayA = SnapshotId.create(uuid,
                 new Date(todayEvening.snapshotDate().getTime() - (DAY_MILLIS) - 30000));
         final SnapshotId yesterdayB = SnapshotId.create(uuid,
                 new Date(todayEvening.snapshotDate().getTime() - (DAY_MILLIS) - 20000));
         final SnapshotId yesterdayC = SnapshotId.create(uuid,
                 new Date(todayEvening.snapshotDate().getTime() - (DAY_MILLIS) - 10000));
-
         final SnapshotId threeDaysAgoA = SnapshotId.create(uuid,
                 new Date(todayEvening.snapshotDate().getTime() - (3 * DAY_MILLIS) - 30000));
         final SnapshotId threeDaysAgoB = SnapshotId.create(uuid,
