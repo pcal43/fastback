@@ -20,11 +20,9 @@ package net.pcal.fastback;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
 import net.pcal.fastback.logging.Log4jLogger;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.Message;
-import net.pcal.fastback.retention.RetentionPolicyType;
 import org.apache.logging.log4j.LogManager;
 
 import java.io.IOException;
