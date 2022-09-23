@@ -18,16 +18,18 @@
 
 package net.pcal.fastback.retention;
 
+
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.pcal.fastback.ModContext;
+import net.pcal.fastback.logging.Message;
 import net.pcal.fastback.utils.SnapshotId;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.*;
 
-import static java.time.temporal.ChronoUnit.DAYS;
+import static net.pcal.fastback.logging.Message.localized;
+
 
 /**
  * Retention policy that keeps only the most-recent snapshot of each day.  Provides for a grace period
@@ -55,19 +57,27 @@ public enum DailyRetentionPolicyType implements RetentionPolicyType {
 
     @Override
     public RetentionPolicy createPolicy(final ModContext ctx, final Map<String, String> config) {
+        int gracePeriodTemp = DEFAULT_GRACE_PERIOD_DAYS;
+        if (config != null && config.containsKey(GRACE_PERIOD_DAYS)) {
+            try {
+                gracePeriodTemp = Integer.parseInt(config.get(GRACE_PERIOD_DAYS));
+            } catch(NumberFormatException nfe) {
+                ctx.getLogger().internalError("invalid grace period "+config.get(GRACE_PERIOD_DAYS), nfe);
+            }
+        }
+        final int gracePeriod = gracePeriodTemp;
+
         return new RetentionPolicy() {
+
+            @Override
+            public Message getDescription() {
+                return localized("fastback.policy.daily", gracePeriod);
+            }
+
             @Override
             public Collection<SnapshotId> getSnapshotsToPrune(Collection<SnapshotId> snapshots) {
-                int gracePeriodDays = DEFAULT_GRACE_PERIOD_DAYS;
-                if (config != null && config.containsKey(GRACE_PERIOD_DAYS)) {
-                    try {
-                        gracePeriodDays = Integer.parseInt(config.get(GRACE_PERIOD_DAYS));
-                    } catch(NumberFormatException nfe) {
-                        ctx.getLogger().internalError("invalid grace period "+config.get(GRACE_PERIOD_DAYS), nfe);
-                    }
-                }
                 final LocalDate today = LocalDate.now(ctx.getTimeZone().toZoneId());
-                final LocalDate gracePeriodStart = today.minus(Period.ofDays(gracePeriodDays));
+                final LocalDate gracePeriodStart = today.minus(Period.ofDays(gracePeriod));
                 final List<SnapshotId> sorted = new ArrayList<>(snapshots);
                 Collections.sort(sorted, Collections.reverseOrder());
                 final List<SnapshotId> toPrune = new ArrayList<>();

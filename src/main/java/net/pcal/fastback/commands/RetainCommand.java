@@ -49,7 +49,6 @@ public class RetainCommand {
 
     public static void register(LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         final RetainCommand c = new RetainCommand(ctx);
-
         final LiteralArgumentBuilder<ServerCommandSource> retainCommand = literal(COMMAND_NAME).
                 requires(subcommandPermission(ctx, COMMAND_NAME)).executes(c::showRetain);
         for (final RetentionPolicyType rpt : ctx.getAvailableRetentionPolicyTypes()) {
@@ -60,9 +59,7 @@ public class RetainCommand {
                     final MinecraftServer server = cc.getSource().getServer();
                     final Logger logger = commandLogger(ctx, cc);
                     final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
-
                     logger.notify(raw("ok"));
-
                     try (final Git git = Git.open(worldSaveDir.toFile())) {
                         final StoredConfig gitConfig = git.getRepository().getConfig();
                         WorldConfig.setRetentionPolicy(gitConfig, rpt.getEncodedName());
@@ -84,7 +81,6 @@ public class RetainCommand {
         }
         argb.then(retainCommand);
     }
-
 
     private final ModContext ctx;
 

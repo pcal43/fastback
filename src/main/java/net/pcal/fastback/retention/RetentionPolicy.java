@@ -18,12 +18,15 @@
 
 package net.pcal.fastback.retention;
 
+import net.pcal.fastback.logging.Message;
 import net.pcal.fastback.utils.SnapshotId;
 
 import java.util.Collection;
 
 
 public interface RetentionPolicy {
+
+    Message getDescription();
 
     Collection<SnapshotId> getSnapshotsToPrune(final Collection<SnapshotId> fromSnapshots);
 }

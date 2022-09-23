@@ -28,6 +28,7 @@ public interface RetentionPolicyType {
 
     record Parameter(String name, ArgumentType<?> type) {}
 
+
     String getName();
 
     List<Parameter> getParameters();

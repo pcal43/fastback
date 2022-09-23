@@ -23,6 +23,11 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.Log4jLogger;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.Message;
+import net.minecraft.text.Text;
+import net.pcal.fastback.logging.Log4jLogger;
+import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.Message;
+import net.pcal.fastback.retention.RetentionPolicyType;
 import org.apache.logging.log4j.LogManager;
 
 import java.io.IOException;
@@ -78,15 +83,16 @@ public class MockModContext {
         }
 
         @Override
-        public void setClientSavingScreenText(Message text) {
+        public void setClientSavingScreenText(Message message) {
+
         }
 
         @Override
-        public void sendClientChatMessage(Message text) {
+        public void sendClientChatMessage(Message message) {
         }
 
         @Override
-        public Path getClientSavesDir() throws IOException {
+        public Path getClientSavesDir() {
             return null;
         }
 
