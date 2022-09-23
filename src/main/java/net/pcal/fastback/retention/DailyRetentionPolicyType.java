@@ -23,6 +23,7 @@ import net.pcal.fastback.utils.SnapshotId;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.Period;
 import java.util.*;
 
 import static java.time.temporal.ChronoUnit.DAYS;
@@ -65,7 +66,7 @@ public enum DailyRetentionPolicyType implements RetentionPolicyType {
                     }
                 }
                 final LocalDate today = LocalDate.now(ctx.getTimeZone().toZoneId());
-                final LocalDate gracePeriodStart = today.minus(Duration.of(gracePeriodDays, DAYS));
+                final LocalDate gracePeriodStart = today.minus(Period.ofDays(gracePeriodDays));
                 final List<SnapshotId> sorted = new ArrayList<>(snapshots);
                 Collections.sort(sorted, Collections.reverseOrder());
                 final List<SnapshotId> toPrune = new ArrayList<>();
@@ -74,14 +75,14 @@ public enum DailyRetentionPolicyType implements RetentionPolicyType {
                 for (int i = 1; i < sorted.size(); i++) {
                     currentDate = sorted.get(i).snapshotDate().toInstant().atZone(ctx.getTimeZone().toZoneId()).toLocalDate();
                     if (currentDate.isAfter(gracePeriodStart)) {
-                        ctx.getLogger().debug("retaining " +sorted.get(i) + " because still in the grace period");
+                        ctx.getLogger().info("retaining " +sorted.get(i) + " because still in the grace period");
                         continue;
                     }
                     if (currentDate.equals(previousDate)) {
                         ctx.getLogger().info("pruning " + sorted.get(i) + " same day as " + sorted.get(i - 1));
                         toPrune.add(sorted.get(i));
                     } else {
-                        ctx.getLogger().info("pruning " + sorted.get(i) + " NOT same day as " + sorted.get(i - 1));
+                        ctx.getLogger().info("retaining " + sorted.get(i) + " NOT same day as " + sorted.get(i - 1));
                     }
                     previousDate = currentDate;
                 }

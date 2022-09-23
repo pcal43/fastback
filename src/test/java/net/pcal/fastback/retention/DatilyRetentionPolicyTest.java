@@ -24,25 +24,52 @@ import net.pcal.fastback.utils.SnapshotId;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.text.ParseException;
 import java.util.*;
 
 public class DatilyRetentionPolicyTest {
 
+    private static final long HOUR_MILLIS = 1000 * 60 * 60;
+    private static final long DAY_MILLIS = HOUR_MILLIS * 24;
+
     @Test
-    public void testDailyStrat() throws ParseException {
+    public void testDailyRetention() {
         final String uuid = UUID.randomUUID().toString();
-        final SnapshotId LAST_YEAR = SnapshotId.fromUuidAndName(uuid, "2021-09-03_14-35-10");
-        final SnapshotId YESTERDAY = SnapshotId.fromUuidAndName(uuid, "2022-09-02_14-35-10");
-        final SnapshotId TODAY1 = SnapshotId.fromUuidAndName(uuid, "2022-09-03_01-11-15");
-        final SnapshotId TODAY2 = SnapshotId.fromUuidAndName(uuid, "2022-09-03_11-44-19");
-        final SnapshotId TODAY3 = SnapshotId.fromUuidAndName(uuid, "2022-09-03_23-11-11");
-        final SnapshotId TOMORROW = SnapshotId.fromUuidAndName(uuid, "2022-09-04_01-01-01");
-        Collection<SnapshotId> snapshots = Set.of(LAST_YEAR, YESTERDAY, TODAY1, TODAY2, TODAY3, TOMORROW);
+        long now = new Date().getTime();
+        final SnapshotId todayEvening = SnapshotId.create(uuid,
+                new Date(now + now % DAY_MILLIS - (4 * HOUR_MILLIS)));
+        final SnapshotId todayMorning = SnapshotId.create(uuid,
+                new Date(todayEvening.snapshotDate().getTime() - (DAY_MILLIS / 2)));
+
+        final SnapshotId yesterdayA = SnapshotId.create(uuid,
+                new Date(todayEvening.snapshotDate().getTime() - (DAY_MILLIS) - 30000));
+        final SnapshotId yesterdayB = SnapshotId.create(uuid,
+                new Date(todayEvening.snapshotDate().getTime() - (DAY_MILLIS) - 20000));
+        final SnapshotId yesterdayC = SnapshotId.create(uuid,
+                new Date(todayEvening.snapshotDate().getTime() - (DAY_MILLIS) - 10000));
+
+        final SnapshotId threeDaysAgoA = SnapshotId.create(uuid,
+                new Date(todayEvening.snapshotDate().getTime() - (3 * DAY_MILLIS) - 30000));
+        final SnapshotId threeDaysAgoB = SnapshotId.create(uuid,
+                new Date(todayEvening.snapshotDate().getTime() - (3 * DAY_MILLIS) - 20000));
+        final SnapshotId threeDaysAgoC = SnapshotId.create(uuid,
+                new Date(todayEvening.snapshotDate().getTime() - (3 * DAY_MILLIS) - 10000));
+        final SnapshotId lastWeek = SnapshotId.create(uuid,
+                new Date(todayEvening.snapshotDate().getTime() - (7 * DAY_MILLIS)));
+        final SnapshotId lastYearA = SnapshotId.create(uuid,
+                new Date(todayEvening.snapshotDate().getTime() - (373 * DAY_MILLIS) - 30000));
+        final SnapshotId lastYearB = SnapshotId.create(uuid,
+                new Date(todayEvening.snapshotDate().getTime() - (373 * DAY_MILLIS) - 20000));
+        final SnapshotId lastYearC = SnapshotId.create(uuid,
+                new Date(todayEvening.snapshotDate().getTime() - (373 * DAY_MILLIS) - 10000));
+        final int GRACE_PERIOD = 2;
+        Collection<SnapshotId> snapshots = Set.of(todayEvening, todayMorning,
+                yesterdayA, yesterdayB, yesterdayC,
+                threeDaysAgoA, threeDaysAgoB, threeDaysAgoC, lastWeek,
+                lastYearA, lastYearB, lastYearC);
         ModContext ctx = MockModContext.create();
-        RetentionPolicy policy = DailyRetentionPolicyType.INSTANCE.createPolicy(ctx, Collections.emptyMap());
-        Collection<SnapshotId> toPrune = policy.getSnapshotsToPrune(snapshots);
-        Assertions.assertEquals(2, toPrune.size());
-        Assertions.assertEquals(List.of(TODAY2, TODAY1), toPrune);
+        RetentionPolicy policy = DailyRetentionPolicyType.INSTANCE.createPolicy(ctx,
+                Map.of("gracePeriodDays", String.valueOf(GRACE_PERIOD)));
+        Collection<SnapshotId> toPruneList = policy.getSnapshotsToPrune(snapshots);
+        Assertions.assertEquals(List.of(threeDaysAgoB, threeDaysAgoA, lastYearB, lastYearA), toPruneList);
     }
 }
