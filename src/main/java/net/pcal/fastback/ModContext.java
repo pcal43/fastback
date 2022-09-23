@@ -21,6 +21,7 @@ package net.pcal.fastback;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.Message;
 
 import java.io.IOException;
 import java.nio.file.Path;

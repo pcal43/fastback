@@ -16,7 +16,7 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback;
+package net.pcal.fastback.logging;
 
 public record Message(Localized localized, String raw) {
 

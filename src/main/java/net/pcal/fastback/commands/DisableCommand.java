@@ -26,7 +26,7 @@ import net.pcal.fastback.WorldConfig;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.Message.localized;
+import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.commands.Commands.*;
 
 public class DisableCommand {

@@ -19,7 +19,6 @@
 package net.pcal.fastback.logging;
 
 import net.minecraft.text.Text;
-import net.pcal.fastback.Message;
 import net.pcal.fastback.ModContext;
 
 import static java.util.Objects.requireNonNull;

@@ -21,7 +21,6 @@ package net.pcal.fastback.logging;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.Language;
-import net.pcal.fastback.Message;
 
 import java.util.Arrays;
 

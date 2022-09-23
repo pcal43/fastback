@@ -19,7 +19,6 @@
 package net.pcal.fastback.logging;
 
 import net.minecraft.text.Text;
-import net.pcal.fastback.Message;
 
 public interface Logger {
 
