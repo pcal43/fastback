@@ -22,26 +22,21 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.WorldConfig;
-import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;
-import net.pcal.fastback.retention.*;
 import net.pcal.fastback.utils.SnapshotId;
-import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.StoredConfig;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.commands.Commands.*;
-import static net.pcal.fastback.tasks.ListSnapshotsTask.listSnapshotsForWorld;
+import static net.pcal.fastback.commands.Commands.SUCCESS;
+import static net.pcal.fastback.commands.Commands.executeStandardNew;
+import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.logging.Message.raw;
 import static net.pcal.fastback.tasks.ListSnapshotsTask.listSnapshotsForWorldSorted;
 
 public class PruneCommand {
@@ -69,13 +64,13 @@ public class PruneCommand {
                 final String policyConfig = wc.retentionPolicy();
                 if (policyConfig == null) {
                     //FIXME
-                    log.notifyError(Text.literal("no retention policy configured.  please run /backup retention-policy"));
+                    log.notifyError(raw("no retention policy configured.  please run /backup retention-policy"));
                     return;
                 }
                 final RetentionPolicy policy = RetentionPolicyCodec.INSTANCE.decodePolicy
                         (ctx, ctx.getAvailableRetentionPolicyTypes(), policyConfig);
                 if (policy == null) {
-                    log.notifyError(Text.literal("could not retrieve retention policy.  try running /backup retenion-policy"));
+                    log.notifyError(raw("could not retrieve retention policy.  try running /backup retenion-policy"));
                     return;
                 }
                 final MinecraftServer server = cc.getSource().getServer();
@@ -83,7 +78,7 @@ public class PruneCommand {
                 Collection<SnapshotId> toPrune = policy.getSnapshotsToPrune(listSnapshotsForWorldSorted(worldSaveDir, ctx.getLogger()));
                 int pruned = 0;
                 for (final SnapshotId sid : toPrune) {
-                    log.notify(Text.literal("Pruning "+sid.getName()));
+                    log.notify(raw("Pruning "+sid.getName()));
                     try {
                         git.branchDelete().setForce(true).setBranchNames(new String[] { sid.getBranchName()} ).call();
                         pruned++;
@@ -91,9 +86,9 @@ public class PruneCommand {
                         log.internalError("failed to prune branch for "+sid, e);
                     }
                 }
-                log.notify(Text.literal("Pruned "+pruned+" branches."));
+                log.notify(raw("Pruned "+pruned+" branches."));
                 if (pruned > 0) {
-                    log.notify(Text.literal("Run /backup gc to reclaim disk space."));
+                    log.notify(raw("Run /backup gc to reclaim disk space."));
                 }
             });
             return SUCCESS;

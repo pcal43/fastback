@@ -19,6 +19,7 @@
 package net.pcal.fastback;
 
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.pcal.fastback.logging.Log4jLogger;
 import net.pcal.fastback.logging.Logger;
@@ -40,7 +41,7 @@ public class MockModContext {
         private final Log4jLogger logger;
 
         public MockFrameworkSpi() {
-            this.logger = new Log4jLogger(LogManager.getLogger("mocklogger"));
+            this.logger = new Log4jLogger(LogManager.getLogger("mocklogger"), String::valueOf);
         }
 
         @Override
@@ -103,6 +104,16 @@ public class MockModContext {
 
         @Override
         public void setWorldSaveEnabled(boolean enabled) {
+
+        }
+
+        @Override
+        public void sendFeedback(Message message, ServerCommandSource scs) {
+
+        }
+
+        @Override
+        public void sendError(Message message, ServerCommandSource scs) {
 
         }
     }

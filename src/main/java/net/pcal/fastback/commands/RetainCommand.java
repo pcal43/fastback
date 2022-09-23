@@ -44,6 +44,7 @@ import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.executeStandardNew;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.logging.Message.raw;
 
 public class RetainCommand {
 
@@ -62,7 +63,7 @@ public class RetainCommand {
                     final MinecraftServer server = cc.getSource().getServer();
                     final Logger logger = commandLogger(ctx, cc);
                     final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
-                    logger.notify(Text.literal("ok"));
+                    logger.notify(raw("ok"));
                     try (final Git git = Git.open(worldSaveDir.toFile())) {
                         final StoredConfig gitConfig = git.getRepository().getConfig();
                         WorldConfig.setRetentionPolicy(gitConfig, rpt.getEncodedName());
@@ -95,7 +96,7 @@ public class RetainCommand {
     private int showRetain(final CommandContext<ServerCommandSource> cc) {
         return executeStandardNew(this.ctx, cc, (git, wc, log) -> {
             final String retentionPolicy = wc.retentionPolicy();
-            log.notify(Text.literal("retention policy! " + retentionPolicy));
+            log.notify(raw("retention policy! " + retentionPolicy));
             return SUCCESS;
         });
     }
