@@ -18,15 +18,15 @@
 
 package net.pcal.fastback.commands;
 
+import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.retention.RetentionPolicyCodec;
 import net.pcal.fastback.retention.RetentionPolicyType;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.StoredConfig;
@@ -34,12 +34,10 @@ import org.eclipse.jgit.lib.StoredConfig;
 import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
+import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.commands.Commands.FAILURE;
-import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.commandLogger;
-import static net.pcal.fastback.commands.Commands.executeStandardNew;
-import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.commands.Commands.*;
+import static net.pcal.fastback.logging.Message.localized;
 
 public class RetainCommand {
 
@@ -47,29 +45,37 @@ public class RetainCommand {
 
     public static void register(LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         final RetainCommand c = new RetainCommand(ctx);
-        LiteralArgumentBuilder<ServerCommandSource> retain = literal(COMMAND_NAME).
-                requires(subcommandPermission(ctx, COMMAND_NAME)).
-                executes(c::showRetain);
+        final LiteralArgumentBuilder<ServerCommandSource> retainCommand = literal(COMMAND_NAME).
+                requires(subcommandPermission(ctx, COMMAND_NAME)).executes(c::showRetain);
         for (final RetentionPolicyType rpt : ctx.getAvailableRetentionPolicyTypes()) {
-            retain = retain.then(literal(rpt.getCommandName()).executes(cc-> {
-                final MinecraftServer server = cc.getSource().getServer();
-                final Logger logger = commandLogger(ctx, cc);
-                final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
-                logger.notify(Text.literal("ok"));
-                try (final Git git = Git.open(worldSaveDir.toFile())) {
-                    final StoredConfig gitConfig = git.getRepository().getConfig();
-                    WorldConfig.setRetentionPolicy(gitConfig, rpt.getEncodedName());
-                    gitConfig.save();
-                } catch (Exception e) {
-                    logger.internalError("Command execution failed.", e);
-                    return FAILURE;
+            Command<ServerCommandSource> cc = new Command<>() {
+                @Override
+                //https://bugs.mojang.com/browse/MC-165562
+                public int run(CommandContext<ServerCommandSource> cc) throws CommandSyntaxException {
+                    final MinecraftServer server = cc.getSource().getServer();
+                    final Logger logger = commandLogger(ctx, cc);
+                    final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
+                    logger.notify(localized("ok"));
+                    try (final Git git = Git.open(worldSaveDir.toFile())) {
+                        final StoredConfig gitConfig = git.getRepository().getConfig();
+                        WorldConfig.setRetentionPolicy(gitConfig, rpt.getEncodedName());
+                        gitConfig.save();
+                    } catch (Exception e) {
+                        logger.internalError("Command execution failed.", e);
+                        return FAILURE;
+                    }
+                    return SUCCESS;
                 }
-                return SUCCESS;
-            }))
-            ;
-
+            };
+            final LiteralArgumentBuilder<ServerCommandSource> policyCommand = literal(rpt.getCommandName());
+            if (rpt.getParameters() != null) {
+                for(RetentionPolicyType.Parameter param : rpt.getParameters()) {
+                    policyCommand.then(argument(param.name(), param.type()).executes(cc));
+                }
+            }
+            retainCommand.then(policyCommand);
         }
-        argb.then(retain);
+        argb.then(retainCommand);
     }
 
     private final ModContext ctx;
@@ -81,7 +87,7 @@ public class RetainCommand {
     private int showRetain(final CommandContext<ServerCommandSource> cc) {
         return executeStandardNew(this.ctx, cc, (git, wc, log) -> {
             final String retentionPolicy = wc.retentionPolicy();
-            log.notify(Text.literal("retention policy! " + retentionPolicy));
+            log.notify(localized("retention policy! " + retentionPolicy));
             return SUCCESS;
         });
     }

@@ -18,15 +18,18 @@
 
 package net.pcal.fastback.retention;
 
-import net.pcal.fastback.Localized;
+
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.pcal.fastback.ModContext;
+import net.pcal.fastback.logging.Message;
 import net.pcal.fastback.utils.SnapshotId;
 
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.*;
 
-import static net.pcal.fastback.Localized.localized;
+import static net.pcal.fastback.logging.Message.localized;
+
 
 /**
  * Retention policy that keeps only the most-recent snapshot of each day.  Provides for a grace period
@@ -49,7 +52,7 @@ public enum DailyRetentionPolicyType implements RetentionPolicyType {
 
     @Override
     public List<Parameter> getParameters() {
-        return List.of(new Parameter("gracePeriodDays", Integer.class));
+        return List.of(new Parameter(GRACE_PERIOD_DAYS, IntegerArgumentType.integer(0)));
     }
 
     @Override
@@ -67,7 +70,7 @@ public enum DailyRetentionPolicyType implements RetentionPolicyType {
         return new RetentionPolicy() {
 
             @Override
-            public Localized getDescription() {
+            public Message getDescription() {
                 return localized("fastback.policy.daily", gracePeriod);
             }
 

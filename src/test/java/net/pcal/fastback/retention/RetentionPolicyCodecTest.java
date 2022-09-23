@@ -20,6 +20,7 @@ package net.pcal.fastback.retention;
 
 import net.pcal.fastback.MockModContext;
 import net.pcal.fastback.ModContext;
+import net.pcal.fastback.logging.Message;
 import net.pcal.fastback.utils.SnapshotId;
 import org.junit.jupiter.api.Test;
 
@@ -69,6 +70,11 @@ public class RetentionPolicyCodecTest {
 
         public MockRetentionPolicy(Map<String, String> config) {
             this.config = config;
+        }
+
+        @Override
+        public Message getDescription() {
+            return Message.raw("mock policy");
         }
 
         @Override

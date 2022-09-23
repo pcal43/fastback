@@ -21,9 +21,7 @@ package net.pcal.fastback;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.Logger;
-
 import net.pcal.fastback.logging.Message;
-
 import net.pcal.fastback.retention.DailyRetentionPolicyType;
 import net.pcal.fastback.retention.FixedCountRetentionPolicyType;
 import net.pcal.fastback.retention.RetentionPolicyType;

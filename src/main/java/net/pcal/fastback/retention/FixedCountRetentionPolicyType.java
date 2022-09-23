@@ -18,11 +18,12 @@
 
 package net.pcal.fastback.retention;
 
+
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.pcal.fastback.ModContext;
+import net.pcal.fastback.logging.Message;
 import net.pcal.fastback.utils.SnapshotId;
 
-import java.time.LocalDate;
-import java.time.Period;
 import java.util.*;
 
 /**
@@ -46,26 +47,35 @@ public enum FixedCountRetentionPolicyType implements RetentionPolicyType {
 
     @Override
     public List<Parameter> getParameters() {
-        return List.of(new Parameter("count", Integer.class));
+        return List.of(new Parameter("count", IntegerArgumentType.integer(1)));
     }
 
     @Override
     public RetentionPolicy createPolicy(final ModContext ctx, final Map<String, String> config) {
-        return snapshots -> {
-            int count = COUNT_DEFAULT;
-            if (config != null && config.containsKey(COUNT)) {
-                try {
-                    count = Integer.parseInt(config.get(COUNT));
-                } catch(NumberFormatException nfe) {
-                    ctx.getLogger().internalError("invalid count "+config.get(COUNT), nfe);
-                }
+        return new RetentionPolicy() {
+
+            @Override
+            public Message getDescription() {
+                return null;
             }
-            final List<SnapshotId> sorted = new ArrayList<>(snapshots);
-            sorted.sort(Collections.reverseOrder());
-            if (sorted.size() > count) {
-                return sorted.subList(count - 1, sorted.size() -1);
-            } else {
-                return Collections.emptySet();
+
+            @Override
+            public Collection<SnapshotId> getSnapshotsToPrune(Collection<SnapshotId> fromSnapshots) {
+                int count = COUNT_DEFAULT;
+                if (config != null && config.containsKey(COUNT)) {
+                    try {
+                        count = Integer.parseInt(config.get(COUNT));
+                    } catch (NumberFormatException nfe) {
+                        ctx.getLogger().internalError("invalid count " + config.get(COUNT), nfe);
+                    }
+                }
+                final List<SnapshotId> sorted = new ArrayList<>(fromSnapshots);
+                sorted.sort(Collections.reverseOrder());
+                if (sorted.size() > count) {
+                    return sorted.subList(count - 1, sorted.size() - 1);
+                } else {
+                    return Collections.emptySet();
+                }
             }
         };
     }

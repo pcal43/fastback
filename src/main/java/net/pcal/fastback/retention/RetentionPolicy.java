@@ -18,7 +18,7 @@
 
 package net.pcal.fastback.retention;
 
-import net.pcal.fastback.Localized;
+import net.pcal.fastback.logging.Message;
 import net.pcal.fastback.utils.SnapshotId;
 
 import java.util.Collection;
@@ -26,7 +26,7 @@ import java.util.Collection;
 
 public interface RetentionPolicy {
 
-    Localized getDescription();
+    Message getDescription();
 
     Collection<SnapshotId> getSnapshotsToPrune(final Collection<SnapshotId> fromSnapshots);
 }

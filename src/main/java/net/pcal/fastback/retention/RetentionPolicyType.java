@@ -18,6 +18,7 @@
 
 package net.pcal.fastback.retention;
 
+import com.mojang.brigadier.arguments.ArgumentType;
 import net.pcal.fastback.ModContext;
 
 import java.util.List;
@@ -25,7 +26,8 @@ import java.util.Map;
 
 public interface RetentionPolicyType {
 
-    record Parameter(String name, Class<?> type) {}
+    record Parameter(String name, ArgumentType<?> type) {}
+
 
     String getName();
 
