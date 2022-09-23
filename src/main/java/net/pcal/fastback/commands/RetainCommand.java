@@ -60,7 +60,9 @@ public class RetainCommand {
                     final MinecraftServer server = cc.getSource().getServer();
                     final Logger logger = commandLogger(ctx, cc);
                     final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
+
                     logger.notify(raw("ok"));
+
                     try (final Git git = Git.open(worldSaveDir.toFile())) {
                         final StoredConfig gitConfig = git.getRepository().getConfig();
                         WorldConfig.setRetentionPolicy(gitConfig, rpt.getEncodedName());
