@@ -30,5 +30,4 @@ public record Message(Localized localized, String raw) {
     public static Message raw(String text) {
         return new Message(null, text);
     }
-
 }

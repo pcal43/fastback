@@ -29,6 +29,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.Message;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -48,6 +49,8 @@ import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.subcommandPermName;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.logging.Message.localized;
+import static net.pcal.fastback.logging.Message.raw;
 
 public class HelpCommand {
 
@@ -126,11 +129,11 @@ public class HelpCommand {
         for (String available : getSubcommandNames(cc)) {
             if (subcommand.equals(available)) {
                 final String prefix = "/backup " + subcommand + ": ";
-                log.notify(translatable("commands.fastback.help." + subcommand, prefix));
+                log.notify(localized("commands.fastback.help." + subcommand, prefix));
                 return SUCCESS;
             }
         }
-        log.notifyError(Text.literal("Invalid subcommand '" + subcommand + "'"));
+        log.notifyError(raw("Invalid subcommand '" + subcommand + "'"));
         return FAILURE;
     }
 
@@ -145,7 +148,7 @@ public class HelpCommand {
         out.println("Command            | Use");
         out.println("------------------ | ---");
         for (final String sub : getSubcommandNames(cc)) {
-            Text shortHelp = translatable("commands.fastback.help." + sub);
+            Text shortHelp = Text.translatable("commands.fastback.help." + sub); //FIXME GROSS
             String paddedSub = String.format("%-" + 18 + "s", "`" + sub + "`");
             out.println(paddedSub + " | " + shortHelp.getString());
         }
