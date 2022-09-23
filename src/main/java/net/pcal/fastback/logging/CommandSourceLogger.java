@@ -22,7 +22,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 
 import static java.util.Objects.requireNonNull;
-import static net.minecraft.text.Text.translatable;
+import static net.pcal.fastback.logging.Message.localized;
 
 public class CommandSourceLogger implements Logger {
 
@@ -45,8 +45,8 @@ public class CommandSourceLogger implements Logger {
     }
 
     @Override
-    public void internalError(String message, Throwable t) {
-        scs.sendError(translatable("fastback.notify.internal-error"));
+    public void internalError(String rawMessageIgnored, Throwable t) {
+        ctx.sendError(localized("fastback.notify.internal-error"), scs);
     }
 
     @Override
