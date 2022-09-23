@@ -1,5 +1,6 @@
 # gradle
 
+
 *~
 \#*
 
@@ -32,4 +33,5 @@ classes/
 
 # fabric
 
-run*/
+/run/
+/logs/

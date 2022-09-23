@@ -103,7 +103,7 @@ public class GcCommand {
                     log.notify(translatable("fastback.notify.gc-done"));
                     log.info("Stats after gc:");
                     log.info("" + git.gc().getStatistics());
-                    log.notify(Text.literal("Backup size after after gc: " + getDirDisplaySize(gitDir)));
+                    log.notify(translatable("fastback.notify.gc-size-after", getDirDisplaySize(gitDir)));
                 } catch (IOException | GitAPIException | ParseException e) {
                     log.internalError("Failed to gc", e);
                 }
