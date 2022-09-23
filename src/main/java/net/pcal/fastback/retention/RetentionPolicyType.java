@@ -26,8 +26,12 @@ import java.util.Map;
 
 public interface RetentionPolicyType {
 
-    record Parameter(String name, ArgumentType<?> type) {}
+    static List<RetentionPolicyType> getAvailable() {
+        return List.of(DailyRetentionPolicyType.INSTANCE, FixedCountRetentionPolicy.Type.INSTANCE);
+    }
 
+
+    record Parameter(String name, ArgumentType<?> type) {}
 
     String getName();
 
