@@ -18,6 +18,7 @@
 
 package net.pcal.fastback.retention;
 
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.utils.SnapshotId;
 
@@ -46,7 +47,7 @@ public enum FixedCountRetentionPolicyType implements RetentionPolicyType {
 
     @Override
     public List<Parameter> getParameters() {
-        return List.of(new Parameter("count", Integer.class));
+        return List.of(new Parameter("count", IntegerArgumentType.integer(1)));
     }
 
     @Override

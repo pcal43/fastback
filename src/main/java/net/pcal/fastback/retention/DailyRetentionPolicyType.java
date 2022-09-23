@@ -18,6 +18,7 @@
 
 package net.pcal.fastback.retention;
 
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.utils.SnapshotId;
 
@@ -49,7 +50,7 @@ public enum DailyRetentionPolicyType implements RetentionPolicyType {
 
     @Override
     public List<Parameter> getParameters() {
-        return List.of(new Parameter("gracePeriodDays", Integer.class));
+        return List.of(new Parameter(GRACE_PERIOD_DAYS, IntegerArgumentType.integer(0)));
     }
 
     @Override
