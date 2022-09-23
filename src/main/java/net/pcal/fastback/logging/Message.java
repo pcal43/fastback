@@ -18,23 +18,19 @@
 
 package net.pcal.fastback.logging;
 
-public interface Logger {
 
-    void notify(Message message);
+import static java.util.Objects.requireNonNull;
 
-    void notifyError(Message message);
+public record Message(Localized localized, String raw) {
 
-    void progressComplete(String message, int percentage);
+    public record Localized(String key, Object... params) {
+    }
 
-    void progressComplete(String message);
+    public static Message localized(String key, Object... params) {
+        return new Message(new Localized(key, params), null);
+    }
 
-    void internalError(String message, Throwable t);
-
-    void warn(String message);
-
-    void info(String message);
-
-    void debug(String message);
-
-    void debug(String message, Throwable t);
+    public static Message raw(String text) {
+        return new Message(null, requireNonNull(text));
+    }
 }

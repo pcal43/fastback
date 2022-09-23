@@ -21,7 +21,6 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
 import net.pcal.fastback.ModContext;
 
 import static java.util.Objects.requireNonNull;
@@ -29,6 +28,7 @@ import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.executeStandard;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.logging.Message.localized;
 
 public class UuidCommand {
 
@@ -50,7 +50,7 @@ public class UuidCommand {
 
     private int execute(CommandContext<ServerCommandSource> cc) {
         return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
-            log.notify(Text.literal(wc.worldUuid()));
+            log.notify(localized(wc.worldUuid()));
             return SUCCESS;
         });
     }

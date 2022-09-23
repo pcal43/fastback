@@ -19,32 +19,34 @@
 package net.pcal.fastback.logging;
 
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
+import net.pcal.fastback.ModContext;
 
 import static java.util.Objects.requireNonNull;
-import static net.minecraft.text.Text.translatable;
+import static net.pcal.fastback.logging.Message.localized;
 
 public class CommandSourceLogger implements Logger {
 
     private final ServerCommandSource scs;
+    private final ModContext ctx;
 
-    public CommandSourceLogger(ServerCommandSource scs) {
+    public CommandSourceLogger(ModContext ctx, ServerCommandSource scs) {
+        this.ctx = requireNonNull(ctx);
         this.scs = requireNonNull(scs);
     }
 
     @Override
-    public void notify(Text message) {
-        scs.sendFeedback(message, false);
+    public void notify(Message message) {
+        ctx.sendFeedback(message, scs);
     }
 
     @Override
-    public void notifyError(Text message) {
-        scs.sendError(message);
+    public void notifyError(Message message) {
+        ctx.sendError(message, scs);
     }
 
     @Override
-    public void internalError(String message, Throwable t) {
-        scs.sendError(translatable("fastback.notify.internal-error"));
+    public void internalError(String rawMessageIgnored, Throwable t) {
+        ctx.sendError(localized("fastback.notify.internal-error"), scs);
     }
 
     @Override

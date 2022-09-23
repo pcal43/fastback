@@ -19,8 +19,9 @@
 package net.pcal.fastback;
 
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.text.Text;
+import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.Message;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -89,12 +90,20 @@ public class ModContext {
         return spi.isClient();
     }
 
-    public void setSavingScreenText(Text text) {
-        this.spi.setClientSavingScreenText(text);
+    public void setSavingScreenText(Message message) {
+        this.spi.setClientSavingScreenText(message);
     }
 
-    public void sendClientChatMessage(Text text) {
-        this.spi.sendClientChatMessage(text);
+    public void sendClientChatMessage(Message message) {
+        this.spi.sendClientChatMessage(message);
+    }
+
+    public void sendFeedback(Message message, ServerCommandSource scs) {
+        this.spi.sendFeedback(message, scs);
+    }
+
+    public void sendError(Message message, ServerCommandSource scs) {
+        this.spi.sendError(message, scs);
     }
 
     public Path getWorldSaveDirectory(MinecraftServer server) {
@@ -135,6 +144,7 @@ public class ModContext {
         return spi.isClient() ? 0 : 4;
     }
 
+
     public interface FrameworkServiceProvider {
 
         Logger getLogger();
@@ -151,9 +161,9 @@ public class ModContext {
 
         String getWorldName(MinecraftServer server);
 
-        void setClientSavingScreenText(Text text);
+        void setClientSavingScreenText(Message message);
 
-        void sendClientChatMessage(Text text);
+        void sendClientChatMessage(Message message);
 
         Path getClientSavesDir() throws IOException;
 
@@ -162,5 +172,9 @@ public class ModContext {
         boolean isWorldSaveEnabled();
 
         void setWorldSaveEnabled(boolean enabled);
+
+        void sendFeedback(Message message, ServerCommandSource scs);
+
+        void sendError(Message message, ServerCommandSource scs);
     }
 }

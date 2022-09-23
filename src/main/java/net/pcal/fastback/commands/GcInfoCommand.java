@@ -21,7 +21,6 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.IncrementalProgressMonitor;
 import net.pcal.fastback.logging.LoggingProgressMonitor;
@@ -40,6 +39,7 @@ import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.executeStandard;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.logging.Message.raw;
 
 public class GcInfoCommand {
 
@@ -70,7 +70,7 @@ public class GcInfoCommand {
                     final List<String> props = new ArrayList<>();
                     stats.keySet().forEach(k -> props.add(String.valueOf(k)));
                     Collections.sort(props);
-                    props.forEach(p -> log.notify(Text.literal(p + ": " + stats.get(p))));
+                    props.forEach(p -> log.notify(raw(p + ": " + stats.get(p))));
                 } catch (GitAPIException | IOException e) {
                     log.internalError("error gathering gc info", e);
                 }

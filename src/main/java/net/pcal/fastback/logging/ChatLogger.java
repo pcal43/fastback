@@ -18,11 +18,10 @@
 
 package net.pcal.fastback.logging;
 
-import net.minecraft.text.Text;
 import net.pcal.fastback.ModContext;
 
 import static java.util.Objects.requireNonNull;
-import static net.minecraft.text.Text.translatable;
+import static net.pcal.fastback.logging.Message.localized;
 
 public class ChatLogger implements Logger {
 
@@ -33,18 +32,18 @@ public class ChatLogger implements Logger {
     }
 
     @Override
-    public void notify(Text message) {
+    public void notify(Message message) {
         ctx.sendClientChatMessage(message);
     }
 
     @Override
-    public void notifyError(Text message) {
+    public void notifyError(Message message) {
         ctx.sendClientChatMessage(message);
     }
 
     @Override
     public void internalError(String message, Throwable t) {
-        ctx.sendClientChatMessage(translatable("fastback.notify.internal-error"));
+        ctx.sendClientChatMessage(localized("fastback.notify.internal-error"));
     }
 
     @Override

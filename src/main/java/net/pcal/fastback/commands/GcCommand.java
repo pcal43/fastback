@@ -21,7 +21,6 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.IncrementalProgressMonitor;
 import net.pcal.fastback.logging.LoggingProgressMonitor;
@@ -40,8 +39,10 @@ import java.text.ParseException;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.minecraft.text.Text.translatable;
-import static net.pcal.fastback.commands.Commands.*;
+import static net.pcal.fastback.commands.Commands.SUCCESS;
+import static net.pcal.fastback.commands.Commands.executeStandard;
+import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.utils.FileUtils.getDirDisplaySize;
 
 
@@ -77,7 +78,7 @@ public class GcCommand {
                 final ProgressMonitor pm =
                         new IncrementalProgressMonitor(new LoggingProgressMonitor(log), 100);
                 try (final Git git = Git.open(wc.worldSaveDir().toFile())) {
-                    log.notify(translatable("fastback.notify.gc-start"));
+                    log.notify(localized("fastback.notify.gc-start"));
                     log.info("Stats before gc:");
                     log.info("" + git.gc().getStatistics());
                     //
@@ -85,7 +86,7 @@ public class GcCommand {
                     // longer than people expect.
                     //
                     final File gitDir = git.getRepository().getDirectory();
-                    log.notify(translatable("fastback.notify.gc-size-before", getDirDisplaySize(gitDir)));
+                    log.notify(localized("fastback.notify.gc-size-before", getDirDisplaySize(gitDir)));
                     if (ctx.isReflogDeletionEnabled()) {
                         final Path reflogsDir = gitDir.toPath().resolve("logs");
                         log.info("Deleting reflogs " + reflogsDir);
@@ -100,10 +101,10 @@ public class GcCommand {
                     pc.setDeltaCompress(false);
                     gc.setPackConfig(pc);
                     gc.gc();
-                    log.notify(translatable("fastback.notify.gc-done"));
+                    log.notify(localized("fastback.notify.gc-done"));
                     log.info("Stats after gc:");
                     log.info("" + git.gc().getStatistics());
-                    log.notify(translatable("fastback.notify.gc-size-after", getDirDisplaySize(gitDir)));
+                    log.notify(localized("fastback.notify.gc-size-after", getDirDisplaySize(gitDir)));
                 } catch (IOException | GitAPIException | ParseException e) {
                     log.internalError("Failed to gc", e);
                 }

@@ -32,11 +32,11 @@ import java.nio.file.Path;
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.minecraft.text.Text.translatable;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.executeStandard;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.utils.FileUtils.mkdirs;
 
 public class FileRemoteCommand {
@@ -65,7 +65,7 @@ public class FileRemoteCommand {
             final String targetPath = cc.getArgument(ARGUMENT, String.class);
             final Path fupHome = Path.of(targetPath);
             if (fupHome.toFile().exists()) {
-                log.notifyError(translatable("fastback.notify.file-remote-dir-exists", fupHome.toString()));
+                log.notifyError(localized("fastback.notify.file-remote-dir-exists", fupHome.toString()));
                 return FAILURE;
             }
             mkdirs(fupHome);
@@ -79,7 +79,7 @@ public class FileRemoteCommand {
             WorldConfig.setRemoteUrl(gitc, targetUrl);
             WorldConfig.setRemoteBackupEnabled(gitc, true);
             gitc.save();
-            log.notify(translatable("fastback.notify.file-remote-created", targetPath, targetUrl));
+            log.notify(localized("fastback.notify.file-remote-created", targetPath, targetUrl));
             return SUCCESS;
         });
     }

@@ -26,7 +26,6 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.CommandNode;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
 
@@ -41,13 +40,14 @@ import java.util.concurrent.ExecutionException;
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.minecraft.text.Text.translatable;
 import static net.pcal.fastback.commands.Commands.BACKUP_COMMAND_PERM;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.subcommandPermName;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.logging.Message.localized;
+import static net.pcal.fastback.logging.Message.raw;
 
 public class HelpCommand {
 
@@ -108,7 +108,7 @@ public class HelpCommand {
             }
             subcommands.append(available);
         }
-        log.notify(translatable("commands.fastback.help.subcommands", String.valueOf(subcommands)));
+        log.notify(localized("commands.fastback.help.subcommands", String.valueOf(subcommands)));
 
         if (this.ctx.isCommandDumpEnabled()) {
             final StringWriter sink = new StringWriter();
@@ -126,11 +126,11 @@ public class HelpCommand {
         for (String available : getSubcommandNames(cc)) {
             if (subcommand.equals(available)) {
                 final String prefix = "/backup " + subcommand + ": ";
-                log.notify(translatable("commands.fastback.help." + subcommand, prefix));
+                log.notify(localized("commands.fastback.help." + subcommand, prefix));
                 return SUCCESS;
             }
         }
-        log.notifyError(Text.literal("Invalid subcommand '" + subcommand + "'"));
+        log.notifyError(raw("Invalid subcommand '" + subcommand + "'"));
         return FAILURE;
     }
 
@@ -145,7 +145,8 @@ public class HelpCommand {
         out.println("Command            | Use");
         out.println("------------------ | ---");
         for (final String sub : getSubcommandNames(cc)) {
-            Text shortHelp = translatable("commands.fastback.help." + sub);
+            //FIXME GROSS.  HOW DO WE LOCALIZE WITHOUT GOING THROUGH minecraft.text?
+            net.minecraft.text.Text shortHelp = net.minecraft.text.Text.translatable("commands.fastback.help." + sub);
             String paddedSub = String.format("%-" + 18 + "s", "`" + sub + "`");
             out.println(paddedSub + " | " + shortHelp.getString());
         }

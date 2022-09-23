@@ -29,7 +29,7 @@ import net.pcal.fastback.LifecycleUtils;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.fabric.mixins.ScreenAccessors;
 
- import java.nio.file.Path;
+import java.nio.file.Path;
 
 public class FabricClientModInitializer implements ClientModInitializer {
 

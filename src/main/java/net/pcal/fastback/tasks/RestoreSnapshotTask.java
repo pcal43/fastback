@@ -35,8 +35,8 @@ import java.text.ParseException;
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
-import static net.minecraft.text.Text.translatable;
 import static net.pcal.fastback.WorldConfig.WORLD_UUID_PATH;
+import static net.pcal.fastback.logging.Message.localized;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class RestoreSnapshotTask extends Task {
@@ -73,7 +73,7 @@ public class RestoreSnapshotTask extends Task {
             SnapshotId sid = SnapshotId.fromUuidAndName(config.worldUuid(), this.snapshotName);
             branchName = sid.getBranchName();
             if (!GitUtils.isBranchExtant(git, branchName, logger)) {
-                logger.notifyError(translatable("fastback.notify.restore-nosuch", snapshotName));
+                logger.notifyError(localized("fastback.notify.restore-nosuch", snapshotName));
                 return;
             }
         } catch (IOException | GitAPIException | ParseException e) {
@@ -86,7 +86,7 @@ public class RestoreSnapshotTask extends Task {
         try {
             targetDirectory = getTargetDir(this.saveDir, worldName, snapshotName);
             String uri = "file://" + this.worldSaveDir.toAbsolutePath();
-            logger.notify(translatable("fastback.notify.restore-start", this.snapshotName, targetDirectory));
+            logger.notify(localized("fastback.notify.restore-start", this.snapshotName, targetDirectory));
             final ProgressMonitor pm = new IncrementalProgressMonitor(new LoggingProgressMonitor(logger), 100);
             try (Git git = Git.cloneRepository().setProgressMonitor(pm).setDirectory(targetDirectory.toFile()).
                     setBranchesToClone(List.of("refs/heads/" + branchName)).setBranch(branchName).setURI(uri).call()) {
@@ -106,7 +106,7 @@ public class RestoreSnapshotTask extends Task {
                 return;
             }
         }
-        logger.notify(translatable("fastback.notify.restore-done"));
+        logger.notify(localized("fastback.notify.restore-done"));
         setCompleted();
     }
 

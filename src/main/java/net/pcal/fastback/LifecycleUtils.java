@@ -32,8 +32,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
-import static net.minecraft.text.Text.translatable;
 import static net.pcal.fastback.WorldConfig.isBackupsEnabledOn;
+import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.utils.FileUtils.writeResourceToFile;
 import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
@@ -66,7 +66,7 @@ public class LifecycleUtils {
             }
         }
         if (ctx.isStartupNotificationEnabled()) {
-            logger.notify(translatable("fastback.notify.suggest-enable"));
+            logger.notify(localized("fastback.notify.suggest-enable"));
         }
     }
 
@@ -75,7 +75,7 @@ public class LifecycleUtils {
                 : ctx.getLogger();
         final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
         if (!isBackupsEnabledOn(worldSaveDir)) {
-            logger.notify(translatable("fastback.notify.suggest-enable"));
+            logger.notify(localized("fastback.notify.suggest-enable"));
             return;
         }
         try {

@@ -23,6 +23,7 @@ import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModMetadata;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.world.level.storage.LevelStorage;
 import net.pcal.fastback.ModContext;
@@ -30,10 +31,12 @@ import net.pcal.fastback.fabric.mixins.ServerAccessors;
 import net.pcal.fastback.fabric.mixins.SessionAccessors;
 import net.pcal.fastback.logging.Log4jLogger;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.Message;
 import org.apache.logging.log4j.LogManager;
 
 import java.nio.file.Path;
 import java.util.Optional;
+import java.util.function.Function;
 
 public class FabricServiceProvider implements ModContext.FrameworkServiceProvider {
 
@@ -47,7 +50,8 @@ public class FabricServiceProvider implements ModContext.FrameworkServiceProvide
     private static final String MOD_ID = "fastback";
     private boolean isWorldSaveEnabled = true;
     private final FabricClientProvider clientProvider;
-    private final Logger logger = new Log4jLogger(LogManager.getLogger(MOD_ID));
+    private final Function<Message, String> localizer = String::valueOf; //FIXME we don't know how to do this
+    private final Logger logger = new Log4jLogger(LogManager.getLogger(MOD_ID), localizer);
 
     static FabricServiceProvider forServer() {
         if (INSTANCE != null) throw new IllegalStateException();
@@ -119,17 +123,27 @@ public class FabricServiceProvider implements ModContext.FrameworkServiceProvide
     }
 
     @Override
-    public void setClientSavingScreenText(final Text text) {
+    public void setClientSavingScreenText(Message message) {
         if (this.clientProvider != null) {
-            this.clientProvider.consumeSaveScreenText(text);
+            this.clientProvider.consumeSaveScreenText(messageToText(message));
         }
     }
 
     @Override
-    public void sendClientChatMessage(final Text text) {
+    public void sendClientChatMessage(Message message) {
         if (this.clientProvider != null) {
-            this.clientProvider.sendClientChatMessage(text);
+            this.clientProvider.sendClientChatMessage(messageToText(message));
         }
+    }
+
+    @Override
+    public void sendFeedback(Message message, ServerCommandSource scs) {
+        scs.sendFeedback(messageToText(message), false);
+    }
+
+    @Override
+    public void sendError(Message message, ServerCommandSource scs) {
+        scs.sendError(messageToText(message));
     }
 
     @Override
@@ -143,4 +157,27 @@ public class FabricServiceProvider implements ModContext.FrameworkServiceProvide
         final LevelStorage.Session session = ((ServerAccessors) server).getSession();
         return session.getLevelSummary().getLevelInfo().getLevelName();
     }
+
+
+    private static Text messageToText(final Message m) {
+        if (m.localized() != null) {
+            return Text.translatable(m.localized().key(), m.localized().params());
+        } else {
+            return Text.literal(m.raw());
+        }
+    }
+
+
+    /**
+    private static String getString(Text message) {
+        if (message.getContent() instanceof TranslatableTextContent) {
+            // FIXME this doesn't work - Language.getInstance() doesn't have the mod keys.
+            // FIXME Figure out how to translate it ourselves properly
+            final String key = ((TranslatableTextContent) message.getContent()).getKey();
+            if (Language.getInstance().hasTranslation(key)) return Language.getInstance().get(key);
+        }
+        return message.getString();
+    }
+    **/
+
 }
