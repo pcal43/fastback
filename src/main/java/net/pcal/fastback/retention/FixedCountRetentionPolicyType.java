@@ -63,7 +63,7 @@ public enum FixedCountRetentionPolicyType implements RetentionPolicyType {
             final List<SnapshotId> sorted = new ArrayList<>(snapshots);
             sorted.sort(Collections.reverseOrder());
             if (sorted.size() > count) {
-                return sorted.subList(count, sorted.size() -1);
+                return sorted.subList(count - 1, sorted.size() -1);
             } else {
                 return Collections.emptySet();
             }
