@@ -21,10 +21,17 @@ package net.pcal.fastback;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.Logger;
+
 import net.pcal.fastback.logging.Message;
+
+import net.pcal.fastback.retention.DailyRetentionPolicyType;
+import net.pcal.fastback.retention.FixedCountRetentionPolicyType;
+import net.pcal.fastback.retention.RetentionPolicyType;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -144,6 +151,13 @@ public class ModContext {
         return spi.isClient() ? 0 : 4;
     }
 
+    public List<RetentionPolicyType> getAvailableRetentionPolicyTypes() {
+        return List.of(DailyRetentionPolicyType.INSTANCE, FixedCountRetentionPolicyType.INSTANCE);
+    }
+
+    public TimeZone getTimeZone() {
+        return TimeZone.getDefault();
+    }
 
     public interface FrameworkServiceProvider {
 

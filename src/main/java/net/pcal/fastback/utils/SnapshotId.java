@@ -65,6 +65,10 @@ public record SnapshotId(String worldUuid, Date snapshotDate) implements Compara
         return new SnapshotId(worldUuid, new Date());
     }
 
+    public static SnapshotId create(String worldUuid, Date date) {
+        return new SnapshotId(worldUuid, date);
+    }
+
     public static SnapshotId fromUuidAndName(String worldUuid, String snapshoDate) throws ParseException {
         return new SnapshotId(worldUuid, DATE_FORMAT.parse(snapshoDate));
     }
@@ -77,6 +81,7 @@ public record SnapshotId(String worldUuid, Date snapshotDate) implements Compara
         final String formattedDate = DATE_FORMAT.format(this.snapshotDate);
         return PREFIX + "/" + this.worldUuid + "/" + formattedDate;
     }
+
 
     @Override
     public int compareTo(@NotNull SnapshotId o) {
