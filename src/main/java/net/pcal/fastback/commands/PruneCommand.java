@@ -81,13 +81,19 @@ public class PruneCommand {
                 final MinecraftServer server = cc.getSource().getServer();
                 final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
                 Collection<SnapshotId> toPrune = policy.getSnapshotsToPrune(listSnapshotsForWorldSorted(worldSaveDir, ctx.getLogger()));
+                int pruned = 0;
                 for (final SnapshotId sid : toPrune) {
                     log.notify(Text.literal("Pruning "+sid.getName()));
                     try {
                         git.branchDelete().setForce(true).setBranchNames(new String[] { sid.getBranchName()} ).call();
+                        pruned++;
                     } catch (final GitAPIException e) {
-                        log.internalError("failed to prune branches", e);
+                        log.internalError("failed to prune branch for "+sid, e);
                     }
+                }
+                log.notify(Text.literal("Pruned "+pruned+" branches."));
+                if (pruned > 0) {
+                    log.notify(Text.literal("Run /backup gc to reclaim disk space."));
                 }
             });
             return SUCCESS;
