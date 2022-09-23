@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
+import static net.pcal.fastback.logging.Message.raw;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class RetentionPolicyCodecTest {
@@ -74,7 +75,7 @@ public class RetentionPolicyCodecTest {
 
         @Override
         public Message getDescription() {
-            return Message.raw("mock policy");
+            return raw("mock policy");
         }
 
         @Override
@@ -100,6 +101,11 @@ public class RetentionPolicyCodecTest {
         @Override
         public RetentionPolicy createPolicy(ModContext ctx, Map<String, String> config) {
             return new MockRetentionPolicy(config);
+        }
+
+        @Override
+        public Message getDescription() {
+            return raw("mock retention policy");
         }
     };
 }

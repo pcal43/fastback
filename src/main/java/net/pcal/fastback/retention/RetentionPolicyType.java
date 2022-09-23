@@ -20,6 +20,7 @@ package net.pcal.fastback.retention;
 
 import com.mojang.brigadier.arguments.ArgumentType;
 import net.pcal.fastback.ModContext;
+import net.pcal.fastback.logging.Message;
 
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,7 @@ import java.util.Map;
 public interface RetentionPolicyType {
 
     static List<RetentionPolicyType> getAvailable() {
-        return List.of(DailyRetentionPolicyType.INSTANCE, FixedCountRetentionPolicy.Type.INSTANCE);
+        return List.of(DailyRetentionPolicy.DailyRetentionPolicyType.INSTANCE, FixedCountRetentionPolicy.Type.INSTANCE);
     }
 
 
@@ -42,5 +43,7 @@ public interface RetentionPolicyType {
     default String getEncodedName() { return getName(); }
 
     default String getCommandName()  { return getName(); }
+
+    Message getDescription();
 
 }

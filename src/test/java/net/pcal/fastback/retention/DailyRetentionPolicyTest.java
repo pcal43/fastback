@@ -65,7 +65,7 @@ public class DailyRetentionPolicyTest {
                 threeDaysAgoA, threeDaysAgoB, threeDaysAgoC, lastWeek,
                 lastYearA, lastYearB, lastYearC);
         ModContext ctx = MockModContext.create();
-        RetentionPolicy policy = DailyRetentionPolicyType.INSTANCE.createPolicy(ctx,
+        RetentionPolicy policy = DailyRetentionPolicy.DailyRetentionPolicyType.INSTANCE.createPolicy(ctx,
                 Map.of("gracePeriodDays", String.valueOf(GRACE_PERIOD)));
         Collection<SnapshotId> toPruneList = policy.getSnapshotsToPrune(snapshots);
         Assertions.assertEquals(List.of(threeDaysAgoB, threeDaysAgoA, lastYearB, lastYearA), toPruneList);

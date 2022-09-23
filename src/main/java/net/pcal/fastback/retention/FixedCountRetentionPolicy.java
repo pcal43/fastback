@@ -17,6 +17,7 @@ class FixedCountRetentionPolicy implements RetentionPolicy {
 
     private static final int COUNT_DEFAULT = 10;
     private static final String COUNT_PARAM = "count";
+    private static final String L10N_KEY = "fastback.retain.count.description";
     private final ModContext ctx;
     private final int count;
 
@@ -39,7 +40,7 @@ class FixedCountRetentionPolicy implements RetentionPolicy {
 
     @Override
     public Message getDescription() {
-        return localized("fastback.policy.fixed-count", this.count);
+        return localized(L10N_KEY, this.count);
     }
 
     @Override
@@ -60,7 +61,7 @@ class FixedCountRetentionPolicy implements RetentionPolicy {
      * @author pcal
      * @since 0.1.5
      */
-    public enum Type implements RetentionPolicyType {
+    enum Type implements RetentionPolicyType {
 
         INSTANCE;
 
@@ -79,5 +80,9 @@ class FixedCountRetentionPolicy implements RetentionPolicy {
             return create(config, ctx);
         }
 
+        @Override
+        public Message getDescription() {
+            return localized(L10N_KEY, "<"+COUNT_PARAM+">");
+        }
     }
 }
