@@ -26,7 +26,7 @@ import net.pcal.fastback.WorldConfig;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.minecraft.text.Text.translatable;
+import static net.pcal.fastback.Message.localized;
 import static net.pcal.fastback.commands.Commands.*;
 
 public class DisableCommand {
@@ -57,7 +57,7 @@ public class DisableCommand {
             WorldConfig.setBackupEnabled(gitc, false);
             WorldConfig.setShutdownBackupEnabled(gitc, false);
             gitc.save();
-            log.notify(translatable("fastback.notify.disable-done"));
+            log.notify(localized("fastback.notify.disable-done"));
             return SUCCESS;
         });
     }
@@ -66,12 +66,12 @@ public class DisableCommand {
         return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
             final boolean enabled = wc.isShutdownBackupEnabled();
             if (!enabled) {
-                log.notifyError(translatable("fastback.notify.shutdown-currently-disabled"));
+                log.notifyError(localized("fastback.notify.shutdown-currently-disabled"));
                 return FAILURE;
             } else {
                 WorldConfig.setShutdownBackupEnabled(gitc, false);
                 gitc.save();
-                log.notifyError(translatable("fastback.notify.shutdown-disabled"));
+                log.notifyError(localized("fastback.notify.shutdown-disabled"));
                 return SUCCESS;
             }
         });
@@ -81,12 +81,12 @@ public class DisableCommand {
         return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
             final boolean currentEnabled = wc.isRemoteBackupEnabled();
             if (!currentEnabled) {
-                log.notifyError(translatable("fastback.notify.remote-already-disabled"));
+                log.notifyError(localized("fastback.notify.remote-already-disabled"));
                 return FAILURE;
             } else {
                 WorldConfig.setRemoteBackupEnabled(gitc, false);
                 gitc.save();
-                log.notifyError(translatable("fastback.notify.remote-disabled"));
+                log.notifyError(localized("fastback.notify.remote-disabled"));
                 return SUCCESS;
             }
         });

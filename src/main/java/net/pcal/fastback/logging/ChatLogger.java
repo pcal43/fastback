@@ -19,6 +19,7 @@
 package net.pcal.fastback.logging;
 
 import net.minecraft.text.Text;
+import net.pcal.fastback.Message;
 import net.pcal.fastback.ModContext;
 
 import static java.util.Objects.requireNonNull;
@@ -30,6 +31,16 @@ public class ChatLogger implements Logger {
 
     public ChatLogger(ModContext ctx) {
         this.ctx = requireNonNull(ctx);
+    }
+
+    @Override
+    public void notify(Message message) {
+        ctx.sendClientChatMessage(message);
+    }
+
+    @Override
+    public void notifyError(Message message) {
+        ctx.sendClientChatMessage(message);
     }
 
     @Override

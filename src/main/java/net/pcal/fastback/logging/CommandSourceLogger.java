@@ -20,6 +20,7 @@ package net.pcal.fastback.logging;
 
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
+import net.pcal.fastback.Message;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.text.Text.translatable;
@@ -30,6 +31,16 @@ public class CommandSourceLogger implements Logger {
 
     public CommandSourceLogger(ServerCommandSource scs) {
         this.scs = requireNonNull(scs);
+    }
+
+    @Override
+    public void notify(Message message) {
+        scs.sendFeedback(Text.translatable(message.key(), message.params()), false);
+    }
+
+    @Override
+    public void notifyError(Message message) {
+        scs.sendError(Text.translatable(message.key(), message.params()));
     }
 
     @Override

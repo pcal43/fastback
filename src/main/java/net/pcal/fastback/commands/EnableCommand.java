@@ -34,7 +34,7 @@ import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.minecraft.text.Text.translatable;
+import static net.pcal.fastback.Message.localized;
 import static net.pcal.fastback.WorldConfig.doWorldMaintenance;
 import static net.pcal.fastback.commands.Commands.*;
 
@@ -70,13 +70,13 @@ public class EnableCommand {
             final StoredConfig config = git.getRepository().getConfig();
             final WorldConfig worldConfig = WorldConfig.load(worldSaveDir, config);
             if (worldConfig.isBackupEnabled() && worldConfig.isShutdownBackupEnabled()) {
-                logger.notifyError(translatable("fastback.notify.enable-already-enabled"));
+                logger.notifyError(localized("fastback.notify.enable-already-enabled"));
                 return FAILURE;
             } else {
                 WorldConfig.setBackupEnabled(config, true);
                 WorldConfig.setShutdownBackupEnabled(config, true);
                 config.save();
-                logger.notify(translatable("fastback.notify.enable-done"));
+                logger.notify(localized("fastback.notify.enable-done"));
                 return SUCCESS;
             }
         } catch (GitAPIException | IOException e) {
@@ -89,12 +89,12 @@ public class EnableCommand {
         return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
             final boolean enabled = wc.isShutdownBackupEnabled();
             if (enabled) {
-                log.notifyError(translatable("fastback.notify.shutdown-currently-enabled"));
+                log.notifyError(localized("fastback.notify.shutdown-currently-enabled"));
                 return FAILURE;
             } else {
                 WorldConfig.setShutdownBackupEnabled(gitc, true);
                 gitc.save();
-                log.notifyError(translatable("fastback.notify.shutdown-enabled"));
+                log.notifyError(localized("fastback.notify.shutdown-enabled"));
                 return SUCCESS;
             }
         });
@@ -105,13 +105,13 @@ public class EnableCommand {
             final String currentUrl = wc.getRemotePushUrl();
             final boolean currentEnabled = wc.isRemoteBackupEnabled();
             if (currentUrl == null) {
-                log.notifyError(translatable("fastback.notify.remote-no-url"));
+                log.notifyError(localized("fastback.notify.remote-no-url"));
                 return FAILURE;
             } else if (currentEnabled) {
-                log.notifyError(translatable("fastback.notify.remote-already-enabled", currentUrl));
+                log.notifyError(localized("fastback.notify.remote-already-enabled", currentUrl));
                 return FAILURE;
             } else {
-                log.notify(translatable("fastback.notify.remote-enabled", currentUrl));
+                log.notify(localized("fastback.notify.remote-enabled", currentUrl));
                 WorldConfig.setRemoteBackupEnabled(gitc, true);
                 gitc.save();
                 return SUCCESS;

@@ -19,6 +19,7 @@
 package net.pcal.fastback.logging;
 
 import net.minecraft.text.Text;
+import net.pcal.fastback.Message;
 import net.pcal.fastback.ModContext;
 
 import static java.util.Objects.requireNonNull;
@@ -53,6 +54,17 @@ public class SaveScreenLogger implements Logger {
         }
         if (text == null) text = literal(message);
         this.ctx.setSavingScreenText(text);
+    }
+
+    @Override
+    public void notify(Message message) {
+        this.ctx.setSavingScreenText(message);
+
+    }
+
+    @Override
+    public void notifyError(Message message) {
+        this.ctx.setSavingScreenText(message);
     }
 
     @Override

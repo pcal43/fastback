@@ -21,6 +21,9 @@ package net.pcal.fastback.logging;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.Language;
+import net.pcal.fastback.Message;
+
+import java.util.Arrays;
 
 import static java.util.Objects.requireNonNull;
 
@@ -30,6 +33,18 @@ public class Log4jLogger implements Logger {
 
     public Log4jLogger(org.apache.logging.log4j.Logger log4j) {
         this.log4j = requireNonNull(log4j);
+    }
+
+    @Override
+    public void notify(Message message) {
+        // FIXME how to translate these?
+        this.log4j.info("[NOTIFY] " + message.key() + " " + Arrays.toString(message.params()));
+    }
+
+    @Override
+    public void notifyError(Message message) {
+        // FIXME how to translate these?
+        this.log4j.info("[NOTIFY-ERROR] " + message.key() + " " + Arrays.toString(message.params()));
     }
 
     @Override

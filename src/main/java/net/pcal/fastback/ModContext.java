@@ -89,10 +89,20 @@ public class ModContext {
         return spi.isClient();
     }
 
+    public void setSavingScreenText(Message message) {
+        this.spi.setClientSavingScreenText(Text.translatable(message.key(), message.params()));
+    }
+
+    public void sendClientChatMessage(Message message) {
+        this.spi.sendClientChatMessage(Text.translatable(message.key(), message.params()));
+    }
+
+    @Deprecated
     public void setSavingScreenText(Text text) {
         this.spi.setClientSavingScreenText(text);
     }
 
+    @Deprecated
     public void sendClientChatMessage(Text text) {
         this.spi.sendClientChatMessage(text);
     }

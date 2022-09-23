@@ -22,7 +22,6 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.SnapshotId;
@@ -31,6 +30,8 @@ import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
+import static net.pcal.fastback.Message.localized;
+import static net.pcal.fastback.Message.raw;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
@@ -64,13 +65,13 @@ public class ListCommand {
             final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
             if (!isGitRepo(worldSaveDir)) {
                 final Logger logger = commandLogger(ctx, cc);
-                logger.notifyError(Text.translatable("fastback.notify.not-enabled"));
+                logger.notifyError(localized("fastback.notify.not-enabled"));
                 return FAILURE;
             }
-            log.notify(Text.translatable("fastback.notify.list-local-snapshots-header"));
+            log.notify(localized("fastback.notify.list-local-snapshots-header"));
             this.ctx.getExecutorService().execute(() -> {
                 for (SnapshotId sid : listSnapshotsForWorldSorted(worldSaveDir, ctx.getLogger())) {
-                    log.notify(Text.literal(sid.getName()));
+                    log.notify(raw(sid.getName()));
                 }
             });
             return SUCCESS;

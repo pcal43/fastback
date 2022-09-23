@@ -16,34 +16,19 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.logging;
+package net.pcal.fastback;
 
-import net.minecraft.text.Text;
-import net.pcal.fastback.Message;
+public record Message(Localized localized, String raw) {
 
-public interface Logger {
+    record Localized(String key, Object... params) {
+    }
 
-    void notify(Message message);
+    public static Message localized(String key, Object... params) {
+        return new Message(new Localized(key, params), null);
+    }
 
-    void notifyError(Message message);
+    public static Message raw(String text) {
+        return new Message(null, text);
+    }
 
-    void progressComplete(String message, int percentage);
-
-    void progressComplete(String message);
-
-    void internalError(String message, Throwable t);
-
-    void warn(String message);
-
-    void info(String message);
-
-    void debug(String message);
-
-    void debug(String message, Throwable t);
-
-    @Deprecated
-    void notify(Text message);
-
-    @Deprecated
-    void notifyError(Text message);
 }

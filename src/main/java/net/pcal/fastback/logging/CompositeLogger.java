@@ -19,6 +19,7 @@
 package net.pcal.fastback.logging;
 
 import net.minecraft.text.Text;
+import net.pcal.fastback.Message;
 
 import java.util.List;
 
@@ -34,6 +35,16 @@ public class CompositeLogger implements Logger {
 
     public CompositeLogger(Iterable<Logger> delegates) {
         this.delegates = requireNonNull(delegates);
+    }
+
+    @Override
+    public void notify(Message message) {
+        this.delegates.forEach(d -> d.notify(message));
+    }
+
+    @Override
+    public void notifyError(Message message) {
+        this.delegates.forEach(d -> d.notifyError(message));
     }
 
     @Override
