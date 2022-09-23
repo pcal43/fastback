@@ -30,11 +30,11 @@ import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.minecraft.text.Text.translatable;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.executeStandard;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
 public class NowCommand {
@@ -61,7 +61,7 @@ public class NowCommand {
             final MinecraftServer server = cc.getSource().getServer();
             final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
             if (!isGitRepo(worldSaveDir)) {
-                log.notifyError(translatable("fastback.notify.not-enabled"));
+                log.notifyError(localized("fastback.notify.not-enabled"));
                 return FAILURE;
             }
             final WorldConfig config = WorldConfig.load(worldSaveDir);
@@ -74,7 +74,7 @@ public class NowCommand {
                 });
                 return SUCCESS;
             } else {
-                log.notifyError(translatable("fastback.notify.not-enabled"));
+                log.notifyError(localized("fastback.notify.not-enabled"));
                 return FAILURE;
             }
         });

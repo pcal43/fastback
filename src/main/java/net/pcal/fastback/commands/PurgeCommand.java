@@ -32,10 +32,10 @@ import java.nio.file.Path;
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.minecraft.text.Text.translatable;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.executeStandard;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.logging.Message.localized;
 
 public class PurgeCommand {
 
@@ -67,7 +67,7 @@ public class PurgeCommand {
             this.ctx.getExecutorService().execute(() -> {
                 try (final Git git = Git.open(worldSaveDir.toFile())) {
                     git.branchDelete().setForce(true).setBranchNames(branchName).call();
-                    log.notify(translatable("fastback.notify.purge-done", snapshotName));
+                    log.notify(localized("fastback.notify.purge-done", snapshotName));
                 } catch (final Exception e) {
                     log.internalError("Failed to purge", e);
                 }

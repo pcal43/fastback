@@ -18,43 +18,29 @@
 
 package net.pcal.fastback.logging;
 
-import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableTextContent;
-import net.minecraft.util.Language;
-
-import java.util.Arrays;
+import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
 
 public class Log4jLogger implements Logger {
 
     private final org.apache.logging.log4j.Logger log4j;
+    private final Function<Message, String> localizer;
 
-    public Log4jLogger(org.apache.logging.log4j.Logger log4j) {
+    public Log4jLogger(org.apache.logging.log4j.Logger log4j, Function<Message, String> localizer) {
         this.log4j = requireNonNull(log4j);
+        this.localizer = requireNonNull(localizer);
     }
 
     @Override
     public void notify(Message message) {
-        // FIXME how to translate these?
-        this.log4j.info("[NOTIFY] " + message.key() + " " + Arrays.toString(message.params()));
+        this.log4j.info("[NOTIFY] " + this.localizer.apply(message));
     }
 
     @Override
     public void notifyError(Message message) {
         // FIXME how to translate these?
-        this.log4j.info("[NOTIFY-ERROR] " + message.key() + " " + Arrays.toString(message.params()));
-    }
-
-    @Override
-    public void notify(Text message) {
-        this.log4j.info("[NOTIFY] " + getString(message));
-    }
-
-    @Override
-    public void notifyError(Text message) {
-        // FIXME figure out how to deal with translatable text here
-        this.log4j.info("[NOTIFY-ERROR] " + message.getString());
+        this.log4j.info("[NOTIFY-ERROR] " +this.localizer.apply(message));
     }
 
     @Override
@@ -90,16 +76,6 @@ public class Log4jLogger implements Logger {
     @Override
     public void debug(String message, Throwable t) {
         this.log4j.debug(message, t);
-    }
-
-    private static String getString(Text message) {
-        if (message.getContent() instanceof TranslatableTextContent) {
-            // FIXME this doesn't work - Language.getInstance() doesn't have the mod keys.
-            // FIXME Figure out how to translate it ourselves properly
-            final String key = ((TranslatableTextContent) message.getContent()).getKey();
-            if (Language.getInstance().hasTranslation(key)) return Language.getInstance().get(key);
-        }
-        return message.getString();
     }
 
 }

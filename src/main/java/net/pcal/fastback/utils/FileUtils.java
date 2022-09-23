@@ -26,8 +26,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
-
 public class FileUtils {
 
     public static void mkdirs(final Path path) throws IOException {

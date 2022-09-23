@@ -24,7 +24,6 @@ import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.CommandSourceLogger;
@@ -40,6 +39,7 @@ import java.nio.file.Path;
 import java.text.ParseException;
 import java.util.function.Predicate;
 
+import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
 public class Commands {
@@ -75,7 +75,7 @@ public class Commands {
     public static Logger commandLogger(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
         return CompositeLogger.of(
                 ctx.getLogger(),
-                new CommandSourceLogger(cc.getSource())
+                new CommandSourceLogger(ctx, cc.getSource())
         );
     }
 
@@ -102,14 +102,14 @@ public class Commands {
         final Logger logger = commandLogger(ctx, cc);
         final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
         if (!isGitRepo(worldSaveDir)) {
-            logger.notifyError(Text.translatable("fastback.notify.not-enabled"));
+            logger.notifyError(localized("fastback.notify.not-enabled"));
             return FAILURE;
         }
         try (final Git git = Git.open(worldSaveDir.toFile())) {
             final StoredConfig gitConfig = git.getRepository().getConfig();
             final WorldConfig worldConfig = WorldConfig.load(worldSaveDir, gitConfig);
             if (!worldConfig.isBackupEnabled()) {
-                logger.notifyError(Text.translatable("fastback.notify.not-enabled"));
+                logger.notifyError(localized("fastback.notify.not-enabled"));
                 return FAILURE;
             }
             return sub.execute(gitConfig, worldConfig, logger);
@@ -124,14 +124,14 @@ public class Commands {
         final Logger logger = commandLogger(ctx, cc);
         final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
         if (!isGitRepo(worldSaveDir)) {
-            logger.notifyError(Text.translatable("fastback.notify.not-enabled"));
+            logger.notifyError(localized("fastback.notify.not-enabled"));
             return FAILURE;
         }
         try (final Git git = Git.open(worldSaveDir.toFile())) {
             final StoredConfig gitConfig = git.getRepository().getConfig();
             final WorldConfig worldConfig = WorldConfig.load(worldSaveDir, gitConfig);
             if (!worldConfig.isBackupEnabled()) {
-                logger.notifyError(Text.translatable("fastback.notify.not-enabled"));
+                logger.notifyError(localized("fastback.notify.not-enabled"));
                 return FAILURE;
             }
             return sub.execute(git, worldConfig, logger);

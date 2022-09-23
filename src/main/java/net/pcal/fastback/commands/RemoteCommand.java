@@ -28,11 +28,11 @@ import net.pcal.fastback.WorldConfig;
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.minecraft.text.Text.translatable;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.executeStandard;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.logging.Message.localized;
 
 public class RemoteCommand {
 
@@ -61,14 +61,14 @@ public class RemoteCommand {
             final String remoteUrl = wc.getRemotePushUrl();
             final boolean enabled = wc.isRemoteBackupEnabled();
             if (enabled && remoteUrl != null) {
-                log.notify(translatable("fastback.notify.remote-enabled", remoteUrl));
+                log.notify(localized("fastback.notify.remote-enabled", remoteUrl));
                 return SUCCESS;
             } else {
-                log.notifyError(translatable("fastback.notify.remote-disabled"));
+                log.notifyError(localized("fastback.notify.remote-disabled"));
                 if (remoteUrl != null) {
-                    log.notifyError(translatable("fastback.notify.remote-how-to-enable", remoteUrl));
+                    log.notifyError(localized("fastback.notify.remote-how-to-enable", remoteUrl));
                 } else {
-                    log.notify(translatable("fastback.notify.remote-how-to-enable-no-url"));
+                    log.notify(localized("fastback.notify.remote-how-to-enable-no-url"));
                 }
                 return FAILURE;
             }
@@ -81,7 +81,7 @@ public class RemoteCommand {
             WorldConfig.setRemoteBackupEnabled(gitc, true);
             WorldConfig.setRemoteUrl(gitc, newUrl);
             gitc.save();
-            log.notify(translatable("fastback.notify.remote-enabled", newUrl));
+            log.notify(localized("fastback.notify.remote-enabled", newUrl));
             return SUCCESS;
         });
     }

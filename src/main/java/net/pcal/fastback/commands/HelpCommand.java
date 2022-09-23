@@ -26,10 +26,8 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.CommandNode;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.logging.Message;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -42,7 +40,6 @@ import java.util.concurrent.ExecutionException;
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.minecraft.text.Text.translatable;
 import static net.pcal.fastback.commands.Commands.BACKUP_COMMAND_PERM;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
@@ -111,7 +108,7 @@ public class HelpCommand {
             }
             subcommands.append(available);
         }
-        log.notify(translatable("commands.fastback.help.subcommands", String.valueOf(subcommands)));
+        log.notify(localized("commands.fastback.help.subcommands", String.valueOf(subcommands)));
 
         if (this.ctx.isCommandDumpEnabled()) {
             final StringWriter sink = new StringWriter();
@@ -148,7 +145,8 @@ public class HelpCommand {
         out.println("Command            | Use");
         out.println("------------------ | ---");
         for (final String sub : getSubcommandNames(cc)) {
-            Text shortHelp = Text.translatable("commands.fastback.help." + sub); //FIXME GROSS
+            //FIXME GROSS.  HOW DO WE LOCALIZE WITHOUT GOING THROUGH minecraft.text?
+            net.minecraft.text.Text shortHelp = net.minecraft.text.Text.translatable("commands.fastback.help." + sub);
             String paddedSub = String.format("%-" + 18 + "s", "`" + sub + "`");
             out.println(paddedSub + " | " + shortHelp.getString());
         }

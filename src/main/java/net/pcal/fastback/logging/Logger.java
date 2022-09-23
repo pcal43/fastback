@@ -18,8 +18,6 @@
 
 package net.pcal.fastback.logging;
 
-import net.minecraft.text.Text;
-
 public interface Logger {
 
     void notify(Message message);
@@ -39,10 +37,4 @@ public interface Logger {
     void debug(String message);
 
     void debug(String message, Throwable t);
-
-    @Deprecated
-    void notify(Text message);
-
-    @Deprecated
-    void notifyError(Text message);
 }

@@ -36,7 +36,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import static java.util.Objects.requireNonNull;
-import static net.minecraft.text.Text.translatable;
+import static net.pcal.fastback.logging.Message.localized;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class BackupTask extends Task {
@@ -53,7 +53,7 @@ public class BackupTask extends Task {
 
     public void run() {
         this.setStarted();
-        this.log.notify(translatable("fastback.notify.local-preparing"));
+        this.log.notify(localized("fastback.notify.local-preparing"));
         try (Git git = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
             final WorldConfig config;
             try {
@@ -76,11 +76,11 @@ public class BackupTask extends Task {
                 return;
             }
             if (config.isRemoteBackupEnabled()) {
-                this.log.notify(translatable("fastback.notify.push-started"));
+                this.log.notify(localized("fastback.notify.push-started"));
                 final PushTask push = new PushTask(worldSaveDir, newBranchName, log);
                 push.run();
                 if (push.isFailed()) {
-                    log.notifyError(translatable("fastback.notify.push-failed"));
+                    log.notifyError(localized("fastback.notify.push-failed"));
                 } else {
                     final Duration dur = getSplitDuration();
                     log.info("Remote backup to complete");
@@ -94,7 +94,7 @@ public class BackupTask extends Task {
             this.setFailed();
             return;
         }
-        log.notify(translatable("fastback.notify.backup-complete"));
+        log.notify(localized("fastback.notify.backup-complete"));
         this.setCompleted();
     }
 
@@ -146,8 +146,8 @@ public class BackupTask extends Task {
             log.info("World save re-enabled.");
         }
         log.debug("commit");
-        log.notify(translatable("fastback.notify.local-saving"));
+        log.notify(localized("fastback.notify.local-saving"));
         git.commit().setMessage(newBranchName).call();
-        log.notify(translatable("fastback.notify.local-done"));
+        log.notify(localized("fastback.notify.local-done"));
     }
 }

@@ -18,9 +18,12 @@
 
 package net.pcal.fastback.logging;
 
+
+import static java.util.Objects.requireNonNull;
+
 public record Message(Localized localized, String raw) {
 
-    record Localized(String key, Object... params) {
+    public record Localized(String key, Object... params) {
     }
 
     public static Message localized(String key, Object... params) {
@@ -28,6 +31,6 @@ public record Message(Localized localized, String raw) {
     }
 
     public static Message raw(String text) {
-        return new Message(null, text);
+        return new Message(null, requireNonNull(text));
     }
 }

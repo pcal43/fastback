@@ -18,8 +18,6 @@
 
 package net.pcal.fastback.logging;
 
-import net.minecraft.text.Text;
-
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
@@ -47,11 +45,6 @@ public class CompositeLogger implements Logger {
     }
 
     @Override
-    public void notify(Text message) {
-        this.delegates.forEach(d -> d.notify(message));
-    }
-
-    @Override
     public void progressComplete(String message, int percentage) {
         this.delegates.forEach(d -> d.progressComplete(message, percentage));
     }
@@ -59,11 +52,6 @@ public class CompositeLogger implements Logger {
     @Override
     public void progressComplete(String message) {
         this.delegates.forEach(d -> d.progressComplete(message));
-    }
-
-    @Override
-    public void notifyError(Text message) {
-        this.delegates.forEach(d -> d.notifyError(message));
     }
 
     @Override
