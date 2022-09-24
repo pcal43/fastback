@@ -40,21 +40,17 @@ import java.util.Map;
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.commands.Commands.FAILURE;
-import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.commandLogger;
-import static net.pcal.fastback.commands.Commands.executeStandardNew;
-import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.commands.Commands.*;
 import static net.pcal.fastback.logging.Message.localized;
 
-public class RetainCommand {
+public class SetRetention {
 
-    private static final String COMMAND_NAME = "retain";
+    private static final String COMMAND_NAME = "set-retention";
 
     public static void register(LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
-        final RetainCommand c = new RetainCommand(ctx);
+        final SetRetention c = new SetRetention(ctx);
         final LiteralArgumentBuilder<ServerCommandSource> retainCommand = literal(COMMAND_NAME).
-                requires(subcommandPermission(ctx, COMMAND_NAME)).executes(c::showRetain);
+                requires(subcommandPermission(ctx, COMMAND_NAME));
         for (final RetentionPolicyType rpt : ctx.getAvailableRetentionPolicyTypes()) {
             Command<ServerCommandSource> cc = new Command<>() {
                 @Override
@@ -101,24 +97,7 @@ public class RetainCommand {
 
     private final ModContext ctx;
 
-    private RetainCommand(ModContext context) {
+    private SetRetention(ModContext context) {
         this.ctx = requireNonNull(context);
-    }
-
-    private int showRetain(final CommandContext<ServerCommandSource> cc) {
-        return executeStandardNew(this.ctx, cc, (git, wc, log) -> {
-            final String encoded = wc.retentionPolicy();
-            if (encoded == null) {
-                log.notify(localized("fastback.notify.retention-policy-none"));
-            } else {
-                final RetentionPolicy policy = RetentionPolicyCodec.INSTANCE.
-                        decodePolicy(ctx, RetentionPolicyType.getAvailable(), encoded);
-                if (policy != null) {
-                    log.notify(localized("fastback.notify.retention-policy-show"));
-                    log.notify(policy.getDescription());
-                }
-            }
-            return SUCCESS;
-        });
     }
 }

@@ -66,7 +66,7 @@ public class Commands {
         UuidCommand.register(argb, ctx);
         VersionCommand.register(argb, ctx);
 
-        RetainCommand.register(argb, ctx);
+        SetRetention.register(argb, ctx);
 
         HelpCommand.register(argb, ctx);
         if (ctx.isExperimentalCommandsEnabled()) {

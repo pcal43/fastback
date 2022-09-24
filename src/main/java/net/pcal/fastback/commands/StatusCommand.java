@@ -22,6 +22,9 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
+import net.pcal.fastback.retention.RetentionPolicy;
+import net.pcal.fastback.retention.RetentionPolicyCodec;
+import net.pcal.fastback.retention.RetentionPolicyType;
 
 import java.io.File;
 
@@ -77,6 +80,22 @@ public class StatusCommand {
                 }
                 final File gitDir = git.getRepository().getDirectory();
                 log.notify(localized("fastback.notify.status-backup-size", getDirDisplaySize(gitDir)));
+                {
+                    // show the snapshot retention policy
+                    final String encoded = wc.retentionPolicy();
+                    if (encoded == null) {
+                        log.notify(localized("fastback.notify.retention-policy-none"));
+                    } else {
+                        final RetentionPolicy policy = RetentionPolicyCodec.INSTANCE.
+                                decodePolicy(ctx, RetentionPolicyType.getAvailable(), encoded);
+                        if (policy == null) {
+                            log.notify(localized("fastback.notify.retention-policy-none"));
+                        } else {
+                            log.notify(localized("fastback.notify.retention-policy-set"));
+                            log.notify(policy.getDescription());
+                        }
+                    }
+                }
             });
             return SUCCESS;
         });
