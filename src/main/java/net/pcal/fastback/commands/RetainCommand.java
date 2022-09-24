@@ -19,6 +19,9 @@
 package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.ArgumentType;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -34,6 +37,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.StoredConfig;
 
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Map;
 
 import static java.util.Objects.requireNonNull;
@@ -45,7 +49,6 @@ import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.executeStandardNew;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
-import static net.pcal.fastback.logging.Message.raw;
 
 public class RetainCommand {
 
@@ -63,11 +66,14 @@ public class RetainCommand {
                     final MinecraftServer server = cc.getSource().getServer();
                     final Logger logger = commandLogger(ctx, cc);
                     final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
-                    final Map<String, String> config = null;
+                    final Map<String, String> config = new HashMap<>();
+                    for(final RetentionPolicyType.Parameter p : rpt.getParameters()) {
+                        final Object val = cc.getArgument(p.name(), Object.class);
+                        config.put(p.name(), String.valueOf(val));
+                    }
                     final String encodedPolicy = RetentionPolicyCodec.INSTANCE.encodePolicy(ctx, rpt, config);
                     final RetentionPolicy rp =
                             RetentionPolicyCodec.INSTANCE.decodePolicy(ctx, RetentionPolicyType.getAvailable(), encodedPolicy);
-                    requireNonNull(rp);
                     try (final Git git = Git.open(worldSaveDir.toFile())) {
                         final StoredConfig gitConfig = git.getRepository().getConfig();
                         WorldConfig.setRetentionPolicy(gitConfig, encodedPolicy);
@@ -76,7 +82,8 @@ public class RetainCommand {
                         logger.internalError("Command execution failed.", e);
                         return FAILURE;
                     }
-                    logger.notify(localized("fastback.notify.retention-policy-set", rp.getDescription()));
+                    logger.notify(localized("fastback.notify.retention-policy-set"));
+                    logger.notify(rp.getDescription());
                     return SUCCESS;
                 }
             };
@@ -106,11 +113,11 @@ public class RetainCommand {
                 final RetentionPolicy policy = RetentionPolicyCodec.INSTANCE.
                         decodePolicy(ctx, RetentionPolicyType.getAvailable(), encoded);
                 if (policy != null) {
-                    log.notify(localized("fastback.notify.retention-policy-show", policy.getDescription()));
+                    log.notify(localized("fastback.notify.retention-policy-show"));
+                    log.notify(policy.getDescription());
                 }
             }
             return SUCCESS;
         });
     }
-
 }

@@ -31,7 +31,6 @@ public interface RetentionPolicyType {
         return List.of(DailyRetentionPolicy.DailyRetentionPolicyType.INSTANCE, FixedCountRetentionPolicy.Type.INSTANCE);
     }
 
-
     record Parameter(String name, ArgumentType<?> type) {}
 
     String getName();
