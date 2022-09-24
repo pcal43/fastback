@@ -25,13 +25,24 @@ import net.pcal.fastback.logging.Message;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Encapsulates a general kind of retention policy.  Takes simple user-supplied configuration and produces a
+ * RetentionPolicy.
+ *
+ * @author pcal
+ * @since 0.1.5
+ */
 public interface RetentionPolicyType {
 
     static List<RetentionPolicyType> getAvailable() {
-        return List.of(DailyRetentionPolicy.DailyRetentionPolicyType.INSTANCE, FixedCountRetentionPolicy.Type.INSTANCE);
+        return List.of(
+                DailyRetentionPolicy.DailyRetentionPolicyType.INSTANCE,
+                FixedCountRetentionPolicy.Type.INSTANCE,
+                AllRetentionPolicy.Type.INSTANCE);
     }
 
-    record Parameter(String name, ArgumentType<?> type) {}
+    record Parameter(String name, ArgumentType<?> type) {
+    }
 
     String getName();
 
@@ -39,9 +50,13 @@ public interface RetentionPolicyType {
 
     RetentionPolicy createPolicy(ModContext ctx, Map<String, String> config);
 
-    default String getEncodedName() { return getName(); }
+    default String getEncodedName() {
+        return getName();
+    }
 
-    default String getCommandName()  { return getName(); }
+    default String getCommandName() {
+        return getName();
+    }
 
     Message getDescription();
 

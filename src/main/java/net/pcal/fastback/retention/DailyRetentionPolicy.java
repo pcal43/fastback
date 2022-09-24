@@ -29,6 +29,13 @@ import java.util.*;
 
 import static net.pcal.fastback.logging.Message.localized;
 
+/**
+ * Policy that retains only the last snapshot of each day, along with all snapshots in
+ * the last n days.
+ *
+ * @author pcal
+ * @since 0.1.5
+ */
 class DailyRetentionPolicy implements RetentionPolicy {
 
     private static final String GRACE_PERIOD_DAYS = "gracePeriodDays";
@@ -101,8 +108,8 @@ class DailyRetentionPolicy implements RetentionPolicy {
             if (config != null && config.containsKey(GRACE_PERIOD_DAYS)) {
                 try {
                     gracePeriodTemp = Integer.parseInt(config.get(GRACE_PERIOD_DAYS));
-                } catch(NumberFormatException nfe) {
-                    ctx.getLogger().internalError("invalid grace period "+config.get(GRACE_PERIOD_DAYS), nfe);
+                } catch (NumberFormatException nfe) {
+                    ctx.getLogger().internalError("invalid grace period " + config.get(GRACE_PERIOD_DAYS), nfe);
                 }
             }
             final int gracePeriod = gracePeriodTemp;
@@ -112,7 +119,7 @@ class DailyRetentionPolicy implements RetentionPolicy {
 
         @Override
         public Message getDescription() {
-            return localized(L10N_KEY, "<"+GRACE_PERIOD_DAYS+">");
+            return localized(L10N_KEY, "<" + GRACE_PERIOD_DAYS + ">");
         }
     }
 }

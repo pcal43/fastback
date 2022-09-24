@@ -25,8 +25,7 @@ import java.util.*;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Singleton which can encode a policy identifier and a small set of simple configuration values into a single-line
- * string that can easily be saved in git config.
+ * Singleton which can encode a RetentionPolicy into a single-line string that can easily be saved in git config.
  *
  * @author pcal
  * @since 0.1.5
@@ -51,12 +50,12 @@ public enum RetentionPolicyCodec {
             encodedTypeName = encodedPolicy.substring(0, firstSpace).trim();
             config = decodeMap(ctx, encodedPolicy.substring(firstSpace));
         }
-        for(final RetentionPolicyType rtp : availablePolicyTypes) {
+        for (final RetentionPolicyType rtp : availablePolicyTypes) {
             if (rtp.getEncodedName().equals(encodedTypeName)) {
                 return rtp.createPolicy(ctx, config);
             }
         }
-        ctx.getLogger().internalError("Invalid retention policy "+encodedPolicy, new Exception());
+        ctx.getLogger().internalError("Invalid retention policy " + encodedPolicy, new Exception());
         return null;
     }
 

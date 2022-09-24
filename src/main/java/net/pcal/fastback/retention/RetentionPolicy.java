@@ -24,6 +24,12 @@ import net.pcal.fastback.utils.SnapshotId;
 import java.util.Collection;
 
 
+/**
+ * Encapsulates a policy choice about which snapshots should be kept when pruning.
+ *
+ * @author pcal
+ * @since 0.1.5
+ */
 public interface RetentionPolicy {
 
     Message getDescription();

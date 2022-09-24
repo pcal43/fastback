@@ -5,14 +5,16 @@ import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Message;
 import net.pcal.fastback.utils.SnapshotId;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static net.pcal.fastback.logging.Message.localized;
 
+/**
+ * Retention policy that keeps only the n most-recent snapshots.
+ *
+ * @author pcal
+ * @since 0.1.5
+ */
 class FixedCountRetentionPolicy implements RetentionPolicy {
 
     private static final int COUNT_DEFAULT = 10;
@@ -54,13 +56,6 @@ class FixedCountRetentionPolicy implements RetentionPolicy {
         }
     }
 
-    /**
-     * Retention policy that keeps only the most-recent snapshot of each day.  Provides for a grace period
-     * during which all snapshots are retained.
-     *
-     * @author pcal
-     * @since 0.1.5
-     */
     enum Type implements RetentionPolicyType {
 
         INSTANCE;
@@ -82,7 +77,7 @@ class FixedCountRetentionPolicy implements RetentionPolicy {
 
         @Override
         public Message getDescription() {
-            return localized(L10N_KEY, "<"+COUNT_PARAM+">");
+            return localized(L10N_KEY, "<" + COUNT_PARAM + ">");
         }
     }
 }

@@ -65,9 +65,7 @@ public class Commands {
         FileRemoteCommand.register(argb, ctx);
         UuidCommand.register(argb, ctx);
         VersionCommand.register(argb, ctx);
-
-        SetRetention.register(argb, ctx);
-
+        SetRetentionCommand.register(argb, ctx);
         HelpCommand.register(argb, ctx);
         if (ctx.isExperimentalCommandsEnabled()) {
             SaveCommand.register(argb, ctx);

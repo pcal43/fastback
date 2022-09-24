@@ -53,6 +53,8 @@
   "fastback.notify.restore-start"              : "Restoring %s to \n%s",
   "fastback.notify.retention-policy-none"      : "No snapshot retention policy set.",
   "fastback.notify.retention-policy-set"       : "Snapshot retention policy set to:",
+  "fastback.notify.retention-policy-not-set"   : "No retention policy set.  Run /backup set-retention",
+  "fastback.retain.all.description"            : "Retain all snapshots; never prune.",
   "fastback.notify.shutdown-currently-disabled": "Backup on shutdown is currently disabled.",
   "fastback.notify.shutdown-currently-enabled" : "Backup on world shutdown is currently enabled.",
   "fastback.notify.shutdown-disabled"          : "Backup on shutdown is now disabled.",

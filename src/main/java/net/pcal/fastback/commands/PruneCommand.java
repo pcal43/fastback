@@ -35,9 +35,14 @@ import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.*;
 import static net.pcal.fastback.logging.Message.localized;
-import static net.pcal.fastback.logging.Message.raw;
 import static net.pcal.fastback.tasks.ListSnapshotsTask.listSnapshotsForWorldSorted;
 
+/**
+ * Command to prune all snapshots that are not to be retained per the retention policy.
+ *
+ * @author pcal
+ * @since 0.1.5
+ */
 public class PruneCommand {
 
     private static final String COMMAND_NAME = "prune";
@@ -62,14 +67,13 @@ public class PruneCommand {
             this.ctx.getExecutorService().execute(() -> {
                 final String policyConfig = wc.retentionPolicy();
                 if (policyConfig == null) {
-                    //FIXME
                     log.notifyError(localized("fastback.notify.prune-no-default"));
                     return;
                 }
                 final RetentionPolicy policy = RetentionPolicyCodec.INSTANCE.decodePolicy
                         (ctx, ctx.getAvailableRetentionPolicyTypes(), policyConfig);
                 if (policy == null) {
-                    log.notifyError(raw("could not retrieve retention policy.  try running /backup retention-policy"));
+                    log.notifyError(localized("fastback.notify.retention-policy-not-set"));
                     return;
                 }
                 final MinecraftServer server = cc.getSource().getServer();
@@ -79,13 +83,13 @@ public class PruneCommand {
                 for (final SnapshotId sid : toPrune) {
                     log.notify(localized("fastback.notify.prune-pruning", sid.getName()));
                     try {
-                        git.branchDelete().setForce(true).setBranchNames(new String[] { sid.getBranchName()} ).call();
+                        git.branchDelete().setForce(true).setBranchNames(new String[]{sid.getBranchName()}).call();
                         pruned++;
                     } catch (final GitAPIException e) {
-                        log.internalError("failed to prune branch for "+sid, e);
+                        log.internalError("failed to prune branch for " + sid, e);
                     }
                 }
-                log.notify(localized("fastback.notify.prune-done" , pruned));
+                log.notify(localized("fastback.notify.prune-done", pruned));
                 if (pruned > 0) {
                     log.notify(localized("fastback.notify.prune-suggest-gc"));
                 }

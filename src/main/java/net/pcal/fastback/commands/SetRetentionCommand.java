@@ -43,50 +43,30 @@ import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.*;
 import static net.pcal.fastback.logging.Message.localized;
 
-public class SetRetention {
+/**
+ * Command to set the snapshot retention policy.
+ *
+ * @author pcal
+ * @since 0.1.5
+ */
+public class SetRetentionCommand implements Command<ServerCommandSource> {
 
     private static final String COMMAND_NAME = "set-retention";
 
+    //
+    // FIXME? The command parsing here could be more user-friendly.  Not really clear how to implement
+    // argument defaults.  Also a lot of noise from bugs like this: https://bugs.mojang.com/browse/MC-165562
+    // Just generally not sure how to beat brigadier into submission here.
+    //
     public static void register(LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
-        final SetRetention c = new SetRetention(ctx);
         final LiteralArgumentBuilder<ServerCommandSource> retainCommand = literal(COMMAND_NAME).
                 requires(subcommandPermission(ctx, COMMAND_NAME));
         for (final RetentionPolicyType rpt : ctx.getAvailableRetentionPolicyTypes()) {
-            Command<ServerCommandSource> cc = new Command<>() {
-                @Override
-                //https://bugs.mojang.com/browse/MC-165562
-                public int run(CommandContext<ServerCommandSource> cc) throws CommandSyntaxException {
-                    final MinecraftServer server = cc.getSource().getServer();
-                    final Logger logger = commandLogger(ctx, cc);
-                    final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
-                    final Map<String, String> config = new HashMap<>();
-                    for(final RetentionPolicyType.Parameter p : rpt.getParameters()) {
-                        final Object val = cc.getArgument(p.name(), Object.class);
-                        config.put(p.name(), String.valueOf(val));
-                    }
-                    final String encodedPolicy = RetentionPolicyCodec.INSTANCE.encodePolicy(ctx, rpt, config);
-                    final RetentionPolicy rp =
-                            RetentionPolicyCodec.INSTANCE.decodePolicy(ctx, RetentionPolicyType.getAvailable(), encodedPolicy);
-                    if (rp == null) {
-                        logger.internalError("Failed to decode policy "+encodedPolicy, new Exception());
-                        return FAILURE;
-                    }
-                    try (final Git git = Git.open(worldSaveDir.toFile())) {
-                        final StoredConfig gitConfig = git.getRepository().getConfig();
-                        WorldConfig.setRetentionPolicy(gitConfig, encodedPolicy);
-                        gitConfig.save();
-                        logger.notify(localized("fastback.notify.retention-policy-set"));
-                        logger.notify(rp.getDescription());
-                    } catch (Exception e) {
-                        logger.internalError("Command execution failed.", e);
-                        return FAILURE;
-                    }
-                    return SUCCESS;
-                }
-            };
+            final Command<ServerCommandSource> cc = new SetRetentionCommand(ctx, rpt);
             final LiteralArgumentBuilder<ServerCommandSource> policyCommand = literal(rpt.getCommandName());
+            policyCommand.executes(cc);
             if (rpt.getParameters() != null) {
-                for(RetentionPolicyType.Parameter param : rpt.getParameters()) {
+                for (RetentionPolicyType.Parameter param : rpt.getParameters()) {
                     policyCommand.then(argument(param.name(), param.type()).executes(cc));
                 }
             }
@@ -96,8 +76,45 @@ public class SetRetention {
     }
 
     private final ModContext ctx;
+    private final RetentionPolicyType rpt;
 
-    private SetRetention(ModContext context) {
+    private SetRetentionCommand(ModContext context, RetentionPolicyType rpt) {
         this.ctx = requireNonNull(context);
+        this.rpt = requireNonNull(rpt);
+    }
+
+    @Override
+    public int run(CommandContext<ServerCommandSource> cc) throws CommandSyntaxException {
+        final Logger logger = commandLogger(ctx, cc);
+        try {
+            final MinecraftServer server = cc.getSource().getServer();
+            final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
+            final Map<String, String> config = new HashMap<>();
+            for (final RetentionPolicyType.Parameter p : rpt.getParameters()) {
+                final Object val = cc.getArgument(p.name(), Object.class);
+                config.put(p.name(), String.valueOf(val));
+            }
+            final String encodedPolicy = RetentionPolicyCodec.INSTANCE.encodePolicy(ctx, rpt, config);
+            final RetentionPolicy rp =
+                    RetentionPolicyCodec.INSTANCE.decodePolicy(ctx, RetentionPolicyType.getAvailable(), encodedPolicy);
+            if (rp == null) {
+                logger.internalError("Failed to decode policy " + encodedPolicy, new Exception());
+                return FAILURE;
+            }
+            try (final Git git = Git.open(worldSaveDir.toFile())) {
+                final StoredConfig gitConfig = git.getRepository().getConfig();
+                WorldConfig.setRetentionPolicy(gitConfig, encodedPolicy);
+                gitConfig.save();
+                logger.notify(localized("fastback.notify.retention-policy-set"));
+                logger.notify(rp.getDescription());
+            } catch (Exception e) {
+                logger.internalError("Command execution failed.", e);
+                return FAILURE;
+            }
+            return SUCCESS;
+        } catch (Exception e) {
+            logger.internalError("Failed to set retention policy", e);
+            return FAILURE;
+        }
     }
 }
