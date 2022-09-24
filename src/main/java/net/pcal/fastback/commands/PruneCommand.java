@@ -36,6 +36,7 @@ import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.executeStandardNew;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.logging.Message.raw;
 import static net.pcal.fastback.tasks.ListSnapshotsTask.listSnapshotsForWorldSorted;
 
@@ -64,13 +65,13 @@ public class PruneCommand {
                 final String policyConfig = wc.retentionPolicy();
                 if (policyConfig == null) {
                     //FIXME
-                    log.notifyError(raw("no retention policy configured.  please run /backup retention-policy"));
+                    log.notifyError(localized("fastback.notify.prune-no-default"));
                     return;
                 }
                 final RetentionPolicy policy = RetentionPolicyCodec.INSTANCE.decodePolicy
                         (ctx, ctx.getAvailableRetentionPolicyTypes(), policyConfig);
                 if (policy == null) {
-                    log.notifyError(raw("could not retrieve retention policy.  try running /backup retenion-policy"));
+                    log.notifyError(raw("could not retrieve retention policy.  try running /backup retention-policy"));
                     return;
                 }
                 final MinecraftServer server = cc.getSource().getServer();
@@ -78,7 +79,7 @@ public class PruneCommand {
                 Collection<SnapshotId> toPrune = policy.getSnapshotsToPrune(listSnapshotsForWorldSorted(worldSaveDir, ctx.getLogger()));
                 int pruned = 0;
                 for (final SnapshotId sid : toPrune) {
-                    log.notify(raw("Pruning "+sid.getName()));
+                    log.notify(localized("fastback.notify.prune-pruning", sid.getName()));
                     try {
                         git.branchDelete().setForce(true).setBranchNames(new String[] { sid.getBranchName()} ).call();
                         pruned++;
@@ -86,13 +87,12 @@ public class PruneCommand {
                         log.internalError("failed to prune branch for "+sid, e);
                     }
                 }
-                log.notify(raw("Pruned "+pruned+" branches."));
+                log.notify(localized("fastback.notify.prune-done" , pruned));
                 if (pruned > 0) {
-                    log.notify(raw("Run /backup gc to reclaim disk space."));
+                    log.notify(localized("fastback.notify.prune-suggest-gc"));
                 }
             });
             return SUCCESS;
         });
     }
-
 }
