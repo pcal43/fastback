@@ -19,9 +19,6 @@
 package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.Command;
-import com.mojang.brigadier.arguments.ArgumentType;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -74,16 +71,20 @@ public class RetainCommand {
                     final String encodedPolicy = RetentionPolicyCodec.INSTANCE.encodePolicy(ctx, rpt, config);
                     final RetentionPolicy rp =
                             RetentionPolicyCodec.INSTANCE.decodePolicy(ctx, RetentionPolicyType.getAvailable(), encodedPolicy);
+                    if (rp == null) {
+                        logger.internalError("Failed to decode policy "+encodedPolicy, new Exception());
+                        return FAILURE;
+                    }
                     try (final Git git = Git.open(worldSaveDir.toFile())) {
                         final StoredConfig gitConfig = git.getRepository().getConfig();
                         WorldConfig.setRetentionPolicy(gitConfig, encodedPolicy);
                         gitConfig.save();
+                        logger.notify(localized("fastback.notify.retention-policy-set"));
+                        logger.notify(rp.getDescription());
                     } catch (Exception e) {
                         logger.internalError("Command execution failed.", e);
                         return FAILURE;
                     }
-                    logger.notify(localized("fastback.notify.retention-policy-set"));
-                    logger.notify(rp.getDescription());
                     return SUCCESS;
                 }
             };
