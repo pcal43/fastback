@@ -40,7 +40,7 @@ public class Log4jLogger implements Logger {
     @Override
     public void notifyError(Message message) {
         // FIXME how to translate these?
-        this.log4j.info("[NOTIFY-ERROR] " + this.localizer.apply(message));
+        this.log4j.info("[NOTIFY-ERROR] " +this.localizer.apply(message));
     }
 
     @Override

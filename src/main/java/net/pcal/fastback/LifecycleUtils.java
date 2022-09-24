@@ -101,12 +101,12 @@ public class LifecycleUtils {
         for (final Pair<String, Path> pair : CONFIG_RESOURCES) {
             final String resourcePath = pair.getLeft();
             final Path targetFilePath = pair.getRight();
-            ctx.getLogger().debug("writing " + resourcePath + " to " + targetFilePath);
+            ctx.getLogger().debug("writing "+resourcePath + " to "+targetFilePath);
             final Path configPath = configDir.resolve("fastback").resolve(targetFilePath);
             try {
                 writeResourceToFile(resourcePath, configDir.resolve(configPath));
             } catch (IOException e) {
-                ctx.getLogger().internalError("failed to output resource " + resourcePath, e);
+                ctx.getLogger().internalError("failed to output resource "+resourcePath, e);
             }
         }
     }
