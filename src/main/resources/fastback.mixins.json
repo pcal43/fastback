@@ -5,9 +5,9 @@
   "compatibilityLevel": "JAVA_16",
   "mixins": [
     "MinecraftServerMixin",
-    "ScreenAccessors",
     "ServerAccessors",
-    "SessionAccessors"
+    "SessionAccessors",
+    "ScreenAccessors"
   ],
   "injectors": {
     "defaultRequire": 1
