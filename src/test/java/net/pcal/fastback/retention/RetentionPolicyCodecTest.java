@@ -24,10 +24,13 @@ import net.pcal.fastback.logging.Message;
 import net.pcal.fastback.utils.SnapshotId;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 import static net.pcal.fastback.logging.Message.raw;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RetentionPolicyCodecTest {
 

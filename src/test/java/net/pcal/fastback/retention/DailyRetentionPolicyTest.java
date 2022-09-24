@@ -24,7 +24,12 @@ import net.pcal.fastback.utils.SnapshotId;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 public class DailyRetentionPolicyTest {
 
