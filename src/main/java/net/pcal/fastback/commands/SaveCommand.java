@@ -52,7 +52,7 @@ public class SaveCommand {
     private int execute(CommandContext<ServerCommandSource> cc) {
         return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
             if (this.ctx.isWorldSaveEnabled()) {
-                cc.getSource().getServer().saveAll(false, true, true);
+                ctx.saveWorld();
                 log.notify(localized("World saved (NOT backed up)."));
                 return SUCCESS;
             } else {
