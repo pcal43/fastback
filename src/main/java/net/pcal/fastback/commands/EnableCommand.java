@@ -38,24 +38,21 @@ import static net.pcal.fastback.WorldConfig.doWorldMaintenance;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
-import static net.pcal.fastback.commands.Commands.executeStandard;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
 
 public class EnableCommand {
 
+    public static final String DEFAULT_SHUTDOWN_COMMANDS = "commit push";
+
     private static final String COMMAND_NAME = "enable";
-    private static final String SHUTDOWN = "shutdown";
-    private static final String REMOTE = "remote";
 
     public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         final EnableCommand c = new EnableCommand(ctx);
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(c::enable).then(
-                                literal(SHUTDOWN).executes(c::enableShutdown)).then(
-                                literal(REMOTE).executes(c::enableRemote))
+                        executes(c::enable)
         );
     }
 
@@ -73,53 +70,16 @@ public class EnableCommand {
             doWorldMaintenance(git, logger);
             final StoredConfig config = git.getRepository().getConfig();
             final WorldConfig worldConfig = WorldConfig.load(worldSaveDir, config);
-            if (worldConfig.isBackupEnabled() && worldConfig.isShutdownBackupEnabled()) {
-                logger.notifyError(localized("fastback.notify.enable-already-enabled"));
-                return FAILURE;
-            } else {
-                WorldConfig.setBackupEnabled(config, true);
-                WorldConfig.setShutdownBackupEnabled(config, true);
-                config.save();
-                logger.notify(localized("fastback.notify.enable-done"));
-                return SUCCESS;
+            WorldConfig.setBackupEnabled(config, true);
+            if (worldConfig.shutdownCommand() == null || worldConfig.shutdownCommand().trim().isEmpty()) {
+                WorldConfig.setShutdownCommands(config, DEFAULT_SHUTDOWN_COMMANDS);
             }
+            config.save();
+            logger.notify(localized("fastback.notify.enable-done"));
+            return SUCCESS;
         } catch (GitAPIException | IOException e) {
             logger.internalError("Error enabling backups", e);
             return FAILURE;
         }
-    }
-
-    private int enableShutdown(final CommandContext<ServerCommandSource> cc) {
-        return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
-            final boolean enabled = wc.isShutdownBackupEnabled();
-            if (enabled) {
-                log.notifyError(localized("fastback.notify.shutdown-currently-enabled"));
-                return FAILURE;
-            } else {
-                WorldConfig.setShutdownBackupEnabled(gitc, true);
-                gitc.save();
-                log.notifyError(localized("fastback.notify.shutdown-enabled"));
-                return SUCCESS;
-            }
-        });
-    }
-
-    private int enableRemote(final CommandContext<ServerCommandSource> cc) {
-        return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
-            final String currentUrl = wc.getRemotePushUrl();
-            final boolean currentEnabled = wc.isRemoteBackupEnabled();
-            if (currentUrl == null) {
-                log.notifyError(localized("fastback.notify.remote-no-url"));
-                return FAILURE;
-            } else if (currentEnabled) {
-                log.notifyError(localized("fastback.notify.remote-already-enabled", currentUrl));
-                return FAILURE;
-            } else {
-                log.notify(localized("fastback.notify.remote-enabled", currentUrl));
-                WorldConfig.setRemoteBackupEnabled(gitc, true);
-                gitc.save();
-                return SUCCESS;
-            }
-        });
     }
 }

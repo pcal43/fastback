@@ -20,11 +20,11 @@ package net.pcal.fastback;
 
 import net.minecraft.server.MinecraftServer;
 import net.pcal.fastback.commands.Commands;
+import net.pcal.fastback.commands.SchedulableCommand;
 import net.pcal.fastback.logging.ChatLogger;
 import net.pcal.fastback.logging.CompositeLogger;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.SaveScreenLogger;
-import net.pcal.fastback.tasks.BackupTask;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.jgit.api.Git;
 
@@ -38,6 +38,7 @@ import static net.pcal.fastback.WorldConfig.isBackupsEnabledOn;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.utils.FileUtils.writeResourceToFile;
 import static net.pcal.fastback.utils.GitUtils.isGitRepo;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
  * Framework-agnostic lifecycle logic.
@@ -94,15 +95,16 @@ public class LifecycleUtils {
         }
         try {
             final WorldConfig config = WorldConfig.load(worldSaveDir);
-            if (config.isShutdownBackupEnabled()) {
+            if (!isBlank(config.shutdownCommand())) {
                 final Logger screenLogger = CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx));
-                new BackupTask(ctx, worldSaveDir, screenLogger).run();
-            } else {
-                logger.info("Shutdown backups disabled.");
+                final SchedulableCommand scom = SchedulableCommand.getForConfigKey(config.shutdownCommand());
+                scom.run(ctx, server, screenLogger);
             }
         } catch (IOException e) {
             logger.internalError("Shutdown backup failed.", e);
         }
+        shutdownExecutor(ctx.getExecutorService());
+
         ctx.getLogger().info("onWorldStop complete");
     }
 
