@@ -43,7 +43,7 @@ import static net.pcal.fastback.logging.Message.localized;
 
 public class EnableCommand {
 
-    public static final SchedulableAction DEFAULT_SHUTDOWN_ACTION = SchedulableAction.LOCAL;
+    public static final SchedulableAction DEFAULT_SHUTDOWN_ACTION = SchedulableAction.FULL;
 
     private static final String COMMAND_NAME = "enable";
 

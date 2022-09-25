@@ -19,26 +19,49 @@
 package net.pcal.fastback.commands;
 
 
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
+import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.tasks.BackupTask;
+
+import java.io.IOException;
+import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
+import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
 
 public enum SchedulableAction {
 
-    LOCAL("local") {
-
+    FULL("full") {
         @Override
         public void run(ModContext ctx, ServerCommandSource scs, Logger log) {
-            log.info("Starting scheduled local backup");
-            //new CommitTask(git, ctx, server, log).run();
+            ctx.getExecutorService().execute(() -> {
+                final MinecraftServer server = scs.getServer();
+                final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
+                if (!isGitRepo(worldSaveDir)) {
+                    log.info("Backups not initialized.");
+                    return;
+                }
+                final WorldConfig config;
+                try {
+                    config = WorldConfig.load(worldSaveDir);
+                } catch (IOException e) {
+                    log.internalError("Failed to load world config", e);
+                    return;
+                }
+                if (config.isBackupEnabled()) {
+                    log.info("Saving before backup");
+                    new BackupTask(ctx, worldSaveDir, log).run();
+                }
+            });
         }
     };
 
     public static SchedulableAction getForConfigKey(String configKey) {
-        return LOCAL; //FIXME
+        return FULL; //FIXME
     }
 
     private final String configKey;
@@ -53,3 +76,4 @@ public enum SchedulableAction {
 
     public abstract void run(ModContext ctx, ServerCommandSource scs, Logger log);
 }
+

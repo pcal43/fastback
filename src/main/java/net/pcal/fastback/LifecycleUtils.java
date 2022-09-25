@@ -20,7 +20,6 @@ package net.pcal.fastback;
 
 import net.minecraft.server.MinecraftServer;
 import net.pcal.fastback.commands.Commands;
-import net.pcal.fastback.commands.SchedulableAction;
 import net.pcal.fastback.logging.ChatLogger;
 import net.pcal.fastback.logging.CompositeLogger;
 import net.pcal.fastback.logging.Logger;
@@ -38,7 +37,6 @@ import static net.pcal.fastback.WorldConfig.isBackupsEnabledOn;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.utils.FileUtils.writeResourceToFile;
 import static net.pcal.fastback.utils.GitUtils.isGitRepo;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
  * Framework-agnostic lifecycle logic.
