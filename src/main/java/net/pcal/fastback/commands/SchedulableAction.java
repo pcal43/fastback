@@ -40,6 +40,13 @@ public enum SchedulableAction {
         public void run(ModContext ctx, ServerCommandSource scs, Logger log) {
             ctx.getExecutorService().execute(() -> {
                 final MinecraftServer server = scs.getServer();
+                if (server.isStopped() || server.isStopping()) { //FIXME move this
+                    log.info("Skipping save before backup because server is shutting down.");
+                } else {
+                    log.info("Saving before backup");
+                    server.saveAll(false, true, true); // suppressLogs, flush, force
+                    log.info("Starting backup");
+                }
                 final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
                 if (!isGitRepo(worldSaveDir)) {
                     log.info("Backups not initialized.");
