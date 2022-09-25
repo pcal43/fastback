@@ -61,6 +61,7 @@ dependencies {
 	// JUnit
 	testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.2"
 	testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.8.2"
+	testRuntimeOnly 'org.apache.logging.log4j:log4j-core:2.16.0'
 }
 
 
@@ -135,9 +136,5 @@ modrinth {
 
 	options {
 		forgeGradleIntegration = false
-	}
-
-	remapJar {
-		finalizedBy project.tasks.curseforge
 	}
 }
