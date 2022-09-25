@@ -64,7 +64,7 @@ public class PurgeCommand {
             final String branchName = sid.getBranchName();
             final MinecraftServer server = cc.getSource().getServer();
             final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
-            this.ctx.getExecutorService().execute(() -> {
+            this.ctx.executeExclusive(() -> {
                 try (final Git git = Git.open(worldSaveDir.toFile())) {
                     git.branchDelete().setForce(true).setBranchNames(branchName).call();
                     log.notify(localized("fastback.notify.purge-done", snapshotName));

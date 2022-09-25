@@ -47,7 +47,7 @@ class SnapshotNameSuggestions implements SuggestionProvider<ServerCommandSource>
     public CompletableFuture<Suggestions> getSuggestions(final CommandContext<ServerCommandSource> scs,
                                                          final SuggestionsBuilder builder) {
         CompletableFuture<Suggestions> completableFuture = new CompletableFuture<>();
-        this.ctx.getExecutorService().execute(() -> {
+        this.ctx.execute(() -> {
             try {
                 final Logger logger = commandLogger(ctx, scs);
                 final Path worldSaveDir = ctx.getWorldDirectory();

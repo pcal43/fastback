@@ -66,7 +66,7 @@ public class RestoreCommand {
             final MinecraftServer server = cc.getSource().getServer();
             final String worldName = this.ctx.getWorldName(server);
             final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
-            this.ctx.getExecutorService().execute(
+            this.ctx.execute(
                     RestoreSnapshotTask.create(worldSaveDir, snapshotName, worldName, restoresDir, commandLogger(ctx, cc)));
             return SUCCESS;
         });

@@ -53,7 +53,7 @@ public class Commands {
                 requires(Permissions.require(BACKUP_COMMAND_PERM, ctx.getDefaultPermLevel()));
         EnableCommand.register(argb, ctx);
         DisableCommand.register(argb, ctx);
-        NowCommand.register(argb, ctx);
+        LocalCommand.register(argb, ctx);
         InfoCommand.register(argb, ctx);
         RestoreCommand.register(argb, ctx);
         PruneCommand.register(argb, ctx);

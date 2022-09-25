@@ -67,7 +67,7 @@ public class ListCommand {
                 return FAILURE;
             }
             log.notify(localized("fastback.notify.list-local-snapshots-header"));
-            this.ctx.getExecutorService().execute(() -> {
+            this.ctx.execute(() -> {
                 for (SnapshotId sid : listSnapshotsForWorldSorted(worldSaveDir, ctx.getLogger())) {
                     log.notify(raw(sid.getName()));
                 }

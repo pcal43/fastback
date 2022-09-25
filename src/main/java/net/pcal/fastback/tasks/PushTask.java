@@ -35,7 +35,6 @@ import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.URIish;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
@@ -47,16 +46,30 @@ import static net.pcal.fastback.logging.Message.localized;
 
 public class PushTask extends Task {
 
-    private final Path worldSaveDir;
+    private final Git git;
     private final String branchNameToPush;
-    private final Logger logger;
+    private final Logger log;
 
-    public PushTask(final Path worldSaveDir,
+    public static PushTask createForCurrentBranch(final Git git, final Logger log) {
+        String currentBranch = null;
+        try {
+            currentBranch = git.getRepository().getBranch();
+        } catch (IOException e) {
+            log.internalError("Could not look up current branch", e);
+        }
+        if (currentBranch == null) {
+            log.internalError("No current branch", new Exception());
+            return null;
+        }
+        return new PushTask(git, currentBranch, log);
+    }
+
+    public PushTask(final Git git,
                     final String branchNameToPush,
-                    final Logger logger) {
-        this.worldSaveDir = requireNonNull(worldSaveDir);
+                    final Logger log) {
+        this.git = requireNonNull(git);
         this.branchNameToPush = requireNonNull(branchNameToPush);
-        this.logger = requireNonNull(logger);
+        this.log = requireNonNull(log);
     }
 
     private static String getTempBranchName(String uniqueName) {
@@ -66,45 +79,45 @@ public class PushTask extends Task {
     @Override
     public void run() {
         super.setStarted();
-        try (final Git git = Git.open(this.worldSaveDir.toFile())) {
-            final WorldConfig worldConfig = WorldConfig.load(worldSaveDir, git.getRepository().getConfig());
+        try {
+            final WorldConfig worldConfig = WorldConfig.load(git);
             final String pushUrl = worldConfig.getRemotePushUrl();
             if (pushUrl == null) {
                 final String msg = "Skipping remote backup because no remote url has been configured.";
-                this.logger.warn(msg);
+                this.log.warn(msg);
                 super.setFailed();
                 return;
             }
             final Collection<Ref> remoteBranchRefs = git.lsRemote().setHeads(true).setTags(false).
                     setRemote(worldConfig.getRemoteName()).call();
             final ListMultimap<String, SnapshotId> snapshotsPerWorld =
-                    SnapshotId.getSnapshotsPerWorld(remoteBranchRefs, logger);
+                    SnapshotId.getSnapshotsPerWorld(remoteBranchRefs, log);
             if (worldConfig.isUuidCheckEnabled()) {
                 final boolean uuidCheckResult;
                 try {
-                    uuidCheckResult = doUuidCheck(git, snapshotsPerWorld.keySet(), worldConfig, logger);
+                    uuidCheckResult = doUuidCheck(git, snapshotsPerWorld.keySet(), worldConfig, log);
                 } catch (final GitAPIException | IOException e) {
-                    logger.internalError("Skipping remote backup due to failed uuid check", e);
+                    log.internalError("Skipping remote backup due to failed uuid check", e);
                     super.setFailed();
                     return;
                 }
                 if (!uuidCheckResult) {
-                    logger.warn("Skipping remote backup due to world mismatch.");
+                    log.warn("Skipping remote backup due to world mismatch.");
                     super.setFailed();
                     return;
                 }
             }
-            logger.info("Pushing to " + worldConfig.getRemotePushUrl());
+            log.info("Pushing to " + worldConfig.getRemotePushUrl());
             if (worldConfig.isSmartPushEnabled()) {
-                doSmartPush(git, snapshotsPerWorld.get(worldConfig.worldUuid()), branchNameToPush, worldConfig, logger);
+                doSmartPush(git, snapshotsPerWorld.get(worldConfig.worldUuid()), branchNameToPush, worldConfig, log);
             } else {
-                doNaivePush(git, branchNameToPush, worldConfig, logger);
+                doNaivePush(git, branchNameToPush, worldConfig, log);
             }
             super.setCompleted();
             final Duration duration = super.getDuration();
-            logger.info("Remote backup complete.  Elapsed time: " + duration.toMinutesPart() + "m " + duration.toSecondsPart() + "s");
+            log.info("Remote backup complete.  Elapsed time: " + duration.toMinutesPart() + "m " + duration.toSecondsPart() + "s");
         } catch (GitAPIException | IOException e) {
-            logger.internalError("Remote backup failed unexpectedly", e);
+            log.internalError("Remote backup failed unexpectedly", e);
             super.setFailed();
         }
     }

@@ -23,13 +23,16 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.Message;
 import net.pcal.fastback.retention.RetentionPolicyType;
+import net.pcal.fastback.tasks.Task;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import static java.nio.file.Files.createTempDirectory;
 import static java.util.Objects.requireNonNull;
@@ -37,21 +40,35 @@ import static java.util.Objects.requireNonNull;
 public class ModContext {
 
     private final FrameworkServiceProvider spi;
-    private final ExecutorService exs;
+    private final ExecutorService executor;
+    private final ThreadPoolExecutor exclusiveExecutor;
     private Path tempRestoresDirectory = null;
 
     public static ModContext create(FrameworkServiceProvider spi) {
-        final ExecutorService exs = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        return new ModContext(spi, exs);
+        final ThreadPoolExecutor generalExecutor =
+                new ThreadPoolExecutor(0, 5, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
+        final ThreadPoolExecutor exclusiveExecutor =
+                new ThreadPoolExecutor(0, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
+        return new ModContext(spi, generalExecutor, exclusiveExecutor);
     }
 
-    private ModContext(FrameworkServiceProvider spi, ExecutorService exs) {
+    private ModContext(FrameworkServiceProvider spi, ExecutorService exs, ThreadPoolExecutor exclusiveExecutor) {
         this.spi = requireNonNull(spi);
-        this.exs = requireNonNull(exs);
+        this.executor = requireNonNull(exs);
+        this.exclusiveExecutor = requireNonNull(exclusiveExecutor);
     }
 
-    public ExecutorService getExecutorService() {
-        return this.exs;
+    public void executeExclusive(Runnable runnable) {
+        this.exclusiveExecutor.execute(runnable);
+    }
+
+    public void execute(Runnable runnable) {
+        this.executor.execute(runnable);
+    }
+
+    public void shutdown() {
+        shutdownExecutor(this.executor);
+        shutdownExecutor(this.exclusiveExecutor);
     }
 
     public String getCommandName() {
@@ -216,5 +233,28 @@ public class ModContext {
 
         void sendError(Message message, ServerCommandSource scs);
 
+    }
+
+
+    /**
+     * Lifted straight from the docs:
+     * https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html
+     */
+    private static void shutdownExecutor(ExecutorService pool) {
+        pool.shutdown(); // Disable new tasks from being submitted
+        try {
+            // Wait a while for existing tasks to terminate
+            if (!pool.awaitTermination(5, TimeUnit.MINUTES)) {
+                pool.shutdownNow(); // Cancel currently executing tasks
+                // Wait a while for tasks to respond to being cancelled
+                if (!pool.awaitTermination(5, TimeUnit.MINUTES))
+                    System.err.println("Pool did not terminate");
+            }
+        } catch (InterruptedException ie) {
+            // (Re-)Cancel if current thread also interrupted
+            pool.shutdownNow();
+            // Preserve interrupt status
+            Thread.currentThread().interrupt();
+        }
     }
 }

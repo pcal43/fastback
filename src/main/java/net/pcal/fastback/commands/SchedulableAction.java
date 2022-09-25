@@ -19,10 +19,13 @@
 package net.pcal.fastback.commands;
 
 
+import net.minecraft.server.command.ServerCommandSource;
+
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.tasks.BackupTask;
+import net.pcal.fastback.tasks.CommitAndPushTask;
+import org.eclipse.jgit.api.Git;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -38,17 +41,15 @@ import static net.pcal.fastback.utils.GitUtils.isGitRepo;
  */
 public enum SchedulableAction {
 
+    NONE("none") {
+        @Override
+        public void run(ModContext ctx, Logger log) {}
+    },
+
     FULL("full") {
         @Override
         public void run(ModContext ctx, Logger log) {
-            ctx.getExecutorService().execute(() -> {
-                if (ctx.isServerStopping()) {
-                    log.info("Skipping save before backup because server is shutting down.");
-                } else {
-                    log.info("Saving before backup");
-                    ctx.saveWorld();
-                    log.info("Starting backup");
-                }
+            ctx.executeExclusive(() -> {
                 final Path worldSaveDir = ctx.getWorldDirectory();
                 if (!isGitRepo(worldSaveDir)) {
                     log.info("Backups not initialized.");
@@ -62,8 +63,11 @@ public enum SchedulableAction {
                     return;
                 }
                 if (config.isBackupEnabled()) {
-                    log.info("Saving before backup");
-                    new BackupTask(ctx, worldSaveDir, log).run();
+                    try (Git git = Git.open(worldSaveDir.toFile())) {
+                        new CommitAndPushTask(git, ctx, log).run();
+                    } catch (IOException e) {
+                        log.internalError("Failed to open git repo", e);
+                    }
                 }
             });
         }

@@ -51,7 +51,7 @@ public class InfoCommand {
         requireNonNull(ctx);
         requireNonNull(scs);
         return executeStandardNew(ctx, scs, (git, wc, log) -> {
-            ctx.getExecutorService().execute(() -> {
+            ctx.execute(() -> {
                 log.notify(localized("fastback.notify.info-fastback-version", ctx.getModVersion()));
                 log.notify(localized("fastback.notify.info-uuid", wc.worldUuid()));
                 if (wc.isBackupEnabled()) {

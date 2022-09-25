@@ -30,7 +30,6 @@ import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,35 +38,39 @@ import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.Message.localized;
 
 @SuppressWarnings("FieldCanBeLocal")
-public class BackupTask extends Task {
+public class CommitTask extends Task {
 
     private final ModContext ctx;
-    private final Path worldSaveDir;
     private final Logger log;
+    private final Git git;
 
-    public BackupTask(final ModContext ctx, final Path worldSaveDir, final Logger log) {
+    public CommitTask(final Git git,
+                      final ModContext ctx,
+                      final Logger log) {
+        this.git = requireNonNull(git);
         this.ctx = requireNonNull(ctx);
-        this.worldSaveDir = requireNonNull(worldSaveDir);
         this.log = requireNonNull(log);
     }
 
     public void run() {
         this.setStarted();
         this.log.notify(localized("fastback.notify.local-preparing"));
-        try (Git git = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
-            final WorldConfig config;
-            try {
-                config = WorldConfig.load(worldSaveDir, git.getRepository().getConfig());
-            } catch (IOException e) {
-                log.internalError("Local backup failed.  Could not determine world-uuid.", e);
-                this.setFailed();
-                return;
-            }
-            final SnapshotId newSid = SnapshotId.create(config.worldUuid());
+        try {
+            final String uuid = WorldConfig.getWorldUuid(git);
+            final SnapshotId newSid = SnapshotId.create(uuid);
             final String newBranchName = newSid.getBranchName();
+
+            if (ctx.isServerStopping()) {
+                log.info("Skipping save before backup because server is shutting down.");
+            } else {
+                log.info("Saving before backup");
+                ctx.saveWorld();
+                log.info("Starting backup");
+            }
+
             log.info("Committing " + newBranchName);
             try {
-                doLocalBackup(git, ctx, newBranchName, log);
+                doCommit(git, ctx, newBranchName, log);
                 final Duration dur = getSplitDuration();
                 log.info("Local backup complete.  Elapsed time: " + dur.toMinutesPart() + "m " + dur.toSecondsPart() + "s");
             } catch (GitAPIException | IOException e) {
@@ -75,21 +78,7 @@ public class BackupTask extends Task {
                 this.setFailed();
                 return;
             }
-            if (config.isRemoteBackupEnabled()) {
-                this.log.notify(localized("fastback.notify.push-started"));
-                final PushTask push = new PushTask(worldSaveDir, newBranchName, log);
-                push.run();
-                if (push.isFailed()) {
-                    log.notifyError(localized("fastback.notify.push-failed"));
-                } else {
-                    final Duration dur = getSplitDuration();
-                    log.info("Remote backup to complete");
-                    log.info("Elapsed time: " + dur.toMinutesPart() + "m " + dur.toSecondsPart() + "s");
-                }
-            } else {
-                log.info("Remote backup disabled.");
-            }
-        } catch (GitAPIException e) {
+        } catch (IOException e) {
             log.internalError("Backup failed unexpectedly", e);
             this.setFailed();
             return;
@@ -98,7 +87,7 @@ public class BackupTask extends Task {
         this.setCompleted();
     }
 
-    private static void doLocalBackup(Git git, ModContext ctx, String newBranchName, final Logger log) throws GitAPIException, IOException {
+    private static void doCommit(Git git, ModContext ctx, String newBranchName, final Logger log) throws GitAPIException, IOException {
         log.debug("doing commit");
         log.debug("checkout");
         git.checkout().setOrphan(true).setName(newBranchName).call();

@@ -62,7 +62,7 @@ public class GcInfoCommand {
 
     private int now(CommandContext<ServerCommandSource> cc) {
         return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
-            ctx.getExecutorService().execute(() -> {
+            ctx.execute(() -> {
                 final ProgressMonitor pm =
                         new IncrementalProgressMonitor(new LoggingProgressMonitor(log), 100);
                 try (final Git git = Git.open(wc.worldSaveDir().toFile())) {

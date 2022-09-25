@@ -56,7 +56,7 @@ public class PruneCommand {
 
     public static int prune(final ModContext ctx, final ServerCommandSource scs) {
         return executeStandardNew(ctx, scs, (git, wc, log) -> {
-            ctx.getExecutorService().execute(() -> {
+            ctx.executeExclusive(() -> {
                 final String policyConfig = wc.retentionPolicy();
                 if (policyConfig == null) {
                     log.notifyError(localized("fastback.notify.prune-no-default"));
