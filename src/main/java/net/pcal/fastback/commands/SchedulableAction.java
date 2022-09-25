@@ -73,7 +73,10 @@ public enum SchedulableAction {
     };
 
     public static SchedulableAction getForConfigKey(String configKey) {
-        return FULL; //FIXME
+        for(SchedulableAction action : SchedulableAction.values()) {
+            if (action.configKey.equals(configKey)) return action;
+        }
+        return null;
     }
 
     private final String configKey;
