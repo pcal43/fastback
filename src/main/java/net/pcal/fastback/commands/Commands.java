@@ -55,7 +55,7 @@ public class Commands {
         EnableCommand.register(argb, ctx);
         DisableCommand.register(argb, ctx);
         NowCommand.register(argb, ctx);
-        StatusCommand.register(argb, ctx);
+        InfoCommand.register(argb, ctx);
         RestoreCommand.register(argb, ctx);
         PruneCommand.register(argb, ctx);
         PurgeCommand.register(argb, ctx);
@@ -63,8 +63,6 @@ public class Commands {
         ListCommand.register(argb, ctx);
         RemoteCommand.register(argb, ctx);
         FileRemoteCommand.register(argb, ctx);
-        UuidCommand.register(argb, ctx);
-        VersionCommand.register(argb, ctx);
         SetRetentionCommand.register(argb, ctx);
         HelpCommand.register(argb, ctx);
         if (ctx.isExperimentalCommandsEnabled()) {

@@ -36,12 +36,12 @@ import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.utils.FileUtils.getDirDisplaySize;
 
-public class StatusCommand {
+public class InfoCommand {
 
-    private static final String COMMAND_NAME = "status";
+    private static final String COMMAND_NAME = "info";
 
     public static void register(LiteralArgumentBuilder<ServerCommandSource> argb, ModContext ctx) {
-        final StatusCommand rc = new StatusCommand(ctx);
+        final InfoCommand rc = new InfoCommand(ctx);
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
@@ -50,38 +50,40 @@ public class StatusCommand {
 
     private final ModContext ctx;
 
-    private StatusCommand(ModContext context) {
+    private InfoCommand(ModContext context) {
         this.ctx = requireNonNull(context);
     }
 
     private int execute(CommandContext<ServerCommandSource> cc) {
         return executeStandardNew(this.ctx, cc, (git, wc, log) -> {
             this.ctx.getExecutorService().execute(() -> {
+                log.notify(localized("fastback.notify.info-fastback-version", this.ctx.getModVersion()));
+                log.notify(localized("fastback.notify.info-uuid", wc.worldUuid()));
                 if (wc.isBackupEnabled()) {
-                    log.notify(localized("fastback.notify.status-local-enabled"));
+                    log.notify(localized("fastback.notify.info-local-enabled"));
                 } else {
-                    log.notify(localized("fastback.notify.status-local-disabled"));
+                    log.notify(localized("fastback.notify.info-local-disabled"));
                 }
                 if (wc.isRemoteBackupEnabled()) {
-                    log.notify(localized("fastback.notify.status-remote-enabled"));
+                    log.notify(localized("fastback.notify.info-remote-enabled"));
                 } else {
-                    log.notify(localized("fastback.notify.status-remote-disabled"));
+                    log.notify(localized("fastback.notify.info-remote-disabled"));
                 }
                 if (wc.isRemoteBackupEnabled()) {
                     String url = wc.getRemotePushUrl();
                     if (url == null) {
-                        log.notifyError(localized("fastback.notify.status-remote-url-missing"));
+                        log.notifyError(localized("fastback.notify.info-remote-url-missing"));
                     } else {
-                        log.notify(localized("fastback.notify.status-remote-url", url));
+                        log.notify(localized("fastback.notify.info-remote-url", url));
                     }
                 }
                 if (wc.isShutdownBackupEnabled()) {
-                    log.notify(localized("fastback.notify.status-shutdown-enabled"));
+                    log.notify(localized("fastback.notify.info-shutdown-enabled"));
                 } else {
-                    log.notify(localized("fastback.notify.status-shutdown-disabled"));
+                    log.notify(localized("fastback.notify.info-shutdown-disabled"));
                 }
                 final File gitDir = git.getRepository().getDirectory();
-                log.notify(localized("fastback.notify.status-backup-size", getDirDisplaySize(gitDir)));
+                log.notify(localized("fastback.notify.info-backup-size", getDirDisplaySize(gitDir)));
                 {
                     // show the snapshot retention policy
                     final String encoded = wc.retentionPolicy();
