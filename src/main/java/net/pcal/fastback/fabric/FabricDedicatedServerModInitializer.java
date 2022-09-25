@@ -23,22 +23,30 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.pcal.fastback.LifecycleUtils;
 import net.pcal.fastback.ModContext;
 
+/**
+ * Initializer that runs in a dedicated server.
+ *
+ * @author pcal
+ * @since 0.0.1
+ */
 public class FabricDedicatedServerModInitializer implements DedicatedServerModInitializer {
 
     private final ModContext modContext = ModContext.create(FabricServiceProvider.forServer());
 
     @Override
     public void onInitializeServer() {
-        ServerLifecycleEvents.SERVER_STOPPED.register(
-                minecraftServer -> {
-                    LifecycleUtils.onWorldStop(modContext, minecraftServer);
-                }
-        );
         ServerLifecycleEvents.SERVER_STARTING.register(
                 minecraftServer -> {
                     LifecycleUtils.onWorldStart(modContext, minecraftServer);
                 }
         );
-        LifecycleUtils.onServerStart(modContext);
+        ServerLifecycleEvents.SERVER_STOPPED.register(
+                minecraftServer -> {
+                    LifecycleUtils.onWorldStop(modContext, minecraftServer);
+                    LifecycleUtils.onTermination(modContext); // dedicated server shutdown == VM termination
+                }
+        );
+        LifecycleUtils.onInitialize(modContext);
     }
+
 }

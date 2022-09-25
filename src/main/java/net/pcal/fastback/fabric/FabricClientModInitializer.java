@@ -19,6 +19,7 @@
 package net.pcal.fastback.fabric;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
@@ -31,6 +32,12 @@ import net.pcal.fastback.fabric.mixins.ScreenAccessors;
 
 import java.nio.file.Path;
 
+/**
+ * Initializer that runs in a client.
+ *
+ * @author pcal
+ * @since 0.0.1
+ */
 public class FabricClientModInitializer implements ClientModInitializer {
 
     private final FabricServiceProvider fabricProvider = FabricServiceProvider.forClient(new FabricClientProviderImpl());
@@ -38,17 +45,22 @@ public class FabricClientModInitializer implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        ServerLifecycleEvents.SERVER_STOPPED.register(
-                minecraftServer -> {
-                    LifecycleUtils.onWorldStop(modContext, minecraftServer);
-                }
-        );
         ServerLifecycleEvents.SERVER_STARTING.register(
                 minecraftServer -> {
                     LifecycleUtils.onWorldStart(modContext, minecraftServer);
                 }
         );
-        LifecycleUtils.onClientStart(modContext);
+        ServerLifecycleEvents.SERVER_STOPPED.register(
+                minecraftServer -> {
+                    LifecycleUtils.onWorldStop(modContext, minecraftServer);
+                }
+        );
+        ClientLifecycleEvents.CLIENT_STOPPING.register(
+                minecraftServer -> {
+                    LifecycleUtils.onTermination(modContext);
+                }
+        );
+        LifecycleUtils.onInitialize(modContext);
     }
 
     private static class FabricClientProviderImpl implements FabricClientProvider {
