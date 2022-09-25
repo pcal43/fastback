@@ -31,19 +31,21 @@ import net.pcal.fastback.ModContext;
  */
 public class FabricDedicatedServerModInitializer implements DedicatedServerModInitializer {
 
-    private final ModContext modContext = ModContext.create(FabricServiceProvider.forServer());
-
     @Override
     public void onInitializeServer() {
+        final FabricServiceProvider fsp = FabricServiceProvider.forDedicatedServer();
+        final ModContext modContext = ModContext.create(FabricServiceProvider.forDedicatedServer());
         ServerLifecycleEvents.SERVER_STARTING.register(
                 minecraftServer -> {
-                    LifecycleUtils.onWorldStart(modContext, minecraftServer);
+                    fsp.setMinecraftServer(minecraftServer);
+                    LifecycleUtils.onWorldStart(modContext);
                 }
         );
         ServerLifecycleEvents.SERVER_STOPPED.register(
                 minecraftServer -> {
-                    LifecycleUtils.onWorldStop(modContext, minecraftServer);
+                    LifecycleUtils.onWorldStop(modContext);
                     LifecycleUtils.onTermination(modContext); // dedicated server shutdown == VM termination
+                    fsp.setMinecraftServer(null);
                 }
         );
         LifecycleUtils.onInitialize(modContext);

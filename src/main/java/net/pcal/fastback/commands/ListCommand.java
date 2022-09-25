@@ -20,7 +20,6 @@ package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
@@ -61,8 +60,7 @@ public class ListCommand {
 
     private int execute(final CommandContext<ServerCommandSource> cc) {
         return executeStandard(ctx, cc, (gitc, wc, log) -> {
-            final MinecraftServer server = cc.getSource().getServer();
-            final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
+            final Path worldSaveDir = this.ctx.getWorldDirectory();
             if (!isGitRepo(worldSaveDir)) {
                 final Logger logger = commandLogger(ctx, cc);
                 logger.notifyError(localized("fastback.notify.not-enabled"));

@@ -22,7 +22,6 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
@@ -90,8 +89,7 @@ public class SetRetentionCommand implements Command<ServerCommandSource> {
     public int run(CommandContext<ServerCommandSource> cc) throws CommandSyntaxException {
         final Logger logger = commandLogger(ctx, cc);
         try {
-            final MinecraftServer server = cc.getSource().getServer();
-            final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
+            final Path worldSaveDir = ctx.getWorldDirectory();
             final Map<String, String> config = new HashMap<>();
             for (final RetentionPolicyType.Parameter p : rpt.getParameters()) {
                 final Object val = cc.getArgument(p.name(), Object.class);

@@ -41,6 +41,7 @@ import java.util.function.Function;
 public class FabricServiceProvider implements ModContext.FrameworkServiceProvider {
 
     private static FabricServiceProvider INSTANCE;
+    private MinecraftServer minecraftServer;
 
     public static FabricServiceProvider getInstance() {
         if (INSTANCE == null) throw new IllegalStateException("not initialized");
@@ -53,7 +54,7 @@ public class FabricServiceProvider implements ModContext.FrameworkServiceProvide
     private final Function<Message, String> localizer = String::valueOf; //FIXME we don't know how to do this
     private final Logger logger = new Log4jLogger(LogManager.getLogger(MOD_ID), localizer);
 
-    static FabricServiceProvider forServer() {
+    static FabricServiceProvider forDedicatedServer() {
         if (INSTANCE != null) throw new IllegalStateException();
         return INSTANCE = new FabricServiceProvider(null);
     }
@@ -65,6 +66,11 @@ public class FabricServiceProvider implements ModContext.FrameworkServiceProvide
 
     private FabricServiceProvider(FabricClientProvider clientProviderOrNull) {
         this.clientProvider = clientProviderOrNull;
+    }
+
+    void setMinecraftServer(MinecraftServer serverOrNull) {
+        if ((serverOrNull == null) == (this.minecraftServer == null)) throw new IllegalStateException();
+        this.minecraftServer = serverOrNull;
     }
 
     @Override
@@ -113,6 +119,18 @@ public class FabricServiceProvider implements ModContext.FrameworkServiceProvide
     }
 
     @Override
+    public void saveWorld() {
+        if (this.minecraftServer == null) throw new IllegalStateException();
+        this.minecraftServer.saveAll(false, true, true); // suppressLogs, flush, force
+    }
+
+    @Override
+    public boolean isServerStopping() {
+        if (this.minecraftServer == null) throw new IllegalStateException();
+        return this.minecraftServer.isStopped() || this.minecraftServer.isStopping();
+    }
+
+    @Override
     public Path getClientSavesDir() {
         if (this.clientProvider != null) {
             Path restoreDir = clientProvider.getClientRestoreDir();
@@ -147,9 +165,23 @@ public class FabricServiceProvider implements ModContext.FrameworkServiceProvide
     }
 
     @Override
+    public Path getWorldDirectory() {
+            if (this.minecraftServer == null) throw new IllegalStateException();
+        final LevelStorage.Session session = ((ServerAccessors) this.minecraftServer).getSession();
+        return ((SessionAccessors) session).getDirectory().path();
+    }
+
+    @Override
     public Path getWorldDirectory(final MinecraftServer server) {
         final LevelStorage.Session session = ((ServerAccessors) server).getSession();
         return ((SessionAccessors) session).getDirectory().path();
+    }
+
+    @Override
+    public String getWorldName() {
+        if (this.minecraftServer == null) throw new IllegalStateException();
+        final LevelStorage.Session session = ((ServerAccessors) this.minecraftServer).getSession();
+        return session.getLevelSummary().getLevelInfo().getLevelName();
     }
 
     @Override
@@ -157,7 +189,6 @@ public class FabricServiceProvider implements ModContext.FrameworkServiceProvide
         final LevelStorage.Session session = ((ServerAccessors) server).getSession();
         return session.getLevelSummary().getLevelInfo().getLevelName();
     }
-
 
     private static Text messageToText(final Message m) {
         if (m.localized() != null) {
