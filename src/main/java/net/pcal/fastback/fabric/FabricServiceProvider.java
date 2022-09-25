@@ -94,7 +94,7 @@ public class FabricServiceProvider implements ModContext.FrameworkServiceProvide
             throw new IllegalStateException("Could not find loader for " + MOD_ID);
         }
         final ModMetadata m = optionalModContainer.get().getMetadata();
-        return m.getName() + " " + m.getVersion();
+        return String.valueOf(m.getVersion());
     }
 
     @Override
