@@ -29,16 +29,18 @@ public class FabricDedicatedServerModInitializer implements DedicatedServerModIn
 
     @Override
     public void onInitializeServer() {
-        ServerLifecycleEvents.SERVER_STOPPED.register(
-                minecraftServer -> {
-                    LifecycleUtils.onWorldStop(modContext, minecraftServer);
-                }
-        );
         ServerLifecycleEvents.SERVER_STARTING.register(
                 minecraftServer -> {
+                    LifecycleUtils.onServerStart(modContext);
                     LifecycleUtils.onWorldStart(modContext, minecraftServer);
                 }
         );
-        LifecycleUtils.onServerStart(modContext);
+        ServerLifecycleEvents.SERVER_STOPPED.register(
+                minecraftServer -> {
+                    LifecycleUtils.onWorldStop(modContext, minecraftServer);
+                    LifecycleUtils.onServerStop(modContext);
+                }
+        );
+
     }
 }

@@ -31,6 +31,8 @@ import org.eclipse.jgit.api.Git;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static net.pcal.fastback.WorldConfig.isBackupsEnabledOn;
 import static net.pcal.fastback.logging.Message.localized;
@@ -42,13 +44,23 @@ public class LifecycleUtils {
     public static void onClientStart(final ModContext ctx) {
         Commands.registerCommands(ctx, ctx.getCommandName());
         copyConfigResources(ctx);
-        ctx.getLogger().info(ctx.getModId() + " client initialized");
+        ctx.getLogger().info("onClientStart complete");
+    }
+
+    public static void onClientStop(ModContext ctx) {
+        shutdownExecutor(ctx.getExecutorService());
+        ctx.getLogger().info("onClientStop complete");
     }
 
     public static void onServerStart(final ModContext ctx) {
         Commands.registerCommands(ctx, ctx.getCommandName());
         copyConfigResources(ctx);
-        ctx.getLogger().info(ctx.getModId() + " server initialized");
+        ctx.getLogger().info("onServerStart complete");
+    }
+
+    public static void onServerStop(ModContext ctx) {
+        shutdownExecutor(ctx.getExecutorService());
+        ctx.getLogger().info("onServerStop complete");
     }
 
     public static void onWorldStart(final ModContext ctx, final MinecraftServer server) {
@@ -58,16 +70,11 @@ public class LifecycleUtils {
         if (isGitRepo(worldSaveDir)) {
             try (final Git git = Git.open(worldSaveDir.toFile())) {
                 WorldConfig.doWorldMaintenance(git, logger);
-                if (WorldConfig.load(worldSaveDir).isBackupEnabled()) {
-                    return;
-                }
             } catch (IOException e) {
                 logger.internalError("Unable to perform maintenance.  Backups will probably not work correctly", e);
             }
         }
-        if (ctx.isStartupNotificationEnabled()) {
-            logger.notify(localized("fastback.notify.suggest-enable"));
-        }
+        ctx.getLogger().info("onWorldStart complete");
     }
 
     public static void onWorldStop(final ModContext ctx, final MinecraftServer server) {
@@ -89,6 +96,7 @@ public class LifecycleUtils {
         } catch (IOException e) {
             logger.internalError("Shutdown backup failed.", e);
         }
+        ctx.getLogger().info("onWorldStop complete");
     }
 
     private static final Iterable<Pair<String, Path>> CONFIG_RESOURCES = List.of(
@@ -110,4 +118,27 @@ public class LifecycleUtils {
             }
         }
     }
+
+    /**
+     * Lifted straight from the docs:
+     * https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html
+     */
+    private static void shutdownExecutor(ExecutorService pool) {
+        pool.shutdown(); // Disable new tasks from being submitted
+        try {
+            // Wait a while for existing tasks to terminate
+            if (!pool.awaitTermination(5, TimeUnit.MINUTES)) {
+                pool.shutdownNow(); // Cancel currently executing tasks
+                // Wait a while for tasks to respond to being cancelled
+                if (!pool.awaitTermination(5, TimeUnit.MINUTES))
+                    System.err.println("Pool did not terminate");
+            }
+        } catch (InterruptedException ie) {
+            // (Re-)Cancel if current thread also interrupted
+            pool.shutdownNow();
+            // Preserve interrupt status
+            Thread.currentThread().interrupt();
+        }
+    }
+
 }

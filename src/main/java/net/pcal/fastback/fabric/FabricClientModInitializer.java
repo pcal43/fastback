@@ -19,6 +19,7 @@
 package net.pcal.fastback.fabric;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
@@ -46,6 +47,11 @@ public class FabricClientModInitializer implements ClientModInitializer {
         ServerLifecycleEvents.SERVER_STARTING.register(
                 minecraftServer -> {
                     LifecycleUtils.onWorldStart(modContext, minecraftServer);
+                }
+        );
+        ClientLifecycleEvents.CLIENT_STOPPING.register(
+                minecraftServer -> {
+                    LifecycleUtils.onClientStop(modContext);
                 }
         );
         LifecycleUtils.onClientStart(modContext);
