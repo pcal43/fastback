@@ -28,23 +28,21 @@ import net.pcal.fastback.WorldConfig;
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.executeStandard;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
 
-public class RemoteCommand {
+public class SetRemoteCommand {
 
-    private static final String COMMAND_NAME = "remote";
+    private static final String COMMAND_NAME = "set-remote";
     private static final String URL_ARGUMENT = "remote-url";
 
     public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
-        final RemoteCommand c = new RemoteCommand(ctx);
+        final SetRemoteCommand c = new SetRemoteCommand(ctx);
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(c::showRemote).then(
+                        requires(subcommandPermission(ctx, COMMAND_NAME)).then(
                                 argument(URL_ARGUMENT, StringArgumentType.greedyString()).
                                         executes(c::setRemoteUrl))
         );
@@ -52,27 +50,8 @@ public class RemoteCommand {
 
     private final ModContext ctx;
 
-    private RemoteCommand(ModContext context) {
+    private SetRemoteCommand(ModContext context) {
         this.ctx = requireNonNull(context);
-    }
-
-    private int showRemote(final CommandContext<ServerCommandSource> cc) {
-        return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
-            final String remoteUrl = wc.getRemotePushUrl();
-            final boolean enabled = wc.isRemoteBackupEnabled();
-            if (enabled && remoteUrl != null) {
-                log.notify(localized("fastback.notify.remote-enabled", remoteUrl));
-                return SUCCESS;
-            } else {
-                log.notifyError(localized("fastback.notify.remote-disabled"));
-                if (remoteUrl != null) {
-                    log.notifyError(localized("fastback.notify.remote-how-to-enable", remoteUrl));
-                } else {
-                    log.notify(localized("fastback.notify.remote-how-to-enable-no-url"));
-                }
-                return FAILURE;
-            }
-        });
     }
 
     private int setRemoteUrl(final CommandContext<ServerCommandSource> cc) {

@@ -61,7 +61,7 @@ public class Commands {
         PurgeCommand.register(argb, ctx);
         GcCommand.register(argb, ctx);
         ListCommand.register(argb, ctx);
-        RemoteCommand.register(argb, ctx);
+        SetRemoteCommand.register(argb, ctx);
         FileRemoteCommand.register(argb, ctx);
         SetRetentionCommand.register(argb, ctx);
         HelpCommand.register(argb, ctx);
