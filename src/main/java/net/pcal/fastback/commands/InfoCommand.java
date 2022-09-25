@@ -72,11 +72,7 @@ public class InfoCommand {
                         log.notify(localized("fastback.notify.info-remote-url", url));
                     }
                 }
-                if (wc.isShutdownBackupEnabled()) {
-                    log.notify(localized("fastback.notify.info-shutdown-enabled"));
-                } else {
-                    log.notify(localized("fastback.notify.info-shutdown-disabled"));
-                }
+                log.notify(localized("fastback.notify.info-shutdown-action", wc.shutdownAction()));
                 final File gitDir = git.getRepository().getDirectory();
                 log.notify(localized("fastback.notify.info-backup-size", getDirDisplaySize(gitDir)));
                 {

@@ -18,6 +18,8 @@
 
 package net.pcal.fastback;
 
+import net.pcal.fastback.commands.EnableCommand;
+import net.pcal.fastback.commands.SchedulableAction;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -40,8 +42,8 @@ public record WorldConfig(
         Path worldSaveDir,
         String worldUuid,
         boolean isBackupEnabled,
-        boolean isShutdownBackupEnabled,
         boolean isRemoteBackupEnabled,
+        SchedulableAction shutdownAction,
         String retentionPolicy,
         String getRemotePushUrl) {
 
@@ -49,9 +51,9 @@ public record WorldConfig(
     private static final String REMOTE_NAME = "origin";
     private static final String CONFIG_SECTION = "fastback";
     private static final String CONFIG_BACKUP_ENABLED = "backup-enabled";
-    private static final String CONFIG_SHUTDOWN_BACKUP_ENABLED = "shutdown-backup-enabled";
     private static final String CONFIG_REMOTE_BACKUP_ENABLED = "remote-backup-enabled";
     private static final String CONFIG_RETENTION_POLICY = "retention-policy";
+    private static final String CONFIG_SHUTDOWN_ACTION = "shutdown-action";
 
     private static final Iterable<Pair<String, Path>> WORLD_RESOURCES = List.of(
             Pair.of("world/dot-gitignore", Path.of(".gitignore")),
@@ -64,13 +66,31 @@ public record WorldConfig(
         }
     }
 
+    public static WorldConfig load(final Git git) throws IOException {
+        return load(
+                git.getRepository().getWorkTree().toPath().toAbsolutePath(),
+                git.getRepository().getConfig());
+    }
+
+    @Deprecated
     public static WorldConfig load(Path worldSaveDir, Config gitConfig) throws IOException {
+
+        // provide backward compat for 0.1.x configs.  TODO remove this
+        final String shutdownActionRaw = gitConfig.getString(CONFIG_SECTION, null, CONFIG_SHUTDOWN_ACTION);
+        SchedulableAction shutdownAction = null;
+        if (shutdownActionRaw != null) {
+             shutdownAction = SchedulableAction.getForConfigKey(shutdownActionRaw);
+        } else {
+            if (gitConfig.getBoolean(CONFIG_SECTION, null, "shutdown-backup-enabled", false)) {
+                shutdownAction = EnableCommand.DEFAULT_SHUTDOWN_ACTION;
+            }
+        }
         return new WorldConfig(
                 requireNonNull(worldSaveDir),
                 getWorldUuid(worldSaveDir),
                 gitConfig.getBoolean(CONFIG_SECTION, null, CONFIG_BACKUP_ENABLED, false),
-                gitConfig.getBoolean(CONFIG_SECTION, null, CONFIG_SHUTDOWN_BACKUP_ENABLED, false),
                 gitConfig.getBoolean(CONFIG_SECTION, null, CONFIG_REMOTE_BACKUP_ENABLED, false),
+                shutdownAction,
                 gitConfig.getString(CONFIG_SECTION, null, CONFIG_RETENTION_POLICY),
                 gitConfig.getString("remote", REMOTE_NAME, "url")
         );
@@ -117,21 +137,24 @@ public record WorldConfig(
         gitConfig.setBoolean(CONFIG_SECTION, null, CONFIG_BACKUP_ENABLED, value);
     }
 
-    public static void setShutdownBackupEnabled(Config gitConfig, boolean value) {
-        gitConfig.setBoolean(CONFIG_SECTION, null, CONFIG_SHUTDOWN_BACKUP_ENABLED, value);
-    }
-
-    public static void setRemoteBackupEnabled(Config gitConfig, boolean value) {
-        gitConfig.setBoolean(CONFIG_SECTION, null, CONFIG_REMOTE_BACKUP_ENABLED, value);
-    }
-
     public static void setRetentionPolicy(Config gitConfig, String value) {
         gitConfig.setString(CONFIG_SECTION, null, CONFIG_RETENTION_POLICY, value);
     }
 
+    public static void setShutdownAction(Config gitConfig, SchedulableAction action) {
+        gitConfig.setString(CONFIG_SECTION, null, CONFIG_SHUTDOWN_ACTION, action.getConfigKey());
+    }
+
+    public static String getWorldUuid(Git git) throws IOException {
+        return Files.readString(git.getRepository().getWorkTree().toPath().
+                toAbsolutePath().resolve(WORLD_UUID_PATH)).trim();
+    }
+
+    @Deprecated
     public static String getWorldUuid(Path worldSaveDir) throws IOException {
         return Files.readString(worldSaveDir.resolve(WORLD_UUID_PATH)).trim();
     }
+
 
     public static boolean isBackupsEnabledOn(Path worldSaveDir) {
         if (!isGitRepo(worldSaveDir)) return false;

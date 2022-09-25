@@ -24,7 +24,6 @@ import net.pcal.fastback.logging.ChatLogger;
 import net.pcal.fastback.logging.CompositeLogger;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.SaveScreenLogger;
-import net.pcal.fastback.tasks.BackupTask;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.jgit.api.Git;
 
@@ -94,15 +93,15 @@ public class LifecycleUtils {
         }
         try {
             final WorldConfig config = WorldConfig.load(worldSaveDir);
-            if (config.isShutdownBackupEnabled()) {
+            if (config.shutdownAction() != null) {
                 final Logger screenLogger = CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx));
-                new BackupTask(ctx, worldSaveDir, screenLogger).run();
-            } else {
-                logger.info("Shutdown backups disabled.");
+                config.shutdownAction().run(ctx, server.getCommandSource(), screenLogger);
             }
         } catch (IOException e) {
             logger.internalError("Shutdown backup failed.", e);
         }
+        shutdownExecutor(ctx.getExecutorService());
+
         ctx.getLogger().info("onWorldStop complete");
     }
 

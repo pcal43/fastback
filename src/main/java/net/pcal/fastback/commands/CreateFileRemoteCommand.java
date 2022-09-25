@@ -77,7 +77,6 @@ public class CreateFileRemoteCommand {
             }
             final String targetUrl = "file://" + fupHome.toAbsolutePath();
             WorldConfig.setRemoteUrl(gitc, targetUrl);
-            WorldConfig.setRemoteBackupEnabled(gitc, true);
             gitc.save();
             log.notify(localized("fastback.notify.create-file-remote-created", targetPath, targetUrl));
             return SUCCESS;

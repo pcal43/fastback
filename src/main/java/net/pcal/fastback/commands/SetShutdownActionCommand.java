@@ -18,56 +18,50 @@
 
 package net.pcal.fastback.commands;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import net.minecraft.server.MinecraftServer;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
-import net.pcal.fastback.tasks.BackupTask;
+import net.pcal.fastback.logging.Message;
+import org.eclipse.jgit.lib.StoredConfig;
 
-import java.nio.file.Path;
-
+import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.executeStandardNew;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
-import static net.pcal.fastback.logging.Message.localized;
-import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
-public class NowCommand {
+public class SetShutdownActionCommand {
 
-    private static final String COMMAND_NAME = "now";
+    private static final String COMMAND_NAME = "set-shutdown-action";
+    private static final String ARGUMENT = "action";
 
     public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(cc->now(ctx, cc.getSource()))
+                        requires(subcommandPermission(ctx, COMMAND_NAME)).then(
+                                argument(ARGUMENT, StringArgumentType.greedyString()).
+                                        executes(cc->execute(ctx, cc)))
         );
     }
 
-    public static int now(final ModContext ctx, final ServerCommandSource scs) {
-        return executeStandardNew(ctx, scs, (gitc, wc, log) -> {
-            final MinecraftServer server = scs.getServer();
-            final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
-            if (!isGitRepo(worldSaveDir)) {
-                log.notifyError(localized("fastback.notify.not-enabled"));
+    public static int execute(final ModContext ctx, final CommandContext<ServerCommandSource> cc) throws CommandSyntaxException {
+        return executeStandardNew(ctx, cc.getSource(), (git, wc, log) -> {
+            final String actionRaw = cc.getArgument(ARGUMENT, String.class);
+            final SchedulableAction action = SchedulableAction.getForConfigKey(actionRaw);
+            if (action == null) {
+                ctx.getLogger().notifyError(Message.localized("fastback.notify.invalid-input", actionRaw));
                 return FAILURE;
             }
-            final WorldConfig config = WorldConfig.load(worldSaveDir);
-            if (config.isBackupEnabled()) {
-                ctx.getExecutorService().execute(() -> {
-                    log.info("Saving before backup");
-                    server.saveAll(false, true, true); // suppressLogs, flush, force
-                    log.info("Starting backup");
-                    new BackupTask(ctx, worldSaveDir, log).run();
-                });
-                return SUCCESS;
-            } else {
-                log.notifyError(localized("fastback.notify.not-enabled"));
-                return FAILURE;
-            }
+            final StoredConfig config = git.getRepository().getConfig();
+            WorldConfig.setShutdownAction(config, action);
+            config.save();
+            ctx.getLogger().info("Set shutdown action to "+action);
+            return SUCCESS;
         });
     }
 }

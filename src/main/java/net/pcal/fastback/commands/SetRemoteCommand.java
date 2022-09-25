@@ -57,7 +57,6 @@ public class SetRemoteCommand {
     private int setRemoteUrl(final CommandContext<ServerCommandSource> cc) {
         return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
             final String newUrl = cc.getArgument(URL_ARGUMENT, String.class);
-            WorldConfig.setRemoteBackupEnabled(gitc, true);
             WorldConfig.setRemoteUrl(gitc, newUrl);
             gitc.save();
             log.notify(localized("fastback.notify.remote-enabled", newUrl));
