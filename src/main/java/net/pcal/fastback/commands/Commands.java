@@ -22,7 +22,6 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
@@ -102,9 +101,8 @@ public class Commands {
 
     @Deprecated
     static int executeStandard(final ModContext ctx, final CommandContext<ServerCommandSource> cc, CommandLogic sub) {
-        final MinecraftServer server = cc.getSource().getServer();
         final Logger logger = commandLogger(ctx, cc.getSource());
-        final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
+        final Path worldSaveDir = ctx.getWorldDirectory();
         if (!isGitRepo(worldSaveDir)) {
             logger.notifyError(localized("fastback.notify.not-enabled"));
             return FAILURE;
@@ -124,16 +122,14 @@ public class Commands {
     }
 
     static int executeStandardNew(final ModContext ctx, final ServerCommandSource scs, CommandLogicNew sub) {
-        final MinecraftServer server = scs.getServer();
         final Logger logger = commandLogger(ctx, scs);
-        final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
+        final Path worldSaveDir = ctx.getWorldDirectory();
         if (!isGitRepo(worldSaveDir)) {
             logger.notifyError(localized("fastback.notify.not-enabled"));
             return FAILURE;
         }
         try (final Git git = Git.open(worldSaveDir.toFile())) {
-            final StoredConfig gitConfig = git.getRepository().getConfig();
-            final WorldConfig worldConfig = WorldConfig.load(worldSaveDir, gitConfig);
+            final WorldConfig worldConfig = WorldConfig.load(git);
             if (!worldConfig.isBackupEnabled()) {
                 logger.notifyError(localized("fastback.notify.not-enabled"));
                 return FAILURE;
