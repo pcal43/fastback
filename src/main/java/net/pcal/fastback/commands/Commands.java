@@ -62,7 +62,7 @@ public class Commands {
         GcCommand.register(argb, ctx);
         ListCommand.register(argb, ctx);
         SetRemoteCommand.register(argb, ctx);
-        FileRemoteCommand.register(argb, ctx);
+        CreateFileRemoteCommand.register(argb, ctx);
         SetRetentionCommand.register(argb, ctx);
         HelpCommand.register(argb, ctx);
         if (ctx.isExperimentalCommandsEnabled()) {
