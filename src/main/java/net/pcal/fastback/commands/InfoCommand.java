@@ -19,7 +19,6 @@
 package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.retention.RetentionPolicy;
@@ -41,23 +40,19 @@ public class InfoCommand {
     private static final String COMMAND_NAME = "info";
 
     public static void register(LiteralArgumentBuilder<ServerCommandSource> argb, ModContext ctx) {
-        final InfoCommand rc = new InfoCommand(ctx);
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(rc::execute));
+                        executes(cc-> execute(ctx, cc.getSource()))
+        );
     }
 
-    private final ModContext ctx;
-
-    private InfoCommand(ModContext context) {
-        this.ctx = requireNonNull(context);
-    }
-
-    private int execute(CommandContext<ServerCommandSource> cc) {
-        return executeStandardNew(this.ctx, cc, (git, wc, log) -> {
-            this.ctx.getExecutorService().execute(() -> {
-                log.notify(localized("fastback.notify.info-fastback-version", this.ctx.getModVersion()));
+    public static int execute(final ModContext ctx, final ServerCommandSource scs) {
+        requireNonNull(ctx);
+        requireNonNull(scs);
+        return executeStandardNew(ctx, scs, (git, wc, log) -> {
+            ctx.getExecutorService().execute(() -> {
+                log.notify(localized("fastback.notify.info-fastback-version", ctx.getModVersion()));
                 log.notify(localized("fastback.notify.info-uuid", wc.worldUuid()));
                 if (wc.isBackupEnabled()) {
                     log.notify(localized("fastback.notify.info-local-enabled"));

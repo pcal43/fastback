@@ -19,7 +19,6 @@
 package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
@@ -31,7 +30,6 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import java.nio.file.Path;
 import java.util.Collection;
 
-import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.executeStandardNew;
@@ -50,23 +48,16 @@ public class PruneCommand {
     private static final String COMMAND_NAME = "prune";
 
     public static void register(LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
-        final PruneCommand c = new PruneCommand(ctx);
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(c::prune)
+                        executes(cc->prune(ctx, cc.getSource()))
         );
     }
 
-    private final ModContext ctx;
-
-    private PruneCommand(ModContext context) {
-        this.ctx = requireNonNull(context);
-    }
-
-    private int prune(final CommandContext<ServerCommandSource> cc) {
-        return executeStandardNew(this.ctx, cc, (git, wc, log) -> {
-            this.ctx.getExecutorService().execute(() -> {
+    public static int prune(final ModContext ctx, final ServerCommandSource scs) {
+        return executeStandardNew(ctx, scs, (git, wc, log) -> {
+            ctx.getExecutorService().execute(() -> {
                 final String policyConfig = wc.retentionPolicy();
                 if (policyConfig == null) {
                     log.notifyError(localized("fastback.notify.prune-no-default"));
@@ -78,8 +69,8 @@ public class PruneCommand {
                     log.notifyError(localized("fastback.notify.retention-policy-not-set"));
                     return;
                 }
-                final MinecraftServer server = cc.getSource().getServer();
-                final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
+                final MinecraftServer server = scs.getServer();
+                final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
                 Collection<SnapshotId> toPrune = policy.getSnapshotsToPrune(listSnapshotsForWorldSorted(worldSaveDir, ctx.getLogger()));
                 int pruned = 0;
                 for (final SnapshotId sid : toPrune) {
