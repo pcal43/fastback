@@ -39,13 +39,13 @@ import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.utils.FileUtils.mkdirs;
 
-public class FileRemoteCommand {
+public class CreateFileRemoteCommand {
 
-    private static final String COMMAND_NAME = "file-remote";
+    private static final String COMMAND_NAME = "create-file-remote";
     private static final String ARGUMENT = "file-path";
 
     public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
-        final FileRemoteCommand c = new FileRemoteCommand(ctx);
+        final CreateFileRemoteCommand c = new CreateFileRemoteCommand(ctx);
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).then(
@@ -56,7 +56,7 @@ public class FileRemoteCommand {
 
     private final ModContext ctx;
 
-    private FileRemoteCommand(final ModContext context) {
+    private CreateFileRemoteCommand(final ModContext context) {
         this.ctx = requireNonNull(context);
     }
 
@@ -65,7 +65,7 @@ public class FileRemoteCommand {
             final String targetPath = cc.getArgument(ARGUMENT, String.class);
             final Path fupHome = Path.of(targetPath);
             if (fupHome.toFile().exists()) {
-                log.notifyError(localized("fastback.notify.file-remote-dir-exists", fupHome.toString()));
+                log.notifyError(localized("fastback.notify.create-file-remote-dir-exists", fupHome.toString()));
                 return FAILURE;
             }
             mkdirs(fupHome);
@@ -79,7 +79,7 @@ public class FileRemoteCommand {
             WorldConfig.setRemoteUrl(gitc, targetUrl);
             WorldConfig.setRemoteBackupEnabled(gitc, true);
             gitc.save();
-            log.notify(localized("fastback.notify.file-remote-created", targetPath, targetUrl));
+            log.notify(localized("fastback.notify.create-file-remote-created", targetPath, targetUrl));
             return SUCCESS;
         });
     }
