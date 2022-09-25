@@ -64,6 +64,7 @@ public class Commands {
         SetRemoteCommand.register(argb, ctx);
         CreateFileRemoteCommand.register(argb, ctx);
         SetRetentionCommand.register(argb, ctx);
+        SetShutdownActionCommand.register(argb, ctx);
         HelpCommand.register(argb, ctx);
         if (ctx.isExperimentalCommandsEnabled()) {
             SaveCommand.register(argb, ctx);

@@ -60,6 +60,7 @@ public class SetShutdownActionCommand {
             final StoredConfig config = git.getRepository().getConfig();
             WorldConfig.setShutdownAction(config, action);
             config.save();
+            ctx.getLogger().info("Set shutdown action to "+action);
             return SUCCESS;
         });
     }

@@ -93,7 +93,7 @@ public class LifecycleUtils {
         }
         try {
             final WorldConfig config = WorldConfig.load(worldSaveDir);
-            if (config.shutdownAction() == null) {
+            if (config.shutdownAction() != null) {
                 final Logger screenLogger = CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx));
                 config.shutdownAction().run(ctx, server.getCommandSource(), screenLogger);
             }
