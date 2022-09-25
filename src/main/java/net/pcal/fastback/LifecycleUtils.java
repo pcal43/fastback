@@ -98,7 +98,7 @@ public class LifecycleUtils {
             if (!isBlank(config.shutdownCommand())) {
                 final Logger screenLogger = CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx));
                 final SchedulableCommand scom = SchedulableCommand.getForConfigKey(config.shutdownCommand());
-                scom.run(ctx, server, screenLogger);
+                scom.run(ctx, server.getCommandSource(), screenLogger);
             }
         } catch (IOException e) {
             logger.internalError("Shutdown backup failed.", e);
