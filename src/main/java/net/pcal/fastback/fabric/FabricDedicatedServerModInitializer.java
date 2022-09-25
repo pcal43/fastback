@@ -31,16 +31,16 @@ public class FabricDedicatedServerModInitializer implements DedicatedServerModIn
     public void onInitializeServer() {
         ServerLifecycleEvents.SERVER_STARTING.register(
                 minecraftServer -> {
-                    LifecycleUtils.onServerStart(modContext);
                     LifecycleUtils.onWorldStart(modContext, minecraftServer);
                 }
         );
         ServerLifecycleEvents.SERVER_STOPPED.register(
                 minecraftServer -> {
                     LifecycleUtils.onWorldStop(modContext, minecraftServer);
-                    LifecycleUtils.onServerStop(modContext);
+                    LifecycleUtils.onTermination(modContext); // dedicated server shutdown == VM termination
                 }
         );
-
+        LifecycleUtils.onInitialize(modContext);
     }
+
 }

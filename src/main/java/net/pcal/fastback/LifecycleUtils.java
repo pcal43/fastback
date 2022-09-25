@@ -39,30 +39,34 @@ import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.utils.FileUtils.writeResourceToFile;
 import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
+/**
+ * Framework-agnostic lifecycle logic.
+ *
+ * @author pcal
+ * @since 0.0.1
+ */
 public class LifecycleUtils {
 
-    public static void onClientStart(final ModContext ctx) {
+    /**
+     * Must be called early in initialization of either a client or server.
+     */
+    public static void onInitialize(final ModContext ctx) {
         Commands.registerCommands(ctx, ctx.getCommandName());
         copyConfigResources(ctx);
-        ctx.getLogger().info("onClientStart complete");
+        ctx.getLogger().info("onInitialize complete");
     }
 
-    public static void onClientStop(ModContext ctx) {
+    /**
+     * Must be called when either client or server is terminating.
+     */
+    public static void onTermination(ModContext ctx) {
         shutdownExecutor(ctx.getExecutorService());
-        ctx.getLogger().info("onClientStop complete");
+        ctx.getLogger().info("onTermination complete");
     }
 
-    public static void onServerStart(final ModContext ctx) {
-        Commands.registerCommands(ctx, ctx.getCommandName());
-        copyConfigResources(ctx);
-        ctx.getLogger().info("onServerStart complete");
-    }
-
-    public static void onServerStop(ModContext ctx) {
-        shutdownExecutor(ctx.getExecutorService());
-        ctx.getLogger().info("onServerStop complete");
-    }
-
+    /**
+     * Must be called when a world is starting (in either a dedicated or client-embedded server).
+     */
     public static void onWorldStart(final ModContext ctx, final MinecraftServer server) {
         final Logger logger = ctx.isClient() ? CompositeLogger.of(ctx.getLogger(), new ChatLogger(ctx))
                 : ctx.getLogger();
@@ -77,6 +81,9 @@ public class LifecycleUtils {
         ctx.getLogger().info("onWorldStart complete");
     }
 
+    /**
+     * Must be called when a world is stopping (in either a dedicated or client-embedded server).
+     */
     public static void onWorldStop(final ModContext ctx, final MinecraftServer server) {
         final Logger logger = ctx.isClient() ? CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx))
                 : ctx.getLogger();
@@ -140,5 +147,4 @@ public class LifecycleUtils {
             Thread.currentThread().interrupt();
         }
     }
-
 }

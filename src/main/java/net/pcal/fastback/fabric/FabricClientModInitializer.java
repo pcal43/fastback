@@ -39,22 +39,22 @@ public class FabricClientModInitializer implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        ServerLifecycleEvents.SERVER_STOPPED.register(
-                minecraftServer -> {
-                    LifecycleUtils.onWorldStop(modContext, minecraftServer);
-                }
-        );
         ServerLifecycleEvents.SERVER_STARTING.register(
                 minecraftServer -> {
                     LifecycleUtils.onWorldStart(modContext, minecraftServer);
                 }
         );
-        ClientLifecycleEvents.CLIENT_STOPPING.register(
+        ServerLifecycleEvents.SERVER_STOPPED.register(
                 minecraftServer -> {
-                    LifecycleUtils.onClientStop(modContext);
+                    LifecycleUtils.onWorldStop(modContext, minecraftServer);
                 }
         );
-        LifecycleUtils.onClientStart(modContext);
+        ClientLifecycleEvents.CLIENT_STOPPING.register(
+                minecraftServer -> {
+                    LifecycleUtils.onTermination(modContext);
+                }
+        );
+        LifecycleUtils.onInitialize(modContext);
     }
 
     private static class FabricClientProviderImpl implements FabricClientProvider {
