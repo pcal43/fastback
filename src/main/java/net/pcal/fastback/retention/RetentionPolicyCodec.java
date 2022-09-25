@@ -41,10 +41,11 @@ public enum RetentionPolicyCodec {
 
     public RetentionPolicy decodePolicy(final ModContext ctx,
                                         final List<RetentionPolicyType> availablePolicyTypes,
-                                        final String encodedPolicy) {
+                                        final String encodedPolicyOriginal) {
         requireNonNull(ctx);
         requireNonNull(availablePolicyTypes);
-        requireNonNull(encodedPolicy);
+        requireNonNull(encodedPolicyOriginal);
+        final String encodedPolicy = encodedPolicyOriginal.trim();
         int firstSpace = encodedPolicy.indexOf(' ');
         final Map<String, String> config;
         final String encodedTypeName;
@@ -53,7 +54,7 @@ public enum RetentionPolicyCodec {
             encodedTypeName = encodedPolicy.trim();
         } else {
             encodedTypeName = encodedPolicy.substring(0, firstSpace).trim();
-            config = decodeMap(ctx, encodedPolicy.substring(firstSpace));
+            config = decodeMap(ctx, encodedPolicy.substring(firstSpace + 1));
         }
         for (final RetentionPolicyType rtp : availablePolicyTypes) {
             if (rtp.getEncodedName().equals(encodedTypeName)) {

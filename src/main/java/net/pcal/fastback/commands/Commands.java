@@ -72,11 +72,13 @@ public class Commands {
         CommandRegistrationCallback.EVENT.register((dispatcher, regAccess, env) -> dispatcher.register(argb));
     }
 
+    public static Logger commandLogger(final ModContext ctx, final ServerCommandSource scs) {
+        return CompositeLogger.of(ctx.getLogger(), new CommandSourceLogger(ctx, scs));
+    }
+
+    @Deprecated
     public static Logger commandLogger(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
-        return CompositeLogger.of(
-                ctx.getLogger(),
-                new CommandSourceLogger(ctx, cc.getSource())
-        );
+        return commandLogger(ctx, cc.getSource());
     }
 
     public static String subcommandPermName(String subcommandName) {
@@ -97,9 +99,10 @@ public class Commands {
                 throws IOException, GitAPIException, ParseException;
     }
 
+    @Deprecated
     static int executeStandard(final ModContext ctx, final CommandContext<ServerCommandSource> cc, CommandLogic sub) {
         final MinecraftServer server = cc.getSource().getServer();
-        final Logger logger = commandLogger(ctx, cc);
+        final Logger logger = commandLogger(ctx, cc.getSource());
         final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
         if (!isGitRepo(worldSaveDir)) {
             logger.notifyError(localized("fastback.notify.not-enabled"));
@@ -119,9 +122,9 @@ public class Commands {
         }
     }
 
-    static int executeStandardNew(final ModContext ctx, final CommandContext<ServerCommandSource> cc, CommandLogicNew sub) {
-        final MinecraftServer server = cc.getSource().getServer();
-        final Logger logger = commandLogger(ctx, cc);
+    static int executeStandardNew(final ModContext ctx, final ServerCommandSource scs, CommandLogicNew sub) {
+        final MinecraftServer server = scs.getServer();
+        final Logger logger = commandLogger(ctx, scs);
         final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
         if (!isGitRepo(worldSaveDir)) {
             logger.notifyError(localized("fastback.notify.not-enabled"));
