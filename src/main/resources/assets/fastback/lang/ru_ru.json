@@ -32,8 +32,6 @@
   "fastback.notify.info-remote-enabled"          : "Удалённое резервирование: включено",
   "fastback.notify.info-remote-url"              : "Удалённый адрес: %s",
   "fastback.notify.info-remote-url-missing"      : "Удалённый адрес: не задан. Используйте /backup set-remote [адрес]",
-  "fastback.notify.info-shutdown-disabled"       : "Резервирование при закрытии мира: отключено",
-  "fastback.notify.info-shutdown-enabled"        : "Резервирование при закрытии мира: включено",
   "fastback.notify.internal-error"               : "В процессе создания точки восстановления возникла непредвиденная ошибка. Проверьте журнал для подробной информации.",
   "fastback.notify.list-local-snapshots-header"  : "Локальные точки восстановления:",
   "fastback.notify.local-done"                   : "Локальное резервирование завершено.",

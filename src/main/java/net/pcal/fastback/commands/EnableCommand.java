@@ -43,7 +43,7 @@ import static net.pcal.fastback.logging.Message.localized;
 
 public class EnableCommand {
 
-    public static final String DEFAULT_SHUTDOWN_COMMANDS = "commit push";
+    public static final SchedulableAction DEFAULT_SHUTDOWN_ACTION = SchedulableAction.LOCAL;
 
     private static final String COMMAND_NAME = "enable";
 
@@ -71,8 +71,8 @@ public class EnableCommand {
             final StoredConfig config = git.getRepository().getConfig();
             final WorldConfig worldConfig = WorldConfig.load(worldSaveDir, config);
             WorldConfig.setBackupEnabled(config, true);
-            if (worldConfig.shutdownCommand() == null || worldConfig.shutdownCommand().trim().isEmpty()) {
-                WorldConfig.setShutdownCommands(config, DEFAULT_SHUTDOWN_COMMANDS);
+            if (worldConfig.shutdownAction() == null) {
+                WorldConfig.setShutdownAction(config, DEFAULT_SHUTDOWN_ACTION);
             }
             config.save();
             logger.notify(localized("fastback.notify.enable-done"));

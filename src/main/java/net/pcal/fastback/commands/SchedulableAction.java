@@ -26,7 +26,7 @@ import net.pcal.fastback.logging.Logger;
 import static java.util.Objects.requireNonNull;
 
 
-public enum SchedulableCommand  {
+public enum SchedulableAction {
 
     LOCAL("local") {
 
@@ -37,13 +37,13 @@ public enum SchedulableCommand  {
         }
     };
 
-    public static SchedulableCommand getForConfigKey(String configKey) {
+    public static SchedulableAction getForConfigKey(String configKey) {
         return LOCAL; //FIXME
     }
 
     private final String configKey;
 
-    SchedulableCommand(String configKey) {
+    SchedulableAction(String configKey) {
         this.configKey = requireNonNull(configKey);
     }
 

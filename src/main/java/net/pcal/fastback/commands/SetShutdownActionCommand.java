@@ -25,18 +25,20 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
+import net.pcal.fastback.logging.Message;
 import org.eclipse.jgit.lib.StoredConfig;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
+import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.executeStandardNew;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 
-public class SetShutdownCommandCommand {
+public class SetShutdownActionCommand {
 
-    private static final String COMMAND_NAME = "set-shutdown-command";
-    private static final String ARGUMENT = "command";
+    private static final String COMMAND_NAME = "set-shutdown-action";
+    private static final String ARGUMENT = "action";
 
     public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         argb.then(
@@ -49,9 +51,14 @@ public class SetShutdownCommandCommand {
 
     public static int execute(final ModContext ctx, final CommandContext<ServerCommandSource> cc) throws CommandSyntaxException {
         return executeStandardNew(ctx, cc.getSource(), (git, wc, log) -> {
-            final String commands = cc.getArgument(ARGUMENT, String.class);
+            final String actionRaw = cc.getArgument(ARGUMENT, String.class);
+            final SchedulableAction action = SchedulableAction.getForConfigKey(actionRaw);
+            if (action == null) {
+                ctx.getLogger().notifyError(Message.localized("fastback.notify.invalid-input", actionRaw));
+                return FAILURE;
+            }
             final StoredConfig config = git.getRepository().getConfig();
-            WorldConfig.setShutdownCommands(config, commands);
+            WorldConfig.setShutdownAction(config, action);
             config.save();
             return SUCCESS;
         });

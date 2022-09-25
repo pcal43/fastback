@@ -19,7 +19,6 @@
 package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
@@ -28,11 +27,10 @@ import net.pcal.fastback.tasks.BackupTask;
 
 import java.nio.file.Path;
 
-import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.executeStandard;
+import static net.pcal.fastback.commands.Commands.executeStandardNew;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.utils.GitUtils.isGitRepo;
@@ -42,24 +40,17 @@ public class NowCommand {
     private static final String COMMAND_NAME = "now";
 
     public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
-        final NowCommand c = new NowCommand(ctx);
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(c::now)
+                        executes(cc->now(ctx, cc.getSource()))
         );
     }
 
-    private final ModContext ctx;
-
-    private NowCommand(final ModContext context) {
-        this.ctx = requireNonNull(context);
-    }
-
-    private int now(CommandContext<ServerCommandSource> cc) {
-        return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
-            final MinecraftServer server = cc.getSource().getServer();
-            final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
+    public static int now(final ModContext ctx, final ServerCommandSource scs) {
+        return executeStandardNew(ctx, scs, (gitc, wc, log) -> {
+            final MinecraftServer server = scs.getServer();
+            final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
             if (!isGitRepo(worldSaveDir)) {
                 log.notifyError(localized("fastback.notify.not-enabled"));
                 return FAILURE;

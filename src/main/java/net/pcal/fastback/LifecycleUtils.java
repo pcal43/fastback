@@ -20,7 +20,7 @@ package net.pcal.fastback;
 
 import net.minecraft.server.MinecraftServer;
 import net.pcal.fastback.commands.Commands;
-import net.pcal.fastback.commands.SchedulableCommand;
+import net.pcal.fastback.commands.SchedulableAction;
 import net.pcal.fastback.logging.ChatLogger;
 import net.pcal.fastback.logging.CompositeLogger;
 import net.pcal.fastback.logging.Logger;
@@ -95,10 +95,9 @@ public class LifecycleUtils {
         }
         try {
             final WorldConfig config = WorldConfig.load(worldSaveDir);
-            if (!isBlank(config.shutdownCommand())) {
+            if (config.shutdownAction() == null) {
                 final Logger screenLogger = CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx));
-                final SchedulableCommand scom = SchedulableCommand.getForConfigKey(config.shutdownCommand());
-                scom.run(ctx, server.getCommandSource(), screenLogger);
+                config.shutdownAction().run(ctx, server.getCommandSource(), screenLogger);
             }
         } catch (IOException e) {
             logger.internalError("Shutdown backup failed.", e);
