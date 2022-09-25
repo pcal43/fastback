@@ -32,6 +32,12 @@ import net.pcal.fastback.fabric.mixins.ScreenAccessors;
 
 import java.nio.file.Path;
 
+/**
+ * Initializer that runs in a client.
+ *
+ * @author pcal
+ * @since 0.0.1
+ */
 public class FabricClientModInitializer implements ClientModInitializer {
 
     private final FabricServiceProvider fabricProvider = FabricServiceProvider.forClient(new FabricClientProviderImpl());
