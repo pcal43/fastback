@@ -19,8 +19,6 @@
 package net.pcal.fastback.commands;
 
 
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
@@ -42,17 +40,16 @@ public enum SchedulableAction {
 
     FULL("full") {
         @Override
-        public void run(ModContext ctx, ServerCommandSource scs, Logger log) {
+        public void run(ModContext ctx, Logger log) {
             ctx.getExecutorService().execute(() -> {
-                final MinecraftServer server = scs.getServer();
-                if (server.isStopped() || server.isStopping()) { //FIXME move this
+                if (ctx.isServerStopping()) {
                     log.info("Skipping save before backup because server is shutting down.");
                 } else {
                     log.info("Saving before backup");
-                    server.saveAll(false, true, true); // suppressLogs, flush, force
+                    ctx.saveWorld();
                     log.info("Starting backup");
                 }
-                final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
+                final Path worldSaveDir = ctx.getWorldDirectory();
                 if (!isGitRepo(worldSaveDir)) {
                     log.info("Backups not initialized.");
                     return;
@@ -89,6 +86,6 @@ public enum SchedulableAction {
         return this.configKey;
     }
 
-    public abstract void run(ModContext ctx, ServerCommandSource scs, Logger log);
+    public abstract void run(ModContext ctx, Logger log);
 }
 

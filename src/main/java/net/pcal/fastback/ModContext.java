@@ -93,6 +93,10 @@ public class ModContext {
         return spi.isClient();
     }
 
+    public boolean isServerStopping() {
+        return spi.isServerStopping();
+    }
+
     public void setSavingScreenText(Message message) {
         this.spi.setClientSavingScreenText(message);
     }
@@ -109,16 +113,26 @@ public class ModContext {
         this.spi.sendError(message, scs);
     }
 
+    @Deprecated
     public Path getWorldSaveDirectory(MinecraftServer server) {
         return this.spi.getWorldDirectory(server);
+    }
+
+    public Path getWorldDirectory() {
+        return this.spi.getWorldDirectory();
     }
 
     public boolean isWorldSaveEnabled() {
         return this.spi.isWorldSaveEnabled();
     }
 
+    @Deprecated
     public String getWorldName(MinecraftServer server) {
         return this.spi.getWorldName(server);
+    }
+
+    public String getWorldName() {
+        return this.spi.getWorldName();
     }
 
     public Logger getLogger() {
@@ -155,6 +169,10 @@ public class ModContext {
         return TimeZone.getDefault();
     }
 
+    public void saveWorld() {
+        this.spi.saveWorld();
+    }
+
     public interface FrameworkServiceProvider {
 
         Logger getLogger();
@@ -167,8 +185,14 @@ public class ModContext {
 
         String getMinecraftVersion();
 
+        Path getWorldDirectory();
+
+        @Deprecated
         Path getWorldDirectory(MinecraftServer server);
 
+        String getWorldName();
+
+        @Deprecated
         String getWorldName(MinecraftServer server);
 
         void setClientSavingScreenText(Message message);
@@ -183,8 +207,14 @@ public class ModContext {
 
         void setWorldSaveEnabled(boolean enabled);
 
+        void saveWorld();
+
+        boolean isServerStopping();
+
+
         void sendFeedback(Message message, ServerCommandSource scs);
 
         void sendError(Message message, ServerCommandSource scs);
+
     }
 }

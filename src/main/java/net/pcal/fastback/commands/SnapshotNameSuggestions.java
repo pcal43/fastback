@@ -50,7 +50,7 @@ class SnapshotNameSuggestions implements SuggestionProvider<ServerCommandSource>
         this.ctx.getExecutorService().execute(() -> {
             try {
                 final Logger logger = commandLogger(ctx, scs);
-                final Path worldSaveDir = ctx.getWorldSaveDirectory(scs.getSource().getServer());
+                final Path worldSaveDir = ctx.getWorldDirectory();
                 if (isBackupsEnabledOn(worldSaveDir)) {
                     for (SnapshotId sid : listSnapshotsForWorldSorted(worldSaveDir, logger)) {
                         builder.suggest(sid.getName());

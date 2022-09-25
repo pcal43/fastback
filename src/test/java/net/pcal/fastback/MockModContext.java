@@ -67,7 +67,17 @@ public class MockModContext {
         }
 
         @Override
+        public Path getWorldDirectory() {
+            return null;
+        }
+
+        @Override
         public Path getWorldDirectory(MinecraftServer server) {
+            return null;
+        }
+
+        @Override
+        public String getWorldName() {
             return null;
         }
 
@@ -103,6 +113,16 @@ public class MockModContext {
         @Override
         public void setWorldSaveEnabled(boolean enabled) {
 
+        }
+
+        @Override
+        public void saveWorld() {
+
+        }
+
+        @Override
+        public boolean isServerStopping() {
+            return false;
         }
 
         @Override

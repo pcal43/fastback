@@ -19,7 +19,6 @@
 package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.retention.RetentionPolicy;
@@ -69,8 +68,7 @@ public class PruneCommand {
                     log.notifyError(localized("fastback.notify.retention-policy-not-set"));
                     return;
                 }
-                final MinecraftServer server = scs.getServer();
-                final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
+                final Path worldSaveDir = ctx.getWorldDirectory();
                 Collection<SnapshotId> toPrune = policy.getSnapshotsToPrune(listSnapshotsForWorldSorted(worldSaveDir, ctx.getLogger()));
                 int pruned = 0;
                 for (final SnapshotId sid : toPrune) {

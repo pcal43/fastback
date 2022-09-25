@@ -40,19 +40,23 @@ import java.nio.file.Path;
  */
 public class FabricClientModInitializer implements ClientModInitializer {
 
-    private final FabricServiceProvider fabricProvider = FabricServiceProvider.forClient(new FabricClientProviderImpl());
-    private final ModContext modContext = ModContext.create(fabricProvider);
 
     @Override
     public void onInitializeClient() {
+        final FabricServiceProvider fabricProvider = FabricServiceProvider.
+                forClient(new FabricClientProviderImpl());
+        final ModContext modContext = ModContext.create(fabricProvider);
+
         ServerLifecycleEvents.SERVER_STARTING.register(
                 minecraftServer -> {
-                    LifecycleUtils.onWorldStart(modContext, minecraftServer);
+                    fabricProvider.setMinecraftServer(minecraftServer);
+                    LifecycleUtils.onWorldStart(modContext);
                 }
         );
         ServerLifecycleEvents.SERVER_STOPPED.register(
                 minecraftServer -> {
-                    LifecycleUtils.onWorldStop(modContext, minecraftServer);
+                    LifecycleUtils.onWorldStop(modContext);
+                    fabricProvider.setMinecraftServer(null);
                 }
         );
         ClientLifecycleEvents.CLIENT_STOPPING.register(

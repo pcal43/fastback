@@ -18,7 +18,6 @@
 
 package net.pcal.fastback;
 
-import net.minecraft.server.MinecraftServer;
 import net.pcal.fastback.commands.Commands;
 import net.pcal.fastback.logging.ChatLogger;
 import net.pcal.fastback.logging.CompositeLogger;
@@ -66,10 +65,10 @@ public class LifecycleUtils {
     /**
      * Must be called when a world is starting (in either a dedicated or client-embedded server).
      */
-    public static void onWorldStart(final ModContext ctx, final MinecraftServer server) {
+    public static void onWorldStart(final ModContext ctx) {
         final Logger logger = ctx.isClient() ? CompositeLogger.of(ctx.getLogger(), new ChatLogger(ctx))
                 : ctx.getLogger();
-        final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
+        final Path worldSaveDir = ctx.getWorldDirectory();
         if (isGitRepo(worldSaveDir)) {
             try (final Git git = Git.open(worldSaveDir.toFile())) {
                 WorldConfig.doWorldMaintenance(git, logger);
@@ -83,10 +82,10 @@ public class LifecycleUtils {
     /**
      * Must be called when a world is stopping (in either a dedicated or client-embedded server).
      */
-    public static void onWorldStop(final ModContext ctx, final MinecraftServer server) {
+    public static void onWorldStop(final ModContext ctx) {
         final Logger logger = ctx.isClient() ? CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx))
                 : ctx.getLogger();
-        final Path worldSaveDir = ctx.getWorldSaveDirectory(server);
+        final Path worldSaveDir = ctx.getWorldDirectory();
         if (!isBackupsEnabledOn(worldSaveDir)) {
             logger.notify(localized("fastback.notify.suggest-enable"));
             return;
@@ -95,7 +94,7 @@ public class LifecycleUtils {
             final WorldConfig config = WorldConfig.load(worldSaveDir);
             if (config.shutdownAction() != null) {
                 final Logger screenLogger = CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx));
-                config.shutdownAction().run(ctx, server.getCommandSource(), screenLogger);
+                config.shutdownAction().run(ctx, screenLogger);
             }
         } catch (IOException e) {
             logger.internalError("Shutdown backup failed.", e);
