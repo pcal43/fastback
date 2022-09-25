@@ -32,7 +32,12 @@ import java.nio.file.Path;
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
-
+/**
+ * Encapsulates an action that can be performed in response to events such as shutdown or autosaving.
+ *
+ * @author pcal
+ * @since 0.1.5
+ */
 public enum SchedulableAction {
 
     FULL("full") {
