@@ -142,12 +142,12 @@ public class HelpCommand {
 
     private static void writeMarkdownReference(CommandContext<ServerCommandSource> cc, PrintWriter out) {
         out.println();
-        out.println("Command            | Use");
-        out.println("------------------ | ---");
+        out.println("Command                | Use");
+        out.println("---------------------- | ---");
         for (final String sub : getSubcommandNames(cc)) {
             //FIXME GROSS.  HOW DO WE LOCALIZE WITHOUT GOING THROUGH minecraft.text?
             net.minecraft.text.Text shortHelp = net.minecraft.text.Text.translatable("commands.fastback.help." + sub);
-            String paddedSub = String.format("%-" + 18 + "s", "`" + sub + "`");
+            String paddedSub = String.format("%-" + 22 + "s", "`" + sub + "`");
             out.println(paddedSub + " | " + shortHelp.getString());
         }
         out.println();

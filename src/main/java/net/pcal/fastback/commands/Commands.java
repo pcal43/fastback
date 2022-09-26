@@ -52,15 +52,18 @@ public class Commands {
         LocalCommand.register(argb, ctx);
         FullCommand.register(argb, ctx);
         InfoCommand.register(argb, ctx);
+
         RestoreCommand.register(argb, ctx);
+        CreateFileRemoteCommand.register(argb, ctx);
+        SetRemoteCommand.register(argb, ctx);
+        SetShutdownActionCommand.register(argb, ctx);
+
+        SetRetentionCommand.register(argb, ctx);
         PruneCommand.register(argb, ctx);
         PurgeCommand.register(argb, ctx);
         GcCommand.register(argb, ctx);
         ListCommand.register(argb, ctx);
-        SetRemoteCommand.register(argb, ctx);
-        CreateFileRemoteCommand.register(argb, ctx);
-        SetRetentionCommand.register(argb, ctx);
-        SetShutdownActionCommand.register(argb, ctx);
+
         HelpCommand.register(argb, ctx);
         if (ctx.isExperimentalCommandsEnabled()) {
             SaveCommand.register(argb, ctx);
