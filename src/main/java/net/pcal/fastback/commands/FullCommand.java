@@ -51,6 +51,12 @@ public class FullCommand {
 
     public static int run(ModContext ctx, ServerCommandSource scs) {
         final Logger log = commandLogger(ctx, scs);
+        {
+            // workaround for https://github.com/pcal43/fastback/issues/112
+            log.info("Saving before backup");
+            ctx.saveWorld();
+            log.info("Starting backup");
+        }
         gitOp(ctx, WRITE, log, git -> {
             new CommitAndPushTask(git, ctx, log).run();
         });
