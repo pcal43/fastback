@@ -44,7 +44,7 @@ import static net.pcal.fastback.tasks.ListSnapshotsTask.listSnapshotsForWorldSor
  * Command to prune all snapshots that are not to be retained per the retention policy.
  *
  * @author pcal
- * @since 0.1.5
+ * @since 0.2.0
  */
 public class PruneCommand {
 

@@ -49,7 +49,7 @@ import static net.pcal.fastback.logging.Message.localized;
  * Command to set the snapshot retention policy.
  *
  * @author pcal
- * @since 0.1.5
+ * @since 0.2.0
  */
 public class SetRetentionCommand implements Command<ServerCommandSource> {
 

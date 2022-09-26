@@ -43,7 +43,7 @@ import static net.pcal.fastback.utils.FileUtils.getDirDisplaySize;
  * Runs git garbage collection.
  *
  * @author pcal
- * @since 0.1.5
+ * @since 0.2.0
  */
 public class GcTask extends Task {
 

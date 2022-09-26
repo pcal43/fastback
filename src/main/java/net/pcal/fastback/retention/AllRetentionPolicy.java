@@ -15,7 +15,7 @@ import static net.pcal.fastback.logging.Message.localized;
  * Policy to retain all snapshots.
  *
  * @author pcal
- * @since 0.1.5
+ * @since 0.2.0
  */
 enum AllRetentionPolicy implements RetentionPolicy {
 

@@ -38,7 +38,7 @@ import static net.pcal.fastback.logging.Message.localized;
  * the last n days.
  *
  * @author pcal
- * @since 0.1.5
+ * @since 0.2.0
  */
 class DailyRetentionPolicy implements RetentionPolicy {
 
@@ -90,7 +90,7 @@ class DailyRetentionPolicy implements RetentionPolicy {
      * during which all snapshots are retained.
      *
      * @author pcal
-     * @since 0.1.5
+     * @since 0.2.0
      */
     public enum DailyRetentionPolicyType implements RetentionPolicyType {
 

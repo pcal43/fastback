@@ -17,7 +17,7 @@ import static net.pcal.fastback.logging.Message.localized;
  * Retention policy that keeps only the n most-recent snapshots.
  *
  * @author pcal
- * @since 0.1.5
+ * @since 0.2.0
  */
 class FixedCountRetentionPolicy implements RetentionPolicy {
 
