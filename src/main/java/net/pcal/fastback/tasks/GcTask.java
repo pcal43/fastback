@@ -40,7 +40,7 @@ import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.utils.FileUtils.getDirDisplaySize;
 
 /**
- * Runs garbage collection.
+ * Runs git garbage collection.
  *
  * @author pcal
  * @since 0.1.5
