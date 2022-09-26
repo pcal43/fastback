@@ -115,10 +115,6 @@ public record WorldConfig(
         return true;
     }
 
-    public boolean isFileRemoteBare() {
-        return true;
-    }
-
     public boolean isSmartPushEnabled() {
         return true;
     }

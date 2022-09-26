@@ -24,17 +24,18 @@ import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
+import net.pcal.fastback.logging.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.StoredConfig;
 
 import java.nio.file.Path;
 
-import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.commands.Commands.FAILURE;
+import static net.pcal.fastback.ModContext.ExecutionLock.NONE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.executeStandard;
+import static net.pcal.fastback.commands.Commands.commandLogger;
+import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.utils.FileUtils.mkdirs;
@@ -45,41 +46,37 @@ public class CreateFileRemoteCommand {
     private static final String ARGUMENT = "file-path";
 
     public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
-        final CreateFileRemoteCommand c = new CreateFileRemoteCommand(ctx);
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).then(
                                 argument(ARGUMENT, StringArgumentType.greedyString()).
-                                        executes(c::setFileRemote))
+                                        executes(cc->setFileRemote(ctx, cc))
+                        )
         );
     }
 
-    private final ModContext ctx;
-
-    private CreateFileRemoteCommand(final ModContext context) {
-        this.ctx = requireNonNull(context);
-    }
-
-    private int setFileRemote(final CommandContext<ServerCommandSource> cc) {
-        return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
+    private static int setFileRemote(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
+        final Logger log = commandLogger(ctx, cc.getSource());
+        gitOp(ctx, NONE, log, git-> {
             final String targetPath = cc.getArgument(ARGUMENT, String.class);
             final Path fupHome = Path.of(targetPath);
             if (fupHome.toFile().exists()) {
                 log.notifyError(localized("fastback.notify.create-file-remote-dir-exists", fupHome.toString()));
-                return FAILURE;
+                return;
             }
             mkdirs(fupHome);
-            try (Git targetGit = Git.init().setBare(wc.isFileRemoteBare()).setDirectory(fupHome.toFile()).call()) {
+            try (Git targetGit = Git.init().setBare(ctx.isFileRemoteBare()).setDirectory(fupHome.toFile()).call()) {
                 final StoredConfig targetGitc = targetGit.getRepository().getConfig();
-                targetGitc.setInt("core", null, "compression", 0);
                 targetGitc.setInt("pack", null, "window", 0);
+                targetGitc.setInt("core", null, "bigFileThreshold", 1);
                 targetGitc.save();
             }
             final String targetUrl = "file://" + fupHome.toAbsolutePath();
+            final StoredConfig gitc = git.getRepository().getConfig();
             WorldConfig.setRemoteUrl(gitc, targetUrl);
             gitc.save();
             log.notify(localized("fastback.notify.create-file-remote-created", targetPath, targetUrl));
-            return SUCCESS;
         });
+        return SUCCESS;
     }
 }

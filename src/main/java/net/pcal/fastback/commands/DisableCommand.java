@@ -23,11 +23,14 @@ import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
+import net.pcal.fastback.logging.Logger;
+import org.eclipse.jgit.lib.StoredConfig;
 
-import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
+import static net.pcal.fastback.ModContext.ExecutionLock.WRITE_CONFIG;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.executeStandard;
+import static net.pcal.fastback.commands.Commands.commandLogger;
+import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
 
@@ -36,27 +39,21 @@ public class DisableCommand {
     private static final String COMMAND_NAME = "disable";
 
     public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
-        final DisableCommand c = new DisableCommand(ctx);
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(c::disable)
+                        executes(cc->disable(ctx, cc))
         );
     }
 
-    private final ModContext ctx;
-
-    private DisableCommand(ModContext context) {
-        this.ctx = requireNonNull(context);
-    }
-
-    private int disable(final CommandContext<ServerCommandSource> cc) {
-        return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
+    private static int disable(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
+        final Logger log = commandLogger(ctx, cc.getSource());
+        gitOp(ctx, WRITE_CONFIG, log, git-> {
+            final StoredConfig gitc = git.getRepository().getConfig();
             WorldConfig.setBackupEnabled(gitc, false);
             gitc.save();
             log.notify(localized("fastback.notify.disable-done"));
-            return SUCCESS;
         });
+        return SUCCESS;
     }
 }
-

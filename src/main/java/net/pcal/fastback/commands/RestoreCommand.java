@@ -23,16 +23,17 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
+import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.tasks.RestoreSnapshotTask;
 
 import java.nio.file.Path;
 
-import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
+import static net.pcal.fastback.ModContext.ExecutionLock.NONE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
-import static net.pcal.fastback.commands.Commands.executeStandard;
+import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 
 public class RestoreCommand {
@@ -41,32 +42,25 @@ public class RestoreCommand {
     private static final String ARGUMENT = "snapshot";
 
     public static void register(LiteralArgumentBuilder<ServerCommandSource> argb, ModContext ctx) {
-        final RestoreCommand rc = new RestoreCommand(ctx);
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).then(
                                 argument(ARGUMENT, StringArgumentType.string()).
                                         suggests(new SnapshotNameSuggestions(ctx)).
-                                        executes(rc::execute)
+                                        executes(cc -> restore(ctx, cc))
                         )
         );
     }
 
-    private final ModContext ctx;
-
-    private RestoreCommand(ModContext context) {
-        this.ctx = requireNonNull(context);
-    }
-
-    private int execute(CommandContext<ServerCommandSource> cc) {
-        return executeStandard(this.ctx, cc, (gitc, wc, tali) -> {
+    private static int restore(ModContext ctx, CommandContext<ServerCommandSource> cc) {
+        final Logger log = commandLogger(ctx, cc.getSource());
+        gitOp(ctx, NONE, log, git -> {
             final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
-            final Path restoresDir = this.ctx.getRestoresDir();
-            final String worldName = this.ctx.getWorldName();
-            final Path worldSaveDir = this.ctx.getWorldDirectory();
-            this.ctx.execute(
-                    RestoreSnapshotTask.create(worldSaveDir, snapshotName, worldName, restoresDir, commandLogger(ctx, cc)));
-            return SUCCESS;
+            final Path restoresDir = ctx.getRestoresDir();
+            final String worldName = ctx.getWorldName();
+            final Path worldDir = ctx.getWorldDirectory();
+            RestoreSnapshotTask.create(worldDir, snapshotName, worldName, restoresDir, log).run();
         });
+        return SUCCESS;
     }
 }

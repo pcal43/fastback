@@ -187,6 +187,10 @@ public class ModContext {
         return true;
     }
 
+    public boolean isFileRemoteBare() {
+        return true;
+    }
+
     public boolean isCommandDumpEnabled() {
         return true;
     }
