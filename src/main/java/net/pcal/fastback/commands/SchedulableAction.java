@@ -22,6 +22,7 @@ import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.tasks.CommitAndPushTask;
 import net.pcal.fastback.tasks.CommitTask;
+import org.eclipse.jgit.api.Git;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.ModContext.ExecutionLock.WRITE;
@@ -37,24 +38,22 @@ public enum SchedulableAction {
 
     NONE("none") {
         @Override
-        public void run(ModContext ctx, Logger log) {}
+        public Runnable getRunnable(Git git, ModContext ctx, Logger log) {
+            return ()->{};
+        }
     },
 
     LOCAL("local") {
         @Override
-        public void run(ModContext ctx, Logger log) {
-            gitOp(ctx, WRITE, log, git-> {
-                new CommitTask(git, ctx, log).run();
-            });
+        public Runnable getRunnable(Git git, ModContext ctx, Logger log) {
+           return new CommitTask(git, ctx, log);
         }
     },
 
     FULL("full") {
         @Override
-        public void run(ModContext ctx, Logger log) {
-            gitOp(ctx, WRITE, log, git-> {
-                new CommitAndPushTask(git, ctx, log).run();
-            });
+        public Runnable getRunnable(Git git, ModContext ctx, Logger log) {
+            return new CommitAndPushTask(git, ctx, log);
         }
     };
 
@@ -75,6 +74,6 @@ public enum SchedulableAction {
         return this.configKey;
     }
 
-    public abstract void run(ModContext ctx, Logger log);
+    public abstract Runnable getRunnable(Git git, ModContext ctx, Logger log);
 }
 

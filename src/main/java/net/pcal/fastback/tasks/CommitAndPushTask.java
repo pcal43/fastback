@@ -28,7 +28,7 @@ import java.io.IOException;
 
 import static java.util.Objects.requireNonNull;
 
-public class CommitAndPushTask {
+public class CommitAndPushTask implements Runnable {
 
     private final ModContext ctx;
     private final Logger log;

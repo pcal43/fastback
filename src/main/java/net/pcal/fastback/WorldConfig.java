@@ -60,12 +60,6 @@ public record WorldConfig(
             Pair.of("world/dot-gitattributes", Path.of(".gitattributes"))
     );
 
-    public static WorldConfig load(Path worldSaveDir) throws IOException {
-        try (Git git = Git.open(worldSaveDir.toFile())) {
-            return load(worldSaveDir, git.getRepository().getConfig());
-        }
-    }
-
     public static WorldConfig load(final Git git) throws IOException {
         return load(
                 git.getRepository().getWorkTree().toPath().toAbsolutePath(),
