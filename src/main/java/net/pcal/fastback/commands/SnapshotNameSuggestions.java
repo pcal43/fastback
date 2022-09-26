@@ -31,8 +31,10 @@ import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 
 import static java.util.Objects.requireNonNull;
+import static net.pcal.fastback.ModContext.ExecutionLock.NONE;
 import static net.pcal.fastback.WorldConfig.isBackupsEnabledOn;
 import static net.pcal.fastback.commands.Commands.commandLogger;
+import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.tasks.ListSnapshotsTask.listSnapshotsForWorldSorted;
 
 class SnapshotNameSuggestions implements SuggestionProvider<ServerCommandSource> {
@@ -47,18 +49,15 @@ class SnapshotNameSuggestions implements SuggestionProvider<ServerCommandSource>
     public CompletableFuture<Suggestions> getSuggestions(final CommandContext<ServerCommandSource> scs,
                                                          final SuggestionsBuilder builder) {
         CompletableFuture<Suggestions> completableFuture = new CompletableFuture<>();
-        this.ctx.execute(() -> {
-            try {
-                final Logger logger = commandLogger(ctx, scs);
-                final Path worldSaveDir = ctx.getWorldDirectory();
-                if (isBackupsEnabledOn(worldSaveDir)) {
-                    for (SnapshotId sid : listSnapshotsForWorldSorted(worldSaveDir, logger)) {
-                        builder.suggest(sid.getName());
-                    }
-                    completableFuture.complete(builder.buildFuture().get());
+        final Logger log = commandLogger(ctx, scs);
+        gitOp(ctx, NONE, log, git-> {
+            final Logger logger = commandLogger(ctx, scs);
+            final Path worldSaveDir = ctx.getWorldDirectory();
+            if (isBackupsEnabledOn(worldSaveDir)) {
+                for (SnapshotId sid : listSnapshotsForWorldSorted(worldSaveDir, logger)) {
+                    builder.suggest(sid.getName());
                 }
-            } catch (Exception e) {
-                ctx.getLogger().internalError("Failed to look up snapshot suggestions", e);
+                completableFuture.complete(builder.buildFuture().get());
             }
         });
         return completableFuture;

@@ -57,16 +57,6 @@ public class ModContext {
         this.exclusiveExecutor = requireNonNull(exclusiveExecutor);
     }
 
-    @Deprecated
-    public void executeExclusive(Runnable runnable) {
-        this.execute(ExecutionLock.WRITE, runnable);
-    }
-
-    @Deprecated
-    public void execute(Runnable runnable) {
-        this.execute(ExecutionLock.NONE, runnable);
-    }
-
     public enum ExecutionLock {
         NONE,
         WRITE_CONFIG,
@@ -158,10 +148,6 @@ public class ModContext {
 
     public Path getWorldDirectory() {
         return this.spi.getWorldDirectory();
-    }
-
-    public boolean isWorldSaveEnabled() {
-        return this.spi.isWorldSaveEnabled();
     }
 
     @Deprecated
