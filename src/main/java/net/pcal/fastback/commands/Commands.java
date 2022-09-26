@@ -50,6 +50,7 @@ public class Commands {
         EnableCommand.register(argb, ctx);
         DisableCommand.register(argb, ctx);
         LocalCommand.register(argb, ctx);
+        FullCommand.register(argb, ctx);
         InfoCommand.register(argb, ctx);
         RestoreCommand.register(argb, ctx);
         PruneCommand.register(argb, ctx);
