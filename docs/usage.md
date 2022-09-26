@@ -72,7 +72,7 @@ If you have a git server already running (GitHub, for example), all you need to 
 
 Then, with your world running in Minecraft, type
 ```
-/backup remote ssh://192.168.0.99/mygitserver/myworld
+/backup set-remote ssh://192.168.0.99/mygitserver/myworld
 ```
 
 ## Configuring remote backups without a git server
@@ -81,7 +81,7 @@ If you don't have a git server, no problem.  You can also do remote backups to a
 your computer.  Just type something like
 
 ```
-/backup file-remote /path/to/network/volume/minecraft-backups/myworld
+/backup create-file-remote /path/to/network/volume/minecraft-backups/myworld
 ```
 
 You can configure this to be any valid path on your file system.  But it makes the most sense to do your
