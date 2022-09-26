@@ -39,7 +39,12 @@ import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.utils.FileUtils.getDirDisplaySize;
 
-@SuppressWarnings("FieldCanBeLocal")
+/**
+ * Runs garbage collection.
+ *
+ * @author pcal
+ * @since 0.1.5
+ */
 public class GcTask extends Task {
 
     private final ModContext ctx;
@@ -91,9 +96,7 @@ public class GcTask extends Task {
             this.setFailed();
             log.internalError("Failed to gc", e);
             return;
-        } finally {
-            this.setCompleted();
         }
+        this.setCompleted();
     }
-
 }
