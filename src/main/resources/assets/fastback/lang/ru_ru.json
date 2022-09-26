@@ -6,7 +6,7 @@
   "commands.fastback.help.help"                  : "Получить справку по доступным командам.",
   "commands.fastback.help.info"                  : "Показать текущий статус настроек резервирования.",
   "commands.fastback.help.list"                  : "Показать список точек восстановления этого мира.",
-  "commands.fastback.help.now"                   : "Запустить резервирование немедленно.",
+  "commands.fastback.help.full"                   : "Запустить резервирование немедленно.",
   "commands.fastback.help.purge"                 : "Удалить точку восстановления.",
   "commands.fastback.help.remote"                : "Установить адрес для удалённого резервирования.",
   "commands.fastback.help.restore"               : "Загрузить точку восстановления.",
