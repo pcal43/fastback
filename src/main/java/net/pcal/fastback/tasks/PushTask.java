@@ -19,6 +19,7 @@
 package net.pcal.fastback.tasks;
 
 import com.google.common.collect.ListMultimap;
+import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.IncrementalProgressMonitor;
 import net.pcal.fastback.logging.Logger;
@@ -46,34 +47,19 @@ import static net.pcal.fastback.logging.Message.localized;
 
 public class PushTask extends Task {
 
-    private final Git git;
-    private final String branchNameToPush;
+    private final ModContext ctx;
     private final Logger log;
-
-    public static PushTask createForCurrentBranch(final Git git, final Logger log) {
-        String currentBranch = null;
-        try {
-            currentBranch = git.getRepository().getBranch();
-        } catch (IOException e) {
-            log.internalError("Could not look up current branch", e);
-        }
-        if (currentBranch == null) {
-            log.internalError("No current branch", new Exception());
-            return null;
-        }
-        return new PushTask(git, currentBranch, log);
-    }
+    private final Git git;
+    private final SnapshotId sid;
 
     public PushTask(final Git git,
-                    final String branchNameToPush,
-                    final Logger log) {
+                      final ModContext ctx,
+                      final Logger log,
+                      final SnapshotId sid) {
         this.git = requireNonNull(git);
-        this.branchNameToPush = requireNonNull(branchNameToPush);
+        this.ctx = requireNonNull(ctx);
         this.log = requireNonNull(log);
-    }
-
-    private static String getTempBranchName(String uniqueName) {
-        return "temp/" + uniqueName;
+        this.sid = requireNonNull(sid);
     }
 
     @Override
@@ -109,9 +95,9 @@ public class PushTask extends Task {
             }
             log.info("Pushing to " + worldConfig.getRemotePushUrl());
             if (worldConfig.isSmartPushEnabled()) {
-                doSmartPush(git, snapshotsPerWorld.get(worldConfig.worldUuid()), branchNameToPush, worldConfig, log);
+                doSmartPush(git, snapshotsPerWorld.get(worldConfig.worldUuid()), this.sid.getBranchName(), worldConfig, log);
             } else {
-                doNaivePush(git, branchNameToPush, worldConfig, log);
+                doNaivePush(git, this.sid.getBranchName(), worldConfig, log);
             }
             super.setCompleted();
             final Duration duration = super.getDuration();
@@ -204,5 +190,9 @@ public class PushTask extends Task {
         }
         logger.debug("world-uuid check passed.");
         return true;
+    }
+
+    private static String getTempBranchName(String uniqueName) {
+        return "temp/" + uniqueName;
     }
 }

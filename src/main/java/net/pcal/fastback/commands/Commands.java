@@ -24,6 +24,7 @@ import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
+import net.pcal.fastback.ModContext.ExecutionLock;
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.CommandSourceLogger;
 import net.pcal.fastback.logging.CompositeLogger;
@@ -99,6 +100,11 @@ public class Commands {
                 throws IOException, GitAPIException, ParseException;
     }
 
+    interface CommandLogicNew2 {
+        int execute(Git git, WorldConfig worldConfig)
+                throws IOException, GitAPIException, ParseException;
+    }
+
     @Deprecated
     static int executeStandard(final ModContext ctx, final CommandContext<ServerCommandSource> cc, CommandLogic sub) {
         final Logger logger = commandLogger(ctx, cc.getSource());
@@ -121,6 +127,7 @@ public class Commands {
         }
     }
 
+    @Deprecated
     static int executeStandardNew(final ModContext ctx, final ServerCommandSource scs, CommandLogicNew sub) {
         final Logger logger = commandLogger(ctx, scs);
         final Path worldSaveDir = ctx.getWorldDirectory();
@@ -140,6 +147,52 @@ public class Commands {
             return FAILURE;
         }
     }
+
+    static int executeStandardNew2(final ModContext ctx, final Logger logger, CommandLogicNew2 sub) {
+        final Path worldSaveDir = ctx.getWorldDirectory();
+        if (!isGitRepo(worldSaveDir)) {
+            logger.notifyError(localized("fastback.notify.not-enabled"));
+            return FAILURE;
+        }
+        try (final Git git = Git.open(worldSaveDir.toFile())) {
+            final WorldConfig worldConfig = WorldConfig.load(git);
+            if (!worldConfig.isBackupEnabled()) {
+                logger.notifyError(localized("fastback.notify.not-enabled"));
+                return FAILURE;
+            }
+            return sub.execute(git, worldConfig);
+        } catch (Exception e) {
+            logger.internalError("Command execution failed.", e);
+            return FAILURE;
+        }
+    }
+
+
+    interface RepoOperation {
+        void execute(Git git)
+                throws IOException, GitAPIException, ParseException;
+    }
+
+    static void gitOp(final ModContext ctx,  ExecutionLock lock, final Logger logger, RepoOperation op) {
+        ctx.execute(lock, ()-> {
+            final Path worldSaveDir = ctx.getWorldDirectory();
+            if (!isGitRepo(worldSaveDir)) {
+                logger.notifyError(localized("fastback.notify.not-enabled"));
+                return;
+            }
+            try (final Git git = Git.open(worldSaveDir.toFile())) {
+                final WorldConfig worldConfig = WorldConfig.load(git);
+                if (!worldConfig.isBackupEnabled()) {
+                    logger.notifyError(localized("fastback.notify.not-enabled"));
+                } else {
+                    op.execute(git);
+                }
+            } catch (Exception e) {
+                logger.internalError("Command execution failed.", e);
+            }
+        });
+    }
+
 
 
 }

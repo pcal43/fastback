@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.Message.localized;
@@ -43,6 +44,7 @@ public class CommitTask extends Task {
     private final ModContext ctx;
     private final Logger log;
     private final Git git;
+    private final Supplier<SnapshotId> sidSupplier;
 
     public CommitTask(final Git git,
                       final ModContext ctx,
@@ -50,36 +52,46 @@ public class CommitTask extends Task {
         this.git = requireNonNull(git);
         this.ctx = requireNonNull(ctx);
         this.log = requireNonNull(log);
+        this.sidSupplier = ()->{
+            try {
+                return SnapshotId.create(WorldConfig.getWorldUuid(git));
+            } catch (IOException e) {
+                this.log.internalError("uuid lookup failed", e);
+                return null;
+            }
+        };
+    }
+
+    public CommitTask(final Git git,
+                      final ModContext ctx,
+                      final Logger log,
+                      final SnapshotId sid) {
+        this.git = requireNonNull(git);
+        this.ctx = requireNonNull(ctx);
+        this.log = requireNonNull(log);
+        this.sidSupplier = () -> sid;
     }
 
     public void run() {
         this.setStarted();
         this.log.notify(localized("fastback.notify.local-preparing"));
+        final SnapshotId sid = this.sidSupplier.get();
+        if (sid == null) return;
+        final String newBranchName = sid.getBranchName();
+        if (ctx.isServerStopping()) {
+            log.info("Skipping save before backup because server is shutting down.");
+        } else {
+            log.info("Saving before backup");
+            ctx.saveWorld();
+            log.info("Starting backup");
+        }
+        log.info("Committing " + newBranchName);
         try {
-            final String uuid = WorldConfig.getWorldUuid(git);
-            final SnapshotId newSid = SnapshotId.create(uuid);
-            final String newBranchName = newSid.getBranchName();
-
-            if (ctx.isServerStopping()) {
-                log.info("Skipping save before backup because server is shutting down.");
-            } else {
-                log.info("Saving before backup");
-                ctx.saveWorld();
-                log.info("Starting backup");
-            }
-
-            log.info("Committing " + newBranchName);
-            try {
-                doCommit(git, ctx, newBranchName, log);
-                final Duration dur = getSplitDuration();
-                log.info("Local backup complete.  Elapsed time: " + dur.toMinutesPart() + "m " + dur.toSecondsPart() + "s");
-            } catch (GitAPIException | IOException e) {
-                log.internalError("Local backup failed.  Unable to commit changes.", e);
-                this.setFailed();
-                return;
-            }
-        } catch (IOException e) {
-            log.internalError("Backup failed unexpectedly", e);
+            doCommit(git, ctx, newBranchName, log);
+            final Duration dur = getSplitDuration();
+            log.info("Local backup complete.  Elapsed time: " + dur.toMinutesPart() + "m " + dur.toSecondsPart() + "s");
+        } catch (GitAPIException | IOException e) {
+            log.internalError("Local backup failed.  Unable to commit changes.", e);
             this.setFailed();
             return;
         }

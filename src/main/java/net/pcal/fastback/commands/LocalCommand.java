@@ -22,11 +22,14 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
+import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.tasks.CommitTask;
 
 import static net.minecraft.server.command.CommandManager.literal;
+import static net.pcal.fastback.ModContext.ExecutionLock.WRITE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.executeStandardNew;
+import static net.pcal.fastback.commands.Commands.commandLogger;
+import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 
 /**
@@ -43,16 +46,15 @@ public class LocalCommand {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(cc->run(ctx, cc.getSource()))
+                        executes(cc -> run(ctx, cc.getSource()))
         );
     }
 
     public static int run(ModContext ctx, ServerCommandSource scs) throws CommandSyntaxException {
-        return executeStandardNew(ctx, scs, (git, wc, log) -> {
-            ctx.executeExclusive(() -> {
-                new CommitTask(git, ctx, log).run();
-            });
-            return SUCCESS;
+        final Logger log = commandLogger(ctx, scs);
+        gitOp(ctx, WRITE, log, git-> {
+            new CommitTask(git, ctx, log).run();
         });
+        return SUCCESS;
     }
 }

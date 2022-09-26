@@ -23,7 +23,6 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.Message;
 import net.pcal.fastback.retention.RetentionPolicyType;
-import net.pcal.fastback.tasks.Task;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -58,12 +57,32 @@ public class ModContext {
         this.exclusiveExecutor = requireNonNull(exclusiveExecutor);
     }
 
+    @Deprecated
     public void executeExclusive(Runnable runnable) {
-        this.exclusiveExecutor.execute(runnable);
+        this.execute(ExecutionLock.WRITE, runnable);
     }
 
+    @Deprecated
     public void execute(Runnable runnable) {
-        this.executor.execute(runnable);
+        this.execute(ExecutionLock.NONE, runnable);
+    }
+
+    public enum ExecutionLock {
+        NONE,
+        WRITE,
+        READ_WRITE_IMPATIENT
+    }
+
+    public void execute(ExecutionLock lock, Runnable runnable) {
+        switch(lock) {
+            case NONE:
+                this.executor.execute(runnable);
+                break;
+            case WRITE:
+            case READ_WRITE_IMPATIENT:
+                this.exclusiveExecutor.execute(runnable);
+                break;
+        }
     }
 
     public void shutdown() {

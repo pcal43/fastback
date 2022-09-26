@@ -34,7 +34,7 @@ public class FabricDedicatedServerModInitializer implements DedicatedServerModIn
     @Override
     public void onInitializeServer() {
         final FabricServiceProvider fsp = FabricServiceProvider.forDedicatedServer();
-        final ModContext modContext = ModContext.create(FabricServiceProvider.forDedicatedServer());
+        final ModContext modContext = ModContext.create(fsp);
         ServerLifecycleEvents.SERVER_STARTING.register(
                 minecraftServer -> {
                     fsp.setMinecraftServer(minecraftServer);

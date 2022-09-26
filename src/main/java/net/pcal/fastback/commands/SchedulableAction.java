@@ -29,6 +29,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
+import static net.pcal.fastback.commands.Commands.SUCCESS;
+import static net.pcal.fastback.commands.Commands.executeStandardNew2;
 import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
 /**
@@ -47,26 +49,11 @@ public enum SchedulableAction {
     FULL("full") {
         @Override
         public void run(ModContext ctx, Logger log) {
-            ctx.executeExclusive(() -> {
-                final Path worldSaveDir = ctx.getWorldDirectory();
-                if (!isGitRepo(worldSaveDir)) {
-                    log.info("Backups not initialized.");
-                    return;
-                }
-                final WorldConfig config;
-                try {
-                    config = WorldConfig.load(worldSaveDir);
-                } catch (IOException e) {
-                    log.internalError("Failed to load world config", e);
-                    return;
-                }
-                if (config.isBackupEnabled()) {
-                    try (Git git = Git.open(worldSaveDir.toFile())) {
-                        new CommitAndPushTask(git, ctx, log).run();
-                    } catch (IOException e) {
-                        log.internalError("Failed to open git repo", e);
-                    }
-                }
+            executeStandardNew2(ctx, log, (git, wc) -> {
+                ctx.executeExclusive(() -> {
+                    new CommitAndPushTask(git, ctx, log).run();
+                });
+                return SUCCESS;
             });
         }
     };
