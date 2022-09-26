@@ -19,7 +19,6 @@
 package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
@@ -50,7 +49,7 @@ public class LocalCommand {
         );
     }
 
-    public static int run(ModContext ctx, ServerCommandSource scs) throws CommandSyntaxException {
+    public static int run(ModContext ctx, ServerCommandSource scs) {
         final Logger log = commandLogger(ctx, scs);
         gitOp(ctx, WRITE, log, git-> {
             new CommitTask(git, ctx, log).run();
