@@ -23,6 +23,7 @@ of disk space.
 * Easily restore backup snapshots
 * Works on clients and dedicated servers
 * Works on Linux, Mac and Windows
+* Snapshot pruning, retention policies
 * LuckPerms support
 * ..all with easy-to-use minecraft commands
 
@@ -31,7 +32,6 @@ of disk space.
 * Scheduled backups
 * UI for managing backups from the title screen
 * Better management of remote snapshots
-* Automatic snapshot purging strategies
 * Forge support (maybe)
 
 ## Limitations
