@@ -67,7 +67,6 @@ public class Commands {
         HelpCommand.register(argb, ctx);
         if (ctx.isExperimentalCommandsEnabled()) {
             SaveCommand.register(argb, ctx);
-            GcInfoCommand.register(argb, ctx);
         }
         CommandRegistrationCallback.EVENT.register((dispatcher, regAccess, env) -> dispatcher.register(argb));
     }
