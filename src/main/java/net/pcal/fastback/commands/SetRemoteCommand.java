@@ -24,12 +24,15 @@ import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
+import net.pcal.fastback.logging.Logger;
+import org.eclipse.jgit.lib.StoredConfig;
 
-import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
+import static net.pcal.fastback.ModContext.ExecutionLock.WRITE_CONFIG;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.executeStandard;
+import static net.pcal.fastback.commands.Commands.commandLogger;
+import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
 
@@ -39,28 +42,24 @@ public class SetRemoteCommand {
     private static final String URL_ARGUMENT = "remote-url";
 
     public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
-        final SetRemoteCommand c = new SetRemoteCommand(ctx);
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).then(
                                 argument(URL_ARGUMENT, StringArgumentType.greedyString()).
-                                        executes(c::setRemoteUrl))
+                                        executes(cc->setRemoteUrl(ctx, cc))
+                        )
         );
     }
 
-    private final ModContext ctx;
-
-    private SetRemoteCommand(ModContext context) {
-        this.ctx = requireNonNull(context);
-    }
-
-    private int setRemoteUrl(final CommandContext<ServerCommandSource> cc) {
-        return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
+    private static int setRemoteUrl(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
+        final Logger log = commandLogger(ctx, cc.getSource());
+        gitOp(ctx, WRITE_CONFIG, log, git-> {
             final String newUrl = cc.getArgument(URL_ARGUMENT, String.class);
+            final StoredConfig gitc = git.getRepository().getConfig();
             WorldConfig.setRemoteUrl(gitc, newUrl);
             gitc.save();
             log.notify(localized("fastback.notify.remote-enabled", newUrl));
-            return SUCCESS;
         });
+        return SUCCESS;
     }
 }

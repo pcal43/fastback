@@ -22,14 +22,15 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
+import net.pcal.fastback.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.commands.Commands.FAILURE;
+import static net.pcal.fastback.ModContext.ExecutionLock.WRITE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.executeStandard;
+import static net.pcal.fastback.commands.Commands.commandLogger;
+import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
-import static net.pcal.fastback.logging.Message.localized;
 
 public class SaveCommand {
 
@@ -50,15 +51,10 @@ public class SaveCommand {
     }
 
     private int execute(CommandContext<ServerCommandSource> cc) {
-        return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
-            if (this.ctx.isWorldSaveEnabled()) {
-                ctx.saveWorld();
-                log.notify(localized("World saved (NOT backed up)."));
-                return SUCCESS;
-            } else {
-                log.notifyError(localized("world save disabled!"));
-                return FAILURE;
-            }
+        final Logger log = commandLogger(ctx, cc.getSource());
+        gitOp(ctx, WRITE, log, git-> {
+            ctx.saveWorld();
         });
+        return SUCCESS;
     }
 }
