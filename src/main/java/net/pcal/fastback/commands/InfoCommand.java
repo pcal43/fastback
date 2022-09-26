@@ -21,6 +21,8 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
+import net.pcal.fastback.WorldConfig;
+import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;
 import net.pcal.fastback.retention.RetentionPolicyType;
@@ -29,8 +31,10 @@ import java.io.File;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
+import static net.pcal.fastback.ModContext.ExecutionLock.NONE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.executeStandardNew;
+import static net.pcal.fastback.commands.Commands.commandLogger;
+import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.utils.FileUtils.getDirDisplaySize;
@@ -43,56 +47,56 @@ public class InfoCommand {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(cc-> execute(ctx, cc.getSource()))
+                        executes(cc -> execute(ctx, cc.getSource()))
         );
     }
 
     public static int execute(final ModContext ctx, final ServerCommandSource scs) {
         requireNonNull(ctx);
         requireNonNull(scs);
-        return executeStandardNew(ctx, scs, (git, wc, log) -> {
-            ctx.getExecutorService().execute(() -> {
-                log.notify(localized("fastback.notify.info-fastback-version", ctx.getModVersion()));
-                log.notify(localized("fastback.notify.info-uuid", wc.worldUuid()));
-                if (wc.isBackupEnabled()) {
-                    log.notify(localized("fastback.notify.info-local-enabled"));
+        final Logger log = commandLogger(ctx, scs);
+        gitOp(ctx, NONE, log, git -> {
+            final WorldConfig wc = WorldConfig.load(git);
+            log.notify(localized("fastback.notify.info-fastback-version", ctx.getModVersion()));
+            log.notify(localized("fastback.notify.info-uuid", wc.worldUuid()));
+            if (wc.isBackupEnabled()) {
+                log.notify(localized("fastback.notify.info-local-enabled"));
+            } else {
+                log.notify(localized("fastback.notify.info-local-disabled"));
+            }
+            if (wc.isRemoteBackupEnabled()) {
+                log.notify(localized("fastback.notify.info-remote-enabled"));
+            } else {
+                log.notify(localized("fastback.notify.info-remote-disabled"));
+            }
+            if (wc.isRemoteBackupEnabled()) {
+                String url = wc.getRemotePushUrl();
+                if (url == null) {
+                    log.notifyError(localized("fastback.notify.info-remote-url-missing"));
                 } else {
-                    log.notify(localized("fastback.notify.info-local-disabled"));
+                    log.notify(localized("fastback.notify.info-remote-url", url));
                 }
-                if (wc.isRemoteBackupEnabled()) {
-                    log.notify(localized("fastback.notify.info-remote-enabled"));
+            }
+            log.notify(localized("fastback.notify.info-shutdown-action", wc.shutdownAction()));
+            final File gitDir = git.getRepository().getDirectory();
+            log.notify(localized("fastback.notify.info-backup-size", getDirDisplaySize(gitDir)));
+            {
+                // show the snapshot retention policy
+                final String encoded = wc.retentionPolicy();
+                if (encoded == null) {
+                    log.notify(localized("fastback.notify.retention-policy-none"));
                 } else {
-                    log.notify(localized("fastback.notify.info-remote-disabled"));
-                }
-                if (wc.isRemoteBackupEnabled()) {
-                    String url = wc.getRemotePushUrl();
-                    if (url == null) {
-                        log.notifyError(localized("fastback.notify.info-remote-url-missing"));
-                    } else {
-                        log.notify(localized("fastback.notify.info-remote-url", url));
-                    }
-                }
-                log.notify(localized("fastback.notify.info-shutdown-action", wc.shutdownAction()));
-                final File gitDir = git.getRepository().getDirectory();
-                log.notify(localized("fastback.notify.info-backup-size", getDirDisplaySize(gitDir)));
-                {
-                    // show the snapshot retention policy
-                    final String encoded = wc.retentionPolicy();
-                    if (encoded == null) {
+                    final RetentionPolicy policy = RetentionPolicyCodec.INSTANCE.
+                            decodePolicy(ctx, RetentionPolicyType.getAvailable(), encoded);
+                    if (policy == null) {
                         log.notify(localized("fastback.notify.retention-policy-none"));
                     } else {
-                        final RetentionPolicy policy = RetentionPolicyCodec.INSTANCE.
-                                decodePolicy(ctx, RetentionPolicyType.getAvailable(), encoded);
-                        if (policy == null) {
-                            log.notify(localized("fastback.notify.retention-policy-none"));
-                        } else {
-                            log.notify(localized("fastback.notify.retention-policy-set"));
-                            log.notify(policy.getDescription());
-                        }
+                        log.notify(localized("fastback.notify.retention-policy-set"));
+                        log.notify(policy.getDescription());
                     }
                 }
-            });
-            return SUCCESS;
+            }
         });
+        return SUCCESS;
     }
 }

@@ -24,6 +24,7 @@ import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
+import net.pcal.fastback.ModContext.ExecutionLock;
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.CommandSourceLogger;
 import net.pcal.fastback.logging.CompositeLogger;
@@ -31,7 +32,6 @@ import net.pcal.fastback.logging.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.StoredConfig;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -53,7 +53,7 @@ public class Commands {
                 requires(Permissions.require(BACKUP_COMMAND_PERM, ctx.getDefaultPermLevel()));
         EnableCommand.register(argb, ctx);
         DisableCommand.register(argb, ctx);
-        NowCommand.register(argb, ctx);
+        LocalCommand.register(argb, ctx);
         InfoCommand.register(argb, ctx);
         RestoreCommand.register(argb, ctx);
         PruneCommand.register(argb, ctx);
@@ -85,17 +85,12 @@ public class Commands {
         return "fastback.command." + subcommandName;
     }
 
-    public static @NotNull Predicate<ServerCommandSource> subcommandPermission(ModContext ctx, String subcommandName) {
+    public static Predicate<ServerCommandSource> subcommandPermission(ModContext ctx, String subcommandName) {
         return Permissions.require(subcommandPermName(subcommandName), ctx.getDefaultPermLevel());
     }
 
     interface CommandLogic { //TODO KILL.  DUMBASS
         int execute(StoredConfig gitConfig, WorldConfig worldConfig, Logger logger)
-                throws IOException, GitAPIException, ParseException;
-    }
-
-    interface CommandLogicNew {
-        int execute(Git git, WorldConfig worldConfig, Logger logger)
                 throws IOException, GitAPIException, ParseException;
     }
 
@@ -121,27 +116,31 @@ public class Commands {
         }
     }
 
-    static int executeStandardNew(final ModContext ctx, final ServerCommandSource scs, CommandLogicNew sub) {
-        final Logger logger = commandLogger(ctx, scs);
-        final Path worldSaveDir = ctx.getWorldDirectory();
-        if (!isGitRepo(worldSaveDir)) {
-            logger.notifyError(localized("fastback.notify.not-enabled"));
-            return FAILURE;
-        }
-        try (final Git git = Git.open(worldSaveDir.toFile())) {
-            final WorldConfig worldConfig = WorldConfig.load(git);
-            if (!worldConfig.isBackupEnabled()) {
-                logger.notifyError(localized("fastback.notify.not-enabled"));
-                return FAILURE;
-            }
-            return sub.execute(git, worldConfig, logger);
-        } catch (Exception e) {
-            logger.internalError("Command execution failed.", e);
-            return FAILURE;
-        }
+
+    interface GitOp {
+        void execute(Git git)
+                throws IOException, GitAPIException, ParseException;
     }
 
-
+    static void gitOp(final ModContext ctx,  ExecutionLock lock, final Logger logger, GitOp op) {
+        ctx.execute(lock, ()-> {
+            final Path worldSaveDir = ctx.getWorldDirectory();
+            if (!isGitRepo(worldSaveDir)) {
+                logger.notifyError(localized("fastback.notify.not-enabled"));
+                return;
+            }
+            try (final Git git = Git.open(worldSaveDir.toFile())) {
+                final WorldConfig worldConfig = WorldConfig.load(git);
+                if (!worldConfig.isBackupEnabled()) {
+                    logger.notifyError(localized("fastback.notify.not-enabled"));
+                } else {
+                    op.execute(git);
+                }
+            } catch (Exception e) {
+                logger.internalError("Command execution failed.", e);
+            }
+        });
+    }
 }
 
 

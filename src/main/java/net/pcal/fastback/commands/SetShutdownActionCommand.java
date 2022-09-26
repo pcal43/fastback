@@ -25,14 +25,16 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
+import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.Message;
 import org.eclipse.jgit.lib.StoredConfig;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.commands.Commands.FAILURE;
+import static net.pcal.fastback.ModContext.ExecutionLock.WRITE_CONFIG;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.executeStandardNew;
+import static net.pcal.fastback.commands.Commands.commandLogger;
+import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 
 public class SetShutdownActionCommand {
@@ -50,18 +52,19 @@ public class SetShutdownActionCommand {
     }
 
     public static int execute(final ModContext ctx, final CommandContext<ServerCommandSource> cc) throws CommandSyntaxException {
-        return executeStandardNew(ctx, cc.getSource(), (git, wc, log) -> {
+        final Logger log = commandLogger(ctx, cc.getSource());
+        gitOp(ctx, WRITE_CONFIG, log, git -> {
             final String actionRaw = cc.getArgument(ARGUMENT, String.class);
             final SchedulableAction action = SchedulableAction.getForConfigKey(actionRaw);
             if (action == null) {
                 ctx.getLogger().notifyError(Message.localized("fastback.notify.invalid-input", actionRaw));
-                return FAILURE;
+            } else {
+                final StoredConfig config = git.getRepository().getConfig();
+                WorldConfig.setShutdownAction(config, action);
+                config.save();
+                ctx.getLogger().info("Set shutdown action to " + action);
             }
-            final StoredConfig config = git.getRepository().getConfig();
-            WorldConfig.setShutdownAction(config, action);
-            config.save();
-            ctx.getLogger().info("Set shutdown action to "+action);
-            return SUCCESS;
         });
+        return SUCCESS;
     }
 }

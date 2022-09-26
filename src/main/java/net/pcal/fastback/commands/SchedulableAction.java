@@ -18,17 +18,14 @@
 
 package net.pcal.fastback.commands;
 
-
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.tasks.BackupTask;
-
-import java.io.IOException;
-import java.nio.file.Path;
+import net.pcal.fastback.tasks.CommitAndPushTask;
+import net.pcal.fastback.tasks.CommitTask;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.utils.GitUtils.isGitRepo;
+import static net.pcal.fastback.ModContext.ExecutionLock.WRITE;
+import static net.pcal.fastback.commands.Commands.gitOp;
 
 /**
  * Encapsulates an action that can be performed in response to events such as shutdown or autosaving.
@@ -38,33 +35,25 @@ import static net.pcal.fastback.utils.GitUtils.isGitRepo;
  */
 public enum SchedulableAction {
 
+    NONE("none") {
+        @Override
+        public void run(ModContext ctx, Logger log) {}
+    },
+
+    LOCAL("local") {
+        @Override
+        public void run(ModContext ctx, Logger log) {
+            gitOp(ctx, WRITE, log, git-> {
+                new CommitTask(git, ctx, log).run();
+            });
+        }
+    },
+
     FULL("full") {
         @Override
         public void run(ModContext ctx, Logger log) {
-            ctx.getExecutorService().execute(() -> {
-                if (ctx.isServerStopping()) {
-                    log.info("Skipping save before backup because server is shutting down.");
-                } else {
-                    log.info("Saving before backup");
-                    ctx.saveWorld();
-                    log.info("Starting backup");
-                }
-                final Path worldSaveDir = ctx.getWorldDirectory();
-                if (!isGitRepo(worldSaveDir)) {
-                    log.info("Backups not initialized.");
-                    return;
-                }
-                final WorldConfig config;
-                try {
-                    config = WorldConfig.load(worldSaveDir);
-                } catch (IOException e) {
-                    log.internalError("Failed to load world config", e);
-                    return;
-                }
-                if (config.isBackupEnabled()) {
-                    log.info("Saving before backup");
-                    new BackupTask(ctx, worldSaveDir, log).run();
-                }
+            gitOp(ctx, WRITE, log, git-> {
+                new CommitAndPushTask(git, ctx, log).run();
             });
         }
     };

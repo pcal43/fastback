@@ -20,7 +20,6 @@ package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
@@ -63,9 +62,8 @@ public class EnableCommand {
     }
 
     private int enable(final CommandContext<ServerCommandSource> cc) {
-        final MinecraftServer server = cc.getSource().getServer();
         final Logger logger = commandLogger(ctx, cc);
-        final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
+        final Path worldSaveDir = this.ctx.getWorldDirectory();
         try (final Git git = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
             doWorldMaintenance(git, logger);
             final StoredConfig config = git.getRepository().getConfig();

@@ -21,7 +21,6 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.tasks.RestoreSnapshotTask;
@@ -63,10 +62,9 @@ public class RestoreCommand {
         return executeStandard(this.ctx, cc, (gitc, wc, tali) -> {
             final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
             final Path restoresDir = this.ctx.getRestoresDir();
-            final MinecraftServer server = cc.getSource().getServer();
-            final String worldName = this.ctx.getWorldName(server);
-            final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
-            this.ctx.getExecutorService().execute(
+            final String worldName = this.ctx.getWorldName();
+            final Path worldSaveDir = this.ctx.getWorldDirectory();
+            this.ctx.execute(
                     RestoreSnapshotTask.create(worldSaveDir, snapshotName, worldName, restoresDir, commandLogger(ctx, cc)));
             return SUCCESS;
         });

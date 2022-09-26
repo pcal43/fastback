@@ -19,46 +19,41 @@
 package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
+import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.tasks.CommitTask;
 
-import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.commands.Commands.FAILURE;
+import static net.pcal.fastback.ModContext.ExecutionLock.WRITE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.executeStandard;
+import static net.pcal.fastback.commands.Commands.commandLogger;
+import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
-import static net.pcal.fastback.logging.Message.localized;
 
-public class SaveCommand {
+/**
+ * Perform a local backup.
+ *
+ * @author pcal
+ * @since 0.1.5
+ */
+public class LocalCommand {
 
-    private static final String COMMAND_NAME = "save";
+    private static final String COMMAND_NAME = "local";
 
-    public static void register(LiteralArgumentBuilder<ServerCommandSource> argb, ModContext ctx) {
-        final SaveCommand rc = new SaveCommand(ctx);
+    public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(rc::execute));
+                        executes(cc -> run(ctx, cc.getSource()))
+        );
     }
 
-    private final ModContext ctx;
-
-    private SaveCommand(ModContext context) {
-        this.ctx = requireNonNull(context);
-    }
-
-    private int execute(CommandContext<ServerCommandSource> cc) {
-        return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
-            if (this.ctx.isWorldSaveEnabled()) {
-                ctx.saveWorld();
-                log.notify(localized("World saved (NOT backed up)."));
-                return SUCCESS;
-            } else {
-                log.notifyError(localized("world save disabled!"));
-                return FAILURE;
-            }
+    public static int run(ModContext ctx, ServerCommandSource scs) {
+        final Logger log = commandLogger(ctx, scs);
+        gitOp(ctx, WRITE, log, git-> {
+            new CommitTask(git, ctx, log).run();
         });
+        return SUCCESS;
     }
 }

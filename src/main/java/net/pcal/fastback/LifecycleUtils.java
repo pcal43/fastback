@@ -58,7 +58,7 @@ public class LifecycleUtils {
      * Must be called when either client or server is terminating.
      */
     public static void onTermination(ModContext ctx) {
-        shutdownExecutor(ctx.getExecutorService());
+        ctx.shutdown();
         ctx.getLogger().info("onTermination complete");
     }
 
@@ -99,8 +99,6 @@ public class LifecycleUtils {
         } catch (IOException e) {
             logger.internalError("Shutdown backup failed.", e);
         }
-        shutdownExecutor(ctx.getExecutorService());
-
         ctx.getLogger().info("onWorldStop complete");
     }
 
@@ -121,28 +119,6 @@ public class LifecycleUtils {
             } catch (IOException e) {
                 ctx.getLogger().internalError("failed to output resource "+resourcePath, e);
             }
-        }
-    }
-
-    /**
-     * Lifted straight from the docs:
-     * https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html
-     */
-    private static void shutdownExecutor(ExecutorService pool) {
-        pool.shutdown(); // Disable new tasks from being submitted
-        try {
-            // Wait a while for existing tasks to terminate
-            if (!pool.awaitTermination(5, TimeUnit.MINUTES)) {
-                pool.shutdownNow(); // Cancel currently executing tasks
-                // Wait a while for tasks to respond to being cancelled
-                if (!pool.awaitTermination(5, TimeUnit.MINUTES))
-                    System.err.println("Pool did not terminate");
-            }
-        } catch (InterruptedException ie) {
-            // (Re-)Cancel if current thread also interrupted
-            pool.shutdownNow();
-            // Preserve interrupt status
-            Thread.currentThread().interrupt();
         }
     }
 }

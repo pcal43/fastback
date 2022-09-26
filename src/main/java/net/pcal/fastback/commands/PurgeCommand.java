@@ -21,7 +21,6 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.utils.SnapshotId;
@@ -62,9 +61,8 @@ public class PurgeCommand {
             final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
             final SnapshotId sid = SnapshotId.fromUuidAndName(wc.worldUuid(), snapshotName);
             final String branchName = sid.getBranchName();
-            final MinecraftServer server = cc.getSource().getServer();
-            final Path worldSaveDir = this.ctx.getWorldSaveDirectory(server);
-            this.ctx.getExecutorService().execute(() -> {
+            final Path worldSaveDir = this.ctx.getWorldDirectory();
+            this.ctx.executeExclusive(() -> {
                 try (final Git git = Git.open(worldSaveDir.toFile())) {
                     git.branchDelete().setForce(true).setBranchNames(branchName).call();
                     log.notify(localized("fastback.notify.purge-done", snapshotName));
