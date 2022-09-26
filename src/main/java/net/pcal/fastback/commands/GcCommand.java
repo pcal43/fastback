@@ -22,28 +22,15 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.logging.IncrementalProgressMonitor;
-import net.pcal.fastback.logging.LoggingProgressMonitor;
-import net.pcal.fastback.utils.FileUtils;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.internal.storage.file.FileRepository;
-import org.eclipse.jgit.internal.storage.file.GC;
-import org.eclipse.jgit.lib.ProgressMonitor;
-import org.eclipse.jgit.storage.pack.PackConfig;
+import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.tasks.GcTask;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.text.ParseException;
-
-import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
+import static net.pcal.fastback.ModContext.ExecutionLock.WRITE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.executeStandard;
+import static net.pcal.fastback.commands.Commands.commandLogger;
+import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
-import static net.pcal.fastback.logging.Message.localized;
-import static net.pcal.fastback.utils.FileUtils.getDirDisplaySize;
 
 
 //
@@ -58,58 +45,18 @@ public class GcCommand {
     private static final String COMMAND_NAME = "gc";
 
     public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
-        final GcCommand c = new GcCommand(ctx);
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(c::now)
+                        executes(cc -> gc(ctx, cc))
         );
     }
 
-    private final ModContext ctx;
-
-    private GcCommand(final ModContext context) {
-        this.ctx = requireNonNull(context);
-    }
-
-    private int now(CommandContext<ServerCommandSource> cc) {
-        return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
-            ctx.executeExclusive(() -> {
-                final ProgressMonitor pm =
-                        new IncrementalProgressMonitor(new LoggingProgressMonitor(log), 100);
-                try (final Git git = Git.open(wc.worldSaveDir().toFile())) {
-                    log.notify(localized("fastback.notify.gc-start"));
-                    log.info("Stats before gc:");
-                    log.info("" + git.gc().getStatistics());
-                    //
-                    // reflogs aren't very useful in our case and cause old snapshots to get retained
-                    // longer than people expect.
-                    //
-                    final File gitDir = git.getRepository().getDirectory();
-                    log.notify(localized("fastback.notify.gc-size-before", getDirDisplaySize(gitDir)));
-                    if (ctx.isReflogDeletionEnabled()) {
-                        final Path reflogsDir = gitDir.toPath().resolve("logs");
-                        log.info("Deleting reflogs " + reflogsDir);
-                        FileUtils.rmdir(reflogsDir);
-                    }
-                    final GC gc = new GC(((FileRepository) git.getRepository()));
-                    gc.setExpireAgeMillis(0);
-                    gc.setPackExpireAgeMillis(0);
-                    gc.setAuto(false);
-                    PackConfig pc = new PackConfig();
-                    pc.setCompressionLevel(0);
-                    pc.setDeltaCompress(false);
-                    gc.setPackConfig(pc);
-                    gc.gc();
-                    log.notify(localized("fastback.notify.gc-done"));
-                    log.info("Stats after gc:");
-                    log.info("" + git.gc().getStatistics());
-                    log.notify(localized("fastback.notify.gc-size-after", getDirDisplaySize(gitDir)));
-                } catch (IOException | GitAPIException | ParseException e) {
-                    log.internalError("Failed to gc", e);
-                }
-            });
-            return SUCCESS;
+    private static int gc(ModContext ctx, CommandContext<ServerCommandSource> cc) {
+        final Logger log = commandLogger(ctx, cc.getSource());
+        gitOp(ctx, WRITE, log, git -> {
+            new GcTask(git, ctx, log).run();
         });
+        return SUCCESS;
     }
 }
