@@ -42,13 +42,13 @@ public class DisableCommand {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(cc->disable(ctx, cc))
+                        executes(cc -> disable(ctx, cc))
         );
     }
 
     private static int disable(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, WRITE_CONFIG, log, git-> {
+        gitOp(ctx, WRITE_CONFIG, log, git -> {
             final StoredConfig gitc = git.getRepository().getConfig();
             WorldConfig.setBackupEnabled(gitc, false);
             gitc.save();

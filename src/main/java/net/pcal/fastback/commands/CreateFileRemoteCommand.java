@@ -50,14 +50,14 @@ public class CreateFileRemoteCommand {
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).then(
                                 argument(ARGUMENT, StringArgumentType.greedyString()).
-                                        executes(cc->setFileRemote(ctx, cc))
+                                        executes(cc -> setFileRemote(ctx, cc))
                         )
         );
     }
 
     private static int setFileRemote(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, NONE, log, git-> {
+        gitOp(ctx, NONE, log, git -> {
             final String targetPath = cc.getArgument(ARGUMENT, String.class);
             final Path fupHome = Path.of(targetPath);
             if (fupHome.toFile().exists()) {

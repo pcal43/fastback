@@ -73,7 +73,7 @@ public record WorldConfig(
         final String shutdownActionRaw = gitConfig.getString(CONFIG_SECTION, null, CONFIG_SHUTDOWN_ACTION);
         SchedulableAction shutdownAction = null;
         if (shutdownActionRaw != null) {
-             shutdownAction = SchedulableAction.getForConfigKey(shutdownActionRaw);
+            shutdownAction = SchedulableAction.getForConfigKey(shutdownActionRaw);
         } else {
             if (gitConfig.getBoolean(CONFIG_SECTION, null, "shutdown-backup-enabled", false)) {
                 shutdownAction = EnableCommand.DEFAULT_SHUTDOWN_ACTION;

@@ -46,14 +46,14 @@ public class SetRemoteCommand {
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).then(
                                 argument(URL_ARGUMENT, StringArgumentType.greedyString()).
-                                        executes(cc->setRemoteUrl(ctx, cc))
+                                        executes(cc -> setRemoteUrl(ctx, cc))
                         )
         );
     }
 
     private static int setRemoteUrl(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, WRITE_CONFIG, log, git-> {
+        gitOp(ctx, WRITE_CONFIG, log, git -> {
             final String newUrl = cc.getArgument(URL_ARGUMENT, String.class);
             final StoredConfig gitc = git.getRepository().getConfig();
             WorldConfig.setRemoteUrl(gitc, newUrl);

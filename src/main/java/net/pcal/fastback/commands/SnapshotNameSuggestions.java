@@ -50,7 +50,7 @@ class SnapshotNameSuggestions implements SuggestionProvider<ServerCommandSource>
                                                          final SuggestionsBuilder builder) {
         CompletableFuture<Suggestions> completableFuture = new CompletableFuture<>();
         final Logger log = commandLogger(ctx, scs);
-        gitOp(ctx, NONE, log, git-> {
+        gitOp(ctx, NONE, log, git -> {
             final Logger logger = commandLogger(ctx, scs);
             final Path worldSaveDir = ctx.getWorldDirectory();
             if (isBackupsEnabledOn(worldSaveDir)) {

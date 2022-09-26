@@ -25,8 +25,6 @@ import net.pcal.fastback.tasks.CommitTask;
 import org.eclipse.jgit.api.Git;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.ModContext.ExecutionLock.WRITE;
-import static net.pcal.fastback.commands.Commands.gitOp;
 
 /**
  * Encapsulates an action that can be performed in response to events such as shutdown or autosaving.
@@ -39,14 +37,15 @@ public enum SchedulableAction {
     NONE("none") {
         @Override
         public Runnable getRunnable(Git git, ModContext ctx, Logger log) {
-            return ()->{};
+            return () -> {
+            };
         }
     },
 
     LOCAL("local") {
         @Override
         public Runnable getRunnable(Git git, ModContext ctx, Logger log) {
-           return new CommitTask(git, ctx, log);
+            return new CommitTask(git, ctx, log);
         }
     },
 
@@ -58,7 +57,7 @@ public enum SchedulableAction {
     };
 
     public static SchedulableAction getForConfigKey(String configKey) {
-        for(SchedulableAction action : SchedulableAction.values()) {
+        for (SchedulableAction action : SchedulableAction.values()) {
             if (action.configKey.equals(configKey)) return action;
         }
         return null;

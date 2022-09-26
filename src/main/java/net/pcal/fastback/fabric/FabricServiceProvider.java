@@ -200,15 +200,15 @@ public class FabricServiceProvider implements ModContext.FrameworkServiceProvide
 
 
     /**
-    private static String getString(Text message) {
-        if (message.getContent() instanceof TranslatableTextContent) {
-            // FIXME this doesn't work - Language.getInstance() doesn't have the mod keys.
-            // FIXME Figure out how to translate it ourselves properly
-            final String key = ((TranslatableTextContent) message.getContent()).getKey();
-            if (Language.getInstance().hasTranslation(key)) return Language.getInstance().get(key);
-        }
-        return message.getString();
-    }
-    **/
+     private static String getString(Text message) {
+     if (message.getContent() instanceof TranslatableTextContent) {
+     // FIXME this doesn't work - Language.getInstance() doesn't have the mod keys.
+     // FIXME Figure out how to translate it ourselves properly
+     final String key = ((TranslatableTextContent) message.getContent()).getKey();
+     if (Language.getInstance().hasTranslation(key)) return Language.getInstance().get(key);
+     }
+     return message.getString();
+     }
+     **/
 
 }

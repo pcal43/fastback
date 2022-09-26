@@ -23,7 +23,6 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.tasks.CommitAndPushTask;
-import net.pcal.fastback.tasks.CommitTask;
 
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.ModContext.ExecutionLock.WRITE;
@@ -52,7 +51,7 @@ public class FullCommand {
 
     public static int run(ModContext ctx, ServerCommandSource scs) {
         final Logger log = commandLogger(ctx, scs);
-        gitOp(ctx, WRITE, log, git-> {
+        gitOp(ctx, WRITE, log, git -> {
             new CommitAndPushTask(git, ctx, log).run();
         });
         return SUCCESS;

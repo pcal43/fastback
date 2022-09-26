@@ -51,7 +51,7 @@ public class LocalCommand {
 
     public static int run(ModContext ctx, ServerCommandSource scs) {
         final Logger log = commandLogger(ctx, scs);
-        gitOp(ctx, WRITE, log, git-> {
+        gitOp(ctx, WRITE, log, git -> {
             new CommitTask(git, ctx, log).run();
         });
         return SUCCESS;

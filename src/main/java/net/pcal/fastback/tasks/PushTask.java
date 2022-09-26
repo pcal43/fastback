@@ -53,9 +53,9 @@ public class PushTask extends Task {
     private final SnapshotId sid;
 
     public PushTask(final Git git,
-                      final ModContext ctx,
-                      final Logger log,
-                      final SnapshotId sid) {
+                    final ModContext ctx,
+                    final Logger log,
+                    final SnapshotId sid) {
         this.git = requireNonNull(git);
         this.ctx = requireNonNull(ctx);
         this.log = requireNonNull(log);

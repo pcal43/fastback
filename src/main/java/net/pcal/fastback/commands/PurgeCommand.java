@@ -27,7 +27,6 @@ import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.SnapshotId;
 
-import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.ModContext.ExecutionLock.WRITE;
@@ -47,14 +46,14 @@ public class PurgeCommand {
                 requires(subcommandPermission(ctx, COMMAND_NAME)).then(
                         argument(ARGUMENT, StringArgumentType.string()).
                                 suggests(new SnapshotNameSuggestions(ctx)).
-                                executes(cc-> purge(ctx, cc))
+                                executes(cc -> purge(ctx, cc))
                 )
         );
     }
 
     private static int purge(ModContext ctx, CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, WRITE, log, git-> {
+        gitOp(ctx, WRITE, log, git -> {
             final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
             final String uuid = WorldConfig.getWorldUuid(git);
             final SnapshotId sid = SnapshotId.fromUuidAndName(uuid, snapshotName);

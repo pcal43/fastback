@@ -62,7 +62,7 @@ public class ModContext {
 
     public boolean execute(ExecutionLock lock, Logger log, Runnable runnable) {
         if (this.executor == null) throw new IllegalStateException("Executor not started");
-        switch(lock) {
+        switch (lock) {
             case NONE:
             case WRITE_CONFIG: // revisit this
                 this.executor.submit(runnable);

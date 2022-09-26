@@ -52,7 +52,7 @@ public class SaveCommand {
 
     private int execute(CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, WRITE, log, git-> {
+        gitOp(ctx, WRITE, log, git -> {
             ctx.saveWorld();
         });
         return SUCCESS;

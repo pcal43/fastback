@@ -92,8 +92,8 @@ public class Commands {
         void execute(Git git) throws Exception;
     }
 
-    static void gitOp(final ModContext ctx,  final ExecutionLock lock, final Logger log, final GitOp op) {
-        ctx.execute(lock, log, ()-> {
+    static void gitOp(final ModContext ctx, final ExecutionLock lock, final Logger log, final GitOp op) {
+        ctx.execute(lock, log, () -> {
             final Path worldSaveDir = ctx.getWorldDirectory();
             if (!isGitRepo(worldSaveDir)) {
                 log.notifyError(localized("fastback.notify.not-enabled"));

@@ -31,7 +31,6 @@ import java.nio.file.Path;
 import java.util.List;
 
 import static net.pcal.fastback.logging.Message.localized;
-import static net.pcal.fastback.logging.Message.raw;
 import static net.pcal.fastback.utils.FileUtils.writeResourceToFile;
 import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
@@ -108,12 +107,12 @@ public class LifecycleUtils {
         for (final Pair<String, Path> pair : CONFIG_RESOURCES) {
             final String resourcePath = pair.getLeft();
             final Path targetFilePath = pair.getRight();
-            ctx.getLogger().debug("writing "+resourcePath + " to "+targetFilePath);
+            ctx.getLogger().debug("writing " + resourcePath + " to " + targetFilePath);
             final Path configPath = configDir.resolve("fastback").resolve(targetFilePath);
             try {
                 writeResourceToFile(resourcePath, configDir.resolve(configPath));
             } catch (IOException e) {
-                ctx.getLogger().internalError("failed to output resource "+resourcePath, e);
+                ctx.getLogger().internalError("failed to output resource " + resourcePath, e);
             }
         }
     }

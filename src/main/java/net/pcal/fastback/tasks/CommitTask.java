@@ -52,7 +52,7 @@ public class CommitTask extends Task {
         this.git = requireNonNull(git);
         this.ctx = requireNonNull(ctx);
         this.log = requireNonNull(log);
-        this.sidSupplier = ()->{
+        this.sidSupplier = () -> {
             try {
                 return SnapshotId.create(WorldConfig.getWorldUuid(git));
             } catch (IOException e) {
