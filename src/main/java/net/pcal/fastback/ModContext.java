@@ -141,18 +141,8 @@ public class ModContext {
         this.spi.sendError(message, scs);
     }
 
-    @Deprecated
-    public Path getWorldSaveDirectory(MinecraftServer server) {
-        return this.spi.getWorldDirectory(server);
-    }
-
     public Path getWorldDirectory() {
         return this.spi.getWorldDirectory();
-    }
-
-    @Deprecated
-    public String getWorldName(MinecraftServer server) {
-        return this.spi.getWorldName(server);
     }
 
     public String getWorldName() {
@@ -239,11 +229,9 @@ public class ModContext {
 
         boolean isServerStopping();
 
-
         void sendFeedback(Message message, ServerCommandSource scs);
 
         void sendError(Message message, ServerCommandSource scs);
-
     }
 
 
