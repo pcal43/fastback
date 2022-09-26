@@ -33,7 +33,7 @@ import static java.util.Objects.requireNonNull;
  * Singleton which can encode a RetentionPolicy into a single-line string that can easily be saved in git config.
  *
  * @author pcal
- * @since 0.1.5
+ * @since 0.2.0
  */
 public enum RetentionPolicyCodec {
 

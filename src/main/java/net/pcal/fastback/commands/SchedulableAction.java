@@ -32,7 +32,7 @@ import static net.pcal.fastback.commands.Commands.gitOp;
  * Encapsulates an action that can be performed in response to events such as shutdown or autosaving.
  *
  * @author pcal
- * @since 0.1.5
+ * @since 0.2.0
  */
 public enum SchedulableAction {
 

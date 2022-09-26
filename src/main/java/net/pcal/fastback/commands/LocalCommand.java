@@ -35,7 +35,7 @@ import static net.pcal.fastback.commands.Commands.subcommandPermission;
  * Perform a local backup.
  *
  * @author pcal
- * @since 0.1.5
+ * @since 0.2.0
  */
 public class LocalCommand {
 
