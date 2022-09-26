@@ -153,7 +153,7 @@ public class HelpCommand {
         out.println();
         out.println("Permission                       ");
         out.println("-------------------------------- ");
-        out.println("`" + BACKUP_COMMAND_PERM + "`");
+        out.println("* `" + BACKUP_COMMAND_PERM + "`");
         for (final String sub : getSubcommandNames(cc)) {
             String permName = subcommandPermName(sub);
             String paddedPerm = String.format("%-" + 32 + "s", "`" + permName + "`");
