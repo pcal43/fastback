@@ -23,16 +23,17 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
+import net.pcal.fastback.WorldConfig;
+import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.SnapshotId;
-import org.eclipse.jgit.api.Git;
-
-import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
+import static net.pcal.fastback.ModContext.ExecutionLock.WRITE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.executeStandard;
+import static net.pcal.fastback.commands.Commands.commandLogger;
+import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
 
@@ -42,35 +43,25 @@ public class PurgeCommand {
     private static final String ARGUMENT = "snapshot";
 
     public static void register(LiteralArgumentBuilder<ServerCommandSource> argb, ModContext ctx) {
-        final PurgeCommand rc = new PurgeCommand(ctx);
         argb.then(literal(COMMAND_NAME).
                 requires(subcommandPermission(ctx, COMMAND_NAME)).then(
                         argument(ARGUMENT, StringArgumentType.string()).
                                 suggests(new SnapshotNameSuggestions(ctx)).
-                                executes(rc::execute)));
+                                executes(cc-> purge(ctx, cc))
+                )
+        );
     }
 
-    private final ModContext ctx;
-
-    private PurgeCommand(ModContext context) {
-        this.ctx = requireNonNull(context);
-    }
-
-    private int execute(CommandContext<ServerCommandSource> cc) {
-        return executeStandard(this.ctx, cc, (gitc, wc, log) -> {
+    private static int purge(ModContext ctx, CommandContext<ServerCommandSource> cc) {
+        final Logger log = commandLogger(ctx, cc.getSource());
+        gitOp(ctx, WRITE, log, git-> {
             final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
-            final SnapshotId sid = SnapshotId.fromUuidAndName(wc.worldUuid(), snapshotName);
+            final String uuid = WorldConfig.getWorldUuid(git);
+            final SnapshotId sid = SnapshotId.fromUuidAndName(uuid, snapshotName);
             final String branchName = sid.getBranchName();
-            final Path worldSaveDir = this.ctx.getWorldDirectory();
-            this.ctx.executeExclusive(() -> {
-                try (final Git git = Git.open(worldSaveDir.toFile())) {
-                    git.branchDelete().setForce(true).setBranchNames(branchName).call();
-                    log.notify(localized("fastback.notify.purge-done", snapshotName));
-                } catch (final Exception e) {
-                    log.internalError("Failed to purge", e);
-                }
-            });
-            return SUCCESS;
+            git.branchDelete().setForce(true).setBranchNames(branchName).call();
+            log.notify(localized("fastback.notify.purge-done", snapshotName));
         });
+        return SUCCESS;
     }
 }

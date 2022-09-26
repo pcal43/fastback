@@ -30,12 +30,8 @@ import net.pcal.fastback.logging.CommandSourceLogger;
 import net.pcal.fastback.logging.CompositeLogger;
 import net.pcal.fastback.logging.Logger;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.StoredConfig;
 
-import java.io.IOException;
 import java.nio.file.Path;
-import java.text.ParseException;
 import java.util.function.Predicate;
 
 import static net.pcal.fastback.logging.Message.localized;
@@ -88,37 +84,8 @@ public class Commands {
         return Permissions.require(subcommandPermName(subcommandName), ctx.getDefaultPermLevel());
     }
 
-    interface CommandLogic { //TODO KILL.  DUMBASS
-        int execute(StoredConfig gitConfig, WorldConfig worldConfig, Logger logger)
-                throws IOException, GitAPIException, ParseException;
-    }
-
-    @Deprecated
-    static int executeStandard(final ModContext ctx, final CommandContext<ServerCommandSource> cc, CommandLogic sub) {
-        final Logger logger = commandLogger(ctx, cc.getSource());
-        final Path worldSaveDir = ctx.getWorldDirectory();
-        if (!isGitRepo(worldSaveDir)) {
-            logger.notifyError(localized("fastback.notify.not-enabled"));
-            return FAILURE;
-        }
-        try (final Git git = Git.open(worldSaveDir.toFile())) {
-            final StoredConfig gitConfig = git.getRepository().getConfig();
-            final WorldConfig worldConfig = WorldConfig.load(worldSaveDir, gitConfig);
-            if (!worldConfig.isBackupEnabled()) {
-                logger.notifyError(localized("fastback.notify.not-enabled"));
-                return FAILURE;
-            }
-            return sub.execute(gitConfig, worldConfig, logger);
-        } catch (Exception e) {
-            logger.internalError("Command execution failed.", e);
-            return FAILURE;
-        }
-    }
-
-
     interface GitOp {
-        void execute(Git git)
-                throws IOException, GitAPIException, ParseException;
+        void execute(Git git) throws Exception;
     }
 
     static void gitOp(final ModContext ctx,  ExecutionLock lock, final Logger logger, GitOp op) {

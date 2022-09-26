@@ -31,10 +31,9 @@ import org.eclipse.jgit.lib.StoredConfig;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
+import static net.pcal.fastback.ModContext.ExecutionLock.NONE;
 import static net.pcal.fastback.WorldConfig.doWorldMaintenance;
-import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
@@ -47,37 +46,32 @@ public class EnableCommand {
     private static final String COMMAND_NAME = "enable";
 
     public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
-        final EnableCommand c = new EnableCommand(ctx);
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(c::enable)
+                        executes(cc -> enable(ctx, cc))
         );
     }
 
-    private final ModContext ctx;
-
-    private EnableCommand(ModContext context) {
-        this.ctx = requireNonNull(context);
-    }
-
-    private int enable(final CommandContext<ServerCommandSource> cc) {
-        final Logger logger = commandLogger(ctx, cc);
-        final Path worldSaveDir = this.ctx.getWorldDirectory();
-        try (final Git git = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
-            doWorldMaintenance(git, logger);
-            final StoredConfig config = git.getRepository().getConfig();
-            final WorldConfig worldConfig = WorldConfig.load(worldSaveDir, config);
-            WorldConfig.setBackupEnabled(config, true);
-            if (worldConfig.shutdownAction() == null) {
-                WorldConfig.setShutdownAction(config, DEFAULT_SHUTDOWN_ACTION);
-            }
-            config.save();
-            logger.notify(localized("fastback.notify.enable-done"));
-            return SUCCESS;
-        } catch (GitAPIException | IOException e) {
-            logger.internalError("Error enabling backups", e);
-            return FAILURE;
-        }
+    private static int enable(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
+        final Logger logger = commandLogger(ctx, cc.getSource());
+        ctx.execute(NONE, () -> {
+                    final Path worldSaveDir = ctx.getWorldDirectory();
+                    try (final Git git = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
+                        doWorldMaintenance(git, logger);
+                        final StoredConfig config = git.getRepository().getConfig();
+                        final WorldConfig worldConfig = WorldConfig.load(worldSaveDir, config);
+                        WorldConfig.setBackupEnabled(config, true);
+                        if (worldConfig.shutdownAction() == null) {
+                            WorldConfig.setShutdownAction(config, DEFAULT_SHUTDOWN_ACTION);
+                        }
+                        config.save();
+                        logger.notify(localized("fastback.notify.enable-done"));
+                    } catch (GitAPIException | IOException e) {
+                        logger.internalError("Error enabling backups", e);
+                    }
+                }
+        );
+        return SUCCESS;
     }
 }

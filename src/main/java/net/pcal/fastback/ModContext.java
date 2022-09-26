@@ -57,16 +57,6 @@ public class ModContext {
         this.exclusiveExecutor = requireNonNull(exclusiveExecutor);
     }
 
-    @Deprecated
-    public void executeExclusive(Runnable runnable) {
-        this.execute(ExecutionLock.WRITE, runnable);
-    }
-
-    @Deprecated
-    public void execute(Runnable runnable) {
-        this.execute(ExecutionLock.NONE, runnable);
-    }
-
     public enum ExecutionLock {
         NONE,
         WRITE_CONFIG,
@@ -151,22 +141,8 @@ public class ModContext {
         this.spi.sendError(message, scs);
     }
 
-    @Deprecated
-    public Path getWorldSaveDirectory(MinecraftServer server) {
-        return this.spi.getWorldDirectory(server);
-    }
-
     public Path getWorldDirectory() {
         return this.spi.getWorldDirectory();
-    }
-
-    public boolean isWorldSaveEnabled() {
-        return this.spi.isWorldSaveEnabled();
-    }
-
-    @Deprecated
-    public String getWorldName(MinecraftServer server) {
-        return this.spi.getWorldName(server);
     }
 
     public String getWorldName() {
@@ -184,6 +160,10 @@ public class ModContext {
     }
 
     public boolean isStartupNotificationEnabled() {
+        return true;
+    }
+
+    public boolean isFileRemoteBare() {
         return true;
     }
 
@@ -249,11 +229,9 @@ public class ModContext {
 
         boolean isServerStopping();
 
-
         void sendFeedback(Message message, ServerCommandSource scs);
 
         void sendError(Message message, ServerCommandSource scs);
-
     }
 
 
