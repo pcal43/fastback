@@ -29,11 +29,9 @@ import org.eclipse.jgit.api.Git;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 
-import static net.pcal.fastback.WorldConfig.isBackupsEnabledOn;
 import static net.pcal.fastback.logging.Message.localized;
+import static net.pcal.fastback.logging.Message.raw;
 import static net.pcal.fastback.utils.FileUtils.writeResourceToFile;
 import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
@@ -58,7 +56,6 @@ public class LifecycleUtils {
      * Must be called when either client or server is terminating.
      */
     public static void onTermination(ModContext ctx) {
-        ctx.shutdown();
         ctx.getLogger().info("onTermination complete");
     }
 
@@ -66,6 +63,7 @@ public class LifecycleUtils {
      * Must be called when a world is starting (in either a dedicated or client-embedded server).
      */
     public static void onWorldStart(final ModContext ctx) {
+        ctx.startExecutor();
         final Logger logger = ctx.isClient() ? CompositeLogger.of(ctx.getLogger(), new ChatLogger(ctx))
                 : ctx.getLogger();
         final Path worldSaveDir = ctx.getWorldDirectory();
@@ -86,18 +84,16 @@ public class LifecycleUtils {
         final Logger logger = ctx.isClient() ? CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx))
                 : ctx.getLogger();
         final Path worldSaveDir = ctx.getWorldDirectory();
-        if (!isBackupsEnabledOn(worldSaveDir)) {
-            logger.notify(localized("fastback.notify.suggest-enable"));
-            return;
-        }
-        try {
-            final WorldConfig config = WorldConfig.load(worldSaveDir);
-            if (config.shutdownAction() != null) {
+        logger.notify(localized("fastback.notify.thread-waiting"));
+        ctx.stopExecutor();
+        try (Git git = Git.open(worldSaveDir.toFile())) {
+            final WorldConfig config = WorldConfig.load(git);
+            if (config.isBackupEnabled() && config.shutdownAction() != null) {
                 final Logger screenLogger = CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx));
-                config.shutdownAction().run(ctx, screenLogger);
+                config.shutdownAction().getRunnable(git, ctx, screenLogger).run();
             }
         } catch (IOException e) {
-            logger.internalError("Shutdown backup failed.", e);
+            logger.internalError("Shutdown action failed.", e);
         }
         ctx.getLogger().info("onWorldStop complete");
     }

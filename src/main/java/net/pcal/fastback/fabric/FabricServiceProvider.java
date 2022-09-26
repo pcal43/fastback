@@ -166,7 +166,7 @@ public class FabricServiceProvider implements ModContext.FrameworkServiceProvide
 
     @Override
     public Path getWorldDirectory() {
-            if (this.minecraftServer == null) throw new IllegalStateException();
+        if (this.minecraftServer == null) throw new IllegalStateException();
         final LevelStorage.Session session = ((ServerAccessors) this.minecraftServer).getSession();
         return ((SessionAccessors) session).getDirectory().path();
     }

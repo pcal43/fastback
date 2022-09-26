@@ -29,57 +29,65 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static java.nio.file.Files.createTempDirectory;
 import static java.util.Objects.requireNonNull;
+import static net.pcal.fastback.logging.Message.localized;
 
 public class ModContext {
 
     private final FrameworkServiceProvider spi;
-    private final ExecutorService executor;
-    private final ThreadPoolExecutor exclusiveExecutor;
+    private ExecutorService executor = null;
     private Path tempRestoresDirectory = null;
 
     public static ModContext create(FrameworkServiceProvider spi) {
-        final ThreadPoolExecutor generalExecutor =
-                new ThreadPoolExecutor(0, 5, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
-        final ThreadPoolExecutor exclusiveExecutor =
-                new ThreadPoolExecutor(0, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
-        return new ModContext(spi, generalExecutor, exclusiveExecutor);
+        return new ModContext(spi);
     }
 
-    private ModContext(FrameworkServiceProvider spi, ExecutorService exs, ThreadPoolExecutor exclusiveExecutor) {
+    private ModContext(FrameworkServiceProvider spi) {
         this.spi = requireNonNull(spi);
-        this.executor = requireNonNull(exs);
-        this.exclusiveExecutor = requireNonNull(exclusiveExecutor);
     }
 
     public enum ExecutionLock {
         NONE,
         WRITE_CONFIG,
         WRITE,
-        READ_WRITE_IMPATIENT
     }
 
-    public void execute(ExecutionLock lock, Runnable runnable) {
+    private Future<?> exclusiveFuture = null;
+
+    public boolean execute(ExecutionLock lock, Logger log, Runnable runnable) {
+        if (this.executor == null) throw new IllegalStateException("Executor not started");
         switch(lock) {
             case NONE:
             case WRITE_CONFIG: // revisit this
-                this.executor.execute(runnable);
-                break;
+                this.executor.submit(runnable);
+                return true;
             case WRITE:
-            case READ_WRITE_IMPATIENT:
-                this.exclusiveExecutor.execute(runnable);
-                break;
+                if (this.exclusiveFuture != null && !this.exclusiveFuture.isDone()) {
+                    log.notifyError(localized("fastback.notify.thread-busy"));
+                    return false;
+                } else {
+                    log.debug("executing " + runnable);
+                    this.exclusiveFuture = this.executor.submit(runnable);
+                    return true;
+                }
+            default:
+                throw new IllegalStateException();
         }
     }
 
-    public void shutdown() {
+    public void startExecutor() {
+        this.executor = new ThreadPoolExecutor(0, 3, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
+    }
+
+    public void stopExecutor() {
         shutdownExecutor(this.executor);
-        shutdownExecutor(this.exclusiveExecutor);
+        this.executor = null;
     }
 
     public String getCommandName() {

@@ -89,22 +89,22 @@ public class Commands {
         void execute(Git git) throws Exception;
     }
 
-    static void gitOp(final ModContext ctx,  ExecutionLock lock, final Logger logger, GitOp op) {
-        ctx.execute(lock, ()-> {
+    static void gitOp(final ModContext ctx,  final ExecutionLock lock, final Logger log, final GitOp op) {
+        ctx.execute(lock, log, ()-> {
             final Path worldSaveDir = ctx.getWorldDirectory();
             if (!isGitRepo(worldSaveDir)) {
-                logger.notifyError(localized("fastback.notify.not-enabled"));
+                log.notifyError(localized("fastback.notify.not-enabled"));
                 return;
             }
             try (final Git git = Git.open(worldSaveDir.toFile())) {
                 final WorldConfig worldConfig = WorldConfig.load(git);
                 if (!worldConfig.isBackupEnabled()) {
-                    logger.notifyError(localized("fastback.notify.not-enabled"));
+                    log.notifyError(localized("fastback.notify.not-enabled"));
                 } else {
                     op.execute(git);
                 }
             } catch (Exception e) {
-                logger.internalError("Command execution failed.", e);
+                log.internalError("Command execution failed.", e);
             }
         });
     }

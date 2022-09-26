@@ -54,11 +54,11 @@ public class EnableCommand {
     }
 
     private static int enable(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
-        final Logger logger = commandLogger(ctx, cc.getSource());
-        ctx.execute(NONE, () -> {
+        final Logger log = commandLogger(ctx, cc.getSource());
+        ctx.execute(NONE, log, () -> {
                     final Path worldSaveDir = ctx.getWorldDirectory();
                     try (final Git git = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
-                        doWorldMaintenance(git, logger);
+                        doWorldMaintenance(git, log);
                         final StoredConfig config = git.getRepository().getConfig();
                         final WorldConfig worldConfig = WorldConfig.load(worldSaveDir, config);
                         WorldConfig.setBackupEnabled(config, true);
@@ -66,9 +66,9 @@ public class EnableCommand {
                             WorldConfig.setShutdownAction(config, DEFAULT_SHUTDOWN_ACTION);
                         }
                         config.save();
-                        logger.notify(localized("fastback.notify.enable-done"));
+                        log.notify(localized("fastback.notify.enable-done"));
                     } catch (GitAPIException | IOException e) {
-                        logger.internalError("Error enabling backups", e);
+                        log.internalError("Error enabling backups", e);
                     }
                 }
         );
