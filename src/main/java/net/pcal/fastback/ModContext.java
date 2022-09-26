@@ -69,6 +69,7 @@ public class ModContext {
 
     public enum ExecutionLock {
         NONE,
+        WRITE_CONFIG,
         WRITE,
         READ_WRITE_IMPATIENT
     }
@@ -76,6 +77,7 @@ public class ModContext {
     public void execute(ExecutionLock lock, Runnable runnable) {
         switch(lock) {
             case NONE:
+            case WRITE_CONFIG: // revisit this
                 this.executor.execute(runnable);
                 break;
             case WRITE:

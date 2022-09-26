@@ -25,19 +25,16 @@ import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.SnapshotId;
 
-import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.commands.Commands.FAILURE;
+import static net.pcal.fastback.ModContext.ExecutionLock.NONE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
-import static net.pcal.fastback.commands.Commands.executeStandard;
+import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
-import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.logging.Message.raw;
 import static net.pcal.fastback.tasks.ListSnapshotsTask.listSnapshotsForWorldSorted;
-import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
 public class ListCommand {
 
@@ -59,20 +56,12 @@ public class ListCommand {
     }
 
     private int execute(final CommandContext<ServerCommandSource> cc) {
-        return executeStandard(ctx, cc, (gitc, wc, log) -> {
-            final Path worldSaveDir = this.ctx.getWorldDirectory();
-            if (!isGitRepo(worldSaveDir)) {
-                final Logger logger = commandLogger(ctx, cc);
-                logger.notifyError(localized("fastback.notify.not-enabled"));
-                return FAILURE;
+        final Logger log = commandLogger(ctx, cc.getSource());
+        gitOp(ctx, NONE, log, git -> {
+            for (SnapshotId sid : listSnapshotsForWorldSorted(git.getRepository().getWorkTree().toPath(), ctx.getLogger())) {
+                log.notify(raw(sid.getName()));
             }
-            log.notify(localized("fastback.notify.list-local-snapshots-header"));
-            this.ctx.execute(() -> {
-                for (SnapshotId sid : listSnapshotsForWorldSorted(worldSaveDir, ctx.getLogger())) {
-                    log.notify(raw(sid.getName()));
-                }
-            });
-            return SUCCESS;
         });
+        return SUCCESS;
     }
 }

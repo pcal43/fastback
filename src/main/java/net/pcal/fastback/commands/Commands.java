@@ -32,7 +32,6 @@ import net.pcal.fastback.logging.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.StoredConfig;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -86,22 +85,12 @@ public class Commands {
         return "fastback.command." + subcommandName;
     }
 
-    public static @NotNull Predicate<ServerCommandSource> subcommandPermission(ModContext ctx, String subcommandName) {
+    public static Predicate<ServerCommandSource> subcommandPermission(ModContext ctx, String subcommandName) {
         return Permissions.require(subcommandPermName(subcommandName), ctx.getDefaultPermLevel());
     }
 
     interface CommandLogic { //TODO KILL.  DUMBASS
         int execute(StoredConfig gitConfig, WorldConfig worldConfig, Logger logger)
-                throws IOException, GitAPIException, ParseException;
-    }
-
-    interface CommandLogicNew {
-        int execute(Git git, WorldConfig worldConfig, Logger logger)
-                throws IOException, GitAPIException, ParseException;
-    }
-
-    interface CommandLogicNew2 {
-        int execute(Git git, WorldConfig worldConfig)
                 throws IOException, GitAPIException, ParseException;
     }
 
@@ -127,53 +116,13 @@ public class Commands {
         }
     }
 
-    @Deprecated
-    static int executeStandardNew(final ModContext ctx, final ServerCommandSource scs, CommandLogicNew sub) {
-        final Logger logger = commandLogger(ctx, scs);
-        final Path worldSaveDir = ctx.getWorldDirectory();
-        if (!isGitRepo(worldSaveDir)) {
-            logger.notifyError(localized("fastback.notify.not-enabled"));
-            return FAILURE;
-        }
-        try (final Git git = Git.open(worldSaveDir.toFile())) {
-            final WorldConfig worldConfig = WorldConfig.load(git);
-            if (!worldConfig.isBackupEnabled()) {
-                logger.notifyError(localized("fastback.notify.not-enabled"));
-                return FAILURE;
-            }
-            return sub.execute(git, worldConfig, logger);
-        } catch (Exception e) {
-            logger.internalError("Command execution failed.", e);
-            return FAILURE;
-        }
-    }
 
-    static int executeStandardNew2(final ModContext ctx, final Logger logger, CommandLogicNew2 sub) {
-        final Path worldSaveDir = ctx.getWorldDirectory();
-        if (!isGitRepo(worldSaveDir)) {
-            logger.notifyError(localized("fastback.notify.not-enabled"));
-            return FAILURE;
-        }
-        try (final Git git = Git.open(worldSaveDir.toFile())) {
-            final WorldConfig worldConfig = WorldConfig.load(git);
-            if (!worldConfig.isBackupEnabled()) {
-                logger.notifyError(localized("fastback.notify.not-enabled"));
-                return FAILURE;
-            }
-            return sub.execute(git, worldConfig);
-        } catch (Exception e) {
-            logger.internalError("Command execution failed.", e);
-            return FAILURE;
-        }
-    }
-
-
-    interface RepoOperation {
+    interface GitOp {
         void execute(Git git)
                 throws IOException, GitAPIException, ParseException;
     }
 
-    static void gitOp(final ModContext ctx,  ExecutionLock lock, final Logger logger, RepoOperation op) {
+    static void gitOp(final ModContext ctx,  ExecutionLock lock, final Logger logger, GitOp op) {
         ctx.execute(lock, ()-> {
             final Path worldSaveDir = ctx.getWorldDirectory();
             if (!isGitRepo(worldSaveDir)) {
@@ -192,9 +141,6 @@ public class Commands {
             }
         });
     }
-
-
-
 }
 
 

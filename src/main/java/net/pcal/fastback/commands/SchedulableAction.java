@@ -18,20 +18,14 @@
 
 package net.pcal.fastback.commands;
 
-
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.tasks.CommitAndPushTask;
-import org.eclipse.jgit.api.Git;
-
-import java.io.IOException;
-import java.nio.file.Path;
+import net.pcal.fastback.tasks.CommitTask;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.executeStandardNew2;
-import static net.pcal.fastback.utils.GitUtils.isGitRepo;
+import static net.pcal.fastback.ModContext.ExecutionLock.WRITE;
+import static net.pcal.fastback.commands.Commands.gitOp;
 
 /**
  * Encapsulates an action that can be performed in response to events such as shutdown or autosaving.
@@ -46,14 +40,20 @@ public enum SchedulableAction {
         public void run(ModContext ctx, Logger log) {}
     },
 
+    LOCAL("local") {
+        @Override
+        public void run(ModContext ctx, Logger log) {
+            gitOp(ctx, WRITE, log, git-> {
+                new CommitTask(git, ctx, log).run();
+            });
+        }
+    },
+
     FULL("full") {
         @Override
         public void run(ModContext ctx, Logger log) {
-            executeStandardNew2(ctx, log, (git, wc) -> {
-                ctx.executeExclusive(() -> {
-                    new CommitAndPushTask(git, ctx, log).run();
-                });
-                return SUCCESS;
+            gitOp(ctx, WRITE, log, git-> {
+                new CommitAndPushTask(git, ctx, log).run();
             });
         }
     };
