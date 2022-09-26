@@ -78,13 +78,15 @@ public class CommitTask extends Task {
         final SnapshotId sid = this.sidSupplier.get();
         if (sid == null) return;
         final String newBranchName = sid.getBranchName();
-        if (ctx.isServerStopping()) {
-            log.info("Skipping save before backup because server is shutting down.");
-        } else {
-            log.info("Saving before backup");
-            ctx.saveWorld();
-            log.info("Starting backup");
-        }
+
+// Disabling this here because https://github.com/pcal43/fastback/issues/112
+//        if (ctx.isServerStopping()) {
+//            log.info("Skipping save before backup because server is shutting down.");
+//        } else {
+//            log.info("Saving before backup");
+//            ctx.saveWorld();
+//            log.info("Starting backup");
+//        }
         log.info("Committing " + newBranchName);
         try {
             doCommit(git, ctx, newBranchName, log);
