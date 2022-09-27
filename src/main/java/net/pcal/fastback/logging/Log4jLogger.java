@@ -37,20 +37,10 @@ public class Log4jLogger implements Logger {
 
     @Override
     public void notify(Message message) {
-        final String content;
-        if (message.localized() != null) {
-            Message.Localized l = message.localized();
-            content = Text.translatable(l.key(), l.params()).getString();
-        } else {
-            content = message.raw();
-        }
-        this.log4j.info("[NOTIFY] " + content);
     }
 
     @Override
     public void notifyError(Message message) {
-        // FIXME how to translate these?
-        this.log4j.info("[NOTIFY-ERROR] " + this.localizer.apply(message));
     }
 
     @Override
