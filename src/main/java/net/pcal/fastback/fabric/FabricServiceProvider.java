@@ -51,8 +51,7 @@ public class FabricServiceProvider implements ModContext.FrameworkServiceProvide
     private static final String MOD_ID = "fastback";
     private boolean isWorldSaveEnabled = true;
     private final FabricClientProvider clientProvider;
-    private final Function<Message, String> localizer = String::valueOf; //FIXME we don't know how to do this
-    private final Logger logger = new Log4jLogger(LogManager.getLogger(MOD_ID), localizer);
+    private final Logger logger = new Log4jLogger(LogManager.getLogger(MOD_ID));
 
     static FabricServiceProvider forDedicatedServer() {
         if (INSTANCE != null) throw new IllegalStateException();

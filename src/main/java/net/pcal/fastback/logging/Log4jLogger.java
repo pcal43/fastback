@@ -18,21 +18,14 @@
 
 package net.pcal.fastback.logging;
 
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-
-import java.util.function.Function;
-
 import static java.util.Objects.requireNonNull;
 
 public class Log4jLogger implements Logger {
 
     private final org.apache.logging.log4j.Logger log4j;
-    private final Function<Message, String> localizer;
 
-    public Log4jLogger(org.apache.logging.log4j.Logger log4j, Function<Message, String> localizer) {
+    public Log4jLogger(org.apache.logging.log4j.Logger log4j) {
         this.log4j = requireNonNull(log4j);
-        this.localizer = requireNonNull(localizer);
     }
 
     @Override
