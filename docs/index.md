@@ -34,21 +34,16 @@ of disk space.
 * Better management of remote snapshots
 * Forge support (maybe)
 
-## Limitations
+## Acknowledgements
 
-FastBack is currently an alpha release.  It has missing features and limitations.  For more information, see [Issues](https://github.com/pcal43/fastback/issues)
+Fastback's Russian localization provided by [Felix14-v2](https://github.com/Felix14-v2).
 
-## Credits
-
-Fastback's Russian localization provided by [Felix14-v2](https://github.com/Felix14-v2). (Thanks!) 
-
-FastBack includes several other software components.  Many thanks to the committers on these 
-projects, whose work made FastBack possible:
+Fastback was made possible by the work of committers on these projects:
 * [JGit](https://www.eclipse.org/jgit/) from The Eclipse Software Foundation
 * [sshd](https://mina.apache.org/sshd-project/) from The Apache Software Foundation
 * [JavaEWAH](https://github.com/lemire/javaewah) from Daniel Lemire, et al.
 * [fabric-permissions-api](https://github.com/lucko/fabric-permissions-api) from lucko
-
+* [server-translations-api](https://github.com/NucleoidMC/Server-Translations) from the Fabric Community
 
 ## Legal
  
