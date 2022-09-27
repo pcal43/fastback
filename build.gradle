@@ -27,7 +27,6 @@ repositories {
 	maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 }
 
-
 configurations {
 	// configuration that holds jars to include in the jar
 	extraLibs
@@ -37,11 +36,11 @@ project.ext.versions = [
     jgit                : '6.2.0.202206071550-r',
     apache_sshd         : '2.8.0',
     JavaEWAH            : '1.1.13',
-    fabric_permissions  : '0.2-SNAPSHOT'
+    fabric_permissions  : '0.2-SNAPSHOT',
+	server_translations_version : '[1.4.17+1.19.2]'
 ]
 
 dependencies {
-
 	// Fabric & Minecraft
 	include(modImplementation(group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: versions.jgit))
 	include(modRuntimeOnly(group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.ssh.jsch', version: versions.jgit))
@@ -49,6 +48,8 @@ dependencies {
 	include group: 'org.apache.sshd', name: 'sshd-core', version: versions.apache_sshd
 	include group: 'org.apache.sshd', name: 'sshd-common', version: versions.apache_sshd
 	include group: 'com.googlecode.javaewah', name: 'JavaEWAH', version: versions.JavaEWAH
+
+	include(modImplementation("fr.catcore:server-translations-api:${versions.server_translations_version}"))
 
 	// https://github.com/lucko/fabric-permissions-api
 	include(modImplementation(group: 'me.lucko', name: 'fabric-permissions-api', version: versions.fabric_permissions))
@@ -74,6 +75,12 @@ processResources {
 
 	filesMatching("fabric.mod.json") {
 		expand "version": project.version
+	}
+
+	copy {
+		outputs.upToDateWhen { false }
+		from "resources/common/lifts"
+		into "common/src/main/resources"
 	}
 }
 

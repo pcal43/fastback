@@ -18,6 +18,9 @@
 
 package net.pcal.fastback.logging;
 
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+
 import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
@@ -34,7 +37,14 @@ public class Log4jLogger implements Logger {
 
     @Override
     public void notify(Message message) {
-        this.log4j.info("[NOTIFY] " + this.localizer.apply(message));
+        final String content;
+        if (message.localized() != null) {
+            Message.Localized l = message.localized();
+            content = Text.translatable(l.key(), l.params()).getString();
+        } else {
+            content = message.raw();
+        }
+        this.log4j.info("[NOTIFY] " + content);
     }
 
     @Override
