@@ -58,6 +58,7 @@ public class ModContext {
 
     class AutosaveHandler implements Runnable {
 
+        private int saveCount = 0;
         @Override
         public void run() {
             //TODO implement indicator
@@ -68,7 +69,9 @@ public class ModContext {
                 if (!isGitRepo(worldSaveDir)) return;
                 try (Git git = Git.open(worldSaveDir.toFile())) {
                     final WorldConfig config = WorldConfig.load(git);
-                    if (!config.isBackupEnabled()) return;
+                    if (!config.isBackupEnabled() || ++saveCount <= config.autosaveFrequency()) return;
+
+                    saveCount = 0;
                     final SchedulableAction autosaveAction = config.autosaveAction();
                     if (autosaveAction != null && autosaveAction != NONE) {
                         autosaveAction.getRunnable(git, ModContext.this, getLogger()).run();

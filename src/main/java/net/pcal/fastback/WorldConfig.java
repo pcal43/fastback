@@ -43,6 +43,7 @@ public record WorldConfig(
         String worldUuid,
         boolean isBackupEnabled,
         SchedulableAction autosaveAction,
+        int autosaveFrequency,
         SchedulableAction shutdownAction,
         String retentionPolicy,
         String getRemotePushUrl) {
@@ -53,6 +54,7 @@ public record WorldConfig(
     private static final String CONFIG_BACKUP_ENABLED = "backup-enabled";
     private static final String CONFIG_RETENTION_POLICY = "retention-policy";
     private static final String CONFIG_AUTOSAVE_ACTION = "autosave-action";
+    private static final String CONFIG_AUTOSAVE_FREQUENCY = "autosave-frequency";
     private static final String CONFIG_SHUTDOWN_ACTION = "shutdown-action";
 
     private static final Iterable<Pair<String, Path>> WORLD_RESOURCES = List.of(
@@ -69,6 +71,7 @@ public record WorldConfig(
     @Deprecated
     public static WorldConfig load(Path worldSaveDir, Config gitConfig) throws IOException {
         final SchedulableAction autosaveAction = retrieveAction(gitConfig, CONFIG_AUTOSAVE_ACTION);
+        final int autosaveFreq = gitConfig.getInt(CONFIG_SECTION, CONFIG_AUTOSAVE_FREQUENCY, 1);
         /*final*/ SchedulableAction shutdownAction = retrieveAction(gitConfig, CONFIG_SHUTDOWN_ACTION);
         if (shutdownAction == null) {
             // provide backward compat for 0.1.x configs.  TODO remove this
@@ -81,6 +84,7 @@ public record WorldConfig(
                 getWorldUuid(worldSaveDir),
                 gitConfig.getBoolean(CONFIG_SECTION, null, CONFIG_BACKUP_ENABLED, false),
                 autosaveAction,
+                autosaveFreq,
                 shutdownAction,
                 gitConfig.getString(CONFIG_SECTION, null, CONFIG_RETENTION_POLICY),
                 gitConfig.getString("remote", REMOTE_NAME, "url")
@@ -134,6 +138,10 @@ public record WorldConfig(
 
     public static void setAutosaveAction(Config gitConfig, SchedulableAction action) {
         gitConfig.setString(CONFIG_SECTION, null, CONFIG_AUTOSAVE_ACTION, action.getConfigKey());
+    }
+
+    public static void setAutosaveFrequency(Config gitConfig, int frequency) {
+        gitConfig.setInt(CONFIG_SECTION, null, CONFIG_AUTOSAVE_FREQUENCY, frequency);
     }
 
     public static void setShutdownAction(Config gitConfig, SchedulableAction action) {
