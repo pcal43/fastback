@@ -78,9 +78,8 @@ processResources {
 	}
 
 	copy {
-		outputs.upToDateWhen { false }
-		from "resources/common/lifts"
-		into "common/src/main/resources"
+		from "resources/fastback/lang"
+		into "build/resources/data/fastback/lang"
 	}
 }
 
