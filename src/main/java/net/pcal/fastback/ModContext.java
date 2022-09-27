@@ -38,7 +38,7 @@ import java.util.concurrent.TimeUnit;
 
 import static java.nio.file.Files.createTempDirectory;
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.commands.SchedulableAction.*;
+import static net.pcal.fastback.commands.SchedulableAction.NONE;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
