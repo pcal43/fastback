@@ -64,19 +64,7 @@ public class InfoCommand {
             } else {
                 log.notify(localized("fastback.notify.info-local-disabled"));
             }
-            if (wc.isRemoteBackupEnabled()) {
-                log.notify(localized("fastback.notify.info-remote-enabled"));
-            } else {
-                log.notify(localized("fastback.notify.info-remote-disabled"));
-            }
-            if (wc.isRemoteBackupEnabled()) {
-                String url = wc.getRemotePushUrl();
-                if (url == null) {
-                    log.notifyError(localized("fastback.notify.info-remote-url-missing"));
-                } else {
-                    log.notify(localized("fastback.notify.info-remote-url", url));
-                }
-            }
+            log.notify(localized("fastback.notify.info-remote-url", wc.getRemotePushUrl()));
             log.notify(localized("fastback.notify.info-shutdown-action", wc.shutdownAction()));
             final File gitDir = git.getRepository().getDirectory();
             log.notify(localized("fastback.notify.info-backup-size", getDirDisplaySize(gitDir)));
