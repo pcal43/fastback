@@ -69,7 +69,7 @@ public class RestoreSnapshotTask extends Task {
         final WorldConfig config;
         final String branchName;
         try (final Git git = Git.open(this.worldSaveDir.toFile())) {
-            config = WorldConfig.load(worldSaveDir, git.getRepository().getConfig());
+            config = WorldConfig.load(git);
             SnapshotId sid = SnapshotId.fromUuidAndName(config.worldUuid(), this.snapshotName);
             branchName = sid.getBranchName();
             if (!GitUtils.isBranchExtant(git, branchName, logger)) {

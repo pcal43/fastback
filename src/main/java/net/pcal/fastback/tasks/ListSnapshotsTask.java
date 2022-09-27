@@ -23,11 +23,8 @@ import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
 
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -36,43 +33,25 @@ import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.tasks.Task.TaskState.COMPLETED;
-import static net.pcal.fastback.tasks.Task.TaskState.FAILED;
 import static net.pcal.fastback.tasks.Task.TaskState.STARTED;
 import static net.pcal.fastback.utils.SnapshotId.getSnapshotsPerWorld;
 
 @SuppressWarnings({"Convert2MethodRef", "FunctionalExpressionCanBeFolded"})
 public class ListSnapshotsTask extends Task {
 
-    private final Path worldSaveDir;
+    private final Git git;
     private final Consumer<SnapshotId> sink;
-    private final String worldUuid;
     private final Logger logger;
 
-    public static List<SnapshotId> listSnapshotsForWorldSorted(Path worldSaveDir, Logger log) {
+    public static List<SnapshotId> listSnapshotsForWorldSorted(final Git git, final Logger log) {
         final List<SnapshotId> out = new ArrayList<>();
-        listSnapshotsForWorld(worldSaveDir, s -> out.add(s), log).run();
+        new ListSnapshotsTask(git, log, s -> out.add(s)).run();
         Collections.sort(out);
         return out;
     }
 
-    public static Runnable listSnapshotsForWorld(Path worldSaveDir, Consumer<SnapshotId> sink, Logger logger) {
-        final String worldUuid;
-        try {
-            worldUuid = WorldConfig.getWorldUuid(worldSaveDir);
-        } catch (IOException e) {
-            logger.internalError("Could not load world Uuid", e);
-            return null;//FIXME
-        }
-        return listSnapshotsForWorld(worldSaveDir, worldUuid, sink, logger);
-    }
-
-    public static Runnable listSnapshotsForWorld(Path worldSaveDir, String worldUuid, Consumer<SnapshotId> sink, Logger logger) {
-        return new ListSnapshotsTask(worldSaveDir, worldUuid, sink, logger);
-    }
-
-    private ListSnapshotsTask(Path worldSaveDir, String worlduuid, Consumer<SnapshotId> sink, Logger logger) {
-        this.worldUuid = requireNonNull(worlduuid);
-        this.worldSaveDir = requireNonNull(worldSaveDir);
+    public ListSnapshotsTask(Git git, Logger logger, Consumer<SnapshotId> sink) {
+        this.git = requireNonNull(git);
         this.sink = requireNonNull(sink);
         this.logger = requireNonNull(logger);
     }
@@ -80,15 +59,15 @@ public class ListSnapshotsTask extends Task {
     @Override
     public void run() {
         super.setState(STARTED);
-        try (final Git git = Git.open(worldSaveDir.toFile())) {
-            Collection<Ref> localBranchRefs = git.branchList().call();
-            ListMultimap<String, SnapshotId> snapshotsPerWorld = getSnapshotsPerWorld(localBranchRefs, logger);
-            List<SnapshotId> snapshots = snapshotsPerWorld.get(worldUuid);
+        try {
+            final WorldConfig wc = WorldConfig.load(git);
+            final Collection<Ref> localBranchRefs = git.branchList().call();
+            final ListMultimap<String, SnapshotId> snapshotsPerWorld = getSnapshotsPerWorld(localBranchRefs, logger);
+            List<SnapshotId> snapshots = snapshotsPerWorld.get(wc.worldUuid());
             snapshots.forEach(sid -> this.sink.accept(sid));
-        } catch (GitAPIException | IOException e) {
-            super.setState(FAILED);
-            throw new RuntimeException(e);
+            super.setState(COMPLETED);
+        } catch (final Exception e) {
+            this.logger.internalError("failed to list snapshots", e);
         }
-        super.setState(COMPLETED);
     }
 }

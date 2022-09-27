@@ -57,7 +57,7 @@ public class ListCommand {
     private int execute(final CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
         gitOp(ctx, NONE, log, git -> {
-            for (SnapshotId sid : listSnapshotsForWorldSorted(git.getRepository().getWorkTree().toPath(), ctx.getLogger())) {
+            for (final SnapshotId sid : listSnapshotsForWorldSorted(git, ctx.getLogger())) {
                 log.notify(raw(sid.getName()));
             }
         });

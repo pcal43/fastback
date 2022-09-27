@@ -33,12 +33,10 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
-import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.utils.FileUtils.writeResourceToFile;
 import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
 public record WorldConfig(
-        Path worldSaveDir,
         String worldUuid,
         boolean isBackupEnabled,
         SchedulableAction autosaveAction,
@@ -60,13 +58,7 @@ public record WorldConfig(
     );
 
     public static WorldConfig load(final Git git) throws IOException {
-        return load(
-                git.getRepository().getWorkTree().toPath().toAbsolutePath(),
-                git.getRepository().getConfig());
-    }
-
-    @Deprecated
-    public static WorldConfig load(Path worldSaveDir, Config gitConfig) throws IOException {
+        final StoredConfig gitConfig = git.getRepository().getConfig();
         final SchedulableAction autosaveAction = retrieveAction(gitConfig, CONFIG_AUTOSAVE_ACTION);
         /*final*/ SchedulableAction shutdownAction = retrieveAction(gitConfig, CONFIG_SHUTDOWN_ACTION);
         if (shutdownAction == null) {
@@ -76,8 +68,7 @@ public record WorldConfig(
             }
         }
         return new WorldConfig(
-                requireNonNull(worldSaveDir),
-                getWorldUuid(worldSaveDir),
+                getWorldUuid(git),
                 gitConfig.getBoolean(CONFIG_SECTION, null, CONFIG_BACKUP_ENABLED, false),
                 autosaveAction,
                 shutdownAction,
@@ -143,12 +134,6 @@ public record WorldConfig(
         return Files.readString(git.getRepository().getWorkTree().toPath().
                 toAbsolutePath().resolve(WORLD_UUID_PATH)).trim();
     }
-
-    @Deprecated
-    public static String getWorldUuid(Path worldSaveDir) throws IOException {
-        return Files.readString(worldSaveDir.resolve(WORLD_UUID_PATH)).trim();
-    }
-
 
     public static boolean isBackupsEnabledOn(Path worldSaveDir) {
         if (!isGitRepo(worldSaveDir)) return false;
