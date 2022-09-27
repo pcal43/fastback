@@ -24,6 +24,7 @@ Supported Permissions:
 * `fastback.command.info`         
 * `fastback.command.restore`      
 * `fastback.command.create-file-remote`
+* `fastback.command.set-autosave-action` 
 * `fastback.command.set-remote`   
 * `fastback.command.set-shutdown-action`
 * `fastback.command.set-retention`
