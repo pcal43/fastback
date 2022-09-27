@@ -65,7 +65,8 @@ public class InfoCommand {
                 log.notify(localized("fastback.notify.info-local-disabled"));
             }
             log.notify(localized("fastback.notify.info-remote-url", wc.getRemotePushUrl()));
-            log.notify(localized("fastback.notify.info-shutdown-action", wc.shutdownAction()));
+            log.notify(localized("fastback.notify.info-autosave-action", getActionDisplay(wc.autosaveAction())));
+            log.notify(localized("fastback.notify.info-shutdown-action", getActionDisplay(wc.shutdownAction())));
             final File gitDir = git.getRepository().getDirectory();
             log.notify(localized("fastback.notify.info-backup-size", getDirDisplaySize(gitDir)));
             {
@@ -86,5 +87,9 @@ public class InfoCommand {
             }
         });
         return SUCCESS;
+    }
+
+    private static String getActionDisplay(SchedulableAction action) {
+        return action == null ? SchedulableAction.NONE.getArgumentName() : action.getArgumentName();
     }
 }

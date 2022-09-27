@@ -73,6 +73,10 @@ public enum SchedulableAction {
         return this.configKey;
     }
 
+    public String getArgumentName() {
+        return this.configKey;
+    }
+
     public abstract Runnable getRunnable(Git git, ModContext ctx, Logger log);
 }
 

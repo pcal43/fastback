@@ -41,7 +41,7 @@ public class SetAutosaveActionCommand {
         final LiteralArgumentBuilder<ServerCommandSource> setCommand = literal(COMMAND_NAME).
                 requires(subcommandPermission(ctx, COMMAND_NAME));
         for (final SchedulableAction action : SchedulableAction.values()) {
-            final LiteralArgumentBuilder<ServerCommandSource> azz = literal(action.getConfigKey());
+            final LiteralArgumentBuilder<ServerCommandSource> azz = literal(action.getArgumentName());
             azz.executes(cc -> execute(ctx, cc.getSource(), action));
             setCommand.then(azz);
         }
@@ -54,7 +54,7 @@ public class SetAutosaveActionCommand {
             final StoredConfig config = git.getRepository().getConfig();
             WorldConfig.setAutosaveAction(config, action);
             config.save();
-            log.notify(localized("fastback.notify.info-autosave-action", action));
+            log.notify(localized("fastback.notify.info-autosave-action", action.getArgumentName()));
         });
         return SUCCESS;
     }
