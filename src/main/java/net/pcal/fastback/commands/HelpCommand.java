@@ -98,7 +98,7 @@ public class HelpCommand {
     }
 
     private int help(CommandContext<ServerCommandSource> cc) {
-        final Logger log = commandLogger(ctx, cc);
+        final Logger log = commandLogger(ctx, cc.getSource());
         StringWriter subcommands = null;
         for (final String available : getSubcommandNames(cc)) {
             if (subcommands == null) {
@@ -120,7 +120,7 @@ public class HelpCommand {
     }
 
     private int helpSubcommand(CommandContext<ServerCommandSource> cc) {
-        final Logger log = commandLogger(ctx, cc);
+        final Logger log = commandLogger(ctx, cc.getSource());
         final Collection<CommandNode<ServerCommandSource>> subcommands = cc.getNodes().get(0).getNode().getChildren();
         final String subcommand = cc.getLastChild().getArgument(ARGUMENT, String.class);
         for (String available : getSubcommandNames(cc)) {

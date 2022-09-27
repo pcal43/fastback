@@ -46,12 +46,12 @@ class SnapshotNameSuggestions implements SuggestionProvider<ServerCommandSource>
     }
 
     @Override
-    public CompletableFuture<Suggestions> getSuggestions(final CommandContext<ServerCommandSource> scs,
+    public CompletableFuture<Suggestions> getSuggestions(final CommandContext<ServerCommandSource> cc,
                                                          final SuggestionsBuilder builder) {
         CompletableFuture<Suggestions> completableFuture = new CompletableFuture<>();
-        final Logger log = commandLogger(ctx, scs);
+        final Logger log = commandLogger(ctx, cc.getSource());
         gitOp(ctx, NONE, log, git -> {
-            final Logger logger = commandLogger(ctx, scs);
+            final Logger logger = commandLogger(ctx, cc.getSource());
             final Path worldSaveDir = ctx.getWorldDirectory();
             if (isBackupsEnabledOn(worldSaveDir)) {
                 for (SnapshotId sid : listSnapshotsForWorldSorted(worldSaveDir, logger)) {

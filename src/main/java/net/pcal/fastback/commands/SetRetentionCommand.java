@@ -87,7 +87,7 @@ public class SetRetentionCommand implements Command<ServerCommandSource> {
 
     @Override
     public int run(CommandContext<ServerCommandSource> cc) throws CommandSyntaxException {
-        final Logger logger = commandLogger(ctx, cc);
+        final Logger logger = commandLogger(ctx, cc.getSource());
         try {
             final Path worldSaveDir = ctx.getWorldDirectory();
             final Map<String, String> config = new HashMap<>();

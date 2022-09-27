@@ -19,7 +19,6 @@
 package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.command.ServerCommandSource;
@@ -74,11 +73,6 @@ public class Commands {
 
     public static Logger commandLogger(final ModContext ctx, final ServerCommandSource scs) {
         return CompositeLogger.of(ctx.getLogger(), new CommandSourceLogger(ctx, scs));
-    }
-
-    @Deprecated
-    public static Logger commandLogger(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
-        return commandLogger(ctx, cc.getSource());
     }
 
     public static String subcommandPermName(String subcommandName) {
