@@ -23,10 +23,21 @@ import net.pcal.fastback.fabric.FabricServiceProvider;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.function.BooleanSupplier;
 
 @Mixin(MinecraftServer.class)
 public class MinecraftServerMixin {
+
+    @Inject(at = @At("TAIL"), method = "tick(Ljava/util/function/BooleanSupplier;)V")
+    public void tick(BooleanSupplier shouldKeepTicking, CallbackInfo ci) {
+        int ticks = ((ServerAccessors)this).getTicks();
+        if (ticks % 6000 == 0) {
+            FabricServiceProvider.getInstance().autoSaveCompleted();
+        }
+    }
 
     @Inject(at = @At("HEAD"), method = "save(ZZZ)Z", cancellable = true)
     public void save(boolean suppressLogs, boolean flush, boolean force, CallbackInfoReturnable<Boolean> ci) {

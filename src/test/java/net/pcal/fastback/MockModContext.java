@@ -134,6 +134,11 @@ public class MockModContext {
         public void sendError(Message message, ServerCommandSource scs) {
 
         }
+
+        @Override
+        public void setAutoSaveListener(Runnable runnable) {
+
+        }
     }
 
 }

@@ -27,5 +27,8 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface ServerAccessors {
 
     @Accessor
+    int getTicks();
+
+    @Accessor
     LevelStorage.Session getSession();
 }
