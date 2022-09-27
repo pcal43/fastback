@@ -1,11 +1,8 @@
-import com.matthewprenger.cursegradle.CurseExtension
-
 plugins {
 	id 'fabric-loom' version '0.12-SNAPSHOT'
 	id 'maven-publish'
 	id "com.modrinth.minotaur" version "2.+"
 	id "com.matthewprenger.cursegradle" version "1.4.0"
-
 }
 
 apply plugin: 'com.matthewprenger.cursegradle'
@@ -77,6 +74,7 @@ processResources {
 		expand "version": project.version
 	}
 
+	// localizations need to be under data for server-translations-api
 	copy {
 		from "$projectDir/src/main/resources/assets/fastback/lang"
 		into "$buildDir/resources/main/data/fastback/lang"
