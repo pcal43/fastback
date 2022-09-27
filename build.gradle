@@ -30,11 +30,11 @@ configurations {
 }
 
 project.ext.versions = [
-    jgit                : '6.2.0.202206071550-r',
-    apache_sshd         : '2.8.0',
-    JavaEWAH            : '1.1.13',
-    fabric_permissions  : '0.2-SNAPSHOT',
-	server_translations_version : '[1.4.17+1.19.2]'
+    jgit                        : '6.2.0.202206071550-r',
+    apache_sshd                 : '2.8.0',
+    JavaEWAH                    : '1.1.13',
+    fabric_permissions          : '0.2-SNAPSHOT',
+    server_translations_version : '[1.4.17+1.19.2]'
 ]
 
 dependencies {
