@@ -132,6 +132,10 @@ public record WorldConfig(
         gitConfig.setString(CONFIG_SECTION, null, CONFIG_RETENTION_POLICY, value);
     }
 
+    public static void setAutosaveAction(Config gitConfig, SchedulableAction action) {
+        gitConfig.setString(CONFIG_SECTION, null, CONFIG_AUTOSAVE_ACTION, action.getConfigKey());
+    }
+
     public static void setShutdownAction(Config gitConfig, SchedulableAction action) {
         gitConfig.setString(CONFIG_SECTION, null, CONFIG_SHUTDOWN_ACTION, action.getConfigKey());
     }
