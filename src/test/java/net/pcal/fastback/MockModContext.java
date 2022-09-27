@@ -38,7 +38,7 @@ public class MockModContext {
         private final Log4jLogger logger;
 
         public MockFrameworkSpi() {
-            this.logger = new Log4jLogger(LogManager.getLogger("mocklogger"), String::valueOf);
+            this.logger = new Log4jLogger(LogManager.getLogger("mocklogger"));
         }
 
         @Override

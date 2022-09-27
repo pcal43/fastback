@@ -18,29 +18,22 @@
 
 package net.pcal.fastback.logging;
 
-import java.util.function.Function;
-
 import static java.util.Objects.requireNonNull;
 
 public class Log4jLogger implements Logger {
 
     private final org.apache.logging.log4j.Logger log4j;
-    private final Function<Message, String> localizer;
 
-    public Log4jLogger(org.apache.logging.log4j.Logger log4j, Function<Message, String> localizer) {
+    public Log4jLogger(org.apache.logging.log4j.Logger log4j) {
         this.log4j = requireNonNull(log4j);
-        this.localizer = requireNonNull(localizer);
     }
 
     @Override
     public void notify(Message message) {
-        this.log4j.info("[NOTIFY] " + this.localizer.apply(message));
     }
 
     @Override
     public void notifyError(Message message) {
-        // FIXME how to translate these?
-        this.log4j.info("[NOTIFY-ERROR] " + this.localizer.apply(message));
     }
 
     @Override

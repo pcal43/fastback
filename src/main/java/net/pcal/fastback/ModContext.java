@@ -176,7 +176,7 @@ public class ModContext {
     }
 
     public boolean isCommandDumpEnabled() {
-        return true;
+        return false;
     }
 
     public boolean isReflogDeletionEnabled() {
