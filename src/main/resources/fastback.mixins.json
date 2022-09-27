@@ -6,7 +6,9 @@
   "mixins": [
     "MinecraftServerMixin",
     "ServerAccessors",
-    "SessionAccessors",
+    "SessionAccessors"
+  ],
+  "client": [
     "ScreenAccessors"
   ],
   "injectors": {
