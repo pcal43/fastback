@@ -79,7 +79,6 @@ processResources {
 
 	copy {
 		from "$projectDir/src/main/resources/assets/fastback/lang"
-		//into "$projectDir/src/main/resources/data/fastback/lang"
 		into "$buildDir/resources/main/data/fastback/lang"
 	}
 }
