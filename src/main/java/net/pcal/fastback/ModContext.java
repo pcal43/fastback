@@ -216,6 +216,10 @@ public class ModContext {
         return true;
     }
 
+    public boolean isBranchCleanupEnabled() {
+        return true;
+    }
+
     public int getDefaultPermLevel() {
         return spi.isClient() ? 0 : 4;
     }

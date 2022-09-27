@@ -192,6 +192,10 @@ public class PushTask extends Task {
         return true;
     }
 
+    static boolean isTempBranch(String branchName) {
+        return branchName.startsWith("temp/");
+    }
+
     private static String getTempBranchName(String uniqueName) {
         return "temp/" + uniqueName;
     }
