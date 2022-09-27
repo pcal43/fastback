@@ -37,6 +37,8 @@ public class MinecraftServerMixin {
         if (ticks % 6000 == 0) {
             FabricServiceProvider.getInstance().autoSaveCompleted();
         }
+        @Redirect(method = "insert",
+                                at = @At(value = "INVOKE", ordinal = 0, target = "Lnet/minecraft/inventory/Inventory;getStack(I)Lnet/minecraft/item/ItemStack;"))
     }
 
     @Inject(at = @At("HEAD"), method = "save(ZZZ)Z", cancellable = true)

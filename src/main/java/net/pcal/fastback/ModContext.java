@@ -20,9 +20,7 @@ package net.pcal.fastback;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.commands.Commands;
 import net.pcal.fastback.commands.SchedulableAction;
-import net.pcal.fastback.logging.CompositeLogger;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.Message;
 import net.pcal.fastback.retention.RetentionPolicyType;
@@ -56,27 +54,30 @@ public class ModContext {
 
     private ModContext(FrameworkServiceProvider spi) {
         this.spi = requireNonNull(spi);
-        spi.setAutoSaveListener(new AutoSaveHandler());
+        spi.setAutoSaveListener(new AutosaveHandler());
     }
 
-    class AutoSaveHandler implements Runnable {
+    class AutosaveHandler implements Runnable {
 
         @Override
         public void run() {
-            final Path worldSaveDir = getWorldDirectory();
-            if (!isGitRepo(worldSaveDir)) return;
-            try (Git git = Git.open(worldSaveDir.toFile())) {
-                final WorldConfig config = WorldConfig.load(git);
-                if (!config.isBackupEnabled()) return;
-                final SchedulableAction autosaveAction = config.autosaveAction();
-                if (autosaveAction != null && autosaveAction != NONE) {
-                    //TODO implement indicator
-                    // final Logger screenLogger = CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx));
-                    autosaveAction.getRunnable(git, ModContext.this, getLogger()).run();
+            //TODO implement indicator
+            // final Logger screenLogger = CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx));
+            execute(ExecutionLock.WRITE, getLogger(), ()-> {
+                getLogger().info("AutosaveHandler starting");
+                final Path worldSaveDir = getWorldDirectory();
+                if (!isGitRepo(worldSaveDir)) return;
+                try (Git git = Git.open(worldSaveDir.toFile())) {
+                    final WorldConfig config = WorldConfig.load(git);
+                    if (!config.isBackupEnabled()) return;
+                    final SchedulableAction autosaveAction = config.autosaveAction();
+                    if (autosaveAction != null && autosaveAction != NONE) {
+                        autosaveAction.getRunnable(git, ModContext.this, getLogger()).run();
+                    }
+                } catch (IOException e) {
+                    getLogger().internalError("Autosave action failed.", e);
                 }
-            } catch (IOException e) {
-                getLogger().internalError("Autosave action failed.", e);
-            }
+            });
         }
     }
 
