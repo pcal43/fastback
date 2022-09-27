@@ -24,7 +24,10 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-
+/**
+ * @author pcal
+ * @since 0.0.11
+ */
 @Mixin(Screen.class)
 public interface ScreenAccessors {
 
