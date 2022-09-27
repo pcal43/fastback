@@ -69,7 +69,7 @@ public class ModContext {
                 if (!isGitRepo(worldSaveDir)) return;
                 try (Git git = Git.open(worldSaveDir.toFile())) {
                     final WorldConfig config = WorldConfig.load(git);
-                    if (!config.isBackupEnabled() || ++saveCount <= config.autosaveFrequency()) return;
+                    if (!config.isBackupEnabled() || ++saveCount < config.autosaveFrequency()) return;
 
                     saveCount = 0;
                     final SchedulableAction autosaveAction = config.autosaveAction();
