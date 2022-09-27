@@ -18,7 +18,6 @@
 
 package net.pcal.fastback;
 
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.Log4jLogger;
 import net.pcal.fastback.logging.Logger;
@@ -72,18 +71,8 @@ public class MockModContext {
         }
 
         @Override
-        public Path getWorldDirectory(MinecraftServer server) {
-            return null;
-        }
-
-        @Override
         public String getWorldName() {
             return null;
-        }
-
-        @Override
-        public String getWorldName(MinecraftServer server) {
-            return "MockWorld";
         }
 
         @Override

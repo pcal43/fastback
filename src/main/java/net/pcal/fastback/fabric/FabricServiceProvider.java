@@ -36,7 +36,6 @@ import org.apache.logging.log4j.LogManager;
 
 import java.nio.file.Path;
 import java.util.Optional;
-import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
 
@@ -180,21 +179,9 @@ public class FabricServiceProvider implements ModContext.FrameworkServiceProvide
     }
 
     @Override
-    public Path getWorldDirectory(final MinecraftServer server) {
-        final LevelStorage.Session session = ((ServerAccessors) server).getSession();
-        return ((SessionAccessors) session).getDirectory().path();
-    }
-
-    @Override
     public String getWorldName() {
         if (this.minecraftServer == null) throw new IllegalStateException();
         final LevelStorage.Session session = ((ServerAccessors) this.minecraftServer).getSession();
-        return session.getLevelSummary().getLevelInfo().getLevelName();
-    }
-
-    @Override
-    public String getWorldName(final MinecraftServer server) {
-        final LevelStorage.Session session = ((ServerAccessors) server).getSession();
         return session.getLevelSummary().getLevelInfo().getLevelName();
     }
 

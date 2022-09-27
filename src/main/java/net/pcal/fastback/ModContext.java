@@ -18,7 +18,6 @@
 
 package net.pcal.fastback;
 
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.commands.SchedulableAction;
 import net.pcal.fastback.logging.Logger;
@@ -242,13 +241,7 @@ public class ModContext {
 
         Path getWorldDirectory();
 
-        @Deprecated
-        Path getWorldDirectory(MinecraftServer server);
-
         String getWorldName();
-
-        @Deprecated
-        String getWorldName(MinecraftServer server);
 
         void setClientSavingScreenText(Message message);
 
