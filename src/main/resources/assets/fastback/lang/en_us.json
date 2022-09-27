@@ -44,7 +44,7 @@
   "fastback.notify.local-saving"                 : "Saving local backup.",
   "fastback.notify.not-enabled"                  : "Backups are not enabled on this world.  Run '/backup enable'",
   "fastback.notify.prune-done"                   : "Pruned %s snapshots.",
-  "fastback.notify.prune-no-default"             : "No default pruning policy configured.  Please run /backup set-retention-policy",
+  "fastback.notify.prune-no-default"             : "No default pruning policy configured.  Please run /backup set-retention",
   "fastback.notify.prune-pruning"                : "Pruning snapshot %s",
   "fastback.notify.prune-suggest-gc"             : "Run /backup gc to reclaim disk space.",
   "fastback.notify.purge-done"                   : "Deleted snapshot %s",
