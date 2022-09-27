@@ -42,6 +42,7 @@ public record WorldConfig(
         Path worldSaveDir,
         String worldUuid,
         boolean isBackupEnabled,
+        SchedulableAction autosaveAction,
         SchedulableAction shutdownAction,
         String retentionPolicy,
         String getRemotePushUrl) {
@@ -51,6 +52,7 @@ public record WorldConfig(
     private static final String CONFIG_SECTION = "fastback";
     private static final String CONFIG_BACKUP_ENABLED = "backup-enabled";
     private static final String CONFIG_RETENTION_POLICY = "retention-policy";
+    private static final String CONFIG_AUTOSAVE_ACTION = "autosave-action";
     private static final String CONFIG_SHUTDOWN_ACTION = "shutdown-action";
 
     private static final Iterable<Pair<String, Path>> WORLD_RESOURCES = List.of(
@@ -66,13 +68,10 @@ public record WorldConfig(
 
     @Deprecated
     public static WorldConfig load(Path worldSaveDir, Config gitConfig) throws IOException {
-
-        // provide backward compat for 0.1.x configs.  TODO remove this
-        final String shutdownActionRaw = gitConfig.getString(CONFIG_SECTION, null, CONFIG_SHUTDOWN_ACTION);
-        SchedulableAction shutdownAction = null;
-        if (shutdownActionRaw != null) {
-            shutdownAction = SchedulableAction.getForConfigKey(shutdownActionRaw);
-        } else {
+        final SchedulableAction autosaveAction = retrieveAction(gitConfig, CONFIG_AUTOSAVE_ACTION);
+        /*final*/ SchedulableAction shutdownAction = retrieveAction(gitConfig, CONFIG_SHUTDOWN_ACTION);
+        if (shutdownAction == null) {
+            // provide backward compat for 0.1.x configs.  TODO remove this
             if (gitConfig.getBoolean(CONFIG_SECTION, null, "shutdown-backup-enabled", false)) {
                 shutdownAction = EnableCommand.DEFAULT_SHUTDOWN_ACTION;
             }
@@ -81,12 +80,17 @@ public record WorldConfig(
                 requireNonNull(worldSaveDir),
                 getWorldUuid(worldSaveDir),
                 gitConfig.getBoolean(CONFIG_SECTION, null, CONFIG_BACKUP_ENABLED, false),
+                autosaveAction,
                 shutdownAction,
                 gitConfig.getString(CONFIG_SECTION, null, CONFIG_RETENTION_POLICY),
                 gitConfig.getString("remote", REMOTE_NAME, "url")
         );
     }
 
+    private static SchedulableAction retrieveAction(Config gitConfig, String configKey) {
+        final String shutdownActionRaw = gitConfig.getString(CONFIG_SECTION, null, configKey);
+        return shutdownActionRaw != null ? SchedulableAction.getForConfigKey(shutdownActionRaw) : null;
+    }
 
     // THESE ARE EFFECTIVELY CONSTANTS.  HERE BECAUSE WE MIGHT NEED TO MAKE SOME OF THEM CONFIGURABLE SOMEDAY.
 
@@ -126,6 +130,10 @@ public record WorldConfig(
 
     public static void setRetentionPolicy(Config gitConfig, String value) {
         gitConfig.setString(CONFIG_SECTION, null, CONFIG_RETENTION_POLICY, value);
+    }
+
+    public static void setAutosaveAction(Config gitConfig, SchedulableAction action) {
+        gitConfig.setString(CONFIG_SECTION, null, CONFIG_AUTOSAVE_ACTION, action.getConfigKey());
     }
 
     public static void setShutdownAction(Config gitConfig, SchedulableAction action) {

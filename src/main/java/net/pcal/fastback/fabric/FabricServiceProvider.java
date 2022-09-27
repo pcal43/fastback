@@ -38,10 +38,13 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.function.Function;
 
+import static java.util.Objects.requireNonNull;
+
 public class FabricServiceProvider implements ModContext.FrameworkServiceProvider {
 
     private static FabricServiceProvider INSTANCE;
     private MinecraftServer minecraftServer;
+    private Runnable autoSaveListener;
 
     public static FabricServiceProvider getInstance() {
         if (INSTANCE == null) throw new IllegalStateException("not initialized");
@@ -164,6 +167,12 @@ public class FabricServiceProvider implements ModContext.FrameworkServiceProvide
     }
 
     @Override
+    public void setAutoSaveListener(Runnable runnable) {
+        if (this.autoSaveListener != null) throw new IllegalStateException();
+        this.autoSaveListener = requireNonNull(runnable);
+    }
+
+    @Override
     public Path getWorldDirectory() {
         if (this.minecraftServer == null) throw new IllegalStateException();
         final LevelStorage.Session session = ((ServerAccessors) this.minecraftServer).getSession();
@@ -197,17 +206,11 @@ public class FabricServiceProvider implements ModContext.FrameworkServiceProvide
         }
     }
 
-
-    /**
-     private static String getString(Text message) {
-     if (message.getContent() instanceof TranslatableTextContent) {
-     // FIXME this doesn't work - Language.getInstance() doesn't have the mod keys.
-     // FIXME Figure out how to translate it ourselves properly
-     final String key = ((TranslatableTextContent) message.getContent()).getKey();
-     if (Language.getInstance().hasTranslation(key)) return Language.getInstance().get(key);
-     }
-     return message.getString();
-     }
-     **/
-
+    public void autoSaveCompleted() {
+        if (this.autoSaveListener != null) {
+            this.autoSaveListener.run();
+        } else {
+            this.getLogger().warn("Autosave just happened but, unexpectedly, no one is listening.");
+        }
+    }
 }

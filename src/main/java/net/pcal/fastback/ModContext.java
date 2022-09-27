@@ -20,9 +20,11 @@ package net.pcal.fastback;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
+import net.pcal.fastback.commands.SchedulableAction;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.Message;
 import net.pcal.fastback.retention.RetentionPolicyType;
+import org.eclipse.jgit.api.Git;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -36,7 +38,9 @@ import java.util.concurrent.TimeUnit;
 
 import static java.nio.file.Files.createTempDirectory;
 import static java.util.Objects.requireNonNull;
+import static net.pcal.fastback.commands.SchedulableAction.NONE;
 import static net.pcal.fastback.logging.Message.localized;
+import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
 public class ModContext {
 
@@ -50,6 +54,31 @@ public class ModContext {
 
     private ModContext(FrameworkServiceProvider spi) {
         this.spi = requireNonNull(spi);
+        spi.setAutoSaveListener(new AutosaveHandler());
+    }
+
+    class AutosaveHandler implements Runnable {
+
+        @Override
+        public void run() {
+            //TODO implement indicator
+            // final Logger screenLogger = CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx));
+            execute(ExecutionLock.WRITE, getLogger(), ()-> {
+                getLogger().info("AutosaveHandler starting");
+                final Path worldSaveDir = getWorldDirectory();
+                if (!isGitRepo(worldSaveDir)) return;
+                try (Git git = Git.open(worldSaveDir.toFile())) {
+                    final WorldConfig config = WorldConfig.load(git);
+                    if (!config.isBackupEnabled()) return;
+                    final SchedulableAction autosaveAction = config.autosaveAction();
+                    if (autosaveAction != null && autosaveAction != NONE) {
+                        autosaveAction.getRunnable(git, ModContext.this, getLogger()).run();
+                    }
+                } catch (IOException e) {
+                    getLogger().internalError("Autosave action failed.", e);
+                }
+            });
+        }
     }
 
     public enum ExecutionLock {
@@ -240,6 +269,8 @@ public class ModContext {
         void sendFeedback(Message message, ServerCommandSource scs);
 
         void sendError(Message message, ServerCommandSource scs);
+
+        void setAutoSaveListener(Runnable runnable);
     }
 
 

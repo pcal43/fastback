@@ -15,7 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
-
 package net.pcal.fastback.fabric.mixins;
 
 import net.minecraft.server.MinecraftServer;
@@ -23,11 +22,31 @@ import net.pcal.fastback.fabric.FabricServiceProvider;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+/**
+ * @author pcal
+ * @since 0.0.1
+ */
 @Mixin(MinecraftServer.class)
 public class MinecraftServerMixin {
 
+    /**
+     * Intercept the call to saveAll that triggers on autosaves, pass it through and then send out notification that
+     * the autosave is done.
+     */
+    @Redirect(method = "tick(Ljava/util/function/BooleanSupplier;)V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;saveAll(ZZZ)Z"))
+    public boolean autosave_saveAll(MinecraftServer instance, boolean suppressLogs, boolean flush, boolean force) {
+        boolean result = instance.saveAll(suppressLogs, flush, force);
+        FabricServiceProvider.getInstance().autoSaveCompleted();
+        return result;
+    }
+
+    /**
+     * Intercept save so we can hard-disable saving during critical parts of the backup.
+     */
     @Inject(at = @At("HEAD"), method = "save(ZZZ)Z", cancellable = true)
     public void save(boolean suppressLogs, boolean flush, boolean force, CallbackInfoReturnable<Boolean> ci) {
         synchronized (this) {
@@ -42,6 +61,9 @@ public class MinecraftServerMixin {
         }
     }
 
+    /**
+     * Intercept saveAll so we can hard-disable saving during critical parts of the backup.
+     */
     @Inject(at = @At("HEAD"), method = "saveAll(ZZZ)Z", cancellable = true)
     public void saveAll(boolean suppressLogs, boolean flush, boolean force, CallbackInfoReturnable<Boolean> ci) {
         synchronized (this) {

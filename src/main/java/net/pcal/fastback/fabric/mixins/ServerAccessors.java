@@ -23,8 +23,15 @@ import net.minecraft.world.level.storage.LevelStorage;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
+/**
+ * @author pcal
+ * @since 0.0.1
+ */
 @Mixin(MinecraftServer.class)
 public interface ServerAccessors {
+
+    @Accessor
+    int getTicks();
 
     @Accessor
     LevelStorage.Session getSession();
