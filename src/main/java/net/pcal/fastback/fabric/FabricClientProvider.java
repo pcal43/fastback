@@ -29,4 +29,5 @@ interface FabricClientProvider {
     Path getClientRestoreDir();
 
     void sendClientChatMessage(Text text);
+
 }

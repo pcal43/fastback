@@ -52,26 +52,24 @@ public class FabricServiceProvider implements ModContext.FrameworkServiceProvide
 
     private static final String MOD_ID = "fastback";
     private boolean isWorldSaveEnabled = true;
-    private final FabricClientProvider clientProvider;
+    private FabricClientProvider clientProvider;
     private final Logger logger = new Log4jLogger(LogManager.getLogger(MOD_ID));
 
-    static FabricServiceProvider forDedicatedServer() {
+    static FabricServiceProvider create() {
         if (INSTANCE != null) throw new IllegalStateException();
-        return INSTANCE = new FabricServiceProvider(null);
+        return INSTANCE = new FabricServiceProvider();
     }
 
-    static FabricServiceProvider forClient(FabricClientProvider clientProvider) {
-        if (INSTANCE != null) throw new IllegalStateException();
-        return INSTANCE = new FabricServiceProvider(clientProvider);
-    }
-
-    private FabricServiceProvider(FabricClientProvider clientProviderOrNull) {
-        this.clientProvider = clientProviderOrNull;
-    }
+    private FabricServiceProvider() {}
 
     void setMinecraftServer(MinecraftServer serverOrNull) {
         if ((serverOrNull == null) == (this.minecraftServer == null)) throw new IllegalStateException();
         this.minecraftServer = serverOrNull;
+    }
+
+    public void setClientProvider(FabricClientProvider fcp) {
+        if ((clientProvider == null) == (fcp == null)) throw new IllegalStateException();
+        this.clientProvider = fcp;
     }
 
     @Override
@@ -200,4 +198,5 @@ public class FabricServiceProvider implements ModContext.FrameworkServiceProvide
             this.getLogger().warn("Autosave just happened but, unexpectedly, no one is listening.");
         }
     }
+
 }

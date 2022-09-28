@@ -43,8 +43,8 @@ public class FabricClientModInitializer implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        final FabricServiceProvider fabricProvider = FabricServiceProvider.
-                forClient(new FabricClientProviderImpl());
+        final FabricServiceProvider fabricProvider = FabricServiceProvider.create();
+        fabricProvider.setClientProvider(new FabricClientProviderImpl());
         final ModContext modContext = ModContext.create(fabricProvider);
 
         ServerLifecycleEvents.SERVER_STARTING.register(
