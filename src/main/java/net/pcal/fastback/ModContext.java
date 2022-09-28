@@ -24,7 +24,6 @@ import net.pcal.fastback.logging.Message;
 import net.pcal.fastback.retention.RetentionPolicyType;
 import org.eclipse.jgit.api.Git;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -65,8 +64,7 @@ public class ModContext {
         public void run() {
             //TODO implement indicator
             // final Logger screenLogger = CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx));
-            execute(ExecutionLock.WRITE, getLogger(), ()-> {
-                getLogger().info("AutosaveHandler starting");
+            execute(ExecutionLock.WRITE, getLogger(), () -> {
                 final Path worldSaveDir = getWorldDirectory();
                 if (!isGitRepo(worldSaveDir)) return;
                 try (Git git = Git.open(worldSaveDir.toFile())) {
@@ -74,12 +72,16 @@ public class ModContext {
                     if (!config.isBackupEnabled()) return;
                     final SchedulableAction autosaveAction = config.autosaveAction();
                     if (autosaveAction == null || autosaveAction == NONE) return;
-                    if (Duration.ofMillis(System.currentTimeMillis() - lastBackupTime).compareTo(config.autosaveWait()) < 0) {
-                        getLogger().info("Skipping autosave backup because not enough time has passed since the last one.");
+                    final Duration timeRemaining = config.autosaveWait().
+                            minus(Duration.ofMillis(System.currentTimeMillis() - lastBackupTime));
+                    if (!timeRemaining.isZero() && !timeRemaining.isNegative()) {
+                        getLogger().info("Skipping auto-backup until at least " +
+                                (timeRemaining.toSeconds() / 60) + " more minutes have passed");
                         return;
                     }
-                    lastBackupTime = System.currentTimeMillis();
+                    getLogger().info("Starting post-autosave backup");
                     autosaveAction.getRunnable(git, ModContext.this, getLogger()).run();
+                    lastBackupTime = System.currentTimeMillis();
                 } catch (IOException e) {
                     getLogger().internalError("Autosave action failed.", e);
                 }
@@ -262,7 +264,6 @@ public class ModContext {
 
         void sendClientChatMessage(Message message);
 
-        @Nullable
         Path getSnapshotRestoreDir();
 
         boolean isClient();

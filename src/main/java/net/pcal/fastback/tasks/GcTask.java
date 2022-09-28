@@ -116,7 +116,9 @@ public class GcTask extends Task {
             final PackConfig pc = new PackConfig();
             pc.setDeltaCompress(false);
             gc.setPackConfig(pc);
+            log.info("Starting garbage collection");
             gc.gc();
+            log.info("Garbage collection complete.");
             log.notify(localized("fastback.notify.gc-done"));
             log.info("Stats after gc:");
             log.info("" + git.gc().getStatistics());

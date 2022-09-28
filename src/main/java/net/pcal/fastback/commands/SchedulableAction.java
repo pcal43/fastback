@@ -22,6 +22,8 @@ import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.tasks.CommitAndPushTask;
 import net.pcal.fastback.tasks.CommitTask;
+import net.pcal.fastback.tasks.GcTask;
+import net.pcal.fastback.tasks.PruneTask;
 import org.eclipse.jgit.api.Git;
 
 import static java.util.Objects.requireNonNull;
@@ -53,6 +55,17 @@ public enum SchedulableAction {
         @Override
         public Runnable getRunnable(Git git, ModContext ctx, Logger log) {
             return new CommitAndPushTask(git, ctx, log);
+        }
+    },
+
+    FULL_GC("full-gc") {
+        @Override
+        public Runnable getRunnable(Git git, ModContext ctx, Logger log) {
+            return ()->{
+                new CommitAndPushTask(git, ctx, log).run();
+                new PruneTask(git, ctx, log).run();
+                new GcTask(git, ctx, log).run();
+            };
         }
     };
 
