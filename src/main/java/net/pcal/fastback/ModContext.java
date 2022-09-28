@@ -251,7 +251,7 @@ public class ModContext {
 
         void sendClientChatMessage(Message message);
 
-        Path getClientSavesDir() throws IOException;
+        Path getClientSavesDir();
 
         boolean isClient();
 

@@ -39,7 +39,7 @@ import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
 
-public class FabricServiceProvider implements ModContext.FrameworkServiceProvider {
+public abstract class FabricServiceProvider implements ModContext.FrameworkServiceProvider {
 
     private static FabricServiceProvider INSTANCE;
     private MinecraftServer minecraftServer;
@@ -52,24 +52,16 @@ public class FabricServiceProvider implements ModContext.FrameworkServiceProvide
 
     private static final String MOD_ID = "fastback";
     private boolean isWorldSaveEnabled = true;
-    private FabricClientProvider clientProvider;
     private final Logger logger = new Log4jLogger(LogManager.getLogger(MOD_ID));
 
-    static FabricServiceProvider create() {
+    protected FabricServiceProvider() {
         if (INSTANCE != null) throw new IllegalStateException();
-        return INSTANCE = new FabricServiceProvider();
+        INSTANCE = this;
     }
-
-    private FabricServiceProvider() {}
 
     void setMinecraftServer(MinecraftServer serverOrNull) {
         if ((serverOrNull == null) == (this.minecraftServer == null)) throw new IllegalStateException();
         this.minecraftServer = serverOrNull;
-    }
-
-    public void setClientProvider(FabricClientProvider fcp) {
-        if ((clientProvider == null) == (fcp == null)) throw new IllegalStateException();
-        this.clientProvider = fcp;
     }
 
     @Override
@@ -103,11 +95,6 @@ public class FabricServiceProvider implements ModContext.FrameworkServiceProvide
     }
 
     @Override
-    public boolean isClient() {
-        return this.clientProvider != null;
-    }
-
-    @Override
     public boolean isWorldSaveEnabled() {
         return this.isWorldSaveEnabled;
     }
@@ -127,37 +114,6 @@ public class FabricServiceProvider implements ModContext.FrameworkServiceProvide
     public boolean isServerStopping() {
         if (this.minecraftServer == null) throw new IllegalStateException();
         return this.minecraftServer.isStopped() || this.minecraftServer.isStopping();
-    }
-
-    @Override
-    public Path getClientSavesDir() {
-        if (this.clientProvider != null) {
-            Path restoreDir = clientProvider.getClientRestoreDir();
-            if (restoreDir != null) return restoreDir;
-            this.logger.warn("getClientRestoreDir unexpectedly null, using temp dir");
-        }
-        return null;
-    }
-
-    @Override
-    public void setClientSavingScreenText(Message message) {
-        if (this.clientProvider != null) {
-            this.clientProvider.consumeSaveScreenText(messageToText(message));
-        }
-    }
-
-    @Override
-    public void sendClientChatMessage(Message message) {
-        if (this.clientProvider != null) {
-            this.clientProvider.sendClientChatMessage(messageToText(message));
-        }
-    }
-
-    @Override
-    public void renderBackupIndicator(Message message) {
-        if (this.clientProvider != null) {
-            this.clientProvider.renderBackupIndicator(messageToText(message));
-        }
     }
 
     @Override
@@ -190,14 +146,6 @@ public class FabricServiceProvider implements ModContext.FrameworkServiceProvide
         return session.getLevelSummary().getLevelInfo().getLevelName();
     }
 
-    private static Text messageToText(final Message m) {
-        if (m.localized() != null) {
-            return Text.translatable(m.localized().key(), m.localized().params());
-        } else {
-            return Text.literal(m.raw());
-        }
-    }
-
     public void autoSaveCompleted() {
         if (this.autoSaveListener != null) {
             this.autoSaveListener.run();
@@ -206,4 +154,11 @@ public class FabricServiceProvider implements ModContext.FrameworkServiceProvide
         }
     }
 
+    static Text messageToText(final Message m) {
+        if (m.localized() != null) {
+            return Text.translatable(m.localized().key(), m.localized().params());
+        } else {
+            return Text.literal(m.raw());
+        }
+    }
 }
