@@ -102,11 +102,11 @@ public record WorldConfig(
     }
 
     public boolean isTempBranchCleanupEnabled() {
-        return false;
+        return true;
     }
 
     public boolean isRemoteTempBranchCleanupEnabled() {
-        return false;
+        return true;
     }
 
     public boolean isSmartPushEnabled() {
