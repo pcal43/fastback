@@ -59,7 +59,7 @@ public class ModContext {
 
     class AutosaveHandler implements Runnable {
 
-        private long lastBackupTime = 0;
+        private long lastBackupTime = System.currentTimeMillis();
 
         @Override
         public void run() {
