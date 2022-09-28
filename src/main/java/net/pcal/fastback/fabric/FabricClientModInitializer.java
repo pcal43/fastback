@@ -32,7 +32,6 @@ import net.pcal.fastback.ModContext;
  */
 public class FabricClientModInitializer implements ClientModInitializer {
 
-
     @Override
     public void onInitializeClient() {
         final FabricClientServiceProvider fabricProvider = new FabricClientServiceProvider();

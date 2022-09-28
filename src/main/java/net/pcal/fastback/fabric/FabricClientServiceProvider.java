@@ -26,7 +26,6 @@ import net.minecraft.client.gui.screen.Screen;
 import net.pcal.fastback.fabric.mixins.ScreenAccessors;
 import net.pcal.fastback.logging.Message;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
 
@@ -58,7 +57,7 @@ final class FabricClientServiceProvider extends FabricServiceProvider {
 
     @Override
     public boolean isClient() {
-        return false;
+        return true;
     }
 
     @Override
