@@ -20,7 +20,7 @@ of disk space.
 * Back up locally
 * Back up remotely to any git server
 * Back up remotely to any network volume (no git server required)
-* Scheduled backups run after vanilla autosave
+* Schedule backups to run after vanilla autosaves
 * Easily restore backup snapshots
 * Snapshot pruning, retention policies
 * LuckPerms support
