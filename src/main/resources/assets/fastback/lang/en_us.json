@@ -11,7 +11,7 @@
   "commands.fastback.help.prune"                 : "Delete old snapshots according to the retention policy.",
   "commands.fastback.help.purge"                 : "Delete an individual snapshot.",
   "commands.fastback.help.restore"               : "Restore a backup snapshot.",
-/bac  "commands.fastback.help.set-autoback-action"   : "Set an action to perform during auto-backups.",
+  "commands.fastback.help.set-autoback-action"   : "Set an action to perform during auto-backups.",
   "commands.fastback.help.set-autoback-wait"     : "Set the minimum number of minutes to wait between auto-backups.",
   "commands.fastback.help.set-remote"            : "Set the url for remote backups.",
   "commands.fastback.help.set-retention"         : "Set snapshot retention policy.",
