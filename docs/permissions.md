@@ -1,5 +1,7 @@
 ---
-layout: default title: Permissions nav_order: 70
+layout: default 
+title: Permissions 
+nav_order: 85
 ---
 
 # Permissions
@@ -16,4 +18,4 @@ so that you can do access control in [LuckPerms](https://luckperms.net/).
 
 Supported Permissions:
 
-{% include_relative permissions-generated.md %}
+{% include_relative permissions-list.md %}

@@ -20,13 +20,12 @@ of disk space.
 * Back up locally
 * Back up remotely to any git server
 * Back up remotely to any network volume (no git server required)
-* Schedule backups to run after vanilla autosaves
+* Schedule backups to run automatically
 * Easily restore backup snapshots
 * Snapshot pruning, retention policies
 * LuckPerms support
 * Works on clients and dedicated servers
-* Works on Linux, Mac and Windows
-
+* Works on Linux, Mac and Windows 
 * ..all with easy-to-use minecraft commands
 
 
