@@ -23,21 +23,28 @@ import net.pcal.fastback.logging.IncrementalProgressMonitor;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.LoggingProgressMonitor;
 import net.pcal.fastback.utils.FileUtils;
+import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.internal.storage.file.GC;
 import org.eclipse.jgit.lib.ProgressMonitor;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.storage.pack.PackConfig;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.Message.localized;
+import static net.pcal.fastback.tasks.PushTask.isTempBranch;
 import static net.pcal.fastback.utils.FileUtils.getDirDisplaySize;
+import static net.pcal.fastback.utils.GitUtils.getBranchName;
+import static org.eclipse.jgit.api.ListBranchCommand.ListMode.ALL;
 
 /**
  * Runs git garbage collection.
@@ -79,12 +86,33 @@ public class GcTask extends Task {
                 log.info("Deleting reflogs " + reflogsDir);
                 FileUtils.rmdir(reflogsDir);
             }
+            if (ctx.isBranchCleanupEnabled()) {
+                final List<String> branchesToDelete = new ArrayList<>();
+                for (final Ref ref : git.branchList().setListMode(ALL).call()) {
+                    final String branchName = getBranchName(ref);
+                    if (branchName == null) {
+                        log.warn("Non-branch ref returned by branchList: "+ref);
+                    } else if (isTempBranch(branchName)) {
+                        branchesToDelete.add(branchName);
+                    } else if (SnapshotId.isSnapshotBranchName(branchName)) {
+                        // ok fine
+                    } else {
+                        log.warn("Unidentified branch found "+branchName+ " - consider removing it with 'git branch -D'");
+                    }
+                }
+                if (branchesToDelete.isEmpty()) {
+                    log.info("No branches to clean up");
+                } else {
+                    log.info("Deleting branches: " + branchesToDelete);
+                    git.branchDelete().setForce(true).setBranchNames(branchesToDelete.toArray(new String[0])).call();
+                    log.info("Branches deleted.");
+                }
+            }
             final GC gc = new GC(((FileRepository) git.getRepository()));
             gc.setExpireAgeMillis(0);
             gc.setPackExpireAgeMillis(0);
             gc.setAuto(false);
-            PackConfig pc = new PackConfig();
-            pc.setCompressionLevel(0);
+            final PackConfig pc = new PackConfig();
             pc.setDeltaCompress(false);
             gc.setPackConfig(pc);
             gc.gc();

@@ -25,7 +25,6 @@ import net.pcal.fastback.utils.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Config;
-import org.eclipse.jgit.lib.StoredConfig;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -164,10 +163,6 @@ public record WorldConfig(
         for (final Pair<String, Path> resource2path : WORLD_RESOURCES) {
             writeResourceToFile(resource2path.getLeft(), worldSaveDir.resolve(resource2path.getRight()));
         }
-        final StoredConfig config = git.getRepository().getConfig();
-        config.setInt("core", null, "compression", 0);
-        config.setInt("pack", null, "window", 0);
-        config.save();
     }
 
     private static void ensureWorldHasUuid(final Path worldSaveDir, final Logger logger) throws IOException {
@@ -182,8 +177,4 @@ public record WorldConfig(
             logger.info("Generated new world.uuid " + newUuid);
         }
     }
-
-
 }
-
-
