@@ -18,9 +18,9 @@ import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
 
-public class SetAutosaveWaitCommand {
+public class SetAutobackWaitCommand {
 
-    private static final String COMMAND_NAME = "set-autosave-wait";
+    private static final String COMMAND_NAME = "set-autoback-wait";
     private static final String ARGUMENT = "wait";
 
     public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
@@ -38,9 +38,9 @@ public class SetAutosaveWaitCommand {
         gitOp(ctx, WRITE_CONFIG, log, git -> {
             final int wait = cc.getArgument(ARGUMENT, int.class);
             final StoredConfig config = git.getRepository().getConfig();
-            WorldConfig.setAutosaveWait(config, wait);
+            WorldConfig.setAutobackWait(config, wait);
             config.save();
-            log.notify(localized("fastback.notify.info-autosave-wait", wait));
+            log.notify(localized("fastback.notify.info-autoback-wait", wait));
         });
         return SUCCESS;
     }
