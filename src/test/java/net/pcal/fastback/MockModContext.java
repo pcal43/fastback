@@ -85,7 +85,7 @@ public class MockModContext {
         }
 
         @Override
-        public Path getClientSavesDir() {
+        public Path getSnapshotRestoreDir() {
             return null;
         }
 

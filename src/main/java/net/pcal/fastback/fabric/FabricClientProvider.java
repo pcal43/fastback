@@ -71,7 +71,7 @@ final class FabricClientProvider extends FabricProvider {
     }
 
     @Override
-    public Path getClientSavesDir() {
+    public Path getSnapshotRestoreDir() {
         return FabricLoader.getInstance().getGameDir().resolve("saves");
     }
 

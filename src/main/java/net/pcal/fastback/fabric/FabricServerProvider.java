@@ -16,7 +16,7 @@ public class FabricServerProvider extends FabricProvider {
     }
 
     @Override
-    public Path getClientSavesDir() {
+    public Path getSnapshotRestoreDir() {
         return null;
     }
 
