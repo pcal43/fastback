@@ -66,9 +66,9 @@ public class InfoCommand {
             }
             log.notify(localized("fastback.notify.info-remote-url", wc.getRemotePushUrl()));
             log.notify(localized("fastback.notify.info-shutdown-action", getActionDisplay(wc.shutdownAction())));
-            log.notify(localized("fastback.notify.info-autosave-action", getActionDisplay(wc.autosaveAction())));
-            log.notify(localized("fastback.notify.info-autosave-wait",
-                    wc.autosaveWait() == null ? "" : wc.autosaveWait().getSeconds()/60));
+            log.notify(localized("fastback.notify.info-autoback-action", getActionDisplay(wc.autobackAction())));
+            log.notify(localized("fastback.notify.info-autoback-wait",
+                    wc.autobackWait() == null ? "" : wc.autobackWait().getSeconds()/60));
 
             final File gitDir = git.getRepository().getDirectory();
             log.notify(localized("fastback.notify.info-backup-size", getDirDisplaySize(gitDir)));

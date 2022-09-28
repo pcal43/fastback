@@ -33,12 +33,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class MinecraftServerMixin {
 
     /**
-     * Intercept the call to saveAll that triggers on autosaves, pass it through and then send out notification that
-     * the autosave is done.
+     * Intercept the call to saveAll that triggers on autobacks, pass it through and then send out notification that
+     * the autoback is done.
      */
     @Redirect(method = "tick(Ljava/util/function/BooleanSupplier;)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;saveAll(ZZZ)Z"))
-    public boolean autosave_saveAll(MinecraftServer instance, boolean suppressLogs, boolean flush, boolean force) {
+    public boolean autoback_saveAll(MinecraftServer instance, boolean suppressLogs, boolean flush, boolean force) {
         boolean result = instance.saveAll(suppressLogs, flush, force);
         FabricProvider.getInstance().autoSaveCompleted();
         return result;

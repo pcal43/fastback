@@ -33,9 +33,9 @@ import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
 
-public class SetAutosaveActionCommand {
+public class SetAutobackActionCommand {
 
-    private static final String COMMAND_NAME = "set-autosave-action";
+    private static final String COMMAND_NAME = "set-autoback-action";
 
     public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         final LiteralArgumentBuilder<ServerCommandSource> setCommand = literal(COMMAND_NAME).
@@ -52,9 +52,9 @@ public class SetAutosaveActionCommand {
         final Logger log = commandLogger(ctx, scs);
         gitOp(ctx, WRITE_CONFIG, log, git -> {
             final StoredConfig config = git.getRepository().getConfig();
-            WorldConfig.setAutosaveAction(config, action);
+            WorldConfig.setAutobackAction(config, action);
             config.save();
-            log.notify(localized("fastback.notify.info-autosave-action", action.getArgumentName()));
+            log.notify(localized("fastback.notify.info-autoback-action", action.getArgumentName()));
         });
         return SUCCESS;
     }

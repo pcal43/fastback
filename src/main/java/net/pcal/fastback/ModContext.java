@@ -53,10 +53,10 @@ public class ModContext {
 
     private ModContext(FrameworkServiceProvider spi) {
         this.spi = requireNonNull(spi);
-        spi.setAutoSaveListener(new AutosaveHandler());
+        spi.setAutoSaveListener(new AutosaveListener());
     }
 
-    class AutosaveHandler implements Runnable {
+    class AutosaveListener implements Runnable {
 
         private long lastBackupTime = System.currentTimeMillis();
 
@@ -70,20 +70,20 @@ public class ModContext {
                 try (Git git = Git.open(worldSaveDir.toFile())) {
                     final WorldConfig config = WorldConfig.load(git);
                     if (!config.isBackupEnabled()) return;
-                    final SchedulableAction autosaveAction = config.autosaveAction();
-                    if (autosaveAction == null || autosaveAction == NONE) return;
-                    final Duration timeRemaining = config.autosaveWait().
+                    final SchedulableAction autobackAction = config.autobackAction();
+                    if (autobackAction == null || autobackAction == NONE) return;
+                    final Duration timeRemaining = config.autobackWait().
                             minus(Duration.ofMillis(System.currentTimeMillis() - lastBackupTime));
                     if (!timeRemaining.isZero() && !timeRemaining.isNegative()) {
                         getLogger().info("Skipping auto-backup until at least " +
-                                (timeRemaining.toSeconds() / 60) + " more minutes have passed");
+                                (timeRemaining.toSeconds() / 60) + " more minutes have elapsed.");
                         return;
                     }
-                    getLogger().info("Starting post-autosave backup");
-                    autosaveAction.getRunnable(git, ModContext.this, getLogger()).run();
+                    getLogger().info("Starting auto-backup");
+                    autobackAction.getRunnable(git, ModContext.this, getLogger()).run();
                     lastBackupTime = System.currentTimeMillis();
                 } catch (IOException e) {
-                    getLogger().internalError("Autosave action failed.", e);
+                    getLogger().internalError("auto-backup failed.", e);
                 }
             });
         }
