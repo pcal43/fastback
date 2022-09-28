@@ -15,7 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
-
 package net.pcal.fastback;
 
 import net.minecraft.server.command.ServerCommandSource;
@@ -28,6 +27,7 @@ import org.eclipse.jgit.api.Git;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
@@ -59,6 +59,8 @@ public class ModContext {
 
     class AutosaveHandler implements Runnable {
 
+        private long lastBackupTime = 0;
+
         @Override
         public void run() {
             //TODO implement indicator
@@ -71,9 +73,13 @@ public class ModContext {
                     final WorldConfig config = WorldConfig.load(git);
                     if (!config.isBackupEnabled()) return;
                     final SchedulableAction autosaveAction = config.autosaveAction();
-                    if (autosaveAction != null && autosaveAction != NONE) {
-                        autosaveAction.getRunnable(git, ModContext.this, getLogger()).run();
+                    if (autosaveAction == null || autosaveAction == NONE) return;
+                    if (Duration.ofMillis(System.currentTimeMillis() - lastBackupTime).compareTo(config.autosaveWait()) < 0) {
+                        getLogger().info("Skipping autosave backup because not enough time has passed since the last one.");
+                        return;
                     }
+                    lastBackupTime = System.currentTimeMillis();
+                    autosaveAction.getRunnable(git, ModContext.this, getLogger()).run();
                 } catch (IOException e) {
                     getLogger().internalError("Autosave action failed.", e);
                 }
