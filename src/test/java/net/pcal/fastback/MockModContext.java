@@ -115,6 +115,11 @@ public class MockModContext {
         }
 
         @Override
+        public void renderBackupIndicator(Message message) {
+
+        }
+
+        @Override
         public void sendFeedback(Message message, ServerCommandSource scs) {
 
         }

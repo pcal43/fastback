@@ -154,6 +154,13 @@ public class FabricServiceProvider implements ModContext.FrameworkServiceProvide
     }
 
     @Override
+    public void renderBackupIndicator(Message message) {
+        if (this.clientProvider != null) {
+            this.clientProvider.renderBackupIndicator(messageToText(message));
+        }
+    }
+
+    @Override
     public void sendFeedback(Message message, ServerCommandSource scs) {
         scs.sendFeedback(messageToText(message), false);
     }

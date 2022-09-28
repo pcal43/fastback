@@ -30,4 +30,5 @@ interface FabricClientProvider {
 
     void sendClientChatMessage(Text text);
 
+    void renderBackupIndicator(Text text);
 }

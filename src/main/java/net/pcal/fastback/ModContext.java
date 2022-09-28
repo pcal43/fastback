@@ -177,6 +177,10 @@ public class ModContext {
         this.spi.sendError(message, scs);
     }
 
+    public void renderBackupIndicator(Message message) {
+        this.spi.renderBackupIndicator(message);
+    }
+
     public Path getWorldDirectory() {
         return this.spi.getWorldDirectory();
     }
@@ -258,6 +262,8 @@ public class ModContext {
         void saveWorld();
 
         boolean isServerStopping();
+
+        void renderBackupIndicator(Message message);
 
         void sendFeedback(Message message, ServerCommandSource scs);
 
