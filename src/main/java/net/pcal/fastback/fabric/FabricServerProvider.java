@@ -21,11 +21,14 @@ public class FabricServerProvider extends FabricProvider {
     }
 
     @Override
-    public void setClientSavingScreenText(Message message) {}
+    public void setClientSavingScreenText(Message message) {
+    }
 
     @Override
-    public void sendClientChatMessage(Message message) {}
+    public void sendClientChatMessage(Message message) {
+    }
 
     @Override
-    public void renderBackupIndicator(Message message) {}
+    public void renderBackupIndicator(Message message) {
+    }
 }

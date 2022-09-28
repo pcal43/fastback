@@ -22,7 +22,6 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.MessageScreen;
 import net.minecraft.client.gui.screen.Screen;
-
 import net.pcal.fastback.fabric.mixins.ScreenAccessors;
 import net.pcal.fastback.logging.Message;
 
@@ -37,7 +36,8 @@ final class FabricClientProvider extends FabricProvider {
 
     private MinecraftClient client = null;
 
-    FabricClientProvider() {}
+    FabricClientProvider() {
+    }
 
     // ====================================================================
     // Public methods
