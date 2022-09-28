@@ -29,15 +29,30 @@ import net.pcal.fastback.logging.Message;
 import java.nio.file.Path;
 
 
-final class FabricClientServiceProvider extends FabricServiceProvider {
+/**
+ * @author pcal
+ * @since 0.1.0
+ */
+final class FabricClientProvider extends FabricProvider {
 
     private MinecraftClient client = null;
 
-    FabricClientServiceProvider() {}
+    FabricClientProvider() {}
+
+    // ====================================================================
+    // Public methods
 
     public void setMinecraftClient(MinecraftClient client) {
         if ((this.client == null) == (client == null)) throw new IllegalStateException();
         this.client = client;
+    }
+
+    // ====================================================================
+    // FrameworkProvider implementation
+
+    @Override
+    public boolean isClient() {
+        return true;
     }
 
     @Override
@@ -56,17 +71,13 @@ final class FabricClientServiceProvider extends FabricServiceProvider {
     }
 
     @Override
-    public boolean isClient() {
-        return true;
-    }
-
-    @Override
     public Path getClientSavesDir() {
         return FabricLoader.getInstance().getGameDir().resolve("saves");
     }
 
     @Override
     public void renderBackupIndicator(Message message) {
+        // TODO implement me
         /**
          if (true || this.client.options.getShowAutosaveIndicator().getValue()) {
          MatrixStack matrices = new MatrixStack();
@@ -75,7 +86,6 @@ final class FabricClientServiceProvider extends FabricServiceProvider {
          int k = 16777215;
          int scaledWidth = this.client.getWindow().getScaledWidth();
          int scaledHeight = this.client.getWindow().getScaledHeight();
-
          textRenderer.drawWithShadow(matrices, text, (float)(scaledWidth - j - 10), (float)(scaledHeight - 15), k);
          }
          **/

@@ -39,13 +39,17 @@ import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
 
-public abstract class FabricServiceProvider implements ModContext.FrameworkServiceProvider {
+/**
+ * @author pcal
+ * @since 0.1.0
+ */
+public abstract class FabricProvider implements ModContext.FrameworkServiceProvider {
 
-    private static FabricServiceProvider INSTANCE;
+    private static FabricProvider INSTANCE;
     private MinecraftServer minecraftServer;
     private Runnable autoSaveListener;
 
-    public static FabricServiceProvider getInstance() {
+    public static FabricProvider getInstance() {
         if (INSTANCE == null) throw new IllegalStateException("not initialized");
         return INSTANCE;
     }
@@ -54,7 +58,7 @@ public abstract class FabricServiceProvider implements ModContext.FrameworkServi
     private boolean isWorldSaveEnabled = true;
     private final Logger logger = new Log4jLogger(LogManager.getLogger(MOD_ID));
 
-    protected FabricServiceProvider() {
+    protected FabricProvider() {
         if (INSTANCE != null) throw new IllegalStateException();
         INSTANCE = this;
     }

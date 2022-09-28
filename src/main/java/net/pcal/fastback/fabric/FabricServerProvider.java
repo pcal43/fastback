@@ -4,7 +4,11 @@ import net.pcal.fastback.logging.Message;
 
 import java.nio.file.Path;
 
-public class FabricServerServiceProvider extends FabricServiceProvider {
+/**
+ * @author pcal
+ * @since 0.1.0
+ */
+public class FabricServerProvider extends FabricProvider {
 
     @Override
     public boolean isClient() {

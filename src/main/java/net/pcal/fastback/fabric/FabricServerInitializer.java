@@ -18,48 +18,36 @@
 
 package net.pcal.fastback.fabric;
 
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
+import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.pcal.fastback.LifecycleUtils;
 import net.pcal.fastback.ModContext;
 
 /**
- * Initializer that runs in a client.
+ * Initializer that runs in a dedicated server.
  *
  * @author pcal
  * @since 0.0.1
  */
-public class FabricClientModInitializer implements ClientModInitializer {
+public class FabricServerInitializer implements DedicatedServerModInitializer {
 
     @Override
-    public void onInitializeClient() {
-        final FabricClientServiceProvider fabricProvider = new FabricClientServiceProvider();
-        final ModContext modContext = ModContext.create(fabricProvider);
-        LifecycleUtils.onInitialize(modContext);
-
-        ClientLifecycleEvents.CLIENT_STARTED.register(
-                minecraftClient -> {
-                    fabricProvider.setMinecraftClient(minecraftClient);
-                }
-        );
-        ClientLifecycleEvents.CLIENT_STOPPING.register(
-                minecraftClient -> {
-                    LifecycleUtils.onTermination(modContext);
-                    fabricProvider.setMinecraftClient(null);
-                }
-        );
+    public void onInitializeServer() {
+        final FabricProvider fsp = new FabricServerProvider();
+        final ModContext modContext = ModContext.create(fsp);
         ServerLifecycleEvents.SERVER_STARTING.register(
                 minecraftServer -> {
-                    fabricProvider.setMinecraftServer(minecraftServer);
+                    fsp.setMinecraftServer(minecraftServer);
                     LifecycleUtils.onWorldStart(modContext);
                 }
         );
         ServerLifecycleEvents.SERVER_STOPPED.register(
                 minecraftServer -> {
                     LifecycleUtils.onWorldStop(modContext);
-                    fabricProvider.setMinecraftServer(null);
+                    LifecycleUtils.onTermination(modContext); // dedicated server shutdown == VM termination
+                    fsp.setMinecraftServer(null);
                 }
         );
+        LifecycleUtils.onInitialize(modContext);
     }
 }
