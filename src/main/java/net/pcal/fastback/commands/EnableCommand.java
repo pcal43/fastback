@@ -60,7 +60,7 @@ public class EnableCommand {
                     try (final Git git = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
                         doWorldMaintenance(git, log);
                         final StoredConfig config = git.getRepository().getConfig();
-                        final WorldConfig worldConfig = WorldConfig.load(worldSaveDir, config);
+                        final WorldConfig worldConfig = WorldConfig.load(git);
                         WorldConfig.setBackupEnabled(config, true);
                         if (worldConfig.shutdownAction() == null) {
                             WorldConfig.setShutdownAction(config, DEFAULT_SHUTDOWN_ACTION);

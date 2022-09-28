@@ -74,8 +74,8 @@ public class PruneCommand {
                 log.notifyError(localized("fastback.notify.retention-policy-not-set"));
                 return;
             }
-            final Path worldSaveDir = ctx.getWorldDirectory();
-            Collection<SnapshotId> toPrune = policy.getSnapshotsToPrune(listSnapshotsForWorldSorted(worldSaveDir, ctx.getLogger()));
+            final Collection<SnapshotId> toPrune =
+                    policy.getSnapshotsToPrune(listSnapshotsForWorldSorted(git, ctx.getLogger()));
             int pruned = 0;
             for (final SnapshotId sid : toPrune) {
                 log.notify(localized("fastback.notify.prune-pruning", sid.getName()));

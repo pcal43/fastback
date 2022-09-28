@@ -33,13 +33,12 @@ import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 
 
-//
-// We basically want to
-//   git reflog expire --expire-unreachable=now --all
-//   git gc --prune=now
-// But jgit gc seems to have bugs or I'm just using it wrong.  Disabling this command
-// until I have time to figure it out.  https://www.eclipse.org/lists/jgit-dev/msg03782.html
-//
+/**
+ * Runs garbage collection to try to free up disk space.
+ *
+ * @author pcal
+ * @since 0.0.12
+ */
 public class GcCommand {
 
     private static final String COMMAND_NAME = "gc";

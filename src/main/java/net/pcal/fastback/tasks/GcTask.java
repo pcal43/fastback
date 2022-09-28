@@ -47,10 +47,11 @@ import static net.pcal.fastback.utils.GitUtils.getBranchName;
 import static org.eclipse.jgit.api.ListBranchCommand.ListMode.ALL;
 
 /**
- * Runs git garbage collection.
+ * Runs git garbage collection.  Aggressively deletes reflogs, tracking branches and stray temporary branches
+ * in an attempt to free up objects and reclaim disk space.
  *
  * @author pcal
- * @since 0.2.0
+ * @since 0.0.12
  */
 public class GcTask extends Task {
 

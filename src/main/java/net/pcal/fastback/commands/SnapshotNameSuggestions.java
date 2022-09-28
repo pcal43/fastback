@@ -54,7 +54,7 @@ class SnapshotNameSuggestions implements SuggestionProvider<ServerCommandSource>
             final Logger logger = commandLogger(ctx, cc.getSource());
             final Path worldSaveDir = ctx.getWorldDirectory();
             if (isBackupsEnabledOn(worldSaveDir)) {
-                for (SnapshotId sid : listSnapshotsForWorldSorted(worldSaveDir, logger)) {
+                for (final SnapshotId sid : listSnapshotsForWorldSorted(git, logger)) {
                     builder.suggest(sid.getName());
                 }
                 completableFuture.complete(builder.buildFuture().get());
