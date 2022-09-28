@@ -29,11 +29,11 @@ import net.pcal.fastback.ModContext;
  * @author pcal
  * @since 0.0.1
  */
-public class FabricDedicatedServerModInitializer implements DedicatedServerModInitializer {
+public class FabricServerInitializer implements DedicatedServerModInitializer {
 
     @Override
     public void onInitializeServer() {
-        final FabricServiceProvider fsp = FabricServiceProvider.forDedicatedServer();
+        final FabricProvider fsp = new FabricServerProvider();
         final ModContext modContext = ModContext.create(fsp);
         ServerLifecycleEvents.SERVER_STARTING.register(
                 minecraftServer -> {
@@ -50,5 +50,4 @@ public class FabricDedicatedServerModInitializer implements DedicatedServerModIn
         );
         LifecycleUtils.onInitialize(modContext);
     }
-
 }

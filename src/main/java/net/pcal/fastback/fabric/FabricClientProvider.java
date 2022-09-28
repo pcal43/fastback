@@ -18,15 +18,76 @@
 
 package net.pcal.fastback.fabric;
 
-import net.minecraft.text.Text;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.MessageScreen;
+import net.minecraft.client.gui.screen.Screen;
+import net.pcal.fastback.fabric.mixins.ScreenAccessors;
+import net.pcal.fastback.logging.Message;
 
 import java.nio.file.Path;
 
-interface FabricClientProvider {
 
-    void consumeSaveScreenText(Text text);
+/**
+ * @author pcal
+ * @since 0.1.0
+ */
+final class FabricClientProvider extends FabricProvider {
 
-    Path getClientRestoreDir();
+    private MinecraftClient client = null;
 
-    void sendClientChatMessage(Text text);
+    FabricClientProvider() {
+    }
+
+    // ====================================================================
+    // Public methods
+
+    public void setMinecraftClient(MinecraftClient client) {
+        if ((this.client == null) == (client == null)) throw new IllegalStateException();
+        this.client = client;
+    }
+
+    // ====================================================================
+    // FrameworkProvider implementation
+
+    @Override
+    public boolean isClient() {
+        return true;
+    }
+
+    @Override
+    public void setClientSavingScreenText(Message message) {
+        final Screen screen = client.currentScreen;
+        if (screen instanceof MessageScreen) {
+            ((ScreenAccessors) screen).setTitle(messageToText(message));
+        }
+    }
+
+    @Override
+    public void sendClientChatMessage(Message message) {
+        if (this.client != null) {
+            client.inGameHud.getChatHud().addMessage(messageToText(message));
+        }
+    }
+
+    @Override
+    public Path getSnapshotRestoreDir() {
+        return FabricLoader.getInstance().getGameDir().resolve("saves");
+    }
+
+    @Override
+    public void renderBackupIndicator(Message message) {
+        // TODO implement me
+        /**
+         if (true || this.client.options.getShowAutosaveIndicator().getValue()) {
+         MatrixStack matrices = new MatrixStack();
+         TextRenderer textRenderer = this.client.textRenderer;
+         int j = textRenderer.getWidth(text);
+         int k = 16777215;
+         int scaledWidth = this.client.getWindow().getScaledWidth();
+         int scaledHeight = this.client.getWindow().getScaledHeight();
+         textRenderer.drawWithShadow(matrices, text, (float)(scaledWidth - j - 10), (float)(scaledHeight - 15), k);
+         }
+         **/
+    }
 }

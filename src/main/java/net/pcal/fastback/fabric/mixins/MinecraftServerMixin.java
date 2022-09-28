@@ -18,7 +18,7 @@
 package net.pcal.fastback.fabric.mixins;
 
 import net.minecraft.server.MinecraftServer;
-import net.pcal.fastback.fabric.FabricServiceProvider;
+import net.pcal.fastback.fabric.FabricProvider;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -40,7 +40,7 @@ public class MinecraftServerMixin {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;saveAll(ZZZ)Z"))
     public boolean autosave_saveAll(MinecraftServer instance, boolean suppressLogs, boolean flush, boolean force) {
         boolean result = instance.saveAll(suppressLogs, flush, force);
-        FabricServiceProvider.getInstance().autoSaveCompleted();
+        FabricProvider.getInstance().autoSaveCompleted();
         return result;
     }
 
@@ -50,7 +50,7 @@ public class MinecraftServerMixin {
     @Inject(at = @At("HEAD"), method = "save(ZZZ)Z", cancellable = true)
     public void save(boolean suppressLogs, boolean flush, boolean force, CallbackInfoReturnable<Boolean> ci) {
         synchronized (this) {
-            final FabricServiceProvider ctx = FabricServiceProvider.getInstance();
+            final FabricProvider ctx = FabricProvider.getInstance();
             if (ctx.isWorldSaveEnabled()) {
                 ctx.getLogger().debug("world saves are enabled, doing requested save");
             } else {
@@ -67,7 +67,7 @@ public class MinecraftServerMixin {
     @Inject(at = @At("HEAD"), method = "saveAll(ZZZ)Z", cancellable = true)
     public void saveAll(boolean suppressLogs, boolean flush, boolean force, CallbackInfoReturnable<Boolean> ci) {
         synchronized (this) {
-            final FabricServiceProvider ctx = FabricServiceProvider.getInstance();
+            final FabricProvider ctx = FabricProvider.getInstance();
             if (ctx.isWorldSaveEnabled()) {
                 ctx.getLogger().debug("world saves are enabled, doing requested saveAll");
                 //TODO should call save here to ensure all synced?

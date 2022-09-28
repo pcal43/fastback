@@ -85,7 +85,7 @@ public class MockModContext {
         }
 
         @Override
-        public Path getClientSavesDir() {
+        public Path getSnapshotRestoreDir() {
             return null;
         }
 
@@ -112,6 +112,11 @@ public class MockModContext {
         @Override
         public boolean isServerStopping() {
             return false;
+        }
+
+        @Override
+        public void renderBackupIndicator(Message message) {
+
         }
 
         @Override

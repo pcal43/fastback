@@ -25,6 +25,7 @@ import net.pcal.fastback.logging.Message;
 import net.pcal.fastback.retention.RetentionPolicyType;
 import org.eclipse.jgit.api.Git;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -123,7 +124,7 @@ public class ModContext {
     }
 
     public Path getRestoresDir() throws IOException {
-        Path restoreDir = this.spi.getClientSavesDir();
+        Path restoreDir = this.spi.getSnapshotRestoreDir();
         if (restoreDir != null) return restoreDir;
         if (tempRestoresDirectory == null) {
             tempRestoresDirectory = createTempDirectory(getModId() + "-restore");
@@ -175,6 +176,10 @@ public class ModContext {
 
     public void sendError(Message message, ServerCommandSource scs) {
         this.spi.sendError(message, scs);
+    }
+
+    public void renderBackupIndicator(Message message) {
+        this.spi.renderBackupIndicator(message);
     }
 
     public Path getWorldDirectory() {
@@ -247,7 +252,8 @@ public class ModContext {
 
         void sendClientChatMessage(Message message);
 
-        Path getClientSavesDir() throws IOException;
+        @Nullable
+        Path getSnapshotRestoreDir();
 
         boolean isClient();
 
@@ -258,6 +264,8 @@ public class ModContext {
         void saveWorld();
 
         boolean isServerStopping();
+
+        void renderBackupIndicator(Message message);
 
         void sendFeedback(Message message, ServerCommandSource scs);
 

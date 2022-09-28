@@ -21,16 +21,8 @@ package net.pcal.fastback.fabric;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.MessageScreen;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.Text;
 import net.pcal.fastback.LifecycleUtils;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.fabric.mixins.ScreenAccessors;
-
-import java.nio.file.Path;
 
 /**
  * Initializer that runs in a client.
@@ -38,15 +30,25 @@ import java.nio.file.Path;
  * @author pcal
  * @since 0.0.1
  */
-public class FabricClientModInitializer implements ClientModInitializer {
-
+public class FabricClientInitializer implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        final FabricServiceProvider fabricProvider = FabricServiceProvider.
-                forClient(new FabricClientProviderImpl());
+        final FabricClientProvider fabricProvider = new FabricClientProvider();
         final ModContext modContext = ModContext.create(fabricProvider);
+        LifecycleUtils.onInitialize(modContext);
 
+        ClientLifecycleEvents.CLIENT_STARTED.register(
+                minecraftClient -> {
+                    fabricProvider.setMinecraftClient(minecraftClient);
+                }
+        );
+        ClientLifecycleEvents.CLIENT_STOPPING.register(
+                minecraftClient -> {
+                    LifecycleUtils.onTermination(modContext);
+                    fabricProvider.setMinecraftClient(null);
+                }
+        );
         ServerLifecycleEvents.SERVER_STARTING.register(
                 minecraftServer -> {
                     fabricProvider.setMinecraftServer(minecraftServer);
@@ -59,38 +61,5 @@ public class FabricClientModInitializer implements ClientModInitializer {
                     fabricProvider.setMinecraftServer(null);
                 }
         );
-        ClientLifecycleEvents.CLIENT_STOPPING.register(
-                minecraftServer -> {
-                    LifecycleUtils.onTermination(modContext);
-                }
-        );
-        LifecycleUtils.onInitialize(modContext);
-    }
-
-    private static class FabricClientProviderImpl implements FabricClientProvider {
-
-        @Override
-        public void consumeSaveScreenText(Text text) {
-            final MinecraftClient client = MinecraftClient.getInstance();
-            if (client != null) {
-                final Screen screen = client.currentScreen;
-                if (screen instanceof MessageScreen) {
-                    ((ScreenAccessors) screen).setTitle(text);
-                }
-            }
-        }
-
-        @Override
-        public Path getClientRestoreDir() {
-            return FabricLoader.getInstance().getGameDir().resolve("saves");
-        }
-
-        @Override
-        public void sendClientChatMessage(Text text) {
-            final MinecraftClient client = MinecraftClient.getInstance();
-            if (client != null) {
-                client.inGameHud.getChatHud().addMessage(text);
-            }
-        }
     }
 }
