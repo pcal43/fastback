@@ -32,13 +32,11 @@ public class ChatLogger implements Logger {
     }
 
     @Override
-    public void notify(Message message) {
-        ctx.sendClientChatMessage(message);
-    }
-
-    @Override
-    public void notifyError(Message message) {
-        ctx.sendClientChatMessage(message);
+    public void chat(Message message, ChatMessageType type) {
+        switch(type) {
+            case NORMAL -> ctx.sendClientChatMessage(message);
+            case ERROR -> ctx.sendClientChatMessage(message);
+        }
     }
 
     @Override

@@ -106,8 +106,8 @@ public class SetRetentionCommand implements Command<ServerCommandSource> {
                 final StoredConfig gitConfig = git.getRepository().getConfig();
                 WorldConfig.setRetentionPolicy(gitConfig, encodedPolicy);
                 gitConfig.save();
-                logger.notify(localized("fastback.notify.retention-policy-set"));
-                logger.notify(rp.getDescription());
+                logger.chat(localized("fastback.notify.retention-policy-set"));
+                logger.chat(rp.getDescription());
             } catch (Exception e) {
                 logger.internalError("Command execution failed.", e);
                 return FAILURE;

@@ -92,13 +92,13 @@ public class Commands {
         ctx.execute(lock, log, () -> {
             final Path worldSaveDir = ctx.getWorldDirectory();
             if (!isGitRepo(worldSaveDir)) {
-                log.notifyError(localized("fastback.notify.not-enabled"));
+                log.chatError(localized("fastback.notify.not-enabled"));
                 return;
             }
             try (final Git git = Git.open(worldSaveDir.toFile())) {
                 final WorldConfig worldConfig = WorldConfig.load(git);
                 if (!worldConfig.isBackupEnabled()) {
-                    log.notifyError(localized("fastback.notify.not-enabled"));
+                    log.chatError(localized("fastback.notify.not-enabled"));
                 } else {
                     op.execute(git);
                 }

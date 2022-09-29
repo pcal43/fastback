@@ -18,23 +18,20 @@
 
 package net.pcal.fastback.logging;
 
+import static net.pcal.fastback.logging.Logger.ChatMessageType.ERROR;
+import static net.pcal.fastback.logging.Logger.ChatMessageType.NORMAL;
+
 public interface Logger {
 
-    void notify(Message message);
+    enum ChatMessageType { NORMAL, ERROR }
 
-    void notifyError(Message message);
+    void chat(Message message, ChatMessageType type);
+
+    default void chat(Message message) { this.chat(message, NORMAL); }
+
+    default void chatError(Message message) { this.chat(message, ERROR); }
 
     void progressUpdate(Message message);
-
-    @Deprecated
-    default void progressComplete(String message, int percentage) {
-        progressUpdate(Message.raw(message + " " + percentage + "%"));
-    }
-
-    @Deprecated
-    default void progressComplete(String message) {
-        progressUpdate(Message.raw(message));
-    }
 
     void internalError(String message, Throwable t);
 

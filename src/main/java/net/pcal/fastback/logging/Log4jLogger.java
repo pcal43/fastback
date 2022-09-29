@@ -29,11 +29,7 @@ public class Log4jLogger implements Logger {
     }
 
     @Override
-    public void notify(Message message) {
-    }
-
-    @Override
-    public void notifyError(Message message) {
+    public void chat(Message message, ChatMessageType type) {
     }
 
     @Override

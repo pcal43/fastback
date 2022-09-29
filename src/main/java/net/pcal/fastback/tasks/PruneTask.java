@@ -65,20 +65,20 @@ public class PruneTask implements Runnable {
         }
         final String policyConfig = wc.retentionPolicy();
         if (policyConfig == null) {
-            log.notifyError(localized("fastback.notify.prune-no-default"));
+            log.chatError(localized("fastback.notify.prune-no-default"));
             return;
         }
         final RetentionPolicy policy = RetentionPolicyCodec.INSTANCE.decodePolicy
                 (ctx, ctx.getAvailableRetentionPolicyTypes(), policyConfig);
         if (policy == null) {
-            log.notifyError(localized("fastback.notify.retention-policy-not-set"));
+            log.chatError(localized("fastback.notify.retention-policy-not-set"));
             return;
         }
         final Collection<SnapshotId> toPrune =
                 policy.getSnapshotsToPrune(listSnapshotsForWorldSorted(git, ctx.getLogger()));
         int pruned = 0;
         for (final SnapshotId sid : toPrune) {
-            log.notify(localized("fastback.notify.prune-pruning", sid.getName()));
+            log.chat(localized("fastback.notify.prune-pruning", sid.getName()));
             try {
                 git.branchDelete().setForce(true).setBranchNames(new String[]{sid.getBranchName()}).call();
                 pruned++;
@@ -86,9 +86,9 @@ public class PruneTask implements Runnable {
                 log.internalError("failed to prune branch for " + sid, e);
             }
         }
-        log.notify(localized("fastback.notify.prune-done", pruned));
+        log.chat(localized("fastback.notify.prune-done", pruned));
         if (pruned > 0) {
-            log.notify(localized("fastback.notify.prune-suggest-gc"));
+            log.chat(localized("fastback.notify.prune-suggest-gc"));
         }
     }
 }

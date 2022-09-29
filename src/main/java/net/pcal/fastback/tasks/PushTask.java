@@ -151,7 +151,7 @@ public class PushTask extends Task {
         git.push().setProgressMonitor(pm).setRemote(remoteName).
                 setRefSpecs(new RefSpec(tempBranchName + ":" + tempBranchName),
                         new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
-        logger.notify(localized("fastback.notify.push-cleanup"));
+        logger.chat(localized("fastback.notify.push-cleanup"));
         if (worldConfig.isTempBranchCleanupEnabled()) {
             logger.debug("deleting local temp branch " + tempBranchName);
             git.branchDelete().setForce(true).setBranchNames(tempBranchName).call();
@@ -163,7 +163,7 @@ public class PushTask extends Task {
 
             git.push().setProgressMonitor(pm).setRemote(remoteName).setRefSpecs(deleteRemoteBranchSpec).call();
         }
-        logger.notify(localized("fastback.savescreen.remote-done"));
+        logger.chat(localized("fastback.savescreen.remote-done"));
         logger.debug("push complete");
     }
 
@@ -185,7 +185,7 @@ public class PushTask extends Task {
         } else {
             if (!remoteWorldUuids.contains(localUuid)) {
                 final URIish remoteUri = GitUtils.getRemoteUri(git, config.getRemoteName(), logger);
-                logger.notifyError(localized("fastback.notify.push-uuid-mismatch", remoteUri));
+                logger.chatError(localized("fastback.notify.push-uuid-mismatch", remoteUri));
                 logger.info("local: " + localUuid + ", remote: " + remoteWorldUuids);
                 return false;
             }

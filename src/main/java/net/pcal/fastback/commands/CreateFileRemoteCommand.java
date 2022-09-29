@@ -61,7 +61,7 @@ public class CreateFileRemoteCommand {
             final String targetPath = cc.getArgument(ARGUMENT, String.class);
             final Path fupHome = Path.of(targetPath);
             if (fupHome.toFile().exists()) {
-                log.notifyError(localized("fastback.notify.create-file-remote-dir-exists", fupHome.toString()));
+                log.chatError(localized("fastback.notify.create-file-remote-dir-exists", fupHome.toString()));
                 return;
             }
             mkdirs(fupHome);
@@ -75,7 +75,7 @@ public class CreateFileRemoteCommand {
             final StoredConfig gitc = git.getRepository().getConfig();
             WorldConfig.setRemoteUrl(gitc, targetUrl);
             gitc.save();
-            log.notify(localized("fastback.notify.create-file-remote-created", targetPath, targetUrl));
+            log.chat(localized("fastback.notify.create-file-remote-created", targetPath, targetUrl));
         });
         return SUCCESS;
     }

@@ -106,7 +106,7 @@ public class ModContext {
                 return true;
             case WRITE:
                 if (this.exclusiveFuture != null && !this.exclusiveFuture.isDone()) {
-                    log.notifyError(localized("fastback.notify.thread-busy"));
+                    log.chatError(localized("fastback.notify.thread-busy"));
                     return false;
                 } else {
                     log.debug("executing " + runnable);

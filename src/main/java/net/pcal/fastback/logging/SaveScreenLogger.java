@@ -36,13 +36,7 @@ public class SaveScreenLogger implements Logger {
     }
 
     @Override
-    public void notify(Message message) {
-        this.ctx.setSavingScreenText(message); // FIXME kill
-    }
-
-    @Override
-    public void notifyError(Message message) {
-        this.ctx.setSavingScreenText(message); // FIXME kill
+    public void chat(Message message, ChatMessageType type) {
     }
 
     @Override

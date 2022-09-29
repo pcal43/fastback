@@ -54,7 +54,7 @@ public class SetShutdownActionCommand {
             final StoredConfig config = git.getRepository().getConfig();
             WorldConfig.setShutdownAction(config, action);
             config.save();
-            log.notify(localized("fastback.notify.info-shutdown-action", action.getArgumentName()));
+            log.chat(localized("fastback.notify.info-shutdown-action", action.getArgumentName()));
         });
         return SUCCESS;
     }

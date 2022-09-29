@@ -37,7 +37,6 @@ import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.Message.localized;
-import static net.pcal.fastback.logging.Message.raw;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class CommitTask extends Task {
@@ -75,7 +74,7 @@ public class CommitTask extends Task {
 
     public void run() {
         this.setStarted();
-        this.log.notify(localized("fastback.notify.local-preparing"));
+        this.log.chat(localized("fastback.notify.local-preparing"));
         final SnapshotId sid = this.sidSupplier.get();
         if (sid == null) return;
         final String newBranchName = sid.getBranchName();
@@ -98,7 +97,7 @@ public class CommitTask extends Task {
             this.setFailed();
             return;
         }
-        log.notify(localized("fastback.notify.backup-complete"));
+        log.chat(localized("fastback.notify.backup-complete"));
         this.setCompleted();
     }
 
@@ -150,8 +149,8 @@ public class CommitTask extends Task {
             log.info("World save re-enabled.");
         }
         log.debug("commit");
-        log.notify(localized("fastback.notify.local-saving"));
+        log.chat(localized("fastback.notify.local-saving"));
         git.commit().setMessage(newBranchName).call();
-        log.notify(localized("fastback.notify.local-done"));
+        log.chat(localized("fastback.notify.local-done"));
     }
 }

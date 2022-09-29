@@ -35,13 +35,11 @@ public class CommandSourceLogger implements Logger {
     }
 
     @Override
-    public void notify(Message message) {
-        ctx.sendFeedback(message, scs);
-    }
-
-    @Override
-    public void notifyError(Message message) {
-        ctx.sendError(message, scs);
+    public void chat(Message message, ChatMessageType type) {
+        switch(type) {
+            case NORMAL -> ctx.sendFeedback(message, scs);
+            case ERROR ->  ctx.sendError(message, scs);
+        }
     }
 
     @Override
