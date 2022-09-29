@@ -19,9 +19,9 @@
 package net.pcal.fastback.tasks;
 
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.logging.IncrementalProgressMonitor;
+import net.pcal.fastback.progress.IncrementalProgressMonitor;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.logging.LoggingProgressMonitor;
+import net.pcal.fastback.progress.PercentageProgressMonitor;
 import net.pcal.fastback.utils.FileUtils;
 import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
@@ -71,7 +71,7 @@ public class GcTask extends Task {
     public void run() {
         this.setStarted();
         final ProgressMonitor pm =
-                new IncrementalProgressMonitor(new LoggingProgressMonitor(log), 100);
+                new IncrementalProgressMonitor(new PercentageProgressMonitor(log), 100);
         try {
             log.notify(localized("fastback.notify.gc-start"));
             log.info("Stats before gc:");

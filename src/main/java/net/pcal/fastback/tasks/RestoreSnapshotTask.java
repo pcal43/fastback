@@ -19,9 +19,9 @@
 package net.pcal.fastback.tasks;
 
 import net.pcal.fastback.WorldConfig;
-import net.pcal.fastback.logging.IncrementalProgressMonitor;
+import net.pcal.fastback.progress.IncrementalProgressMonitor;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.logging.LoggingProgressMonitor;
+import net.pcal.fastback.progress.PercentageProgressMonitor;
 import net.pcal.fastback.utils.FileUtils;
 import net.pcal.fastback.utils.GitUtils;
 import net.pcal.fastback.utils.SnapshotId;
@@ -87,7 +87,7 @@ public class RestoreSnapshotTask extends Task {
             targetDirectory = getTargetDir(this.saveDir, worldName, snapshotName);
             String uri = "file://" + this.worldSaveDir.toAbsolutePath();
             logger.notify(localized("fastback.notify.restore-start", this.snapshotName, targetDirectory));
-            final ProgressMonitor pm = new IncrementalProgressMonitor(new LoggingProgressMonitor(logger), 100);
+            final ProgressMonitor pm = new IncrementalProgressMonitor(new PercentageProgressMonitor(logger), 100);
             try (Git git = Git.cloneRepository().setProgressMonitor(pm).setDirectory(targetDirectory.toFile()).
                     setBranchesToClone(List.of("refs/heads/" + branchName)).setBranch(branchName).setURI(uri).call()) {
             }

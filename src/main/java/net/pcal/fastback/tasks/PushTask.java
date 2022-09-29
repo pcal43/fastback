@@ -21,9 +21,10 @@ package net.pcal.fastback.tasks;
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
-import net.pcal.fastback.logging.IncrementalProgressMonitor;
+import net.pcal.fastback.logging.Message;
+import net.pcal.fastback.progress.IncrementalProgressMonitor;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.logging.LoggingProgressMonitor;
+import net.pcal.fastback.progress.PercentageProgressMonitor;
 import net.pcal.fastback.utils.GitUtils;
 import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
@@ -44,6 +45,7 @@ import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.Message.localized;
+import static net.pcal.fastback.logging.Message.raw;
 
 public class PushTask extends Task {
 
@@ -145,7 +147,7 @@ public class PushTask extends Task {
         logger.debug("Checking out " + branchNameToPush);
         git.checkout().setName(branchNameToPush).call();
         logger.debug("Pushing " + tempBranchName);
-        final ProgressMonitor pm = new IncrementalProgressMonitor(new LoggingProgressMonitor(logger), 100);
+        final ProgressMonitor pm = new IncrementalProgressMonitor(new PercentageProgressMonitor(logger), 100);
         git.push().setProgressMonitor(pm).setRemote(remoteName).
                 setRefSpecs(new RefSpec(tempBranchName + ":" + tempBranchName),
                         new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
@@ -166,7 +168,7 @@ public class PushTask extends Task {
     }
 
     private static void doNaivePush(final Git git, final String branchNameToPush, final WorldConfig config, final Logger logger) throws IOException, GitAPIException {
-        final ProgressMonitor pm = new IncrementalProgressMonitor(new LoggingProgressMonitor(logger), 100);
+        final ProgressMonitor pm = new IncrementalProgressMonitor(new PercentageProgressMonitor(logger), 100);
         final String remoteName = config.getRemoteName();
         logger.info("Doing naive push of " + branchNameToPush);
         git.push().setProgressMonitor(pm).setRemote(remoteName).
@@ -198,5 +200,81 @@ public class PushTask extends Task {
 
     private static String getTempBranchName(String uniqueName) {
         return "temp/" + uniqueName;
+    }
+
+    private static class PushProgressMonitor implements ProgressMonitor {
+
+        @Override
+        public void progressComplete(String message, int percentage) {
+            Message text = null;
+            if (message.contains("Finding sources")) {
+                text = localized("fastback.savescreen.remote-preparing", percentage);
+            } else if (message.contains("Writing objects")) {
+                text = localized("fastback.savescreen.remote-uploading", percentage);
+            }
+            if (text == null) text = raw(message + " " + percentage + "%");
+            this.ctx.setSavingScreenText(text);
+        }
+
+        @Override
+        public void progressComplete(String message) {
+            Message text = null;
+            if (message.contains("Writing objects")) {
+                text = localized("fastback.savescreen.remote-done");
+            }
+            if (text == null) text = raw(message);
+            this.ctx.setSavingScreenText(text);
+        }
+
+        private final Logger logger;
+        private String currentTask;
+        private int currentTotalWork;
+        private int totalCompleted;
+
+        public PushProgressMonitor(Logger logger) {
+            this.logger = requireNonNull(logger);
+        }
+
+        @Override
+        public void start(int totalTasks) {
+        }
+
+        @Override
+        public void beginTask(String taskName, int totalWork) {
+            this.currentTask = taskName;
+            this.currentTotalWork = totalWork;
+            this.totalCompleted = 0;
+            this.logger.info(taskName);
+        }
+
+        @Override
+        public void update(int completed) {
+            this.totalCompleted += completed;
+            int percent = (this.totalCompleted * 100) / this.currentTotalWork;
+            Message text = null;
+            if (currentTask.contains("Finding sources")) {
+                text = localized("fastback.savescreen.remote-preparing", percent);
+            } else if (currentTask.contains("Writing objects")) {
+                text = localized("fastback.savescreen.remote-uploading", percent);
+            }
+            if (text == null) text = raw(currentTask + " " + percent + "%");
+            this.logger.progressUpdate(text);
+        }
+
+        @Override
+        public void endTask() {
+            final Message text;
+            if (currentTask.contains("Writing objects")) {
+                text = localized("fastback.savescreen.remote-done");
+            } else {
+                text = raw(currentTask);
+            }
+            this.logger.progressUpdate(text);
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return false;
+        }
     }
 }

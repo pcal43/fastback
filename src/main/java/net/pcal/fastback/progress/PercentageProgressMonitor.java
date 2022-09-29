@@ -16,21 +16,20 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.logging;
+package net.pcal.fastback.progress;
 
+import net.pcal.fastback.logging.Logger;
 import org.eclipse.jgit.lib.ProgressMonitor;
 
 import static java.util.Objects.requireNonNull;
 
-public class LoggingProgressMonitor implements ProgressMonitor {
+public abstract class PercentageProgressMonitor implements ProgressMonitor {
 
-    private final Logger logger;
     private String currentTask;
     private int currentTotalWork;
     private int totalCompleted;
 
-    public LoggingProgressMonitor(Logger logger) {
-        this.logger = requireNonNull(logger);
+    public PercentageProgressMonitor() {
     }
 
     @Override
@@ -42,19 +41,18 @@ public class LoggingProgressMonitor implements ProgressMonitor {
         this.currentTask = taskName;
         this.currentTotalWork = totalWork;
         this.totalCompleted = 0;
-        this.logger.info(taskName);
     }
 
     @Override
     public void update(int completed) {
         this.totalCompleted += completed;
         int percent = (this.totalCompleted * 100) / this.currentTotalWork;
-        this.logger.progressComplete(currentTask, percent);
+        this.progressComplete(currentTask, percent);
     }
 
     @Override
     public void endTask() {
-        this.logger.progressComplete(currentTask);
+        this.progressComplete(currentTask);
     }
 
     @Override

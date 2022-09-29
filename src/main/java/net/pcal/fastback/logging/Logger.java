@@ -24,9 +24,17 @@ public interface Logger {
 
     void notifyError(Message message);
 
-    void progressComplete(String message, int percentage);
+    void progressUpdate(Message message);
 
-    void progressComplete(String message);
+    @Deprecated
+    default void progressComplete(String message, int percentage) {
+        progressUpdate(Message.raw(message + " " + percentage + "%"));
+    }
+
+    @Deprecated
+    default void progressComplete(String message) {
+        progressUpdate(Message.raw(message));
+    }
 
     void internalError(String message, Throwable t);
 
