@@ -18,10 +18,7 @@
 
 package net.pcal.fastback.progress;
 
-import net.pcal.fastback.logging.Logger;
 import org.eclipse.jgit.lib.ProgressMonitor;
-
-import static java.util.Objects.requireNonNull;
 
 public abstract class PercentageProgressMonitor implements ProgressMonitor {
 
@@ -29,34 +26,45 @@ public abstract class PercentageProgressMonitor implements ProgressMonitor {
     private int currentTotalWork;
     private int totalCompleted;
 
-    public PercentageProgressMonitor() {
+    protected PercentageProgressMonitor() {
     }
 
     @Override
-    public void start(int totalTasks) {
+    final public void start(int totalTasks) {
     }
 
     @Override
-    public void beginTask(String taskName, int totalWork) {
+    final public void beginTask(String taskName, int totalWork) {
         this.currentTask = taskName;
         this.currentTotalWork = totalWork;
         this.totalCompleted = 0;
+        this.progressStart(currentTask);
     }
 
     @Override
-    public void update(int completed) {
+    final public void update(int completed) {
         this.totalCompleted += completed;
         int percent = (this.totalCompleted * 100) / this.currentTotalWork;
-        this.progressComplete(currentTask, percent);
+        this.progressUpdate(currentTask, percent);
     }
 
     @Override
-    public void endTask() {
-        this.progressComplete(currentTask);
+    final public void endTask() {
+        this.progressDone(currentTask);
+        currentTask = null;
     }
 
     @Override
-    public boolean isCancelled() {
+    final public boolean isCancelled() {
         return false;
     }
+
+    protected abstract void progressStart(String taskName);
+
+    protected abstract void progressUpdate(String taskName, int percentage);
+
+    protected abstract void progressDone(String taskName);
+
+
+
 }

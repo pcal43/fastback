@@ -147,7 +147,7 @@ public class PushTask extends Task {
         logger.debug("Checking out " + branchNameToPush);
         git.checkout().setName(branchNameToPush).call();
         logger.debug("Pushing " + tempBranchName);
-        final ProgressMonitor pm = new IncrementalProgressMonitor(new PercentageProgressMonitor(logger), 100);
+        final ProgressMonitor pm = new IncrementalProgressMonitor(new PushProgressMonitor(logger), 100);
         git.push().setProgressMonitor(pm).setRemote(remoteName).
                 setRefSpecs(new RefSpec(tempBranchName + ":" + tempBranchName),
                         new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
@@ -168,7 +168,7 @@ public class PushTask extends Task {
     }
 
     private static void doNaivePush(final Git git, final String branchNameToPush, final WorldConfig config, final Logger logger) throws IOException, GitAPIException {
-        final ProgressMonitor pm = new IncrementalProgressMonitor(new PercentageProgressMonitor(logger), 100);
+        final ProgressMonitor pm = new IncrementalProgressMonitor(new PushProgressMonitor(logger), 100);
         final String remoteName = config.getRemoteName();
         logger.info("Doing naive push of " + branchNameToPush);
         git.push().setProgressMonitor(pm).setRemote(remoteName).
@@ -202,79 +202,40 @@ public class PushTask extends Task {
         return "temp/" + uniqueName;
     }
 
-    private static class PushProgressMonitor implements ProgressMonitor {
-
-        @Override
-        public void progressComplete(String message, int percentage) {
-            Message text = null;
-            if (message.contains("Finding sources")) {
-                text = localized("fastback.savescreen.remote-preparing", percentage);
-            } else if (message.contains("Writing objects")) {
-                text = localized("fastback.savescreen.remote-uploading", percentage);
-            }
-            if (text == null) text = raw(message + " " + percentage + "%");
-            this.ctx.setSavingScreenText(text);
-        }
-
-        @Override
-        public void progressComplete(String message) {
-            Message text = null;
-            if (message.contains("Writing objects")) {
-                text = localized("fastback.savescreen.remote-done");
-            }
-            if (text == null) text = raw(message);
-            this.ctx.setSavingScreenText(text);
-        }
+    private static class PushProgressMonitor extends PercentageProgressMonitor {
 
         private final Logger logger;
-        private String currentTask;
-        private int currentTotalWork;
-        private int totalCompleted;
 
         public PushProgressMonitor(Logger logger) {
             this.logger = requireNonNull(logger);
         }
 
         @Override
-        public void start(int totalTasks) {
+        public void progressStart(String task) {
+            this.logger.info(task);
         }
 
         @Override
-        public void beginTask(String taskName, int totalWork) {
-            this.currentTask = taskName;
-            this.currentTotalWork = totalWork;
-            this.totalCompleted = 0;
-            this.logger.info(taskName);
-        }
-
-        @Override
-        public void update(int completed) {
-            this.totalCompleted += completed;
-            int percent = (this.totalCompleted * 100) / this.currentTotalWork;
+        public void progressUpdate(String task, int percentage) {
             Message text = null;
-            if (currentTask.contains("Finding sources")) {
-                text = localized("fastback.savescreen.remote-preparing", percent);
-            } else if (currentTask.contains("Writing objects")) {
-                text = localized("fastback.savescreen.remote-uploading", percent);
+            if (task.contains("Finding sources")) {
+                text = localized("fastback.savescreen.remote-preparing", percentage);
+            } else if (task.contains("Writing objects")) {
+                text = localized("fastback.savescreen.remote-uploading", percentage);
             }
-            if (text == null) text = raw(currentTask + " " + percent + "%");
+            if (text == null) text = raw(task + " " + percentage + "%");
             this.logger.progressUpdate(text);
         }
 
         @Override
-        public void endTask() {
+        public void progressDone(String task) {
             final Message text;
-            if (currentTask.contains("Writing objects")) {
+            if (task.contains("Writing objects")) {
                 text = localized("fastback.savescreen.remote-done");
             } else {
-                text = raw(currentTask);
+                text = raw(task);
             }
             this.logger.progressUpdate(text);
-        }
-
-        @Override
-        public boolean isCancelled() {
-            return false;
         }
     }
 }

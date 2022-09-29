@@ -21,6 +21,8 @@ package net.pcal.fastback.tasks;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.Message;
+import net.pcal.fastback.progress.PercentageProgressMonitor;
 import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
@@ -37,6 +39,7 @@ import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.Message.localized;
+import static net.pcal.fastback.logging.Message.raw;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class CommitTask extends Task {
