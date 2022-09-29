@@ -28,6 +28,7 @@ import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.CommandSourceLogger;
 import net.pcal.fastback.logging.CompositeLogger;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.SaveScreenLogger;
 import org.eclipse.jgit.api.Git;
 
 import java.nio.file.Path;
@@ -73,7 +74,7 @@ public class Commands {
     }
 
     public static Logger commandLogger(final ModContext ctx, final ServerCommandSource scs) {
-        return CompositeLogger.of(ctx.getLogger(), new CommandSourceLogger(ctx, scs));
+        return CompositeLogger.of(ctx.getLogger(), new CommandSourceLogger(ctx, scs), new SaveScreenLogger(ctx));
     }
 
     public static String subcommandPermName(String subcommandName) {

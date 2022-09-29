@@ -47,7 +47,6 @@ import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.subcommandPermName;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
-import static net.pcal.fastback.logging.Message.raw;
 
 public class HelpCommand {
 
@@ -130,7 +129,7 @@ public class HelpCommand {
                 return SUCCESS;
             }
         }
-        log.chatError(raw("Invalid subcommand '" + subcommand + "'"));
+        log.chatError(localized("fastback.notify.invalid-input", subcommand));
         return FAILURE;
     }
 

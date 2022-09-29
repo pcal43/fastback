@@ -149,8 +149,8 @@ public class CommitTask extends Task {
             log.info("World save re-enabled.");
         }
         log.debug("commit");
-        log.chat(localized("fastback.notify.local-saving"));
+        log.progressUpdate(localized("fastback.notify.local-saving"));
         git.commit().setMessage(newBranchName).call();
-        log.chat(localized("fastback.notify.local-done"));
+        log.progressUpdate(localized("fastback.notify.local-done"));
     }
 }

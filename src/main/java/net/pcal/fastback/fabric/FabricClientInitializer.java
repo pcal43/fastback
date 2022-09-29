@@ -20,6 +20,7 @@ package net.pcal.fastback.fabric;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.pcal.fastback.LifecycleUtils;
 import net.pcal.fastback.ModContext;
@@ -34,31 +35,32 @@ public class FabricClientInitializer implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        final FabricClientProvider fabricProvider = new FabricClientProvider();
-        final ModContext modContext = ModContext.create(fabricProvider);
+        final FabricClientProvider clientProvider = new FabricClientProvider();
+        final ModContext modContext = ModContext.create(clientProvider);
         LifecycleUtils.onInitialize(modContext);
 
         ClientLifecycleEvents.CLIENT_STARTED.register(
                 minecraftClient -> {
-                    fabricProvider.setMinecraftClient(minecraftClient);
+                    clientProvider.setMinecraftClient(minecraftClient);
+                    HudRenderCallback.EVENT.register(clientProvider);
                 }
         );
         ClientLifecycleEvents.CLIENT_STOPPING.register(
                 minecraftClient -> {
                     LifecycleUtils.onTermination(modContext);
-                    fabricProvider.setMinecraftClient(null);
+                    clientProvider.setMinecraftClient(null);
                 }
         );
         ServerLifecycleEvents.SERVER_STARTING.register(
                 minecraftServer -> {
-                    fabricProvider.setMinecraftServer(minecraftServer);
+                    clientProvider.setMinecraftServer(minecraftServer);
                     LifecycleUtils.onWorldStart(modContext);
                 }
         );
         ServerLifecycleEvents.SERVER_STOPPED.register(
                 minecraftServer -> {
                     LifecycleUtils.onWorldStop(modContext);
-                    fabricProvider.setMinecraftServer(null);
+                    clientProvider.setMinecraftServer(null);
                 }
         );
     }

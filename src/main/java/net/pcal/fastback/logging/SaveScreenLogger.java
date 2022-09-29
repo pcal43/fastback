@@ -33,6 +33,7 @@ public class SaveScreenLogger implements Logger {
     @Override
     public void progressUpdate(Message message) {
         this.ctx.setSavingScreenText(message);
+        this.ctx.renderBackupIndicator(message);
     }
 
     @Override
