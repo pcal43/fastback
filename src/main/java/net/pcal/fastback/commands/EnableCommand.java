@@ -66,7 +66,7 @@ public class EnableCommand {
                             WorldConfig.setShutdownAction(config, DEFAULT_SHUTDOWN_ACTION);
                         }
                         config.save();
-                        log.chat(localized("fastback.notify.enable-done"));
+                        log.chat(localized("fastback.chat.enable-done"));
                     } catch (GitAPIException | IOException e) {
                         log.internalError("Error enabling backups", e);
                     }

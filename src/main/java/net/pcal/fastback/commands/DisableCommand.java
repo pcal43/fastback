@@ -52,7 +52,7 @@ public class DisableCommand {
             final StoredConfig gitc = git.getRepository().getConfig();
             WorldConfig.setBackupEnabled(gitc, false);
             gitc.save();
-            log.chat(localized("fastback.notify.disable-done"));
+            log.chat(localized("fastback.chat.disable-done"));
         });
         return SUCCESS;
     }

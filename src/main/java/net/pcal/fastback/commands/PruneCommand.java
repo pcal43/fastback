@@ -30,6 +30,7 @@ import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.logging.Message.localized;
 
 /**
  * Command to prune all snapshots that are not to be retained per the retention policy.
@@ -52,7 +53,13 @@ public class PruneCommand {
     public static int prune(final ModContext ctx, final ServerCommandSource scs) {
         final Logger log = commandLogger(ctx, scs);
         gitOp(ctx, WRITE, log, git -> {
-            new PruneTask(git, ctx, log).run();
+            final PruneTask pt = new PruneTask(git, ctx, log);
+            pt.run();
+            log.chat(localized("fastback.chat.prune-done", pt.getPruned()));
+            if (pt.getPruned() > 0) {
+                log.chat(localized("fastback.chat.prune-suggest-gc"));
+            }
+
         });
         return SUCCESS;
     }

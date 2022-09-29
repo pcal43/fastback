@@ -35,6 +35,7 @@ import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.logging.Message.localized;
 
 public class RestoreCommand {
 
@@ -59,7 +60,9 @@ public class RestoreCommand {
             final Path restoresDir = ctx.getRestoresDir();
             final String worldName = ctx.getWorldName();
             final Path worldDir = ctx.getWorldDirectory();
-            RestoreSnapshotTask.create(worldDir, snapshotName, worldName, restoresDir, log).run();
+            RestoreSnapshotTask rt = RestoreSnapshotTask.create(worldDir, snapshotName, worldName, restoresDir, log);
+            rt.run();
+            log.chat(localized("fastback.chat.restore-done", rt.getRestoreDir()));
         });
         return SUCCESS;
     }

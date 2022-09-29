@@ -185,7 +185,7 @@ public class PushTask extends Task {
         } else {
             if (!remoteWorldUuids.contains(localUuid)) {
                 final URIish remoteUri = GitUtils.getRemoteUri(git, config.getRemoteName(), logger);
-                logger.chatError(localized("fastback.notify.push-uuid-mismatch", remoteUri));
+                logger.chatError(localized("fastback.chat.push-uuid-mismatch", remoteUri));
                 logger.info("local: " + localUuid + ", remote: " + remoteWorldUuids);
                 return false;
             }

@@ -41,7 +41,7 @@ public class ChatLogger implements Logger {
 
     @Override
     public void internalError(String message, Throwable t) {
-        ctx.sendClientChatMessage(localized("fastback.notify.internal-error"));
+        ctx.sendClientChatMessage(localized("fastback.chat.internal-error"));
     }
 
     @Override

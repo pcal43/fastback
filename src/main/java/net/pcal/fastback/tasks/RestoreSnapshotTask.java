@@ -19,9 +19,9 @@
 package net.pcal.fastback.tasks;
 
 import net.pcal.fastback.WorldConfig;
+import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.Message;
 import net.pcal.fastback.progress.IncrementalProgressMonitor;
-import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.progress.PercentageProgressMonitor;
 import net.pcal.fastback.utils.FileUtils;
 import net.pcal.fastback.utils.GitUtils;
@@ -49,12 +49,13 @@ public class RestoreSnapshotTask extends Task {
     private final Path saveDir;
     private final boolean doClean = true;
     private final Logger logger;
+    private Path restoreDir;
 
-    public static Runnable create(Path worldSaveDir,
-                                  String snapshotName,
-                                  String worldName,
-                                  Path saveDir,
-                                  Logger logger) {
+    public static RestoreSnapshotTask create(Path worldSaveDir,
+                                             String snapshotName,
+                                             String worldName,
+                                             Path saveDir,
+                                             Logger logger) {
         return new RestoreSnapshotTask(worldSaveDir, snapshotName, worldName, saveDir, logger);
     }
 
@@ -75,7 +76,7 @@ public class RestoreSnapshotTask extends Task {
             SnapshotId sid = SnapshotId.fromUuidAndName(config.worldUuid(), this.snapshotName);
             branchName = sid.getBranchName();
             if (!GitUtils.isBranchExtant(git, branchName, logger)) {
-                logger.chatError(localized("fastback.notify.restore-nosuch", snapshotName));
+                logger.chatError(localized("fastback.chat.restore-nosuch", snapshotName));
                 return;
             }
         } catch (IOException | GitAPIException | ParseException e) {
@@ -84,13 +85,12 @@ public class RestoreSnapshotTask extends Task {
             return;
         }
 
-        final Path targetDirectory;
         try {
-            targetDirectory = getTargetDir(this.saveDir, worldName, snapshotName);
+            restoreDir = getTargetDir(this.saveDir, worldName, snapshotName);
             String uri = "file://" + this.worldSaveDir.toAbsolutePath();
-            logger.hud(localized("fastback.hud.restore-start", this.snapshotName, targetDirectory));
+            logger.hud(localized("fastback.hud.restore-start", this.snapshotName, restoreDir));
             final ProgressMonitor pm = new IncrementalProgressMonitor(new RestoreProgressMonitor(logger), 100);
-            try (Git git = Git.cloneRepository().setProgressMonitor(pm).setDirectory(targetDirectory.toFile()).
+            try (Git git = Git.cloneRepository().setProgressMonitor(pm).setDirectory(restoreDir.toFile()).
                     setBranchesToClone(List.of("refs/heads/" + branchName)).setBranch(branchName).setURI(uri).call()) {
             }
         } catch (Exception e) {
@@ -100,8 +100,8 @@ public class RestoreSnapshotTask extends Task {
         }
         if (config.isPostRestoreCleanupEnabled()) {
             try {
-                FileUtils.rmdir(targetDirectory.resolve(".git"));
-                targetDirectory.resolve(WORLD_UUID_PATH).toFile().delete();
+                FileUtils.rmdir(restoreDir.resolve(".git"));
+                restoreDir.resolve(WORLD_UUID_PATH).toFile().delete();
             } catch (IOException e) {
                 logger.internalError("Unexpected error cleaning restored snapshot", e);
                 setFailed();
@@ -127,6 +127,9 @@ public class RestoreSnapshotTask extends Task {
         return candidate;
     }
 
+    public Path getRestoreDir() {
+        return this.restoreDir;
+    }
 
     private static class RestoreProgressMonitor extends PercentageProgressMonitor {
 

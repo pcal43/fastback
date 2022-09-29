@@ -76,7 +76,7 @@ public class GcTask extends Task {
             // longer than people expect.
             //
             final File gitDir = git.getRepository().getDirectory();
-            log.hud(localized("fastback.hud.gc-size-before", getDirDisplaySize(gitDir)));
+            log.info("Backup size before gc: " + getDirDisplaySize(gitDir));
             if (ctx.isReflogDeletionEnabled()) {
                 final Path reflogsDir = gitDir.toPath().resolve("logs");
                 log.info("Deleting reflogs " + reflogsDir);
@@ -114,10 +114,10 @@ public class GcTask extends Task {
             log.info("Starting garbage collection");
             gc.gc(); // TODO progress monitor
             log.info("Garbage collection complete.");
-            log.chat(localized("fastback.notify.gc-done"));
+            log.chat(localized("fastback.chat.gc-done"));
             log.info("Stats after gc:");
             log.info("" + git.gc().getStatistics());
-            //log.progress(localized("fastback.notify.gc-size-after", getDirDisplaySize(gitDir)));
+            log.info("Backup size after gc: " + getDirDisplaySize(gitDir));
         } catch (IOException | GitAPIException | ParseException e) {
             this.setFailed();
             log.internalError("Failed to gc", e);

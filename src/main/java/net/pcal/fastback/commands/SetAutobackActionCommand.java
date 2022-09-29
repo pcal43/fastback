@@ -54,7 +54,7 @@ public class SetAutobackActionCommand {
             final StoredConfig config = git.getRepository().getConfig();
             WorldConfig.setAutobackAction(config, action);
             config.save();
-            log.chat(localized("fastback.notify.info-autoback-action", action.getArgumentName()));
+            log.chat(localized("fastback.chat.info-autoback-action", action.getArgumentName()));
         });
         return SUCCESS;
     }

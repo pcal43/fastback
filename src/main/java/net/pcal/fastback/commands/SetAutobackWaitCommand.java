@@ -40,7 +40,7 @@ public class SetAutobackWaitCommand {
             final StoredConfig config = git.getRepository().getConfig();
             WorldConfig.setAutobackWait(config, wait);
             config.save();
-            log.chat(localized("fastback.notify.info-autoback-wait", wait));
+            log.chat(localized("fastback.chat.info-autoback-wait", wait));
         });
         return SUCCESS;
     }

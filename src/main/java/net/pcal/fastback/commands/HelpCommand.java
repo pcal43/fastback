@@ -129,7 +129,7 @@ public class HelpCommand {
                 return SUCCESS;
             }
         }
-        log.chatError(localized("fastback.notify.invalid-input", subcommand));
+        log.chatError(localized("fastback.chat.invalid-input", subcommand));
         return FAILURE;
     }
 

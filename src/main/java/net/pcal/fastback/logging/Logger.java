@@ -35,6 +35,8 @@ public interface Logger {
 
     void internalError(String message, Throwable t);
 
+    default void internalError(Throwable t) { this.internalError(t.getMessage(), t); }
+
     void warn(String message);
 
     void info(String message);

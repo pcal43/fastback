@@ -74,7 +74,7 @@ public class CommitTask extends Task {
 
     public void run() {
         this.setStarted();
-        this.log.hud(localized("fastback.notify.local-preparing"));
+        this.log.hud(localized("fastback.chat.local-preparing"));
         final SnapshotId sid = this.sidSupplier.get();
         if (sid == null) return;
         final String newBranchName = sid.getBranchName();
@@ -97,7 +97,7 @@ public class CommitTask extends Task {
             this.setFailed();
             return;
         }
-        log.hud(localized("fastback.notify.backup-complete"));
+        log.hud(localized("fastback.chat.backup-complete"));
         this.setCompleted();
     }
 

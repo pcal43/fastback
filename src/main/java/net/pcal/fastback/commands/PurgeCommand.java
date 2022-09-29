@@ -59,7 +59,7 @@ public class PurgeCommand {
             final SnapshotId sid = SnapshotId.fromUuidAndName(uuid, snapshotName);
             final String branchName = sid.getBranchName();
             git.branchDelete().setForce(true).setBranchNames(branchName).call();
-            log.chat(localized("fastback.notify.purge-done", snapshotName));
+            log.chat(localized("fastback.chat.purge-done", snapshotName));
         });
         return SUCCESS;
     }

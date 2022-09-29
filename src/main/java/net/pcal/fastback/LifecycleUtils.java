@@ -83,7 +83,7 @@ public class LifecycleUtils {
         final Logger logger = ctx.isClient() ? CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx))
                 : ctx.getLogger();
         final Path worldSaveDir = ctx.getWorldDirectory();
-        logger.chat(localized("fastback.notify.thread-waiting"));
+        logger.chat(localized("fastback.chat.thread-waiting"));
         ctx.stopExecutor();
         try (Git git = Git.open(worldSaveDir.toFile())) {
             final WorldConfig config = WorldConfig.load(git);
