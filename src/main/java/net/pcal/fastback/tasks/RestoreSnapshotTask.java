@@ -151,7 +151,7 @@ public class RestoreSnapshotTask extends Task {
                 text = localized("fastback.savescreen.remote-uploading", percentage);
             }
             if (text == null) text = raw(task + " " + percentage + "%");
-            this.logger.progressUpdate(text);
+            this.logger.progress(text);
         }
 
         @Override
@@ -162,7 +162,7 @@ public class RestoreSnapshotTask extends Task {
             } else {
                 text = raw(task);
             }
-            this.logger.progressUpdate(text);
+            this.logger.progress(text);
         }
     }
 }
