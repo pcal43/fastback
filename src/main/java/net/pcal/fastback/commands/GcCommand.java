@@ -57,6 +57,7 @@ public class GcCommand {
         gitOp(ctx, WRITE, log, git -> {
             new GcTask(git, ctx, log).run();
             log.chat(localized("fastback.chat.gc-done"));
+            log.hud(null);
         });
         return SUCCESS;
     }

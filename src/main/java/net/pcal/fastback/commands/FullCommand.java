@@ -61,6 +61,7 @@ public class FullCommand {
         gitOp(ctx, WRITE, log, git -> {
             new CommitAndPushTask(git, ctx, log).run();
             log.chat(localized("fastback.chat.backup-complete"));
+            log.hud(null);
         });
         return SUCCESS;
     }

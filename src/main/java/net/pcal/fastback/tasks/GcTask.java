@@ -114,7 +114,6 @@ public class GcTask extends Task {
             log.info("Starting garbage collection");
             gc.gc(); // TODO progress monitor
             log.info("Garbage collection complete.");
-            log.chat(localized("fastback.chat.gc-done"));
             log.info("Stats after gc:");
             log.info("" + git.gc().getStatistics());
             log.info("Backup size after gc: " + getDirDisplaySize(gitDir));

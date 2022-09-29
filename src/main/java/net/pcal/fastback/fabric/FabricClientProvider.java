@@ -39,6 +39,7 @@ final class FabricClientProvider extends FabricProvider implements HudRenderCall
 
     private MinecraftClient client = null;
     private Text statusText;
+    private int hudTextCountdown;
 
     FabricClientProvider() {
     }
@@ -60,9 +61,9 @@ final class FabricClientProvider extends FabricProvider implements HudRenderCall
     }
 
     @Override
-    public void renderBackupIndicator(Message message) {
-        this.statusText = messageToText(message);
-
+    public void setHudText(Message message) {
+        this.statusText = message == null ? null : messageToText(message);
+        this.hudTextCountdown = 100;
     }
 
     @Override
@@ -90,14 +91,14 @@ final class FabricClientProvider extends FabricProvider implements HudRenderCall
 
     @Override
     public void onHudRender(MatrixStack matrixStack, float tickDelta) {
-        final Text text = this.statusText;
-        if (text == null) return;
+        if (this.hudTextCountdown <= 0 || this.statusText == null) return;
+        this.hudTextCountdown--;
         MatrixStack matrices = new MatrixStack();
         TextRenderer textRenderer = this.client.textRenderer;
-        int j = textRenderer.getWidth(text);
+        int j = textRenderer.getWidth(this.statusText);
         int k = 16777215;
         int scaledWidth = this.client.getWindow().getScaledWidth();
         int scaledHeight = this.client.getWindow().getScaledHeight();
-        textRenderer.drawWithShadow(matrices, text, (float) (scaledWidth - j - 10), (float) (scaledHeight - 15), k);
+        textRenderer.drawWithShadow(matrices, this.statusText, (float) (scaledWidth - j - 10), (float) (scaledHeight - 15), k);
     }
 }

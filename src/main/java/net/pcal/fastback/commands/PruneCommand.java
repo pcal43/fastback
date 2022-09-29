@@ -55,6 +55,7 @@ public class PruneCommand {
         gitOp(ctx, WRITE, log, git -> {
             final PruneTask pt = new PruneTask(git, ctx, log);
             pt.run();
+            log.hud(null);
             log.chat(localized("fastback.chat.prune-done", pt.getPruned()));
             if (pt.getPruned() > 0) {
                 log.chat(localized("fastback.chat.prune-suggest-gc"));

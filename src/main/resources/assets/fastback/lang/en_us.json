@@ -69,8 +69,8 @@
   "fastback.hud.remote-done"                   : "Remote backup complete",
   "fastback.hud.remote-preparing"              : "Preparing remote backup %d%%",
   "fastback.hud.remote-uploading"              : "Uploading backup %d%%",
-  "fastback.hud.restore-done"                  : "Restoration complete",
-  "fastback.hud.restore-start"                 : "Restoring %s to \n%s",
+  "fastback.hud.restore-start"                 : "Restoring...",
+  "fastback.hud.restore-percent"               : "Restoring %d%%",
   "fastback.retain.all.description"            : "Retain all snapshots; never prune.",
   "fastback.retain.count.description"          : "Count: Keep only the %s most-recent snapshots.",
   "fastback.retain.daily.description"          : "Daily: Keep the last snapshot from each day, plus all snapshots from the last %s days"

@@ -88,7 +88,7 @@ public class RestoreSnapshotTask extends Task {
         try {
             restoreDir = getTargetDir(this.saveDir, worldName, snapshotName);
             String uri = "file://" + this.worldSaveDir.toAbsolutePath();
-            logger.hud(localized("fastback.hud.restore-start", this.snapshotName, restoreDir));
+            logger.hud(localized("fastback.hud.restore-start"));
             final ProgressMonitor pm = new IncrementalProgressMonitor(new RestoreProgressMonitor(logger), 100);
             try (Git git = Git.cloneRepository().setProgressMonitor(pm).setDirectory(restoreDir.toFile()).
                     setBranchesToClone(List.of("refs/heads/" + branchName)).setBranch(branchName).setURI(uri).call()) {
@@ -108,7 +108,6 @@ public class RestoreSnapshotTask extends Task {
                 return;
             }
         }
-        logger.hud(localized("fastback.hud.restore-done"));
         setCompleted();
     }
 
@@ -141,31 +140,27 @@ public class RestoreSnapshotTask extends Task {
 
         @Override
         public void progressStart(String task) {
-            this.logger.info(task);
         }
+        //remote: Finding sources
+        //Receiving objects
+        //Updating references
+        //Checking out files   %
 
         @Override
         public void progressUpdate(String task, int percentage) {
-            Message text = null;
-            // FIXME these are wrong
-            if (task.contains("Finding sources")) {
-                text = localized("fastback.hud.remote-preparing", percentage);
-            } else if (task.contains("Writing objects")) {
-                text = localized("fastback.hud.remote-uploading", percentage);
+            this.logger.info(task +  " "+percentage);
+            if (task.contains("Receiving")) { // Receiving objects
+                percentage = percentage / 2;
+            } else if (task.contains("Checking")) { // Checking out files
+                percentage = 50 + (percentage / 2);
+            } else {
+                return;
             }
-            if (text == null) text = raw(task + " " + percentage + "%");
-            this.logger.hud(text);
+            this.logger.hud(localized("fastback.hud.restore-percent", percentage));
         }
 
         @Override
         public void progressDone(String task) {
-            final Message text;
-            if (task.contains("Writing objects")) {
-                text = localized("fastback.hud.remote-done");
-            } else {
-                text = raw(task);
-            }
-            this.logger.hud(text);
         }
     }
 }
