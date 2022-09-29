@@ -31,7 +31,7 @@ public interface Logger {
 
     default void chatError(Message message) { this.chat(message, ERROR); }
 
-    void progress(Message message);
+    void hud(Message message);
 
     void internalError(String message, Throwable t);
 

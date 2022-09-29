@@ -78,7 +78,7 @@ public class PruneTask implements Runnable {
                 policy.getSnapshotsToPrune(listSnapshotsForWorldSorted(git, ctx.getLogger()));
         int pruned = 0;
         for (final SnapshotId sid : toPrune) {
-            log.progress(localized("fastback.notify.prune-pruning", sid.getName()));
+            log.hud(localized("fastback.notify.prune-pruning", sid.getName()));
             try {
                 git.branchDelete().setForce(true).setBranchNames(new String[]{sid.getBranchName()}).call();
                 pruned++;
@@ -86,9 +86,9 @@ public class PruneTask implements Runnable {
                 log.internalError("failed to prune branch for " + sid, e);
             }
         }
-        log.progress(localized("fastback.notify.prune-done", pruned));
+        log.hud(localized("fastback.notify.prune-done", pruned));
         if (pruned > 0) {
-            log.progress(localized("fastback.notify.prune-suggest-gc"));
+            log.hud(localized("fastback.notify.prune-suggest-gc"));
         }
     }
 }

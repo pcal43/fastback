@@ -33,7 +33,7 @@ public class Log4jLogger implements Logger {
     }
 
     @Override
-    public void progress(Message message) {
+    public void hud(Message message) {
         this.log4j.info("[PROGRESS] " + message); // TODO is there any point here?
     }
 

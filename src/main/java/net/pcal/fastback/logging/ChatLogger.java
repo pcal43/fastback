@@ -45,7 +45,7 @@ public class ChatLogger implements Logger {
     }
 
     @Override
-    public void progress(Message message) {
+    public void hud(Message message) {
 
     }
 

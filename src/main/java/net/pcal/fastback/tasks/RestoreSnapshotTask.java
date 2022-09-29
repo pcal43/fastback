@@ -88,7 +88,7 @@ public class RestoreSnapshotTask extends Task {
         try {
             targetDirectory = getTargetDir(this.saveDir, worldName, snapshotName);
             String uri = "file://" + this.worldSaveDir.toAbsolutePath();
-            logger.progress(localized("fastback.notify.restore-start", this.snapshotName, targetDirectory));
+            logger.hud(localized("fastback.notify.restore-start", this.snapshotName, targetDirectory));
             final ProgressMonitor pm = new IncrementalProgressMonitor(new RestoreProgressMonitor(logger), 100);
             try (Git git = Git.cloneRepository().setProgressMonitor(pm).setDirectory(targetDirectory.toFile()).
                     setBranchesToClone(List.of("refs/heads/" + branchName)).setBranch(branchName).setURI(uri).call()) {
@@ -108,7 +108,7 @@ public class RestoreSnapshotTask extends Task {
                 return;
             }
         }
-        logger.progress(localized("fastback.notify.restore-done"));
+        logger.hud(localized("fastback.notify.restore-done"));
         setCompleted();
     }
 
@@ -146,23 +146,23 @@ public class RestoreSnapshotTask extends Task {
             Message text = null;
             // FIXME these are wrong
             if (task.contains("Finding sources")) {
-                text = localized("fastback.savescreen.remote-preparing", percentage);
+                text = localized("fastback.hud.remote-preparing", percentage);
             } else if (task.contains("Writing objects")) {
-                text = localized("fastback.savescreen.remote-uploading", percentage);
+                text = localized("fastback.hud.remote-uploading", percentage);
             }
             if (text == null) text = raw(task + " " + percentage + "%");
-            this.logger.progress(text);
+            this.logger.hud(text);
         }
 
         @Override
         public void progressDone(String task) {
             final Message text;
             if (task.contains("Writing objects")) {
-                text = localized("fastback.savescreen.remote-done");
+                text = localized("fastback.hud.remote-done");
             } else {
                 text = raw(task);
             }
-            this.logger.progress(text);
+            this.logger.hud(text);
         }
     }
 }

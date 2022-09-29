@@ -151,7 +151,7 @@ public class PushTask extends Task {
         git.push().setProgressMonitor(pm).setRemote(remoteName).
                 setRefSpecs(new RefSpec(tempBranchName + ":" + tempBranchName),
                         new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
-        logger.progress(localized("fastback.notify.push-cleanup"));
+        logger.hud(localized("fastback.notify.push-cleanup"));
         if (worldConfig.isTempBranchCleanupEnabled()) {
             logger.debug("deleting local temp branch " + tempBranchName);
             git.branchDelete().setForce(true).setBranchNames(tempBranchName).call();
@@ -163,7 +163,7 @@ public class PushTask extends Task {
 
             git.push().setProgressMonitor(pm).setRemote(remoteName).setRefSpecs(deleteRemoteBranchSpec).call();
         }
-        logger.progress(localized("fastback.savescreen.remote-done"));
+        logger.hud(localized("fastback.hud.remote-done"));
         logger.debug("push complete");
     }
 
@@ -219,23 +219,23 @@ public class PushTask extends Task {
         public void progressUpdate(String task, int percentage) {
             Message text = null;
             if (task.contains("Finding sources")) {
-                text = localized("fastback.savescreen.remote-preparing", percentage);
+                text = localized("fastback.hud.remote-preparing", percentage);
             } else if (task.contains("Writing objects")) {
-                text = localized("fastback.savescreen.remote-uploading", percentage);
+                text = localized("fastback.hud.remote-uploading", percentage);
             }
             if (text == null) text = raw(task + " " + percentage + "%");
-            this.logger.progress(text);
+            this.logger.hud(text);
         }
 
         @Override
         public void progressDone(String task) {
             final Message text;
             if (task.contains("Writing objects")) {
-                text = localized("fastback.savescreen.remote-done");
+                text = localized("fastback.hud.remote-done");
             } else {
                 text = raw(task);
             }
-            this.logger.progress(text);
+            this.logger.hud(text);
         }
     }
 }

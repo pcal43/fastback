@@ -48,7 +48,7 @@ public class CommandSourceLogger implements Logger {
     }
 
     @Override
-    public void progress(Message message) {
+    public void hud(Message message) {
     }
 
     @Override

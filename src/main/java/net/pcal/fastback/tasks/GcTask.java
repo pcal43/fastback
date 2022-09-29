@@ -68,7 +68,7 @@ public class GcTask extends Task {
     public void run() {
         this.setStarted();
         try {
-            log.progress(localized("fastback.notify.gc-start"));
+            log.hud(localized("fastback.notify.gc-start"));
             log.info("Stats before gc:");
             log.info("" + git.gc().getStatistics());
             //
@@ -76,7 +76,7 @@ public class GcTask extends Task {
             // longer than people expect.
             //
             final File gitDir = git.getRepository().getDirectory();
-            log.progress(localized("fastback.notify.gc-size-before", getDirDisplaySize(gitDir)));
+            log.hud(localized("fastback.notify.gc-size-before", getDirDisplaySize(gitDir)));
             if (ctx.isReflogDeletionEnabled()) {
                 final Path reflogsDir = gitDir.toPath().resolve("logs");
                 log.info("Deleting reflogs " + reflogsDir);

@@ -40,8 +40,8 @@ public class CompositeLogger implements Logger {
     }
 
     @Override
-    public void progress(Message message) {
-        this.delegates.forEach(d -> d.progress(message));
+    public void hud(Message message) {
+        this.delegates.forEach(d -> d.hud(message));
     }
 
     @Override
