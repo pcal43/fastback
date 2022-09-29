@@ -45,13 +45,8 @@ public class CompositeLogger implements Logger {
     }
 
     @Override
-    public void progressComplete(String message, int percentage) {
-        this.delegates.forEach(d -> d.progressComplete(message, percentage));
-    }
-
-    @Override
-    public void progressComplete(String message) {
-        this.delegates.forEach(d -> d.progressComplete(message));
+    public void progressUpdate(Message message) {
+        this.delegates.forEach(d -> d.progressUpdate(message));
     }
 
     @Override

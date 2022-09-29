@@ -47,15 +47,12 @@ public class ChatLogger implements Logger {
     }
 
     @Override
+    public void progressUpdate(Message message) {
+
+    }
+
+    @Override
     public void warn(String message) {
-    }
-
-    @Override
-    public void progressComplete(String message) {
-    }
-
-    @Override
-    public void progressComplete(String message, int percentage) {
     }
 
     @Override

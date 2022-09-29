@@ -37,13 +37,8 @@ public class Log4jLogger implements Logger {
     }
 
     @Override
-    public void progressComplete(String message, int percent) {
-        this.log4j.info("[PROGRESS " + message + " " + percent);
-    }
-
-    @Override
-    public void progressComplete(String message) {
-        this.log4j.info("[PROGRESS-COMPLETE] " + message);
+    public void progressUpdate(Message message) {
+        this.log4j.info("[PROGRESS] " + message); // TODO is there any point here?
     }
 
     @Override

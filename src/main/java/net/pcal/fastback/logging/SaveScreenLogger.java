@@ -21,8 +21,6 @@ package net.pcal.fastback.logging;
 import net.pcal.fastback.ModContext;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.logging.Message.localized;
-import static net.pcal.fastback.logging.Message.raw;
 
 public class SaveScreenLogger implements Logger {
 
@@ -33,36 +31,18 @@ public class SaveScreenLogger implements Logger {
     }
 
     @Override
-    public void progressComplete(String message, int percentage) {
-        Message text = null;
-        if (message.contains("Finding sources")) {
-            text = localized("fastback.savescreen.remote-preparing", percentage);
-        } else if (message.contains("Writing objects")) {
-            text = localized("fastback.savescreen.remote-uploading", percentage);
-        }
-        if (text == null) text = raw(message + " " + percentage + "%");
-        this.ctx.setSavingScreenText(text);
-    }
-
-    @Override
-    public void progressComplete(String message) {
-        Message text = null;
-        if (message.contains("Writing objects")) {
-            text = localized("fastback.savescreen.remote-done");
-        }
-        if (text == null) text = raw(message);
-        this.ctx.setSavingScreenText(text);
+    public void progressUpdate(Message message) {
+        this.ctx.setSavingScreenText(message);
     }
 
     @Override
     public void notify(Message message) {
-        this.ctx.setSavingScreenText(message);
-
+        this.ctx.setSavingScreenText(message); // FIXME kill
     }
 
     @Override
     public void notifyError(Message message) {
-        this.ctx.setSavingScreenText(message);
+        this.ctx.setSavingScreenText(message); // FIXME kill
     }
 
     @Override

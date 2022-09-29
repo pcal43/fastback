@@ -19,16 +19,13 @@
 package net.pcal.fastback.tasks;
 
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.progress.IncrementalProgressMonitor;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.progress.PercentageProgressMonitor;
 import net.pcal.fastback.utils.FileUtils;
 import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.internal.storage.file.GC;
-import org.eclipse.jgit.lib.ProgressMonitor;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.storage.pack.PackConfig;
 
@@ -70,8 +67,6 @@ public class GcTask extends Task {
 
     public void run() {
         this.setStarted();
-        final ProgressMonitor pm =
-                new IncrementalProgressMonitor(new PercentageProgressMonitor(log), 100);
         try {
             log.notify(localized("fastback.notify.gc-start"));
             log.info("Stats before gc:");
@@ -117,7 +112,7 @@ public class GcTask extends Task {
             pc.setDeltaCompress(false);
             gc.setPackConfig(pc);
             log.info("Starting garbage collection");
-            gc.gc();
+            gc.gc(); // TODO progress monitor
             log.info("Garbage collection complete.");
             log.notify(localized("fastback.notify.gc-done"));
             log.info("Stats after gc:");

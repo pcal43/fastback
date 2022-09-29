@@ -19,6 +19,7 @@
 package net.pcal.fastback.tasks;
 
 import net.pcal.fastback.WorldConfig;
+import net.pcal.fastback.logging.Message;
 import net.pcal.fastback.progress.IncrementalProgressMonitor;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.progress.PercentageProgressMonitor;
@@ -37,6 +38,7 @@ import java.util.List;
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.WorldConfig.WORLD_UUID_PATH;
 import static net.pcal.fastback.logging.Message.localized;
+import static net.pcal.fastback.logging.Message.raw;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class RestoreSnapshotTask extends Task {
@@ -87,7 +89,7 @@ public class RestoreSnapshotTask extends Task {
             targetDirectory = getTargetDir(this.saveDir, worldName, snapshotName);
             String uri = "file://" + this.worldSaveDir.toAbsolutePath();
             logger.notify(localized("fastback.notify.restore-start", this.snapshotName, targetDirectory));
-            final ProgressMonitor pm = new IncrementalProgressMonitor(new PercentageProgressMonitor(logger), 100);
+            final ProgressMonitor pm = new IncrementalProgressMonitor(new RestoreProgressMonitor(logger), 100);
             try (Git git = Git.cloneRepository().setProgressMonitor(pm).setDirectory(targetDirectory.toFile()).
                     setBranchesToClone(List.of("refs/heads/" + branchName)).setBranch(branchName).setURI(uri).call()) {
             }
@@ -123,6 +125,44 @@ public class RestoreSnapshotTask extends Task {
             }
         }
         return candidate;
+    }
 
+
+    private static class RestoreProgressMonitor extends PercentageProgressMonitor {
+
+        private final Logger logger;
+
+        public RestoreProgressMonitor(Logger logger) {
+            this.logger = requireNonNull(logger);
+        }
+
+        @Override
+        public void progressStart(String task) {
+            this.logger.info(task);
+        }
+
+        @Override
+        public void progressUpdate(String task, int percentage) {
+            Message text = null;
+            // FIXME these are wrong
+            if (task.contains("Finding sources")) {
+                text = localized("fastback.savescreen.remote-preparing", percentage);
+            } else if (task.contains("Writing objects")) {
+                text = localized("fastback.savescreen.remote-uploading", percentage);
+            }
+            if (text == null) text = raw(task + " " + percentage + "%");
+            this.logger.progressUpdate(text);
+        }
+
+        @Override
+        public void progressDone(String task) {
+            final Message text;
+            if (task.contains("Writing objects")) {
+                text = localized("fastback.savescreen.remote-done");
+            } else {
+                text = raw(task);
+            }
+            this.logger.progressUpdate(text);
+        }
     }
 }
