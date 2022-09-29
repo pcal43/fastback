@@ -151,7 +151,7 @@ public class PushTask extends Task {
         git.push().setProgressMonitor(pm).setRemote(remoteName).
                 setRefSpecs(new RefSpec(tempBranchName + ":" + tempBranchName),
                         new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
-        logger.hud(localized("fastback.notify.push-cleanup"));
+        logger.hud(localized("fastback.hud.push-cleanup"));
         if (worldConfig.isTempBranchCleanupEnabled()) {
             logger.debug("deleting local temp branch " + tempBranchName);
             git.branchDelete().setForce(true).setBranchNames(tempBranchName).call();
