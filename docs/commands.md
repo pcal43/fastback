@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Commands
-nav_order: 80
+nav_order: 20
 ---
 
 # Commands
