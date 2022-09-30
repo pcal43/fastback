@@ -97,7 +97,7 @@ public class CommitTask extends Task {
             this.setFailed();
             return;
         }
-        log.hud(localized("fastback.chat.backup-complete"));
+        //log.hud(localized("fastback.chat.backup-complete"));
         this.setCompleted();
     }
 

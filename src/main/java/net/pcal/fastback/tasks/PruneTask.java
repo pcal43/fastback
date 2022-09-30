@@ -90,7 +90,6 @@ public class PruneTask implements Runnable {
             }
             this.pruned++;
         }
-        log.hud(localized("fastback.hud.prune-done"));
     }
 
     public int getPruned() {
