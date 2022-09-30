@@ -30,8 +30,6 @@
   "fastback.chat.info-remote-url"              : "Удалённый адрес: %s",
   "fastback.chat.internal-error"               : "В процессе создания точки восстановления возникла непредвиденная ошибка. Проверьте журнал для подробной информации.",
   "fastback.chat.list-local-snapshots-header"  : "Локальные точки восстановления:",
-  "fastback.hud.local-done"                   : "Локальное резервирование завершено.",
-  "fastback.chat.local-preparing"              : "Подготовка к резервированию.",
   "fastback.hud.local-saving"                 : "Сохранение локальной точки восстановления.",
   "fastback.chat.not-enabled"                  : "Резервирование этого мира отключено. Используйте \"/backup enable\" для включения.",
   "fastback.chat.purge-done"                   : "Точка восстановления %s удалена.",
