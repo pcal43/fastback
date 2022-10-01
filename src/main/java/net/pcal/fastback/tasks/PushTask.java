@@ -45,7 +45,6 @@ import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.Message.localized;
-import static net.pcal.fastback.logging.Message.raw;
 
 public class PushTask extends Task {
 
@@ -67,6 +66,7 @@ public class PushTask extends Task {
     @Override
     public void run() {
         super.setStarted();
+        this.log.hud(localized("fastback.hud.remote-uploading", 0));
         try {
             final WorldConfig worldConfig = WorldConfig.load(git);
             final String pushUrl = worldConfig.getRemotePushUrl();
@@ -151,7 +151,7 @@ public class PushTask extends Task {
         git.push().setProgressMonitor(pm).setRemote(remoteName).
                 setRefSpecs(new RefSpec(tempBranchName + ":" + tempBranchName),
                         new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
-        logger.hud(localized("fastback.hud.push-cleanup"));
+        logger.info("Cleaning up branches");
         if (worldConfig.isTempBranchCleanupEnabled()) {
             logger.debug("deleting local temp branch " + tempBranchName);
             git.branchDelete().setForce(true).setBranchNames(tempBranchName).call();
@@ -163,7 +163,6 @@ public class PushTask extends Task {
 
             git.push().setProgressMonitor(pm).setRemote(remoteName).setRefSpecs(deleteRemoteBranchSpec).call();
         }
-        logger.hud(localized("fastback.hud.remote-done"));
         logger.debug("push complete");
     }
 
@@ -217,25 +216,17 @@ public class PushTask extends Task {
 
         @Override
         public void progressUpdate(String task, int percentage) {
-            Message text = null;
+            this.logger.info(task + " " + percentage + "%");
             if (task.contains("Finding sources")) {
-                text = localized("fastback.hud.remote-preparing", percentage);
+                this.logger.hud(localized("fastback.hud.remote-preparing", percentage/2));
             } else if (task.contains("Writing objects")) {
-                text = localized("fastback.hud.remote-uploading", percentage);
+                this.logger.hud(localized("fastback.hud.remote-uploading", 50 +(percentage/2)));
             }
-            if (text == null) text = raw(task + " " + percentage + "%");
-            this.logger.hud(text);
         }
 
         @Override
         public void progressDone(String task) {
-            final Message text;
-            if (task.contains("Writing objects")) {
-                text = localized("fastback.hud.remote-done");
-            } else {
-                text = raw(task);
-            }
-            this.logger.hud(text);
+            logger.info("Done "+task);
         }
     }
 }

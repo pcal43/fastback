@@ -88,7 +88,7 @@ public class RestoreSnapshotTask extends Task {
         try {
             restoreDir = getTargetDir(this.saveDir, worldName, snapshotName);
             String uri = "file://" + this.worldSaveDir.toAbsolutePath();
-            logger.hud(localized("fastback.hud.restore-start"));
+            this.logger.hud(localized("fastback.hud.restore-percent", 0));
             final ProgressMonitor pm = new IncrementalProgressMonitor(new RestoreProgressMonitor(logger), 100);
             try (Git git = Git.cloneRepository().setProgressMonitor(pm).setDirectory(restoreDir.toFile()).
                     setBranchesToClone(List.of("refs/heads/" + branchName)).setBranch(branchName).setURI(uri).call()) {
