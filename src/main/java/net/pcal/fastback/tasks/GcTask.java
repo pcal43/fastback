@@ -20,12 +20,15 @@ package net.pcal.fastback.tasks;
 
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.progress.IncrementalProgressMonitor;
+import net.pcal.fastback.progress.PercentageProgressMonitor;
 import net.pcal.fastback.utils.FileUtils;
 import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.internal.storage.file.GC;
+import org.eclipse.jgit.lib.ProgressMonitor;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.storage.pack.PackConfig;
 
@@ -39,8 +42,9 @@ import java.util.List;
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.tasks.PushTask.isTempBranch;
-import static net.pcal.fastback.utils.FileUtils.getDirDisplaySize;
 import static net.pcal.fastback.utils.GitUtils.getBranchName;
+import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
+import static org.apache.commons.io.FileUtils.sizeOfDirectory;
 import static org.eclipse.jgit.api.ListBranchCommand.ListMode.ALL;
 
 /**
@@ -55,7 +59,7 @@ public class GcTask extends Task {
     private final ModContext ctx;
     private final Logger log;
     private final Git git;
-
+    private long sizeBeforeBytes, sizeAfterBytes;
 
     public GcTask(final Git git,
                   final ModContext ctx,
@@ -68,16 +72,15 @@ public class GcTask extends Task {
     public void run() {
         this.setStarted();
         try {
-            log.hud(localized("fastback.hud.gc-start"));
+            final File gitDir = git.getRepository().getDirectory();
+            log.hud(localized("fastback.hud.gc-percent", 0));
             log.info("Stats before gc:");
             log.info("" + git.gc().getStatistics());
-            //
-            // reflogs aren't very useful in our case and cause old snapshots to get retained
-            // longer than people expect.
-            //
-            final File gitDir = git.getRepository().getDirectory();
-            log.info("Backup size before gc: " + getDirDisplaySize(gitDir));
+            this.sizeBeforeBytes = sizeOfDirectory(gitDir);
+            log.info("Backup size before gc: " + byteCountToDisplaySize(sizeBeforeBytes));
             if (ctx.isReflogDeletionEnabled()) {
+                // reflogs aren't very useful in our case and cause old snapshots to get retained
+                // longer than people expect.
                 final Path reflogsDir = gitDir.toPath().resolve("logs");
                 log.info("Deleting reflogs " + reflogsDir);
                 FileUtils.rmdir(reflogsDir);
@@ -87,13 +90,13 @@ public class GcTask extends Task {
                 for (final Ref ref : git.branchList().setListMode(ALL).call()) {
                     final String branchName = getBranchName(ref);
                     if (branchName == null) {
-                        log.warn("Non-branch ref returned by branchList: "+ref);
+                        log.warn("Non-branch ref returned by branchList: " + ref);
                     } else if (isTempBranch(branchName)) {
                         branchesToDelete.add(branchName);
                     } else if (SnapshotId.isSnapshotBranchName(branchName)) {
                         // ok fine
                     } else {
-                        log.warn("Unidentified branch found "+branchName+ " - consider removing it with 'git branch -D'");
+                        log.warn("Unidentified branch found " + branchName + " - consider removing it with 'git branch -D'");
                     }
                 }
                 if (branchesToDelete.isEmpty()) {
@@ -111,17 +114,63 @@ public class GcTask extends Task {
             final PackConfig pc = new PackConfig();
             pc.setDeltaCompress(false);
             gc.setPackConfig(pc);
+            final ProgressMonitor pm = new IncrementalProgressMonitor(new GcProgressMonitor(this.log), 100);
+            gc.setProgressMonitor(pm);
             log.info("Starting garbage collection");
             gc.gc(); // TODO progress monitor
             log.info("Garbage collection complete.");
             log.info("Stats after gc:");
             log.info("" + git.gc().getStatistics());
-            log.info("Backup size after gc: " + getDirDisplaySize(gitDir));
+            this.sizeAfterBytes = sizeOfDirectory(gitDir);
+            log.info("Backup size after gc: " + byteCountToDisplaySize(sizeAfterBytes));
         } catch (IOException | GitAPIException | ParseException e) {
             this.setFailed();
             log.internalError("Failed to gc", e);
             return;
         }
         this.setCompleted();
+    }
+
+    public long getBytesReclaimed() {
+        return this.sizeBeforeBytes - this.sizeAfterBytes;
+    }
+
+    private static class GcProgressMonitor extends PercentageProgressMonitor {
+
+        private final Logger logger;
+
+        public GcProgressMonitor(Logger logger) {
+            this.logger = requireNonNull(logger);
+        }
+
+        @Override
+        public void progressStart(String task) {
+            this.logger.info(task);
+        }
+
+        @Override
+        public void progressUpdate(String task, int percentage) {
+            this.logger.info(task + " " + percentage + "%");
+            // Pack refs
+            // Finding sources
+            // Writing objects
+            // Selecting commits
+            // Building bitmaps
+            // Prune loose objects
+            // Prune loose objects also found in pack files
+            // Prune loose, unreferenced objects
+            if (task.contains("Writing objects")) {
+                this.logger.hud(localized("fastback.hud.gc-percent", (int)(percentage * 9 / 10)));
+            } else if (task.contains("Selecting commits")) {
+                this.logger.hud(localized("fastback.hud.gc-percent", 90 + (int)(percentage/20)));
+            } else if (task.contains("Prune loose objects")) {
+                this.logger.hud(localized("fastback.hud.gc-percent", 95 + (int)(percentage/20)));
+            }
+        }
+
+        @Override
+        public void progressDone(String task) {
+            logger.info("Done " + task);
+        }
     }
 }
