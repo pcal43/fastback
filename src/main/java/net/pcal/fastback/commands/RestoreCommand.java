@@ -60,7 +60,7 @@ public class RestoreCommand {
             final Path restoresDir = ctx.getRestoresDir();
             final String worldName = ctx.getWorldName();
             final Path worldDir = ctx.getWorldDirectory();
-            RestoreSnapshotTask rt = RestoreSnapshotTask.create(worldDir, snapshotName, worldName, restoresDir, log);
+            RestoreSnapshotTask rt = new RestoreSnapshotTask(worldDir, snapshotName, worldName, restoresDir, log);
             rt.run();
             log.hud(null);
             log.chat(localized("fastback.chat.restore-done", rt.getRestoreDir()));

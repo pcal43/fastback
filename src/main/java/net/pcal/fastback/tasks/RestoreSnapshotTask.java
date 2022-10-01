@@ -20,7 +20,6 @@ package net.pcal.fastback.tasks;
 
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.logging.Message;
 import net.pcal.fastback.progress.IncrementalProgressMonitor;
 import net.pcal.fastback.progress.PercentageProgressMonitor;
 import net.pcal.fastback.utils.FileUtils;
@@ -38,7 +37,6 @@ import java.util.List;
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.WorldConfig.WORLD_UUID_PATH;
 import static net.pcal.fastback.logging.Message.localized;
-import static net.pcal.fastback.logging.Message.raw;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class RestoreSnapshotTask extends Task {
@@ -47,19 +45,10 @@ public class RestoreSnapshotTask extends Task {
     private final String snapshotName;
     private final String worldName;
     private final Path saveDir;
-    private final boolean doClean = true;
     private final Logger logger;
     private Path restoreDir;
 
-    public static RestoreSnapshotTask create(Path worldSaveDir,
-                                             String snapshotName,
-                                             String worldName,
-                                             Path saveDir,
-                                             Logger logger) {
-        return new RestoreSnapshotTask(worldSaveDir, snapshotName, worldName, saveDir, logger);
-    }
-
-    private RestoreSnapshotTask(Path worldSaveDir, String snapshotName, String worldName, Path saveDir, Logger logger) {
+    public RestoreSnapshotTask(Path worldSaveDir, String snapshotName, String worldName, Path saveDir, Logger logger) {
         this.worldSaveDir = requireNonNull(worldSaveDir);
         this.snapshotName = requireNonNull(snapshotName);
         this.worldName = requireNonNull(worldName);
@@ -148,7 +137,7 @@ public class RestoreSnapshotTask extends Task {
 
         @Override
         public void progressUpdate(String task, int percentage) {
-            this.logger.info(task +  " "+percentage);
+            this.logger.info(task + " " + percentage);
             if (task.contains("Receiving")) { // Receiving objects
                 percentage = percentage / 2;
             } else if (task.contains("Checking")) { // Checking out files
