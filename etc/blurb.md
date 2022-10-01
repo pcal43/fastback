@@ -24,6 +24,7 @@ of disk space.
 * Works on clients and dedicated servers
 * Works on Linux, Mac and Windows 
 * ..all with easy-to-use minecraft commands
+
 See the [full documentation](https://pcal43.github.io/fastback) for more info.
 
 ![](https://pcal43.github.io/fastback/savescreen_animation.gif)
