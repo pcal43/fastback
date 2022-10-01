@@ -44,7 +44,7 @@ public abstract class PercentageProgressMonitor implements ProgressMonitor {
     @Override
     final public void update(int completed) {
         this.totalCompleted += completed;
-        int percent = (this.totalCompleted * 100) / this.currentTotalWork;
+        int percent =  this.currentTotalWork == 0 ? 0 : (this.totalCompleted * 100) / this.currentTotalWork;
         this.progressUpdate(currentTask, percent);
     }
 
