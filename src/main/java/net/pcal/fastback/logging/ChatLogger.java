@@ -32,30 +32,25 @@ public class ChatLogger implements Logger {
     }
 
     @Override
-    public void notify(Message message) {
-        ctx.sendClientChatMessage(message);
-    }
-
-    @Override
-    public void notifyError(Message message) {
-        ctx.sendClientChatMessage(message);
+    public void chat(Message message, ChatMessageType type) {
+        switch(type) {
+            case NORMAL -> ctx.sendClientChatMessage(message);
+            case ERROR -> ctx.sendClientChatMessage(message);
+        }
     }
 
     @Override
     public void internalError(String message, Throwable t) {
-        ctx.sendClientChatMessage(localized("fastback.notify.internal-error"));
+        ctx.sendClientChatMessage(localized("fastback.chat.internal-error"));
+    }
+
+    @Override
+    public void hud(Message message) {
+
     }
 
     @Override
     public void warn(String message) {
-    }
-
-    @Override
-    public void progressComplete(String message) {
-    }
-
-    @Override
-    public void progressComplete(String message, int percentage) {
     }
 
     @Override

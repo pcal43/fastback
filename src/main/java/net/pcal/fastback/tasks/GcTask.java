@@ -19,16 +19,13 @@
 package net.pcal.fastback.tasks;
 
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.logging.IncrementalProgressMonitor;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.logging.LoggingProgressMonitor;
 import net.pcal.fastback.utils.FileUtils;
 import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.internal.storage.file.GC;
-import org.eclipse.jgit.lib.ProgressMonitor;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.storage.pack.PackConfig;
 
@@ -70,10 +67,8 @@ public class GcTask extends Task {
 
     public void run() {
         this.setStarted();
-        final ProgressMonitor pm =
-                new IncrementalProgressMonitor(new LoggingProgressMonitor(log), 100);
         try {
-            log.notify(localized("fastback.notify.gc-start"));
+            log.hud(localized("fastback.hud.gc-start"));
             log.info("Stats before gc:");
             log.info("" + git.gc().getStatistics());
             //
@@ -81,7 +76,7 @@ public class GcTask extends Task {
             // longer than people expect.
             //
             final File gitDir = git.getRepository().getDirectory();
-            log.notify(localized("fastback.notify.gc-size-before", getDirDisplaySize(gitDir)));
+            log.info("Backup size before gc: " + getDirDisplaySize(gitDir));
             if (ctx.isReflogDeletionEnabled()) {
                 final Path reflogsDir = gitDir.toPath().resolve("logs");
                 log.info("Deleting reflogs " + reflogsDir);
@@ -117,12 +112,11 @@ public class GcTask extends Task {
             pc.setDeltaCompress(false);
             gc.setPackConfig(pc);
             log.info("Starting garbage collection");
-            gc.gc();
+            gc.gc(); // TODO progress monitor
             log.info("Garbage collection complete.");
-            log.notify(localized("fastback.notify.gc-done"));
             log.info("Stats after gc:");
             log.info("" + git.gc().getStatistics());
-            log.notify(localized("fastback.notify.gc-size-after", getDirDisplaySize(gitDir)));
+            log.info("Backup size after gc: " + getDirDisplaySize(gitDir));
         } catch (IOException | GitAPIException | ParseException e) {
             this.setFailed();
             log.internalError("Failed to gc", e);

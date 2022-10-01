@@ -63,8 +63,11 @@ public enum SchedulableAction {
         public Runnable getRunnable(Git git, ModContext ctx, Logger log) {
             return ()->{
                 new CommitAndPushTask(git, ctx, log).run();
-                new PruneTask(git, ctx, log).run();
-                new GcTask(git, ctx, log).run();
+                PruneTask pt = new PruneTask(git, ctx, log);
+                pt.run();
+                if (pt.getPruned() > 0) {
+                    new GcTask(git, ctx, log).run();
+                }
             };
         }
     };

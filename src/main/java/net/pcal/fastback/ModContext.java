@@ -106,7 +106,7 @@ public class ModContext {
                 return true;
             case WRITE:
                 if (this.exclusiveFuture != null && !this.exclusiveFuture.isDone()) {
-                    log.notifyError(localized("fastback.notify.thread-busy"));
+                    log.chatError(localized("fastback.chat.thread-busy"));
                     return false;
                 } else {
                     log.debug("executing " + runnable);
@@ -187,7 +187,7 @@ public class ModContext {
     }
 
     public void renderBackupIndicator(Message message) {
-        this.spi.renderBackupIndicator(message);
+        this.spi.setHudText(message);
     }
 
     public Path getWorldDirectory() {
@@ -232,7 +232,7 @@ public class ModContext {
         return spi.isClient() ? 0 : 4;
     }
 
-    public List<RetentionPolicyType> getAvailableRetentionPolicyTypes() {
+    public List<RetentionPolicyType> getRetentionPolicyTypes() {
         return RetentionPolicyType.getAvailable();
     }
 
@@ -276,7 +276,7 @@ public class ModContext {
 
         boolean isServerStopping();
 
-        void renderBackupIndicator(Message message);
+        void setHudText(Message message);
 
         void sendFeedback(Message message, ServerCommandSource scs);
 

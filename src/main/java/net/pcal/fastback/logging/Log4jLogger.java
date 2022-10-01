@@ -29,21 +29,12 @@ public class Log4jLogger implements Logger {
     }
 
     @Override
-    public void notify(Message message) {
+    public void chat(Message message, ChatMessageType type) {
     }
 
     @Override
-    public void notifyError(Message message) {
-    }
-
-    @Override
-    public void progressComplete(String message, int percent) {
-        this.log4j.info("[PROGRESS " + message + " " + percent);
-    }
-
-    @Override
-    public void progressComplete(String message) {
-        this.log4j.info("[PROGRESS-COMPLETE] " + message);
+    public void hud(Message message) {
+        this.log4j.info("[PROGRESS] " + message); // TODO is there any point here?
     }
 
     @Override

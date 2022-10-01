@@ -63,7 +63,7 @@ public class SetRetentionCommand implements Command<ServerCommandSource> {
     public static void register(LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         final LiteralArgumentBuilder<ServerCommandSource> retainCommand = literal(COMMAND_NAME).
                 requires(subcommandPermission(ctx, COMMAND_NAME));
-        for (final RetentionPolicyType rpt : ctx.getAvailableRetentionPolicyTypes()) {
+        for (final RetentionPolicyType rpt : ctx.getRetentionPolicyTypes()) {
             final Command<ServerCommandSource> cc = new SetRetentionCommand(ctx, rpt);
             final LiteralArgumentBuilder<ServerCommandSource> policyCommand = literal(rpt.getCommandName());
             policyCommand.executes(cc);
@@ -106,8 +106,8 @@ public class SetRetentionCommand implements Command<ServerCommandSource> {
                 final StoredConfig gitConfig = git.getRepository().getConfig();
                 WorldConfig.setRetentionPolicy(gitConfig, encodedPolicy);
                 gitConfig.save();
-                logger.notify(localized("fastback.notify.retention-policy-set"));
-                logger.notify(rp.getDescription());
+                logger.chat(localized("fastback.chat.retention-policy-set"));
+                logger.chat(rp.getDescription());
             } catch (Exception e) {
                 logger.internalError("Command execution failed.", e);
                 return FAILURE;

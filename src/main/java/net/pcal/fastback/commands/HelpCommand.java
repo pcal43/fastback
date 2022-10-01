@@ -47,7 +47,6 @@ import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.subcommandPermName;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
-import static net.pcal.fastback.logging.Message.raw;
 
 public class HelpCommand {
 
@@ -108,7 +107,7 @@ public class HelpCommand {
             }
             subcommands.append(available);
         }
-        log.notify(localized("commands.fastback.help.subcommands", String.valueOf(subcommands)));
+        log.chat(localized("commands.fastback.help.subcommands", String.valueOf(subcommands)));
 
         if (this.ctx.isCommandDumpEnabled()) {
             final StringWriter sink = new StringWriter();
@@ -126,11 +125,11 @@ public class HelpCommand {
         for (String available : getSubcommandNames(cc)) {
             if (subcommand.equals(available)) {
                 final String prefix = "/backup " + subcommand + ": ";
-                log.notify(localized("commands.fastback.help." + subcommand, prefix));
+                log.chat(localized("commands.fastback.help." + subcommand, prefix));
                 return SUCCESS;
             }
         }
-        log.notifyError(raw("Invalid subcommand '" + subcommand + "'"));
+        log.chatError(localized("fastback.chat.invalid-input", subcommand));
         return FAILURE;
     }
 

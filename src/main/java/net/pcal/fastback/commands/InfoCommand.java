@@ -57,34 +57,34 @@ public class InfoCommand {
         final Logger log = commandLogger(ctx, scs);
         gitOp(ctx, NONE, log, git -> {
             final WorldConfig wc = WorldConfig.load(git);
-            log.notify(localized("fastback.notify.info-fastback-version", ctx.getModVersion()));
-            log.notify(localized("fastback.notify.info-uuid", wc.worldUuid()));
+            log.chat(localized("fastback.chat.info-fastback-version", ctx.getModVersion()));
+            log.chat(localized("fastback.chat.info-uuid", wc.worldUuid()));
             if (wc.isBackupEnabled()) {
-                log.notify(localized("fastback.notify.info-local-enabled"));
+                log.chat(localized("fastback.chat.info-local-enabled"));
             } else {
-                log.notify(localized("fastback.notify.info-local-disabled"));
+                log.chat(localized("fastback.chat.info-local-disabled"));
             }
-            log.notify(localized("fastback.notify.info-remote-url", wc.getRemotePushUrl()));
-            log.notify(localized("fastback.notify.info-shutdown-action", getActionDisplay(wc.shutdownAction())));
-            log.notify(localized("fastback.notify.info-autoback-action", getActionDisplay(wc.autobackAction())));
-            log.notify(localized("fastback.notify.info-autoback-wait",
+            log.chat(localized("fastback.chat.info-remote-url", wc.getRemotePushUrl()));
+            log.chat(localized("fastback.chat.info-shutdown-action", getActionDisplay(wc.shutdownAction())));
+            log.chat(localized("fastback.chat.info-autoback-action", getActionDisplay(wc.autobackAction())));
+            log.chat(localized("fastback.chat.info-autoback-wait",
                     wc.autobackWait() == null ? "" : wc.autobackWait().getSeconds()/60));
 
             final File gitDir = git.getRepository().getDirectory();
-            log.notify(localized("fastback.notify.info-backup-size", getDirDisplaySize(gitDir)));
+            log.chat(localized("fastback.chat.info-backup-size", getDirDisplaySize(gitDir)));
             {
                 // show the snapshot retention policy
                 final String encoded = wc.retentionPolicy();
                 if (encoded == null) {
-                    log.notify(localized("fastback.notify.retention-policy-none"));
+                    log.chat(localized("fastback.chat.retention-policy-none"));
                 } else {
                     final RetentionPolicy policy = RetentionPolicyCodec.INSTANCE.
                             decodePolicy(ctx, RetentionPolicyType.getAvailable(), encoded);
                     if (policy == null) {
-                        log.notify(localized("fastback.notify.retention-policy-none"));
+                        log.chat(localized("fastback.chat.retention-policy-none"));
                     } else {
-                        log.notify(localized("fastback.notify.retention-policy-set"));
-                        log.notify(policy.getDescription());
+                        log.chat(localized("fastback.chat.retention-policy-set"));
+                        log.chat(policy.getDescription());
                     }
                 }
             }

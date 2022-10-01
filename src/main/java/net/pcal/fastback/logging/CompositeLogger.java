@@ -35,23 +35,13 @@ public class CompositeLogger implements Logger {
     }
 
     @Override
-    public void notify(Message message) {
-        this.delegates.forEach(d -> d.notify(message));
+    public void chat(Message message, ChatMessageType type) {
+        this.delegates.forEach(d -> d.chat(message, type));
     }
 
     @Override
-    public void notifyError(Message message) {
-        this.delegates.forEach(d -> d.notifyError(message));
-    }
-
-    @Override
-    public void progressComplete(String message, int percentage) {
-        this.delegates.forEach(d -> d.progressComplete(message, percentage));
-    }
-
-    @Override
-    public void progressComplete(String message) {
-        this.delegates.forEach(d -> d.progressComplete(message));
+    public void hud(Message message) {
+        this.delegates.forEach(d -> d.hud(message));
     }
 
     @Override

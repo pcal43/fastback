@@ -31,6 +31,7 @@ import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.logging.Message.localized;
 
 
 /**
@@ -55,6 +56,8 @@ public class GcCommand {
         final Logger log = commandLogger(ctx, cc.getSource());
         gitOp(ctx, WRITE, log, git -> {
             new GcTask(git, ctx, log).run();
+            log.chat(localized("fastback.chat.gc-done"));
+            log.hud(null);
         });
         return SUCCESS;
     }

@@ -58,7 +58,7 @@ public class ListCommand {
         final Logger log = commandLogger(ctx, cc.getSource());
         gitOp(ctx, NONE, log, git -> {
             for (final SnapshotId sid : listSnapshotsForWorldSorted(git, ctx.getLogger())) {
-                log.notify(raw(sid.getName()));
+                log.chat(raw(sid.getName()));
             }
         });
         return SUCCESS;

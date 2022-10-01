@@ -30,6 +30,7 @@ import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.logging.Message.localized;
 
 /**
  * Perform a local backup.
@@ -59,6 +60,8 @@ public class LocalCommand {
         }
         gitOp(ctx, WRITE, log, git -> {
             new CommitTask(git, ctx, log).run();
+            log.chat(localized("fastback.chat.backup-complete"));
+            log.hud(null);
         });
         return SUCCESS;
     }
