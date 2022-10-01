@@ -63,7 +63,7 @@ public class LifecycleUtils {
      */
     public static void onWorldStart(final ModContext ctx) {
         ctx.startExecutor();
-        final Logger logger = ctx.isClient() ? CompositeLogger.of(ctx.getLogger(), new ChatLogger(ctx))
+        final Logger logger = ctx.isClient() ? CompositeLogger.of(ctx.getLogger(), new ChatLogger(ctx)) //FIXME CAN WE KILL THIS?
                 : ctx.getLogger();
         final Path worldSaveDir = ctx.getWorldDirectory();
         if (isGitRepo(worldSaveDir)) {
@@ -83,7 +83,7 @@ public class LifecycleUtils {
         final Logger logger = ctx.isClient() ? CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx))
                 : ctx.getLogger();
         final Path worldSaveDir = ctx.getWorldDirectory();
-        logger.notify(localized("fastback.notify.thread-waiting"));
+        logger.chat(localized("fastback.chat.thread-waiting"));
         ctx.stopExecutor();
         try (Git git = Git.open(worldSaveDir.toFile())) {
             final WorldConfig config = WorldConfig.load(git);

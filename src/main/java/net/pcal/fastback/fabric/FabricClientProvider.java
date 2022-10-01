@@ -18,23 +18,28 @@
 
 package net.pcal.fastback.fabric;
 
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.MessageScreen;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.Text;
+import net.minecraft.util.math.MathHelper;
 import net.pcal.fastback.fabric.mixins.ScreenAccessors;
 import net.pcal.fastback.logging.Message;
 
 import java.nio.file.Path;
 
-
 /**
  * @author pcal
  * @since 0.1.0
  */
-final class FabricClientProvider extends FabricProvider {
+final class FabricClientProvider extends FabricProvider implements HudRenderCallback {
 
     private MinecraftClient client = null;
+    private Text hudText;
 
     FabricClientProvider() {
     }
@@ -53,6 +58,16 @@ final class FabricClientProvider extends FabricProvider {
     @Override
     public boolean isClient() {
         return true;
+    }
+
+    @Override
+    public void setHudText(Message message) {
+        if (message == null) {
+            this.statusTextShown = false;
+        } else {
+            this.hudText = messageToText(message);
+            this.statusTextShown = true;
+        }
     }
 
     @Override
@@ -75,19 +90,33 @@ final class FabricClientProvider extends FabricProvider {
         return FabricLoader.getInstance().getGameDir().resolve("saves");
     }
 
+    // ====================================================================
+    // HudRender implementation
+
+
+    private float backupIndicatorAlpha;
+    private boolean statusTextShown = false;
+
     @Override
-    public void renderBackupIndicator(Message message) {
-        // TODO implement me
-        /**
-         if (true || this.client.options.getShowAutosaveIndicator().getValue()) {
-         MatrixStack matrices = new MatrixStack();
-         TextRenderer textRenderer = this.client.textRenderer;
-         int j = textRenderer.getWidth(text);
-         int k = 16777215;
-         int scaledWidth = this.client.getWindow().getScaledWidth();
-         int scaledHeight = this.client.getWindow().getScaledHeight();
-         textRenderer.drawWithShadow(matrices, text, (float)(scaledWidth - j - 10), (float)(scaledHeight - 15), k);
-         }
-         **/
+    public void onHudRender(MatrixStack matrixStack, float tickDelta) {
+        if (this.hudText == null) return;
+        float previousIndicatorAlpha = this.backupIndicatorAlpha;
+        this.backupIndicatorAlpha = MathHelper.lerp(0.2F, this.backupIndicatorAlpha, statusTextShown ? 1.0F : 0.0F);
+
+        if (this.client.options.getShowAutosaveIndicator().getValue() && (this.backupIndicatorAlpha > 0.0F || previousIndicatorAlpha > 0.0F)) {
+            int i = MathHelper.floor(255.0F * MathHelper.clamp(MathHelper.lerp(this.client.getTickDelta(), previousIndicatorAlpha, this.backupIndicatorAlpha), 0.0F, 1.0F));
+
+            if (i > 8) {
+                MatrixStack matrices = new MatrixStack();
+                TextRenderer textRenderer = this.client.textRenderer;
+                int j = textRenderer.getWidth(this.hudText);
+                int k = 16777215 | i << 24 & -16777216;
+                int scaledWidth = this.client.getWindow().getScaledWidth();
+                int scaledHeight = this.client.getWindow().getScaledHeight();
+                textRenderer.drawWithShadow(matrices, this.hudText, (float) (scaledWidth - j - 10), (float) (scaledHeight - 15), k);
+            } else {
+                hudText = null;
+            }
+        }
     }
 }

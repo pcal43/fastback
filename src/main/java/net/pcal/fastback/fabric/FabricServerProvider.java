@@ -29,6 +29,6 @@ public class FabricServerProvider extends FabricProvider {
     }
 
     @Override
-    public void renderBackupIndicator(Message message) {
+    public void setHudText(Message message) {
     }
 }

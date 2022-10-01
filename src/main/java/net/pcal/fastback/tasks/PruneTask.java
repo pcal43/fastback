@@ -46,6 +46,7 @@ public class PruneTask implements Runnable {
     private final ModContext ctx;
     private final Logger log;
     private final Git git;
+    private int pruned;
 
     public PruneTask(final Git git,
                      final ModContext ctx,
@@ -55,41 +56,44 @@ public class PruneTask implements Runnable {
         this.log = requireNonNull(log);
     }
 
-    public void run() {
+    @Override
+    public void run()  {
         final WorldConfig wc;
         try {
             wc = WorldConfig.load(git);
         } catch (IOException e) {
-            log.internalError("Failed to load config", e);
+            log.internalError(e);
             return;
         }
         final String policyConfig = wc.retentionPolicy();
         if (policyConfig == null) {
-            log.notifyError(localized("fastback.notify.prune-no-default"));
+            log.chatError(localized("fastback.chat.prune-no-default"));
             return;
         }
         final RetentionPolicy policy = RetentionPolicyCodec.INSTANCE.decodePolicy
-                (ctx, ctx.getAvailableRetentionPolicyTypes(), policyConfig);
+                (ctx, ctx.getRetentionPolicyTypes(), policyConfig);
         if (policy == null) {
-            log.notifyError(localized("fastback.notify.retention-policy-not-set"));
+            log.chatError(localized("fastback.chat.retention-policy-not-set"));
             return;
         }
         final Collection<SnapshotId> toPrune =
                 policy.getSnapshotsToPrune(listSnapshotsForWorldSorted(git, ctx.getLogger()));
-        int pruned = 0;
+        this.pruned = 0;
+        log.hud(localized("fastback.hud.prune-started"));
         for (final SnapshotId sid : toPrune) {
-            log.notify(localized("fastback.notify.prune-pruning", sid.getName()));
+            log.info("Pruning " + sid.getName());
             try {
                 git.branchDelete().setForce(true).setBranchNames(new String[]{sid.getBranchName()}).call();
-                pruned++;
-            } catch (final GitAPIException e) {
-                log.internalError("failed to prune branch for " + sid, e);
+            } catch (GitAPIException e) {
+                log.internalError(e);
+                return;
             }
+            this.pruned++;
         }
-        log.notify(localized("fastback.notify.prune-done", pruned));
-        if (pruned > 0) {
-            log.notify(localized("fastback.notify.prune-suggest-gc"));
-        }
+    }
+
+    public int getPruned() {
+        return this.pruned;
     }
 }
 

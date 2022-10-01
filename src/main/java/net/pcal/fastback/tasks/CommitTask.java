@@ -74,8 +74,9 @@ public class CommitTask extends Task {
 
     public void run() {
         this.setStarted();
-        this.log.notify(localized("fastback.notify.local-preparing"));
+        this.log.hud(localized("fastback.hud.local-saving"));
         final SnapshotId sid = this.sidSupplier.get();
+        log.info("Preparing local backup "+sid);
         if (sid == null) return;
         final String newBranchName = sid.getBranchName();
 
@@ -87,7 +88,6 @@ public class CommitTask extends Task {
 //            ctx.saveWorld();
 //            log.info("Starting backup");
 //        }
-        log.info("Committing " + newBranchName);
         try {
             doCommit(git, ctx, newBranchName, log);
             final Duration dur = getSplitDuration();
@@ -97,7 +97,6 @@ public class CommitTask extends Task {
             this.setFailed();
             return;
         }
-        log.notify(localized("fastback.notify.backup-complete"));
         this.setCompleted();
     }
 
@@ -149,8 +148,6 @@ public class CommitTask extends Task {
             log.info("World save re-enabled.");
         }
         log.debug("commit");
-        log.notify(localized("fastback.notify.local-saving"));
         git.commit().setMessage(newBranchName).call();
-        log.notify(localized("fastback.notify.local-done"));
     }
 }

@@ -16,7 +16,7 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.logging;
+package net.pcal.fastback.progress;
 
 import org.eclipse.jgit.lib.ProgressMonitor;
 

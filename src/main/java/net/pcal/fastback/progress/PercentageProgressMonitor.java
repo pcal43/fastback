@@ -16,49 +16,55 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.logging;
+package net.pcal.fastback.progress;
 
 import org.eclipse.jgit.lib.ProgressMonitor;
 
-import static java.util.Objects.requireNonNull;
+public abstract class PercentageProgressMonitor implements ProgressMonitor {
 
-public class LoggingProgressMonitor implements ProgressMonitor {
-
-    private final Logger logger;
     private String currentTask;
     private int currentTotalWork;
     private int totalCompleted;
 
-    public LoggingProgressMonitor(Logger logger) {
-        this.logger = requireNonNull(logger);
+    protected PercentageProgressMonitor() {
     }
 
     @Override
-    public void start(int totalTasks) {
+    final public void start(int totalTasks) {
     }
 
     @Override
-    public void beginTask(String taskName, int totalWork) {
+    final public void beginTask(String taskName, int totalWork) {
         this.currentTask = taskName;
         this.currentTotalWork = totalWork;
         this.totalCompleted = 0;
-        this.logger.info(taskName);
+        this.progressStart(currentTask);
     }
 
     @Override
-    public void update(int completed) {
+    final public void update(int completed) {
         this.totalCompleted += completed;
         int percent = (this.totalCompleted * 100) / this.currentTotalWork;
-        this.logger.progressComplete(currentTask, percent);
+        this.progressUpdate(currentTask, percent);
     }
 
     @Override
-    public void endTask() {
-        this.logger.progressComplete(currentTask);
+    final public void endTask() {
+        this.progressDone(currentTask);
+        currentTask = null;
     }
 
     @Override
-    public boolean isCancelled() {
+    final public boolean isCancelled() {
         return false;
     }
+
+    protected abstract void progressStart(String taskName);
+
+    protected abstract void progressUpdate(String taskName, int percentage);
+
+    protected abstract void progressDone(String taskName);
+
+
+
 }

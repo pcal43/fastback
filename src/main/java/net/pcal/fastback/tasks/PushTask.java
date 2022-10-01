@@ -21,9 +21,10 @@ package net.pcal.fastback.tasks;
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
-import net.pcal.fastback.logging.IncrementalProgressMonitor;
+import net.pcal.fastback.logging.Message;
+import net.pcal.fastback.progress.IncrementalProgressMonitor;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.logging.LoggingProgressMonitor;
+import net.pcal.fastback.progress.PercentageProgressMonitor;
 import net.pcal.fastback.utils.GitUtils;
 import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
@@ -65,6 +66,7 @@ public class PushTask extends Task {
     @Override
     public void run() {
         super.setStarted();
+        this.log.hud(localized("fastback.hud.remote-uploading", 0));
         try {
             final WorldConfig worldConfig = WorldConfig.load(git);
             final String pushUrl = worldConfig.getRemotePushUrl();
@@ -145,11 +147,11 @@ public class PushTask extends Task {
         logger.debug("Checking out " + branchNameToPush);
         git.checkout().setName(branchNameToPush).call();
         logger.debug("Pushing " + tempBranchName);
-        final ProgressMonitor pm = new IncrementalProgressMonitor(new LoggingProgressMonitor(logger), 100);
+        final ProgressMonitor pm = new IncrementalProgressMonitor(new PushProgressMonitor(logger), 100);
         git.push().setProgressMonitor(pm).setRemote(remoteName).
                 setRefSpecs(new RefSpec(tempBranchName + ":" + tempBranchName),
                         new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
-        logger.notify(localized("fastback.notify.push-cleanup"));
+        logger.info("Cleaning up branches");
         if (worldConfig.isTempBranchCleanupEnabled()) {
             logger.debug("deleting local temp branch " + tempBranchName);
             git.branchDelete().setForce(true).setBranchNames(tempBranchName).call();
@@ -161,12 +163,11 @@ public class PushTask extends Task {
 
             git.push().setProgressMonitor(pm).setRemote(remoteName).setRefSpecs(deleteRemoteBranchSpec).call();
         }
-        logger.notify(localized("fastback.savescreen.remote-done"));
         logger.debug("push complete");
     }
 
     private static void doNaivePush(final Git git, final String branchNameToPush, final WorldConfig config, final Logger logger) throws IOException, GitAPIException {
-        final ProgressMonitor pm = new IncrementalProgressMonitor(new LoggingProgressMonitor(logger), 100);
+        final ProgressMonitor pm = new IncrementalProgressMonitor(new PushProgressMonitor(logger), 100);
         final String remoteName = config.getRemoteName();
         logger.info("Doing naive push of " + branchNameToPush);
         git.push().setProgressMonitor(pm).setRemote(remoteName).
@@ -183,7 +184,7 @@ public class PushTask extends Task {
         } else {
             if (!remoteWorldUuids.contains(localUuid)) {
                 final URIish remoteUri = GitUtils.getRemoteUri(git, config.getRemoteName(), logger);
-                logger.notifyError(localized("fastback.notify.push-uuid-mismatch", remoteUri));
+                logger.chatError(localized("fastback.chat.push-uuid-mismatch", remoteUri));
                 logger.info("local: " + localUuid + ", remote: " + remoteWorldUuids);
                 return false;
             }
@@ -198,5 +199,34 @@ public class PushTask extends Task {
 
     private static String getTempBranchName(String uniqueName) {
         return "temp/" + uniqueName;
+    }
+
+    private static class PushProgressMonitor extends PercentageProgressMonitor {
+
+        private final Logger logger;
+
+        public PushProgressMonitor(Logger logger) {
+            this.logger = requireNonNull(logger);
+        }
+
+        @Override
+        public void progressStart(String task) {
+            this.logger.info(task);
+        }
+
+        @Override
+        public void progressUpdate(String task, int percentage) {
+            this.logger.info(task + " " + percentage + "%");
+            if (task.contains("Finding sources")) {
+                this.logger.hud(localized("fastback.hud.remote-preparing", percentage/2));
+            } else if (task.contains("Writing objects")) {
+                this.logger.hud(localized("fastback.hud.remote-uploading", 50 +(percentage/2)));
+            }
+        }
+
+        @Override
+        public void progressDone(String task) {
+            logger.info("Done "+task);
+        }
     }
 }

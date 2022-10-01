@@ -35,30 +35,24 @@ public class CommandSourceLogger implements Logger {
     }
 
     @Override
-    public void notify(Message message) {
-        ctx.sendFeedback(message, scs);
-    }
-
-    @Override
-    public void notifyError(Message message) {
-        ctx.sendError(message, scs);
+    public void chat(Message message, ChatMessageType type) {
+        switch(type) {
+            case NORMAL -> ctx.sendFeedback(message, scs);
+            case ERROR ->  ctx.sendError(message, scs);
+        }
     }
 
     @Override
     public void internalError(String rawMessageIgnored, Throwable t) {
-        ctx.sendError(localized("fastback.notify.internal-error"), scs);
+        ctx.sendError(localized("fastback.chat.internal-error"), scs);
+    }
+
+    @Override
+    public void hud(Message message) {
     }
 
     @Override
     public void warn(String message) {
-    }
-
-    @Override
-    public void progressComplete(String message) {
-    }
-
-    @Override
-    public void progressComplete(String message, int percentage) {
     }
 
     @Override

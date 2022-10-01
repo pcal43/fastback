@@ -58,7 +58,7 @@ public class SetRemoteCommand {
             final StoredConfig gitc = git.getRepository().getConfig();
             WorldConfig.setRemoteUrl(gitc, newUrl);
             gitc.save();
-            log.notify(localized("fastback.notify.remote-enabled", newUrl));
+            log.chat(localized("fastback.chat.remote-enabled", newUrl));
         });
         return SUCCESS;
     }
