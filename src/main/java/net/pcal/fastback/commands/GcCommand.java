@@ -32,6 +32,7 @@ import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
+import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
 
 
 /**
@@ -55,8 +56,9 @@ public class GcCommand {
     private static int gc(ModContext ctx, CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
         gitOp(ctx, WRITE, log, git -> {
-            new GcTask(git, ctx, log).run();
-            log.chat(localized("fastback.chat.gc-done"));
+            final GcTask gc = new GcTask(git, ctx, log);
+            gc.run();
+            log.chat(localized("fastback.chat.gc-done", byteCountToDisplaySize(gc.getBytesReclaimed())));
             log.hud(null);
         });
         return SUCCESS;

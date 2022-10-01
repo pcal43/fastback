@@ -39,8 +39,9 @@ import java.util.List;
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.tasks.PushTask.isTempBranch;
-import static net.pcal.fastback.utils.FileUtils.getDirDisplaySize;
 import static net.pcal.fastback.utils.GitUtils.getBranchName;
+import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
+import static org.apache.commons.io.FileUtils.sizeOfDirectory;
 import static org.eclipse.jgit.api.ListBranchCommand.ListMode.ALL;
 
 /**
@@ -55,7 +56,7 @@ public class GcTask extends Task {
     private final ModContext ctx;
     private final Logger log;
     private final Git git;
-
+    private long sizeBeforeBytes, sizeAfterBytes;
 
     public GcTask(final Git git,
                   final ModContext ctx,
@@ -68,16 +69,15 @@ public class GcTask extends Task {
     public void run() {
         this.setStarted();
         try {
+            final File gitDir = git.getRepository().getDirectory();
             log.hud(localized("fastback.hud.gc-start"));
             log.info("Stats before gc:");
             log.info("" + git.gc().getStatistics());
-            //
-            // reflogs aren't very useful in our case and cause old snapshots to get retained
-            // longer than people expect.
-            //
-            final File gitDir = git.getRepository().getDirectory();
-            log.info("Backup size before gc: " + getDirDisplaySize(gitDir));
+            this.sizeBeforeBytes = sizeOfDirectory(gitDir);
+            log.info("Backup size before gc: " + byteCountToDisplaySize(sizeBeforeBytes));
             if (ctx.isReflogDeletionEnabled()) {
+                // reflogs aren't very useful in our case and cause old snapshots to get retained
+                // longer than people expect.
                 final Path reflogsDir = gitDir.toPath().resolve("logs");
                 log.info("Deleting reflogs " + reflogsDir);
                 FileUtils.rmdir(reflogsDir);
@@ -116,7 +116,8 @@ public class GcTask extends Task {
             log.info("Garbage collection complete.");
             log.info("Stats after gc:");
             log.info("" + git.gc().getStatistics());
-            log.info("Backup size after gc: " + getDirDisplaySize(gitDir));
+            this.sizeAfterBytes = sizeOfDirectory(gitDir);
+            log.info("Backup size after gc: " + byteCountToDisplaySize(sizeAfterBytes));
         } catch (IOException | GitAPIException | ParseException e) {
             this.setFailed();
             log.internalError("Failed to gc", e);
@@ -124,4 +125,9 @@ public class GcTask extends Task {
         }
         this.setCompleted();
     }
+
+    public long getBytesReclaimed() {
+        return this.sizeBeforeBytes - this.sizeAfterBytes;
+    }
+
 }

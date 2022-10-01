@@ -25,7 +25,7 @@
   "fastback.chat.disable-already-disabled"     : "Backups already disabled.",
   "fastback.chat.disable-done"                 : "Backups disabled.",
   "fastback.chat.enable-done"                  : "Enabled automatic local backups on world shutdown.",
-  "fastback.chat.gc-done"                      : "Garbage collection complete.",
+  "fastback.chat.gc-done"                      : "Garbage collection complete.  %s reclaimed.",
   "fastback.chat.info-autoback-action"         : "Autoback action: %s",
   "fastback.chat.info-autoback-wait"           : "Autoback wait: %s minutes",
   "fastback.chat.info-backup-size"             : "Local backup size: %s",
