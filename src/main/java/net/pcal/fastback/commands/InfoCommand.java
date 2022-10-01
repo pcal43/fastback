@@ -38,6 +38,8 @@ import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.utils.FileUtils.getDirDisplaySize;
+import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
+import static org.apache.commons.io.FileUtils.sizeOfDirectory;
 
 public class InfoCommand {
 
@@ -69,9 +71,11 @@ public class InfoCommand {
             log.chat(localized("fastback.chat.info-autoback-action", getActionDisplay(wc.autobackAction())));
             log.chat(localized("fastback.chat.info-autoback-wait",
                     wc.autobackWait() == null ? "" : wc.autobackWait().getSeconds()/60));
-
-            final File gitDir = git.getRepository().getDirectory();
-            log.chat(localized("fastback.chat.info-backup-size", getDirDisplaySize(gitDir)));
+            // FIXME? this could be implemented more efficiently
+            final long backupSize = sizeOfDirectory(git.getRepository().getDirectory());
+            final long worldSize = sizeOfDirectory(git.getRepository().getWorkTree()) - backupSize;
+            log.chat(localized("fastback.chat.info-world-size", byteCountToDisplaySize(worldSize)));
+            log.chat(localized("fastback.chat.info-backup-size", byteCountToDisplaySize(backupSize)));
             {
                 // show the snapshot retention policy
                 final String encoded = wc.retentionPolicy();

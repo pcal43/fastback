@@ -29,6 +29,7 @@
   "fastback.chat.info-autoback-action"         : "Autoback action: %s",
   "fastback.chat.info-autoback-wait"           : "Autoback wait: %s minutes",
   "fastback.chat.info-backup-size"             : "Local backup size: %s",
+  "fastback.chat.info-world-size"              : "World size: %s",
   "fastback.chat.info-fastback-version"        : "FastBack version: %s",
   "fastback.chat.info-local-disabled"          : "Local backup: disabled",
   "fastback.chat.info-local-enabled"           : "Local backup: enabled",
