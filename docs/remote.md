@@ -22,7 +22,7 @@ file:///path/on/your/disk/to/the/remote/backup/dir
 Note that's *three* slashes after the file.  You can also see the URL when by running `/backup info`.
 
 
-## World UUIds
+## World UUID
 
 FastBack tries to stop you from mixing backup snapshots from different worlds.  This is generally a bad idea both in terms of staying organized and backup performance.
 
@@ -40,6 +40,9 @@ Until those commands are added, you can follow the instructions below to restore
 
 ## Manually Restoring a Remote Snapshot
 
+FastBack backups are just regular git repos.  This means you can use the terminal and the `git` command line tool to interact with them.
+
+To restore from a remote manually using `git`:
 
 1. Install `git`.  Mac and Linux users should already have it; Windows users may need to go [here](https://git-scm.com/downloads).
 
@@ -56,13 +59,12 @@ This will list all of your available snapshot branches:
 ```
 snapshots/12345678-1234-5678-1234-567812345678/2022-10-02_12_56_33
 snapshots/12345678-1234-5678-1234-567812345678/2022-10-07_11_49_31
-
 ```
 
 To retrieve one of them, type:
 
 ```
-git checkoutsnapshots/12345678-1234-5678-1234-567812345678/2022-10-02_12_56_33
+git checkout snapshots/12345678-1234-5678-1234-567812345678/2022-10-02_12_56_33
 ```
 
 You world save files will appear in the directory.  You can then copy them into your minecraft installation.
