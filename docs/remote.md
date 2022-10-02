@@ -9,11 +9,33 @@ nav_order: 40
 An important part of any backup strategy is to keep a copy of the backup on a different computer.  FastBack makes that easy.
 
 
+## File-remote URLs
+
+If you created a remote using `create-file-remote` you may need to know the URL to the repo if (say) you ever need to attach a restored world to it with `set-remote`.
+
+The URL to a file remote is simply:
+
+```
+file:///path/on/your/disk/to/the/remote/backup/dir
+```
+
+Note that's *three* slashes after the file.  You can also see the URL when by running `/backup info`.
+
+
+## World UUIds
+
+FastBack tries to stop you from mixing backup snapshots from different worlds.  This is generally a bad idea both in terms of staying organized and backup performance.
+
+If you want to live dangerously, you can view or change the UUID of a world by looking at a file in you world save directory: `fastback/world.uuid`.
+
+
 ## Restoring a Remote Snapshot
 
 If your world gets deleted or corrupted, you can restore a snapshot from your remote backup.
 
-**IMPORTANT** FastBack is still a work-in-progress
+**At the moment, FastBack does not provide commands for doing this.  See [Issues]https://github.com/pcal43/fastback/issues).**
+
+Until those commands are added, you can follow the instructions below to restore remote snapshots manually.
 
 
 ## Manually Restoring a Remote Snapshot
@@ -32,12 +54,15 @@ git branch
 This will list all of your available snapshot branches:
 
 ```
+snapshots/12345678-1234-5678-1234-567812345678/2022-10-02_12_56_33
+snapshots/12345678-1234-5678-1234-567812345678/2022-10-07_11_49_31
+
 ```
 
 To retrieve one of them, type:
 
 ```
-git checkout snapshots/abcdef-asdfasdf-asdfasdf/2022-10-02
+git checkoutsnapshots/12345678-1234-5678-1234-567812345678/2022-10-02_12_56_33
 ```
 
 You world save files will appear in the directory.  You can then copy them into your minecraft installation.
