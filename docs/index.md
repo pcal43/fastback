@@ -30,8 +30,9 @@ of disk space.
 
 
 ## Road Map
-* UI for managing backups from the title screen
+* Support for restoring remote snapshots
 * Better management of remote snapshots
+* UI for managing backups from the title screen
 * Forge support (maybe)
 
 ## Acknowledgements
