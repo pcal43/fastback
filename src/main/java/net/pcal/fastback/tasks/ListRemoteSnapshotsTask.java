@@ -26,7 +26,10 @@ import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Ref;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
@@ -37,6 +40,13 @@ public class ListRemoteSnapshotsTask implements Callable<ListMultimap<String, Sn
     private final Git git;
     private final Logger logger;
     private final WorldConfig wc;
+
+    public static List<SnapshotId> listRemoteSnapshotsForWorldSorted(final Git git, final Logger log) {
+        final List<SnapshotId> out = new ArrayList<>();
+        out.addAll(new ListRemoteSnapshotsTask(git, log).run());
+        Collections.sort(out);
+        return out;
+    }
 
     public ListRemoteSnapshotsTask(Git git,  WorldConfig wc, Logger logger) {
         this.git = requireNonNull(git);

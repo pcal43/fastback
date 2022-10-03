@@ -53,7 +53,7 @@
   "fastback.chat.remote-no-url"                : "No remote URL is set.\nRun '/backup set-remote <remote-url>'",
   "fastback.chat.remote-set"                   : "Remote backup URL set to:\n%s",
   "fastback.chat.remote-list-done"             : "%d snapshots found at %s",
-  "fastback.chat.remote-list-others"           : "WARNING: snapshots for other worlds were found on the remote.  They were not included in the list above.",
+  "fastback.chat.remote-list-others"           : "WARNING: %d snapshots for %d other worlds were also found in the remote backup.  They were not included in the list above.",
   "fastback.chat.restore-done"                 : "Snapshot restored to \n%s",
   "fastback.chat.restore-nosuch"               : "No such snapshot %s",
   "fastback.chat.retention-policy-none"        : "No snapshot retention policy set.",
