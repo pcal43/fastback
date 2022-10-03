@@ -37,31 +37,40 @@ import static java.util.Objects.requireNonNull;
 @SuppressWarnings({"Convert2MethodRef", "FunctionalExpressionCanBeFolded"})
 public class ListRemoteSnapshotsTask implements Callable<ListMultimap<String, SnapshotId>> {
 
-    private final Git git;
-    private final Logger logger;
-    private final WorldConfig wc;
-
-    public static List<SnapshotId> listRemoteSnapshotsForWorldSorted(final Git git, final Logger log) {
-        final List<SnapshotId> out = new ArrayList<>();
-        out.addAll(new ListRemoteSnapshotsTask(git, log).run());
-        Collections.sort(out);
-        return out;
+    public static ListMultimap<String, SnapshotId> listSnapshotsForWorldSorted(final Git git, final Logger log) throws Exception {
+        final Callable<Collection<Ref>> refProvider = ()->  git.branchList().call();
+        return new ListRemoteSnapshotsTask(refProvider, log).call();
     }
 
-    public ListRemoteSnapshotsTask(Git git,  WorldConfig wc, Logger logger) {
-        this.git = requireNonNull(git);
+    public static ListMultimap<String, SnapshotId> listRemoteSnapshotsForWorldSorted(final Git git, WorldConfig wc, final Logger log) throws Exception {
+        final Callable<Collection<Ref>> refProvider = ()-> git.lsRemote().setRemote(wc.getRemoteName()).setHeads(true).call();
+        return new ListRemoteSnapshotsTask(refProvider, log).call();
+    }
+
+    public static List<SnapshotId> getSortedForWorld(ListMultimap<String, SnapshotId> snapshotsPerWorld, String worldUuid) {
+        final List<SnapshotId> sids = new ArrayList<>(snapshotsPerWorld.get(worldUuid));
+        sids.addAll(snapshotsPerWorld.get(worldUuid));
+        Collections.sort(sids);
+        return sids;
+    }
+
+    private final Callable<Collection<Ref>> refProvider;
+    private final Logger logger;
+
+    public ListRemoteSnapshotsTask(Callable<Collection<Ref>> refProvider, Logger logger) {
         this.logger = requireNonNull(logger);
-        this.wc = requireNonNull(wc);
+        this.refProvider = requireNonNull(refProvider);
     }
 
     @Override
     public ListMultimap<String, SnapshotId> call() throws Exception {
         final ListMultimap<String, SnapshotId> snapshotsPerWorld = ArrayListMultimap.create();
-        final Collection<Ref> refs = git.lsRemote().setRemote(wc.getRemoteName()).setHeads(true).call();
+        final Collection<Ref> refs = this.refProvider.call();
         for (final Ref ref : refs) {
             final SnapshotId sid = SnapshotId.fromBranchRef(ref);
             snapshotsPerWorld.put(sid.worldUuid(), sid);
         }
         return snapshotsPerWorld;
     }
+
 }

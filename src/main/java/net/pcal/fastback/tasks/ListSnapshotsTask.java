@@ -37,7 +37,7 @@ import static net.pcal.fastback.tasks.Task.TaskState.STARTED;
 import static net.pcal.fastback.utils.SnapshotId.getSnapshotsPerWorld;
 
 @SuppressWarnings({"Convert2MethodRef", "FunctionalExpressionCanBeFolded"})
-public class ListSnapshotsTask extends Task {
+public class ListSnapshotsTask implements Callable Task {
 
     private final Git git;
     private final Consumer<SnapshotId> sink;
