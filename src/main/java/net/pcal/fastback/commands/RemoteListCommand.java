@@ -25,7 +25,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.tasks.ListRemoteSnapshotsTask;
+import net.pcal.fastback.tasks.ListSnapshotsTask;
 import net.pcal.fastback.utils.SnapshotId;
 
 import java.util.ArrayList;
@@ -60,7 +60,7 @@ enum RemoteListCommand implements Command {
         final Logger log = commandLogger(ctx, cc.getSource());
         gitOp(ctx, NONE, log, git -> {
             final WorldConfig wc = WorldConfig.load(git);
-            final ListMultimap<String, SnapshotId> snapshotsPerWorld = new ListRemoteSnapshotsTask(git, wc, log).call();
+            final ListMultimap<String, SnapshotId> snapshotsPerWorld = new ListSnapshotsTask(git, wc, log).call();
             final List<SnapshotId> snapshots = new ArrayList<>(snapshotsPerWorld.get(wc.worldUuid()));
             Collections.sort(snapshots);
             snapshots.forEach(sid -> log.chat(raw(sid.getName())));

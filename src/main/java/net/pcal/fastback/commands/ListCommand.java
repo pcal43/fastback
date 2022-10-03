@@ -22,6 +22,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
+import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.SnapshotId;
 
@@ -33,7 +34,8 @@ import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.raw;
-import static net.pcal.fastback.tasks.ListSnapshotsTask.listSnapshotsForWorldSorted;
+import static net.pcal.fastback.tasks.ListSnapshotsTask.*;
+import static net.pcal.fastback.tasks.ListSnapshotsTask.listSnapshots;
 
 public class ListCommand {
 
@@ -57,7 +59,8 @@ public class ListCommand {
     private int execute(final CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
         gitOp(ctx, NONE, log, git -> {
-            for (final SnapshotId sid : listSnapshotsForWorldSorted(git, ctx.getLogger())) {
+            final WorldConfig wc = WorldConfig.load(git);
+            for (final SnapshotId sid : sortWorldSnapshots(listSnapshots(git, ctx.getLogger()), wc.worldUuid())) {
                 log.chat(raw(sid.getName()));
             }
         });
