@@ -60,7 +60,7 @@ enum RemoteListCommand implements Command {
         final Logger log = commandLogger(ctx, cc.getSource());
         gitOp(ctx, NONE, log, git -> {
             final WorldConfig wc = WorldConfig.load(git);
-            final ListMultimap<String, SnapshotId> snapshotsPerWorld = new ListSnapshotsTask(git, wc, log).call();
+            final ListMultimap<String, SnapshotId> snapshotsPerWorld = ListSnapshotsTask.listRemoteSnapshots(git, wc, log);
             final List<SnapshotId> snapshots = new ArrayList<>(snapshotsPerWorld.get(wc.worldUuid()));
             Collections.sort(snapshots);
             snapshots.forEach(sid -> log.chat(raw(sid.getName())));

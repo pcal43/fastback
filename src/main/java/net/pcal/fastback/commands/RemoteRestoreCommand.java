@@ -51,7 +51,7 @@ enum RemoteRestoreCommand implements Command {
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).then(
                                 argument(ARGUMENT, StringArgumentType.string()).
-                                        suggests(new SnapshotNameSuggestions(ctx)).
+                                        suggests(SnapshotNameSuggestions.remote(ctx)).
                                         executes(cc -> remoteRestore(ctx, cc))
                         )
         );

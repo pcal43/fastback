@@ -67,6 +67,7 @@ public class Commands {
         ListCommand.register(argb, ctx);
 
         RemoteListCommand.INSTANCE.register(argb, ctx);
+        RemoteRestoreCommand.INSTANCE.register(argb, ctx);
 
         HelpCommand.register(argb, ctx);
         if (ctx.isExperimentalCommandsEnabled()) {

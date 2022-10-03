@@ -33,6 +33,7 @@ import java.util.Collection;
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.tasks.ListSnapshotsTask.listSnapshots;
+import static net.pcal.fastback.tasks.ListSnapshotsTask.sortWorldSnapshots;
 
 /**
  * Runs git garbage collection.  Aggressively deletes reflogs, tracking branches and stray temporary branches
@@ -76,8 +77,12 @@ public class PruneTask implements Runnable {
             log.chatError(localized("fastback.chat.retention-policy-not-set"));
             return;
         }
-        final Collection<SnapshotId> toPrune =
-                policy.getSnapshotsToPrune(listSnapshots(git, ctx.getLogger()));
+        final Collection<SnapshotId> toPrune;
+        try {
+            toPrune = policy.getSnapshotsToPrune(sortWorldSnapshots(listSnapshots(git, ctx.getLogger()), wc.worldUuid()));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         this.pruned = 0;
         log.hud(localized("fastback.hud.prune-started"));
         for (final SnapshotId sid : toPrune) {
