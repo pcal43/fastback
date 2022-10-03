@@ -66,6 +66,8 @@ public class Commands {
         GcCommand.register(argb, ctx);
         ListCommand.register(argb, ctx);
 
+        RemoteListCommand.INSTANCE.register(argb, ctx);
+
         HelpCommand.register(argb, ctx);
         if (ctx.isExperimentalCommandsEnabled()) {
             SaveCommand.register(argb, ctx);

@@ -49,6 +49,7 @@ public class GitUtils {
 //        return tempGit;
 //    }
 
+    @Deprecated
     public static String getBranchName(Ref fromBranchRef) {
         final String REFS_HEADS = "refs/heads/";
         final String name = fromBranchRef.getName();
