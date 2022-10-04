@@ -36,11 +36,11 @@ import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
 
-enum PurgeCommand implements Command {
+enum DeleteCommand implements Command {
 
     INSTANCE;
 
-    private static final String COMMAND_NAME = "purge";
+    private static final String COMMAND_NAME = "delete";
     private static final String ARGUMENT = "snapshot";
 
     @Override
@@ -49,12 +49,12 @@ enum PurgeCommand implements Command {
                 requires(subcommandPermission(ctx, COMMAND_NAME)).then(
                         argument(ARGUMENT, StringArgumentType.string()).
                                 suggests(SnapshotNameSuggestions.local(ctx)).
-                                executes(cc -> purge(ctx, cc))
+                                executes(cc -> delete(ctx, cc))
                 )
         );
     }
 
-    private static int purge(ModContext ctx, CommandContext<ServerCommandSource> cc) {
+    private static int delete(ModContext ctx, CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
         gitOp(ctx, WRITE, log, git -> {
             final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
@@ -62,7 +62,7 @@ enum PurgeCommand implements Command {
             final SnapshotId sid = SnapshotId.fromUuidAndName(uuid, snapshotName);
             final String branchName = sid.getBranchName();
             git.branchDelete().setForce(true).setBranchNames(branchName).call();
-            log.chat(localized("fastback.chat.purge-done", snapshotName));
+            log.chat(localized("fastback.chat.delete-done", snapshotName));
         });
         return SUCCESS;
     }
