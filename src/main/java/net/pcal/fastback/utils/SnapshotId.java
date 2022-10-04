@@ -51,6 +51,17 @@ public record SnapshotId(String worldUuid, Date snapshotDate) implements Compara
         return out;
     }
 
+    public static SnapshotId fromBranchRef(Ref ref) throws ParseException {
+        final String REFS_HEADS = "refs/heads/";
+        String name = ref.getName();
+        if (!name.startsWith(REFS_HEADS)) {
+            throw new ParseException("Not a branch ref "+ref, -1);
+        } else {
+            name = name.substring(REFS_HEADS.length());
+        }
+        return fromBranch(name);
+    }
+
     //Committing snapshots/06628b24-118c-42ae-8cce-5d131a94c7ee/2022-09-12_23-24-50
     public static SnapshotId fromBranch(String rawBranchName) throws ParseException {
         if (!rawBranchName.startsWith(PREFIX + SEP)) return null;

@@ -49,6 +49,7 @@ public class GitUtils {
 //        return tempGit;
 //    }
 
+    @Deprecated
     public static String getBranchName(Ref fromBranchRef) {
         final String REFS_HEADS = "refs/heads/";
         final String name = fromBranchRef.getName();
@@ -87,4 +88,7 @@ public class GitUtils {
         return dotGit.exists() && dotGit.isDirectory();
     }
 
+    public static String getFileUri(Path localPath) {
+        return "file://" + localPath.toAbsolutePath();
+    }
 }

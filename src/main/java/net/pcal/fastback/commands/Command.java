@@ -16,37 +16,14 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.fabric;
+package net.pcal.fastback.commands;
 
-import net.pcal.fastback.logging.Message;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import net.minecraft.server.command.ServerCommandSource;
+import net.pcal.fastback.ModContext;
 
-import java.nio.file.Path;
+public interface Command {
 
-/**
- * @author pcal
- * @since 0.1.0
- */
-public class FabricServerProvider extends FabricProvider {
+    void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx);
 
-    @Override
-    public boolean isClient() {
-        return false;
-    }
-
-    @Override
-    public Path getSnapshotRestoreDir() {
-        return null;
-    }
-
-    @Override
-    public void setClientSavingScreenText(Message message) {
-    }
-
-    @Override
-    public void sendClientChatMessage(Message message) {
-    }
-
-    @Override
-    public void setHudText(Message message) {
-    }
 }

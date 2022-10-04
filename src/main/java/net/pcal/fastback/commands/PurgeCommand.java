@@ -45,7 +45,7 @@ public class PurgeCommand {
         argb.then(literal(COMMAND_NAME).
                 requires(subcommandPermission(ctx, COMMAND_NAME)).then(
                         argument(ARGUMENT, StringArgumentType.string()).
-                                suggests(new SnapshotNameSuggestions(ctx)).
+                                suggests(SnapshotNameSuggestions.local(ctx)).
                                 executes(cc -> purge(ctx, cc))
                 )
         );

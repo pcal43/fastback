@@ -53,7 +53,7 @@ public class Commands {
         FullCommand.register(argb, ctx);
         InfoCommand.register(argb, ctx);
 
-        RestoreCommand.register(argb, ctx);
+        RestoreCommand.INSTANCE.register(argb, ctx);
         CreateFileRemoteCommand.register(argb, ctx);
         SetRemoteCommand.register(argb, ctx);
         SetAutobackActionCommand.register(argb, ctx);
@@ -65,6 +65,9 @@ public class Commands {
         PurgeCommand.register(argb, ctx);
         GcCommand.register(argb, ctx);
         ListCommand.register(argb, ctx);
+
+        RemoteListCommand.INSTANCE.register(argb, ctx);
+        RemoteRestoreCommand.INSTANCE.register(argb, ctx);
 
         HelpCommand.register(argb, ctx);
         if (ctx.isExperimentalCommandsEnabled()) {

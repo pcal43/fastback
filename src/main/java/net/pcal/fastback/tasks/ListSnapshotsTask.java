@@ -18,6 +18,7 @@
 
 package net.pcal.fastback.tasks;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
@@ -29,45 +30,47 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.tasks.Task.TaskState.COMPLETED;
-import static net.pcal.fastback.tasks.Task.TaskState.STARTED;
-import static net.pcal.fastback.utils.SnapshotId.getSnapshotsPerWorld;
 
 @SuppressWarnings({"Convert2MethodRef", "FunctionalExpressionCanBeFolded"})
-public class ListSnapshotsTask extends Task {
+public class ListSnapshotsTask implements Callable<ListMultimap<String, SnapshotId>> {
 
-    private final Git git;
-    private final Consumer<SnapshotId> sink;
-    private final Logger logger;
-
-    public static List<SnapshotId> listSnapshotsForWorldSorted(final Git git, final Logger log) {
-        final List<SnapshotId> out = new ArrayList<>();
-        new ListSnapshotsTask(git, log, s -> out.add(s)).run();
-        Collections.sort(out);
-        return out;
+    public static ListMultimap<String, SnapshotId> listSnapshots(final Git git, final Logger log) throws Exception {
+        final Callable<Collection<Ref>> refProvider = ()->  git.branchList().call();
+        return new ListSnapshotsTask(refProvider, log).call();
     }
 
-    public ListSnapshotsTask(Git git, Logger logger, Consumer<SnapshotId> sink) {
-        this.git = requireNonNull(git);
-        this.sink = requireNonNull(sink);
+    public static ListMultimap<String, SnapshotId> listRemoteSnapshots(final Git git, WorldConfig wc, final Logger log) throws Exception {
+        final Callable<Collection<Ref>> refProvider = ()-> git.lsRemote().setRemote(wc.getRemoteName()).setHeads(true).call();
+        return new ListSnapshotsTask(refProvider, log).call();
+    }
+
+    public static List<SnapshotId> sortWorldSnapshots(ListMultimap<String, SnapshotId> snapshotsPerWorld, String worldUuid) {
+        final List<SnapshotId> sids = new ArrayList<>(snapshotsPerWorld.get(worldUuid));
+        sids.addAll(snapshotsPerWorld.get(worldUuid));
+        Collections.sort(sids);
+        return sids;
+    }
+
+    private final Callable<Collection<Ref>> refProvider;
+    private final Logger logger;
+
+    public ListSnapshotsTask(Callable<Collection<Ref>> refProvider, Logger logger) {
         this.logger = requireNonNull(logger);
+        this.refProvider = requireNonNull(refProvider);
     }
 
     @Override
-    public void run() {
-        super.setState(STARTED);
-        try {
-            final WorldConfig wc = WorldConfig.load(git);
-            final Collection<Ref> localBranchRefs = git.branchList().call();
-            final ListMultimap<String, SnapshotId> snapshotsPerWorld = getSnapshotsPerWorld(localBranchRefs, logger);
-            List<SnapshotId> snapshots = snapshotsPerWorld.get(wc.worldUuid());
-            snapshots.forEach(sid -> this.sink.accept(sid));
-            super.setState(COMPLETED);
-        } catch (final Exception e) {
-            this.logger.internalError("failed to list snapshots", e);
+    public ListMultimap<String, SnapshotId> call() throws Exception {
+        final ListMultimap<String, SnapshotId> snapshotsPerWorld = ArrayListMultimap.create();
+        final Collection<Ref> refs = this.refProvider.call();
+        for (final Ref ref : refs) {
+            final SnapshotId sid = SnapshotId.fromBranchRef(ref);
+            snapshotsPerWorld.put(sid.worldUuid(), sid);
         }
+        return snapshotsPerWorld;
     }
+
 }
