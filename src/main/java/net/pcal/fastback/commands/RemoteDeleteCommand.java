@@ -65,7 +65,7 @@ enum RemoteDeleteCommand implements Command {
                     .setSource(null)
                     .setDestination("refs/heads/"+sid.getBranchName());
             git.push().setRefSpecs(refSpec).setRemote(wc.getRemoteName()).call();
-            log.chat(localized("fastback.chat.delete-done", snapshotName));
+            log.chat(localized("fastback.chat.remote-delete-done", snapshotName));
         });
         return SUCCESS;
     }
