@@ -26,6 +26,7 @@ import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.SnapshotId;
+import org.eclipse.jgit.transport.RefSpec;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -36,11 +37,11 @@ import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
 
-enum DeleteCommand implements Command {
+enum RemoteDeleteCommand implements Command {
 
     INSTANCE;
 
-    private static final String COMMAND_NAME = "delete";
+    private static final String COMMAND_NAME = "remote-delete";
     private static final String ARGUMENT = "snapshot";
 
     @Override
@@ -48,7 +49,7 @@ enum DeleteCommand implements Command {
         argb.then(literal(COMMAND_NAME).
                 requires(subcommandPermission(ctx, COMMAND_NAME)).then(
                         argument(ARGUMENT, StringArgumentType.string()).
-                                suggests(SnapshotNameSuggestions.local(ctx)).
+                                suggests(SnapshotNameSuggestions.remote(ctx)).
                                 executes(cc -> delete(ctx, cc))
                 )
         );
@@ -60,8 +61,10 @@ enum DeleteCommand implements Command {
             final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
             final WorldConfig wc = WorldConfig.load(git);
             final SnapshotId sid = SnapshotId.fromUuidAndName(wc.worldUuid(), snapshotName);
-            final String branchName = sid.getBranchName();
-            git.branchDelete().setForce(true).setBranchNames(branchName).call();
+            RefSpec refSpec = new RefSpec()
+                    .setSource(null)
+                    .setDestination("refs/heads/"+sid.getBranchName());
+            git.push().setRefSpecs(refSpec).setRemote(wc.getRemoteName()).call();
             log.chat(localized("fastback.chat.delete-done", snapshotName));
         });
         return SUCCESS;
