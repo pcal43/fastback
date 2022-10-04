@@ -33,8 +33,8 @@ import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.raw;
-import static net.pcal.fastback.tasks.ListSnapshotsTask.*;
 import static net.pcal.fastback.tasks.ListSnapshotsTask.listSnapshots;
+import static net.pcal.fastback.tasks.ListSnapshotsTask.sortWorldSnapshots;
 
 enum ListCommand implements Command {
 
