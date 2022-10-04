@@ -18,7 +18,6 @@
 
 package net.pcal.fastback.commands;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -51,7 +50,9 @@ import static net.pcal.fastback.logging.Message.localized;
  * @author pcal
  * @since 0.2.0
  */
-public class SetRetentionCommand implements Command<ServerCommandSource> {
+enum SetRetentionCommand implements Command {
+
+    INSTANCE;
 
     private static final String COMMAND_NAME = "set-retention";
 
@@ -60,7 +61,8 @@ public class SetRetentionCommand implements Command<ServerCommandSource> {
     // argument defaults.  Also a lot of noise from bugs like this: https://bugs.mojang.com/browse/MC-165562
     // Just generally not sure how to beat brigadier into submission here.
     //
-    public static void register(LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
+    @Override
+    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         final LiteralArgumentBuilder<ServerCommandSource> retainCommand = literal(COMMAND_NAME).
                 requires(subcommandPermission(ctx, COMMAND_NAME));
         for (final RetentionPolicyType rpt : ctx.getRetentionPolicyTypes()) {

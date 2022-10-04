@@ -27,8 +27,6 @@ import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;
 import net.pcal.fastback.retention.RetentionPolicyType;
 
-import java.io.File;
-
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.ModContext.ExecutionLock.NONE;
@@ -37,23 +35,25 @@ import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
-import static net.pcal.fastback.utils.FileUtils.getDirDisplaySize;
 import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
 import static org.apache.commons.io.FileUtils.sizeOfDirectory;
 
-public class InfoCommand {
+enum InfoCommand implements Command {
+
+    INSTANCE;
 
     private static final String COMMAND_NAME = "info";
 
-    public static void register(LiteralArgumentBuilder<ServerCommandSource> argb, ModContext ctx) {
+    @Override
+    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, ModContext ctx) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(cc -> execute(ctx, cc.getSource()))
+                        executes(cc -> info(ctx, cc.getSource()))
         );
     }
 
-    public static int execute(final ModContext ctx, final ServerCommandSource scs) {
+    private static int info(final ModContext ctx, final ServerCommandSource scs) {
         requireNonNull(ctx);
         requireNonNull(scs);
         final Logger log = commandLogger(ctx, scs);

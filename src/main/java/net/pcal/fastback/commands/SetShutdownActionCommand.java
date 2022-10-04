@@ -33,22 +33,25 @@ import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
 
-public class SetShutdownActionCommand {
+enum SetShutdownActionCommand implements Command {
+
+    INSTANCE;
 
     private static final String COMMAND_NAME = "set-shutdown-action";
 
-    public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
+    @Override
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         final LiteralArgumentBuilder<ServerCommandSource> setCommand = literal(COMMAND_NAME).
                 requires(subcommandPermission(ctx, COMMAND_NAME));
         for (final SchedulableAction action : SchedulableAction.values()) {
             final LiteralArgumentBuilder<ServerCommandSource> azz = literal(action.getArgumentName());
-            azz.executes(cc -> execute(ctx, cc.getSource(), action));
+            azz.executes(cc -> setShutdownAction(ctx, cc.getSource(), action));
             setCommand.then(azz);
         }
         argb.then(setCommand);
     }
 
-    public static int execute(final ModContext ctx, final ServerCommandSource scs, SchedulableAction action) {
+    private static int setShutdownAction(final ModContext ctx, final ServerCommandSource scs, SchedulableAction action) {
         final Logger log = commandLogger(ctx, scs);
         gitOp(ctx, WRITE_CONFIG, log, git -> {
             final StoredConfig config = git.getRepository().getConfig();

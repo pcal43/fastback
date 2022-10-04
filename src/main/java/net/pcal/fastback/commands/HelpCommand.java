@@ -69,7 +69,7 @@ enum HelpCommand implements Command {
         );
     }
 
-    static class HelpTopicSuggestions implements SuggestionProvider<ServerCommandSource> {
+    private static class HelpTopicSuggestions implements SuggestionProvider<ServerCommandSource> {
 
         private final ModContext ctx;
 

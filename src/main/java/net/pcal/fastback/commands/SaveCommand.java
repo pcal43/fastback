@@ -24,7 +24,6 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
 
-import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.ModContext.ExecutionLock.WRITE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
@@ -32,25 +31,21 @@ import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 
-public class SaveCommand {
+enum SaveCommand implements Command {
+
+    INSTANCE;
 
     private static final String COMMAND_NAME = "save";
 
-    public static void register(LiteralArgumentBuilder<ServerCommandSource> argb, ModContext ctx) {
-        final SaveCommand rc = new SaveCommand(ctx);
+    @Override
+    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, ModContext ctx) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(rc::execute));
+                        executes(cc->execute(ctx, cc)));
     }
 
-    private final ModContext ctx;
-
-    private SaveCommand(ModContext context) {
-        this.ctx = requireNonNull(context);
-    }
-
-    private int execute(CommandContext<ServerCommandSource> cc) {
+    private int execute(ModContext ctx, CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
         gitOp(ctx, WRITE, log, git -> {
             ctx.saveWorld();

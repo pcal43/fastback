@@ -36,12 +36,15 @@ import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
 
-public class PurgeCommand {
+enum PurgeCommand implements Command {
+
+    INSTANCE;
 
     private static final String COMMAND_NAME = "purge";
     private static final String ARGUMENT = "snapshot";
 
-    public static void register(LiteralArgumentBuilder<ServerCommandSource> argb, ModContext ctx) {
+    @Override
+    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, ModContext ctx) {
         argb.then(literal(COMMAND_NAME).
                 requires(subcommandPermission(ctx, COMMAND_NAME)).then(
                         argument(ARGUMENT, StringArgumentType.string()).

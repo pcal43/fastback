@@ -26,7 +26,6 @@ import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.SnapshotId;
 
-import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.ModContext.ExecutionLock.NONE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
@@ -37,26 +36,22 @@ import static net.pcal.fastback.logging.Message.raw;
 import static net.pcal.fastback.tasks.ListSnapshotsTask.*;
 import static net.pcal.fastback.tasks.ListSnapshotsTask.listSnapshots;
 
-public class ListCommand {
+enum ListCommand implements Command {
+
+    INSTANCE;
 
     private static final String COMMAND_NAME = "list";
 
-    public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
-        final ListCommand rc = new ListCommand(ctx);
+    @Override
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(rc::execute)
+                        executes(cc->execute(ctx, cc))
         );
     }
 
-    private final ModContext ctx;
-
-    private ListCommand(ModContext context) {
-        this.ctx = requireNonNull(context);
-    }
-
-    private int execute(final CommandContext<ServerCommandSource> cc) {
+    private int execute(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
         gitOp(ctx, NONE, log, git -> {
             final WorldConfig wc = WorldConfig.load(git);
