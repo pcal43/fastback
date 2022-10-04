@@ -62,7 +62,7 @@ public class Commands {
 
         SetRetentionCommand.INSTANCE.register(argb, ctx);
         PruneCommand.INSTANCE.register(argb, ctx);
-        PurgeCommand.INSTANCE.register(argb, ctx);
+        DeleteCommand.INSTANCE.register(argb, ctx);
         GcCommand.INSTANCE.register(argb, ctx);
         ListCommand.INSTANCE.register(argb, ctx);
 
