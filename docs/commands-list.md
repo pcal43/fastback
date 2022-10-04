@@ -8,12 +8,15 @@ Command                | Use
 `restore`              | Restore a backup snapshot.
 `create-file-remote`   | Create a remote backup target on the file system.
 `set-remote`           | Set the url for remote backups.
-`set-shutdown-action`  | Set an action to perform on shutdown.
 `set-autoback-action`  | Set an action to perform during auto-backups.
 `set-autoback-wait`    | Set the minimum number of minutes to wait between auto-backups.
+`set-shutdown-action`  | Set an action to perform on shutdown.
 `set-retention`        | Set snapshot retention policy.
 `prune`                | Delete old snapshots according to the retention policy.
-`purge`                | Delete an individual snapshot.
+`delete`               | Delete an individual snapshot.
 `gc`                   | Run garbage collection to free up disk space.
 `list`                 | List backup snapshots for this world.
+`remote-list`          | List remote snapshots.
+`remote-delete`        | Delete a remote snapshot.
+`remote-restore`       | Restore a remote snapshot.
 `help`                 | Get help on commands.

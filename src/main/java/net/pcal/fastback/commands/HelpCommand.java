@@ -151,7 +151,7 @@ enum HelpCommand implements Command {
         out.println("* `" + BACKUP_COMMAND_PERM + "`");
         for (final String sub : getSubcommandNames(cc)) {
             String permName = subcommandPermName(sub);
-            String paddedPerm = String.format("%-" + 32 + "s", "`" + permName + "`");
+            String paddedPerm = String.format("* %-" + 32 + "s", "`" + permName + "`");
             out.println(paddedPerm);
         }
     }
