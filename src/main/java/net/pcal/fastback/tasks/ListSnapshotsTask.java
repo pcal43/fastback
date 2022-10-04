@@ -26,6 +26,7 @@ import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Ref;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -67,7 +68,13 @@ public class ListSnapshotsTask implements Callable<ListMultimap<String, Snapshot
         final ListMultimap<String, SnapshotId> snapshotsPerWorld = ArrayListMultimap.create();
         final Collection<Ref> refs = this.refProvider.call();
         for (final Ref ref : refs) {
-            final SnapshotId sid = SnapshotId.fromBranchRef(ref);
+            final SnapshotId sid;
+            try {
+                sid = requireNonNull(SnapshotId.fromBranchRef(ref));
+            } catch(ParseException pe) {
+                logger.warn("Ignoring unrecognized branch "+ref.getName());
+                continue;
+            }
             snapshotsPerWorld.put(sid.worldUuid(), sid);
         }
         return snapshotsPerWorld;

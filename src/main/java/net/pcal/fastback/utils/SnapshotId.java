@@ -64,7 +64,9 @@ public record SnapshotId(String worldUuid, Date snapshotDate) implements Compara
 
     //Committing snapshots/06628b24-118c-42ae-8cce-5d131a94c7ee/2022-09-12_23-24-50
     public static SnapshotId fromBranch(String rawBranchName) throws ParseException {
-        if (!rawBranchName.startsWith(PREFIX + SEP)) return null;
+        if (!rawBranchName.startsWith(PREFIX + SEP)) {
+            throw new ParseException("Not a snapshot branch "+rawBranchName, 0);
+        }
         final String[] segments = rawBranchName.split(SEP);
         if (segments.length < 3) throw new ParseException("too few segments " + rawBranchName, segments.length);
         final String worldUuid = segments[1];
