@@ -41,12 +41,15 @@ import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.utils.FileUtils.mkdirs;
 
-public class CreateFileRemoteCommand {
+enum CreateFileRemoteCommand implements Command {
+
+    INSTANCE;
 
     private static final String COMMAND_NAME = "create-file-remote";
     private static final String ARGUMENT = "file-path";
 
-    public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
+    @Override
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).then(

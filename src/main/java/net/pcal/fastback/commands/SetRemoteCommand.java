@@ -36,12 +36,15 @@ import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
 
-public class SetRemoteCommand {
+enum SetRemoteCommand implements Command {
+
+    INSTANCE;
 
     private static final String COMMAND_NAME = "set-remote";
     private static final String URL_ARGUMENT = "remote-url";
 
-    public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
+    @Override
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).then(

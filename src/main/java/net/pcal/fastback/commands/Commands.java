@@ -54,8 +54,8 @@ public class Commands {
         InfoCommand.register(argb, ctx);
 
         RestoreCommand.INSTANCE.register(argb, ctx);
-        CreateFileRemoteCommand.register(argb, ctx);
-        SetRemoteCommand.register(argb, ctx);
+        CreateFileRemoteCommand.INSTANCE.register(argb, ctx);
+        SetRemoteCommand.INSTANCE.register(argb, ctx);
         SetAutobackActionCommand.register(argb, ctx);
         SetAutobackWaitCommand.register(argb, ctx);
         SetShutdownActionCommand.register(argb, ctx);

@@ -39,13 +39,16 @@ import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
 
-public class EnableCommand {
+enum EnableCommand implements Command {
+
+    INSTANCE;
 
     public static final SchedulableAction DEFAULT_SHUTDOWN_ACTION = SchedulableAction.FULL;
 
     private static final String COMMAND_NAME = "enable";
 
-    public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
+    @Override
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).

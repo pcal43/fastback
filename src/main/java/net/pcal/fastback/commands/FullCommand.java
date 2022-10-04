@@ -38,11 +38,13 @@ import static net.pcal.fastback.logging.Message.localized;
  * @author pcal
  * @since 0.2.0
  */
-public class FullCommand {
+enum FullCommand implements Command {
+
+    INSTANCE;
 
     private static final String COMMAND_NAME = "full";
 
-    public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
