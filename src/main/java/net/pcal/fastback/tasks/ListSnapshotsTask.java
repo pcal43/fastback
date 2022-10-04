@@ -24,6 +24,7 @@ import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
 
 import java.text.ParseException;
@@ -38,13 +39,13 @@ import static java.util.Objects.requireNonNull;
 @SuppressWarnings({"Convert2MethodRef", "FunctionalExpressionCanBeFolded"})
 public class ListSnapshotsTask implements Callable<ListMultimap<String, SnapshotId>> {
 
-    public static ListMultimap<String, SnapshotId> listSnapshots(final Git git, final Logger log) throws Exception {
-        final Callable<Collection<Ref>> refProvider = ()->  git.branchList().call();
+    public static ListMultimap<String, SnapshotId> listSnapshots(final Git git, final Logger log) throws GitAPIException {
+        final RefProviderTask refProvider = ()->  git.branchList().call();
         return new ListSnapshotsTask(refProvider, log).call();
     }
 
-    public static ListMultimap<String, SnapshotId> listRemoteSnapshots(final Git git, WorldConfig wc, final Logger log) throws Exception {
-        final Callable<Collection<Ref>> refProvider = ()-> git.lsRemote().setRemote(wc.getRemoteName()).setHeads(true).call();
+    public static ListMultimap<String, SnapshotId> listRemoteSnapshots(final Git git, WorldConfig wc, final Logger log) throws GitAPIException {
+        final RefProviderTask refProvider = ()-> git.lsRemote().setRemote(wc.getRemoteName()).setHeads(true).call();
         return new ListSnapshotsTask(refProvider, log).call();
     }
 
@@ -55,16 +56,16 @@ public class ListSnapshotsTask implements Callable<ListMultimap<String, Snapshot
         return sids;
     }
 
-    private final Callable<Collection<Ref>> refProvider;
+    private final RefProviderTask refProvider;
     private final Logger logger;
 
-    public ListSnapshotsTask(Callable<Collection<Ref>> refProvider, Logger logger) {
+    public ListSnapshotsTask(final RefProviderTask refProvider, Logger logger) {
         this.logger = requireNonNull(logger);
         this.refProvider = requireNonNull(refProvider);
     }
 
     @Override
-    public ListMultimap<String, SnapshotId> call() throws Exception {
+    public ListMultimap<String, SnapshotId> call() throws GitAPIException {
         final ListMultimap<String, SnapshotId> snapshotsPerWorld = ArrayListMultimap.create();
         final Collection<Ref> refs = this.refProvider.call();
         for (final Ref ref : refs) {

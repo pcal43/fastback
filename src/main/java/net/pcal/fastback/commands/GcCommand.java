@@ -60,7 +60,7 @@ enum GcCommand implements Command {
         final Logger log = commandLogger(ctx, cc.getSource());
         gitOp(ctx, WRITE, log, git -> {
             final GcTask gc = new GcTask(git, ctx, log);
-            gc.run();
+            gc.call();
             log.chat(localized("fastback.chat.gc-done", byteCountToDisplaySize(gc.getBytesReclaimed())));
             log.hud(null);
         });

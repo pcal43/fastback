@@ -18,20 +18,15 @@
 
 package net.pcal.fastback.tasks;
 
-import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.progress.IncrementalProgressMonitor;
 import net.pcal.fastback.progress.PercentageProgressMonitor;
 import net.pcal.fastback.utils.FileUtils;
-import net.pcal.fastback.utils.GitUtils;
 import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ProgressMonitor;
 
-import java.io.IOException;
 import java.nio.file.Path;
-import java.text.ParseException;
 import java.util.List;
 import java.util.concurrent.Callable;
 

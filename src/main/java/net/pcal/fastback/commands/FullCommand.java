@@ -61,7 +61,7 @@ enum FullCommand implements Command {
             log.info("Starting backup");
         }
         gitOp(ctx, WRITE, log, git -> {
-            new CommitAndPushTask(git, ctx, log).run();
+            new CommitAndPushTask(git, ctx, log).call();
             log.chat(localized("fastback.chat.backup-complete"));
             log.hud(null);
         });

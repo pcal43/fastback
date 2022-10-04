@@ -23,6 +23,9 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.tasks.PruneTask;
+import net.pcal.fastback.utils.SnapshotId;
+
+import java.util.Collection;
 
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.ModContext.ExecutionLock.WRITE;
@@ -57,13 +60,10 @@ enum PruneCommand implements Command {
         final Logger log = commandLogger(ctx, scs);
         gitOp(ctx, WRITE, log, git -> {
             final PruneTask pt = new PruneTask(git, ctx, log);
-            pt.run();
+            final Collection<SnapshotId> pruned = pt.call();
             log.hud(null);
-            log.chat(localized("fastback.chat.prune-done", pt.getPruned()));
-            if (pt.getPruned() > 0) {
-                log.chat(localized("fastback.chat.prune-suggest-gc"));
-            }
-
+            log.chat(localized("fastback.chat.prune-done", pruned.size()));
+            if (pruned.size() > 0) log.chat(localized("fastback.chat.prune-suggest-gc"));
         });
         return SUCCESS;
     }
