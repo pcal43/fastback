@@ -18,7 +18,6 @@
 
 package net.pcal.fastback;
 
-import net.pcal.fastback.commands.EnableCommand;
 import net.pcal.fastback.commands.SchedulableAction;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.FileUtils;
@@ -69,7 +68,7 @@ public record WorldConfig(
         if (shutdownAction == null) {
             // provide backward compat for 0.1.x configs.  TODO remove this
             if (gitConfig.getBoolean(CONFIG_SECTION, null, "shutdown-backup-enabled", false)) {
-                shutdownAction = EnableCommand.DEFAULT_SHUTDOWN_ACTION;
+                shutdownAction = SchedulableAction.DEFAULT_SHUTDOWN_ACTION;
             }
         }
         return new WorldConfig(

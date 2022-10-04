@@ -41,11 +41,14 @@ import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
  * @author pcal
  * @since 0.0.12
  */
-public class GcCommand {
+enum GcCommand implements Command {
+
+    INSTANCE;
 
     private static final String COMMAND_NAME = "gc";
 
-    public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
+    @Override
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).

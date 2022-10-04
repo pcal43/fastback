@@ -39,13 +39,14 @@ import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
 
-public class EnableCommand {
+enum EnableCommand implements Command {
 
-    public static final SchedulableAction DEFAULT_SHUTDOWN_ACTION = SchedulableAction.FULL;
+    INSTANCE;
 
     private static final String COMMAND_NAME = "enable";
 
-    public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
+    @Override
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
@@ -63,7 +64,7 @@ public class EnableCommand {
                         final WorldConfig worldConfig = WorldConfig.load(git);
                         WorldConfig.setBackupEnabled(config, true);
                         if (worldConfig.shutdownAction() == null) {
-                            WorldConfig.setShutdownAction(config, DEFAULT_SHUTDOWN_ACTION);
+                            WorldConfig.setShutdownAction(config, SchedulableAction.DEFAULT_SHUTDOWN_ACTION);
                         }
                         config.save();
                         log.chat(localized("fastback.chat.enable-done"));

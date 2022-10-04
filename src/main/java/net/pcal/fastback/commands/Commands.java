@@ -47,31 +47,31 @@ public class Commands {
     public static void registerCommands(final ModContext ctx, final String cmd) {
         final LiteralArgumentBuilder<ServerCommandSource> argb = LiteralArgumentBuilder.<ServerCommandSource>literal(cmd).
                 requires(Permissions.require(BACKUP_COMMAND_PERM, ctx.getDefaultPermLevel()));
-        EnableCommand.register(argb, ctx);
-        DisableCommand.register(argb, ctx);
-        LocalCommand.register(argb, ctx);
-        FullCommand.register(argb, ctx);
-        InfoCommand.register(argb, ctx);
+        EnableCommand.INSTANCE.register(argb, ctx);
+        DisableCommand.INSTANCE.register(argb, ctx);
+        LocalCommand.INSTANCE.register(argb, ctx);
+        FullCommand.INSTANCE.register(argb, ctx);
+        InfoCommand.INSTANCE.register(argb, ctx);
 
         RestoreCommand.INSTANCE.register(argb, ctx);
-        CreateFileRemoteCommand.register(argb, ctx);
-        SetRemoteCommand.register(argb, ctx);
-        SetAutobackActionCommand.register(argb, ctx);
-        SetAutobackWaitCommand.register(argb, ctx);
-        SetShutdownActionCommand.register(argb, ctx);
+        CreateFileRemoteCommand.INSTANCE.register(argb, ctx);
+        SetRemoteCommand.INSTANCE.register(argb, ctx);
+        SetAutobackActionCommand.INSTANCE.register(argb, ctx);
+        SetAutobackWaitCommand.INSTANCE.register(argb, ctx);
+        SetShutdownActionCommand.INSTANCE.register(argb, ctx);
 
-        SetRetentionCommand.register(argb, ctx);
-        PruneCommand.register(argb, ctx);
-        PurgeCommand.register(argb, ctx);
-        GcCommand.register(argb, ctx);
-        ListCommand.register(argb, ctx);
+        SetRetentionCommand.INSTANCE.register(argb, ctx);
+        PruneCommand.INSTANCE.register(argb, ctx);
+        PurgeCommand.INSTANCE.register(argb, ctx);
+        GcCommand.INSTANCE.register(argb, ctx);
+        ListCommand.INSTANCE.register(argb, ctx);
 
         RemoteListCommand.INSTANCE.register(argb, ctx);
         RemoteRestoreCommand.INSTANCE.register(argb, ctx);
 
-        HelpCommand.register(argb, ctx);
+        HelpCommand.INSTANCE.register(argb, ctx);
         if (ctx.isExperimentalCommandsEnabled()) {
-            SaveCommand.register(argb, ctx);
+            SaveCommand.INSTANCE.register(argb, ctx);
         }
         CommandRegistrationCallback.EVENT.register((dispatcher, regAccess, env) -> dispatcher.register(argb));
     }

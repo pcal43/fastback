@@ -48,26 +48,28 @@ import static net.pcal.fastback.commands.Commands.subcommandPermName;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
 
-public class HelpCommand {
+enum HelpCommand implements Command {
+
+    INSTANCE;
 
     private static final String COMMAND_NAME = "help";
     private static final String ARGUMENT = "subcommand";
 
-    public static void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
-        final HelpCommand c = new HelpCommand(ctx);
+    @Override
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(c::help).
+                        executes(cc->help(ctx, cc)).
                         then(
                                 argument(ARGUMENT, StringArgumentType.word()).
                                         suggests(new HelpTopicSuggestions(ctx)).
-                                        executes(c::helpSubcommand)
+                                        executes(cc->helpSubcommand(ctx, cc))
                         )
         );
     }
 
-    static class HelpTopicSuggestions implements SuggestionProvider<ServerCommandSource> {
+    private static class HelpTopicSuggestions implements SuggestionProvider<ServerCommandSource> {
 
         private final ModContext ctx;
 
@@ -90,13 +92,7 @@ public class HelpCommand {
         }
     }
 
-    private final ModContext ctx;
-
-    private HelpCommand(final ModContext context) {
-        this.ctx = requireNonNull(context);
-    }
-
-    private int help(CommandContext<ServerCommandSource> cc) {
+    private int help(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
         StringWriter subcommands = null;
         for (final String available : getSubcommandNames(cc)) {
@@ -109,7 +105,7 @@ public class HelpCommand {
         }
         log.chat(localized("commands.fastback.help.subcommands", String.valueOf(subcommands)));
 
-        if (this.ctx.isCommandDumpEnabled()) {
+        if (ctx.isCommandDumpEnabled()) {
             final StringWriter sink = new StringWriter();
             writeMarkdownReference(cc, new PrintWriter(sink));
             log.info(sink.toString());
@@ -118,7 +114,7 @@ public class HelpCommand {
         return SUCCESS;
     }
 
-    private int helpSubcommand(CommandContext<ServerCommandSource> cc) {
+    private int helpSubcommand(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
         final Collection<CommandNode<ServerCommandSource>> subcommands = cc.getNodes().get(0).getNode().getChildren();
         final String subcommand = cc.getLastChild().getArgument(ARGUMENT, String.class);

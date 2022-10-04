@@ -72,6 +72,8 @@ public enum SchedulableAction {
         }
     };
 
+    public static final SchedulableAction DEFAULT_SHUTDOWN_ACTION = FULL;
+
     public static SchedulableAction getForConfigKey(String configKey) {
         for (SchedulableAction action : SchedulableAction.values()) {
             if (action.configKey.equals(configKey)) return action;
