@@ -61,10 +61,12 @@ enum RemoteRestoreCommand implements Command {
         final Logger log = commandLogger(ctx, cc.getSource());
         gitOp(ctx, NONE, log, git -> {
             final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
+
             final Path restoresDir = ctx.getRestoresDir();
             final String worldName = ctx.getWorldName();
             final Path worldDir = ctx.getWorldDirectory();
-            RestoreSnapshotTask rt = new RestoreSnapshotTask(worldDir, snapshotName, worldName, restoresDir, log);
+            final SnapshotId sid = SnapshotId.create();
+            RestoreSnapshotTask rt = new RestoreSnapshotTask(uri, restoresDir, sid, worldName, log);
             rt.run();
             log.hud(null);
             log.chat(localized("fastback.chat.restore-done", rt.getRestoreDir()));

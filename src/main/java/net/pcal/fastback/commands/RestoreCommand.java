@@ -23,8 +23,10 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
+import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.tasks.RestoreSnapshotTask;
+import net.pcal.fastback.utils.SnapshotId;
 
 import java.nio.file.Path;
 
@@ -37,12 +39,15 @@ import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
 
-public class RestoreCommand {
+enum RestoreCommand implements Command {
+
+    INSTANCE;
 
     private static final String COMMAND_NAME = "restore";
     private static final String ARGUMENT = "snapshot";
 
-    public static void register(LiteralArgumentBuilder<ServerCommandSource> argb, ModContext ctx) {
+    @Override
+    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, ModContext ctx) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).then(
@@ -56,14 +61,16 @@ public class RestoreCommand {
     private static int restore(ModContext ctx, CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
         gitOp(ctx, NONE, log, git -> {
+            final WorldConfig wc = WorldConfig.load(git);
             final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
             final Path restoresDir = ctx.getRestoresDir();
             final String worldName = ctx.getWorldName();
             final Path worldDir = ctx.getWorldDirectory();
-            RestoreSnapshotTask rt = new RestoreSnapshotTask(worldDir, snapshotName, worldName, restoresDir, log);
-            rt.run();
+            final SnapshotId sid = SnapshotId.fromUuidAndName(wc.worldUuid(), snapshotName);
+            final String uri = "file:///"+worldDir.toAbsolutePath().toString();
+            final Path restoreDir = new RestoreSnapshotTask(uri, restoresDir, worldName, sid, log).call();
             log.hud(null);
-            log.chat(localized("fastback.chat.restore-done", rt.getRestoreDir()));
+            log.chat(localized("fastback.chat.restore-done", restoreDir));
         });
         return SUCCESS;
     }

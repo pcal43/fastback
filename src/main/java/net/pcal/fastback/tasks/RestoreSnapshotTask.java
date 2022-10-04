@@ -33,71 +33,42 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.text.ParseException;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.WorldConfig.WORLD_UUID_PATH;
 import static net.pcal.fastback.logging.Message.localized;
 
 @SuppressWarnings("FieldCanBeLocal")
-public class RestoreSnapshotTask extends Task {
+public class RestoreSnapshotTask implements Callable<Path> {
 
-    private final Path worldSaveDir;
-    private final String snapshotName;
+    private final String repoUri;
+    private final SnapshotId sid;
+    private final Path restoreTargetDir;
     private final String worldName;
-    private final Path saveDir;
     private final Logger logger;
-    private Path restoreDir;
 
-    public RestoreSnapshotTask(Path worldSaveDir, String snapshotName, String worldName, Path saveDir, Logger logger) {
-        this.worldSaveDir = requireNonNull(worldSaveDir);
-        this.snapshotName = requireNonNull(snapshotName);
+    public RestoreSnapshotTask(String repoUri, Path saveDir, String worldName, SnapshotId sid, Logger logger) {
+        this.repoUri = requireNonNull(repoUri);
+        this.restoreTargetDir = requireNonNull(saveDir);
+        this.sid = requireNonNull(sid);
         this.worldName = requireNonNull(worldName);
-        this.saveDir = requireNonNull(saveDir);
         this.logger = requireNonNull(logger);
     }
 
-    public void run() {
-        setStarted();
-        final WorldConfig config;
-        final String branchName;
-        try (final Git git = Git.open(this.worldSaveDir.toFile())) {
-            config = WorldConfig.load(git);
-            SnapshotId sid = SnapshotId.fromUuidAndName(config.worldUuid(), this.snapshotName);
-            branchName = sid.getBranchName();
-            if (!GitUtils.isBranchExtant(git, branchName, logger)) {
-                logger.chatError(localized("fastback.chat.restore-nosuch", snapshotName));
-                return;
-            }
-        } catch (IOException | GitAPIException | ParseException e) {
-            logger.internalError("Unexpected error looking up branch names", e);
-            setFailed();
-            return;
-        }
 
-        try {
-            restoreDir = getTargetDir(this.saveDir, worldName, snapshotName);
-            String uri = "file://" + this.worldSaveDir.toAbsolutePath();
+    @Override
+    public Path call() throws Exception {
+        final Path restoreDir = getTargetDir(this.restoreTargetDir, this.worldName, this.sid.getName());
+        final String branchName = sid.getBranchName();
             this.logger.hud(localized("fastback.hud.restore-percent", 0));
             final ProgressMonitor pm = new IncrementalProgressMonitor(new RestoreProgressMonitor(logger), 100);
             try (Git git = Git.cloneRepository().setProgressMonitor(pm).setDirectory(restoreDir.toFile()).
-                    setBranchesToClone(List.of("refs/heads/" + branchName)).setBranch(branchName).setURI(uri).call()) {
+                    setBranchesToClone(List.of("refs/heads/" + branchName)).setBranch(branchName).setURI(this.repoUri).call()) {
             }
-        } catch (Exception e) {
-            logger.internalError("Restoration clone of " + branchName + " failed.", e);
-            setFailed();
-            return;
-        }
-        if (config.isPostRestoreCleanupEnabled()) {
-            try {
-                FileUtils.rmdir(restoreDir.resolve(".git"));
-                restoreDir.resolve(WORLD_UUID_PATH).toFile().delete();
-            } catch (IOException e) {
-                logger.internalError("Unexpected error cleaning restored snapshot", e);
-                setFailed();
-                return;
-            }
-        }
-        setCompleted();
+            FileUtils.rmdir(restoreDir.resolve(".git"));
+            restoreDir.resolve(WORLD_UUID_PATH).toFile().delete();
+        return restoreDir;
     }
 
     private static Path getTargetDir(Path saveDir, String worldName, String snapshotName) {
@@ -113,10 +84,6 @@ public class RestoreSnapshotTask extends Task {
             }
         }
         return candidate;
-    }
-
-    public Path getRestoreDir() {
-        return this.restoreDir;
     }
 
     private static class RestoreProgressMonitor extends PercentageProgressMonitor {

@@ -53,7 +53,7 @@ public class Commands {
         FullCommand.register(argb, ctx);
         InfoCommand.register(argb, ctx);
 
-        RestoreCommand.register(argb, ctx);
+        RestoreCommand.INSTANCE.register(argb, ctx);
         CreateFileRemoteCommand.register(argb, ctx);
         SetRemoteCommand.register(argb, ctx);
         SetAutobackActionCommand.register(argb, ctx);
