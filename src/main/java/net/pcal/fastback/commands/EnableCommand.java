@@ -43,8 +43,6 @@ enum EnableCommand implements Command {
 
     INSTANCE;
 
-    public static final SchedulableAction DEFAULT_SHUTDOWN_ACTION = SchedulableAction.FULL;
-
     private static final String COMMAND_NAME = "enable";
 
     @Override
@@ -66,7 +64,7 @@ enum EnableCommand implements Command {
                         final WorldConfig worldConfig = WorldConfig.load(git);
                         WorldConfig.setBackupEnabled(config, true);
                         if (worldConfig.shutdownAction() == null) {
-                            WorldConfig.setShutdownAction(config, DEFAULT_SHUTDOWN_ACTION);
+                            WorldConfig.setShutdownAction(config, SchedulableAction.DEFAULT_SHUTDOWN_ACTION);
                         }
                         config.save();
                         log.chat(localized("fastback.chat.enable-done"));

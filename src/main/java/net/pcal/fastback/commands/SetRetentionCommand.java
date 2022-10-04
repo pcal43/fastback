@@ -20,7 +20,6 @@ package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
@@ -35,7 +34,6 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
-import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.FAILURE;
@@ -66,12 +64,11 @@ enum SetRetentionCommand implements Command {
         final LiteralArgumentBuilder<ServerCommandSource> retainCommand = literal(COMMAND_NAME).
                 requires(subcommandPermission(ctx, COMMAND_NAME));
         for (final RetentionPolicyType rpt : ctx.getRetentionPolicyTypes()) {
-            final Command<ServerCommandSource> cc = new SetRetentionCommand(ctx, rpt);
             final LiteralArgumentBuilder<ServerCommandSource> policyCommand = literal(rpt.getCommandName());
-            policyCommand.executes(cc);
+            policyCommand.executes(cc -> setPolicy(ctx, cc, rpt));
             if (rpt.getParameters() != null) {
                 for (RetentionPolicyType.Parameter param : rpt.getParameters()) {
-                    policyCommand.then(argument(param.name(), param.type()).executes(cc));
+                    policyCommand.then(argument(param.name(), param.type()).executes(cc -> setPolicy(ctx, cc, rpt)));
                 }
             }
             retainCommand.then(policyCommand);
@@ -79,16 +76,7 @@ enum SetRetentionCommand implements Command {
         argb.then(retainCommand);
     }
 
-    private final ModContext ctx;
-    private final RetentionPolicyType rpt;
-
-    private SetRetentionCommand(ModContext context, RetentionPolicyType rpt) {
-        this.ctx = requireNonNull(context);
-        this.rpt = requireNonNull(rpt);
-    }
-
-    @Override
-    public int run(CommandContext<ServerCommandSource> cc) throws CommandSyntaxException {
+    private static int setPolicy(ModContext ctx, CommandContext<ServerCommandSource> cc, RetentionPolicyType rpt) {
         final Logger logger = commandLogger(ctx, cc.getSource());
         try {
             final Path worldSaveDir = ctx.getWorldDirectory();
