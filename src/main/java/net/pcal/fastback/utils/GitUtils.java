@@ -88,4 +88,7 @@ public class GitUtils {
         return dotGit.exists() && dotGit.isDirectory();
     }
 
+    public static String getFileUri(Path localPath) {
+        return "file://" + localPath.toAbsolutePath();
+    }
 }

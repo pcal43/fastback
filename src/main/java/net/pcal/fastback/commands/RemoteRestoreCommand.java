@@ -23,8 +23,11 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
+import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.tasks.RestoreSnapshotTask;
+import net.pcal.fastback.utils.GitUtils;
+import net.pcal.fastback.utils.SnapshotId;
 
 import java.nio.file.Path;
 
@@ -60,16 +63,14 @@ enum RemoteRestoreCommand implements Command {
     private static int remoteRestore(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
         gitOp(ctx, NONE, log, git -> {
+            final WorldConfig wc = WorldConfig.load(git);
             final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
-
-            final Path restoresDir = ctx.getRestoresDir();
-            final String worldName = ctx.getWorldName();
-            final Path worldDir = ctx.getWorldDirectory();
-            final SnapshotId sid = SnapshotId.create();
-            RestoreSnapshotTask rt = new RestoreSnapshotTask(uri, restoresDir, sid, worldName, log);
-            rt.run();
+            final SnapshotId sid = SnapshotId.fromUuidAndName(wc.worldUuid(), snapshotName);
+            final String uri =  wc.getRemotePushUrl();
+            final Path restoreDir = new RestoreSnapshotTask(uri, ctx.getRestoresDir(),
+                    ctx.getWorldName(), sid, log).call();
             log.hud(null);
-            log.chat(localized("fastback.chat.restore-done", rt.getRestoreDir()));
+            log.chat(localized("fastback.chat.restore-done", restoreDir));
         });
         return SUCCESS;
     }

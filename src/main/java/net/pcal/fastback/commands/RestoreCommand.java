@@ -26,6 +26,7 @@ import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.tasks.RestoreSnapshotTask;
+import net.pcal.fastback.utils.GitUtils;
 import net.pcal.fastback.utils.SnapshotId;
 
 import java.nio.file.Path;
@@ -63,12 +64,10 @@ enum RestoreCommand implements Command {
         gitOp(ctx, NONE, log, git -> {
             final WorldConfig wc = WorldConfig.load(git);
             final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
-            final Path restoresDir = ctx.getRestoresDir();
-            final String worldName = ctx.getWorldName();
-            final Path worldDir = ctx.getWorldDirectory();
             final SnapshotId sid = SnapshotId.fromUuidAndName(wc.worldUuid(), snapshotName);
-            final String uri = "file:///"+worldDir.toAbsolutePath().toString();
-            final Path restoreDir = new RestoreSnapshotTask(uri, restoresDir, worldName, sid, log).call();
+            final String uri =  GitUtils.getFileUri(ctx.getWorldDirectory());
+            final Path restoreDir = new RestoreSnapshotTask(uri, ctx.getRestoresDir(),
+                    ctx.getWorldName(), sid, log).call();
             log.hud(null);
             log.chat(localized("fastback.chat.restore-done", restoreDir));
         });
