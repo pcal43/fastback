@@ -22,5 +22,3 @@ Command                | Use
 `set-remote` | Set the url for remote backups.
 `set-retention` | Set snapshot retention policy.
 `set-shutdown-action` | Set an action to perform on shutdown.
-`uuid` | Show the uuid for this world backup.
-`version` | Show mod version.
