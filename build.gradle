@@ -87,7 +87,6 @@ processResources {
 		from "$projectDir/src/main/resources/assets/fastback/lang"
 		into "$buildDir/resources/main/data/fastback/lang"
 	}
-
 }
 
 task hackSshdCommon {
