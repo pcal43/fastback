@@ -82,18 +82,21 @@ dependencies {
 		transitive = false
 	}
 
+
 	modImplementation(group: 'org.apache.sshd', name: 'sshd-core', version: versions.apache_sshd) {
 		exclude group: "commons-logging", module: "commons-logging"
 		exclude group: 'org.slf4j', module: 'slf4j-api'
 		transitive = false
 	}
-	/**
-	modImplementation(group: 'org.apache.sshd', name: 'sshd-common', version: versions.apache_sshd) {
+
+	modRuntimeOnly(group: 'org.apache.sshd', name: 'sshd-common', version: versions.apache_sshd) {
+
 		exclude group: "commons-logging", module: "commons-logging"
 		exclude group: 'org.slf4j', module: 'slf4j-api'
 		transitive = false
 	}
 
+	/**
 	modImplementation("org.apache.logging.log4j:log4j-slf4j-impl:2.9.1")
 **/
 	modImplementation(group: 'com.googlecode.javaewah', name: 'JavaEWAH', version: versions.JavaEWAH) {
