@@ -74,13 +74,14 @@ dependencies {
 
 		transitive = false
 	}
-	/**
+
 	modImplementation(group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.ssh.apache', version: versions.jgit) {
 		exclude group: "commons-logging", module: "commons-logging"
 		exclude group: 'org.slf4j', module: 'slf4j-api'
 
 		transitive = false
 	}
+	/**
 	modImplementation(group: 'org.apache.sshd', name: 'sshd-core', version: versions.apache_sshd) {
 		exclude group: "commons-logging", module: "commons-logging"
 		exclude group: 'org.slf4j', module: 'slf4j-api'
