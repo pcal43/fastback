@@ -6,6 +6,7 @@ Root project 'fastback'
 runtimeClasspath - Runtime classpath of source set 'main'.
 +--- org.eclipse.jgit:org.eclipse.jgit:6.3.0.202209071007-r
 +--- org.eclipse.jgit:org.eclipse.jgit.ssh.apache:6.3.0.202209071007-r
++--- org.apache.sshd:sshd-core:2.8.0
 +--- com.googlecode.javaewah:JavaEWAH:1.1.13
 +--- net.fabricmc:tiny-mappings-parser:0.3.0+build.17
 +--- net.fabricmc:sponge-mixin:0.11.4+mixin.0.8.5
