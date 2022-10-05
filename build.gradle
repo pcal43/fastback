@@ -64,10 +64,10 @@ dependencies {
     // https://github.com/lucko/fabric-permissions-api
     include modImplementation("me.lucko:fabric-permissions-api:${versions.fabric_permissions}") { transitive = false }
 
-	// JUnit
-	testImplementation "org.junit.jupiter:junit-jupiter-api:${versions.junit_jupiter}"
-	testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${versions.junit_jupiter}"
-	testRuntimeOnly "org.apache.logging.log4j:log4j-core:${versions.test_log4j}"
+    // JUnit
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${versions.junit_jupiter}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${versions.junit_jupiter}"
+    testRuntimeOnly "org.apache.logging.log4j:log4j-core:${versions.test_log4j}"
 }
 
 
