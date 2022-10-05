@@ -153,9 +153,16 @@ modrinth {
 }
 
 /**
+ * Workaround for running in Intellij.
  *
+ * The issue seems to be that that jar has a FileSystemProvider that gets picked up because it's on the IJ path; in
+ * the uberjar, it's ignored because its in the uberjar.  It registers a RootedFileSystem, the ctor of which tries
+ * to create an slf4j logger, and that blows up for reasons that are not entirely clear (looks like classloading
+ * shenanigans of some sort).
  *
- * 
+ * The workaround here makes a copy of sshd-common-x.x.x.jar and strips out the FileSystemProvider.  The modified
+ * jar is used on the classpath in Intellij; the original jar is still used in the final shipping product.  See
+ * dependency declarations above.
  */
 tasks.register('stripSshdFileSystem') {
     doLast {
