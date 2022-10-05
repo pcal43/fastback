@@ -29,7 +29,6 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
 
-import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,11 +39,9 @@ import java.util.concurrent.ExecutionException;
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.commands.Commands.BACKUP_COMMAND_PERM;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
-import static net.pcal.fastback.commands.Commands.subcommandPermName;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
 
@@ -103,14 +100,7 @@ enum HelpCommand implements Command {
             }
             subcommands.append(available);
         }
-        log.chat(localized("commands.fastback.help.subcommands", String.valueOf(subcommands)));
-
-        if (ctx.isCommandDumpEnabled()) {
-            final StringWriter sink = new StringWriter();
-            writeMarkdownReference(cc, new PrintWriter(sink));
-            log.info(sink.toString());
-        }
-
+        log.chat(localized("fastback.help.subcommands", String.valueOf(subcommands)));
         return SUCCESS;
     }
 
@@ -121,7 +111,7 @@ enum HelpCommand implements Command {
         for (String available : getSubcommandNames(cc)) {
             if (subcommand.equals(available)) {
                 final String prefix = "/backup " + subcommand + ": ";
-                log.chat(localized("commands.fastback.help." + subcommand, prefix));
+                log.chat(localized("fastback.help.command." + subcommand, prefix));
                 return SUCCESS;
             }
         }
@@ -133,26 +123,5 @@ enum HelpCommand implements Command {
         final List<String> out = new ArrayList<>();
         cc.getNodes().get(0).getNode().getChildren().forEach(node -> out.add(node.getName()));
         return out;
-    }
-
-    private static void writeMarkdownReference(CommandContext<ServerCommandSource> cc, PrintWriter out) {
-        out.println();
-        out.println("Command                | Use");
-        out.println("---------------------- | ---");
-        for (final String sub : getSubcommandNames(cc)) {
-            //FIXME GROSS.  HOW DO WE LOCALIZE WITHOUT GOING THROUGH minecraft.text?
-            net.minecraft.text.Text shortHelp = net.minecraft.text.Text.translatable("commands.fastback.help." + sub);
-            String paddedSub = String.format("%-" + 22 + "s", "`" + sub + "`");
-            out.println(paddedSub + " | " + shortHelp.getString());
-        }
-        out.println();
-        out.println("Permission                       ");
-        out.println("-------------------------------- ");
-        out.println("* `" + BACKUP_COMMAND_PERM + "`");
-        for (final String sub : getSubcommandNames(cc)) {
-            String permName = subcommandPermName(sub);
-            String paddedPerm = String.format("* %-" + 32 + "s", "`" + permName + "`");
-            out.println(paddedPerm);
-        }
     }
 }
