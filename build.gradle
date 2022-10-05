@@ -30,118 +30,34 @@ configurations {
 }
 
 project.ext.versions = [
-    jgit                        : '6.3.0.202209071007-r',
+    jgit                        : '6.2.0.202206071550-r',
     apache_sshd                 : '2.8.0',
     JavaEWAH                    : '1.1.13',
     fabric_permissions          : '0.2-SNAPSHOT',
     server_translations_version : '[1.4.17+1.19.2]'
 ]
 
-/**
- Ok a few things are going on:
-
- 1) We should switch off the old jcsh provider to org.eclipse.jgit.ssh.apache.
- 2) Doing that makes ServiceLoader unhappy out when loading some apache FileSystem services that load loggers
- in their constructors.  Not entirely clear what is happening but it looks like the root issue is slf4j being
- loaded in different classloaders.
- 2a) It works fine when not launching from the iDE
- 2b) So probably just need to figure out what deps exclude in build.gradle
-
- 3) To get support for ed25519 keys - i.e., the ones that the github docs tell everyone to make - looks like
- we need to do this: https://github.com/apache/mina-sshd/blob/dfa109b7b535d64e8ee395ddd0419e7696fb24ee/docs/dependencies.md
-
- https://stackoverflow.com/questions/73905882/adding-support-for-ed25519-to-apache-mina-sshd-how-to-achieve-this
- */
-
 dependencies {
 	// Fabric & Minecraft
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-	modImplementation ("net.fabricmc:fabric-loader:${project.loader_version}") {
-		transitive = true
-	}
-	modImplementation ("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}") {
-		transitive = true
-	}
-
-    // JGit
-	// https://wiki.eclipse.org/JGit/New_and_Noteworthy/5.8
-	// https://wiki.eclipse.org/JGit/New_and_Noteworthy/6.1
-	// https://mina.apache.org/mina-project/userguide/ch1-getting-started/ch1.4-first-steps.html
-	include(implementation(group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: versions.jgit) {
-		exclude group: "commons-logging", module: "commons-logging"
-		exclude group: 'org.slf4j', module: 'slf4j-api'
-		transitive = false
-	})
-
-	include(runtimeOnly(group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.ssh.apache', version: versions.jgit) {
-		exclude group: "commons-logging", module: "commons-logging"
-		exclude group: 'org.slf4j', module: 'slf4j-api'
-
-		transitive = false
-	})
-
-
-	include(runtimeOnly(shade(group: 'org.apache.sshd', name: 'sshd-core', version: versions.apache_sshd) {
-		exclude 'META-INF', 'META-INF/**'
-	}
-
-
-	) {
-		exclude group: "commons-logging", module: "commons-logging"
-		exclude group: 'org.slf4j', module: 'slf4j-api'
-		transitive = false
-	})
-
-	include(runtimeOnly(group: 'org.apache.sshd', name: 'sshd-common', version: versions.apache_sshd) {
-
-		exclude group: "commons-logging", module: "commons-logging"
-		exclude group: 'org.slf4j', module: 'slf4j-api'
-		transitive = false
-	})
-
-
-	/**
-	modImplementation("org.apache.logging.log4j:log4j-slf4j-impl:2.9.1")
-**/
-	include(runtimeOnly(group: 'com.googlecode.javaewah', name: 'JavaEWAH', version: versions.JavaEWAH) {
-		exclude group: "commons-logging", module: "commons-logging"
-		exclude group: 'org.slf4j', module: 'slf4j-api'
-
-		transitive = false
-	})
-
+	include(modImplementation(group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: versions.jgit))
+	include group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.ssh.apache', version: versions.jgit
+	include group: 'org.apache.sshd', name: 'sshd-core', version: versions.apache_sshd
+	include group: 'org.apache.sshd', name: 'sshd-common', version: versions.apache_sshd
+	include group: 'com.googlecode.javaewah', name: 'JavaEWAH', version: versions.JavaEWAH
 
 	// Enable ed25519 support per
 	// https://github.com/apache/mina-sshd/blob/dfa109b7b535d64e8ee395ddd0419e7696fb24ee/docs/dependencies.md
-	include(runtimeOnly(group: 'net.i2p.crypto', name: 'eddsa', version: '0.3.0') {
-		transitive = false
-	}
-	)
+	include group: 'net.i2p.crypto', name: 'eddsa', version: '0.3.0'
 
-
-	//
-	//
-	// https://github.com/sbt/sbt-git/issues/69
-//	include(modImplementation('org.slf4j:slf4j-nop:2.0.3'))
-	//include(modImplementation('org.slf4j:slf4j-api:1.7.30'))
-//	include(modRuntimeOnly('org.apache.logging.log4j:log4j-slf4j18-impl:2.17.2'))
-	//
-//	include(modImplementation('org.slf4j:slf4j-api:1.7.30'))
-//	include(modRuntimeOnly('org.slf4j:slf4j-simple:1.7.30'))
-//	include(modRuntimeOnly('org.slf4j:log4j-over-slf4j:1.7.30'))
-
-//	include(modRuntimeOnly(group: 'org.slf4j', name:'slf4j-simple', version:'1.6.4'))
-//	include(modRuntimeOnly(group: 'org.slf4j', name:'slf4j-api', version:'1.7.25'))
-//	include(modRuntimeOnly(group: 'org.slf4j', name:'slf4j-log4j12', version:'1.0.1'))
-
-	//
-	// server-translations-api
-	//
 	include(modImplementation("fr.catcore:server-translations-api:${versions.server_translations_version}"))
 
 	// https://github.com/lucko/fabric-permissions-api
 	include(modImplementation(group: 'me.lucko', name: 'fabric-permissions-api', version: versions.fabric_permissions))
+
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	// JUnit
 	testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.2"
