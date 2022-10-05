@@ -45,7 +45,9 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
     // JGit
-	include implementation("org.eclipse.jgit:org.eclipse.jgit:${versions.jgit}")
+	include implementation("org.eclipse.jgit:org.eclipse.jgit:${versions.jgit}") {
+		transitive = false
+	}
 	include runtimeOnly("com.googlecode.javaewah:JavaEWAH:${version:versions.JavaEWAH}")
 
 	// FIXME
