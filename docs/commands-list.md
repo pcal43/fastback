@@ -2,30 +2,30 @@
 Command                | Use
 ---------------------- | ---
 
-create-file-remote | Create a remote backup target on the file system.
-delete | Delete an individual snapshot.
-disable | Disable backups on this world.
-enable | Enable local backups backups on this world.
-full | Perform a local and remote backup immediately.
-gc | Run garbage collection to free up disk space.
-help | Get help on commands.
-info | Info about current backup state and settings.
-list | List backup snapshots for this world.
-local | Perform a local backup immediately.
-prune | Delete old snapshots according to the retention policy.
-remote-delete | Delete a remote snapshot.
-remote-list | List remote snapshots.
-remote-restore | Restore a remote snapshot.
-restore | Restore a backup snapshot.
-set-autoback-action | Set an action to perform during auto-backups.
-set-autoback-wait | Set the minimum number of minutes to wait between auto-backups.
-set-remote | Set the url for remote backups.
-set-retention | Set snapshot retention policy.
-set-shutdown-action | Set an action to perform on shutdown.
-subcommands | Available subcommands:
+`commands.fastback.help.create-file-remote` | Create a remote backup target on the file system.
+`commands.fastback.help.delete` | Delete an individual snapshot.
+`commands.fastback.help.disable` | Disable backups on this world.
+`commands.fastback.help.enable` | Enable local backups backups on this world.
+`commands.fastback.help.full` | Perform a local and remote backup immediately.
+`commands.fastback.help.gc` | Run garbage collection to free up disk space.
+`commands.fastback.help.help` | Get help on commands.
+`commands.fastback.help.info` | Info about current backup state and settings.
+`commands.fastback.help.list` | List backup snapshots for this world.
+`commands.fastback.help.local` | Perform a local backup immediately.
+`commands.fastback.help.prune` | Delete old snapshots according to the retention policy.
+`commands.fastback.help.remote-delete` | Delete a remote snapshot.
+`commands.fastback.help.remote-list` | List remote snapshots.
+`commands.fastback.help.remote-restore` | Restore a remote snapshot.
+`commands.fastback.help.restore` | Restore a backup snapshot.
+`commands.fastback.help.set-autoback-action` | Set an action to perform during auto-backups.
+`commands.fastback.help.set-autoback-wait` | Set the minimum number of minutes to wait between auto-backups.
+`commands.fastback.help.set-remote` | Set the url for remote backups.
+`commands.fastback.help.set-retention` | Set snapshot retention policy.
+`commands.fastback.help.set-shutdown-action` | Set an action to perform on shutdown.
+`commands.fastback.help.subcommands` | Available subcommands:
 %s
 For detailed help on a subcommand, run
 /backup help [subcommand]
 or go to https://pcal43.github.io/fastback
-uuid | Show the uuid for this world backup.
-version | Show mod version.
+`commands.fastback.help.uuid` | Show the uuid for this world backup.
+`commands.fastback.help.version` | Show mod version.
