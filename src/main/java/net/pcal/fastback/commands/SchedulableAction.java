@@ -24,7 +24,11 @@ import net.pcal.fastback.tasks.CommitAndPushTask;
 import net.pcal.fastback.tasks.CommitTask;
 import net.pcal.fastback.tasks.GcTask;
 import net.pcal.fastback.tasks.PruneTask;
+import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
+
+import java.util.Collection;
+import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
 
@@ -38,36 +42,35 @@ public enum SchedulableAction {
 
     NONE("none") {
         @Override
-        public Runnable getRunnable(Git git, ModContext ctx, Logger log) {
-            return () -> {
-            };
+        public Callable<Void> getTask(Git git, ModContext ctx, Logger log) {
+            return () -> null;
         }
     },
 
     LOCAL("local") {
         @Override
-        public Runnable getRunnable(Git git, ModContext ctx, Logger log) {
+        public Callable<SnapshotId> getTask(Git git, ModContext ctx, Logger log) {
             return new CommitTask(git, ctx, log);
         }
     },
 
     FULL("full") {
         @Override
-        public Runnable getRunnable(Git git, ModContext ctx, Logger log) {
+        public Callable<Void> getTask(Git git, ModContext ctx, Logger log) {
             return new CommitAndPushTask(git, ctx, log);
         }
     },
 
     FULL_GC("full-gc") {
         @Override
-        public Runnable getRunnable(Git git, ModContext ctx, Logger log) {
+        public Callable<Void> getTask(Git git, ModContext ctx, Logger log) {
             return ()->{
-                new CommitAndPushTask(git, ctx, log).run();
-                PruneTask pt = new PruneTask(git, ctx, log);
-                pt.run();
-                if (pt.getPruned() > 0) {
-                    new GcTask(git, ctx, log).run();
+                new CommitAndPushTask(git, ctx, log).call();
+                final Collection<SnapshotId> pruned = new PruneTask(git, ctx, log).call();
+                if (pruned.size() > 0) {
+                    new GcTask(git, ctx, log).call();
                 }
+                return null;
             };
         }
     };
@@ -95,6 +98,6 @@ public enum SchedulableAction {
         return this.configKey;
     }
 
-    public abstract Runnable getRunnable(Git git, ModContext ctx, Logger log);
+    public abstract Callable<?> getTask(Git git, ModContext ctx, Logger log);
 }
 

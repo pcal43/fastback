@@ -21,9 +21,8 @@ package net.pcal.fastback.tasks;
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
-import net.pcal.fastback.logging.Message;
-import net.pcal.fastback.progress.IncrementalProgressMonitor;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.progress.IncrementalProgressMonitor;
 import net.pcal.fastback.progress.PercentageProgressMonitor;
 import net.pcal.fastback.utils.GitUtils;
 import net.pcal.fastback.utils.SnapshotId;
@@ -37,16 +36,16 @@ import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.URIish;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.Message.localized;
 
-public class PushTask extends Task {
+public class PushTask implements Callable<Void> {
 
     private final ModContext ctx;
     private final Logger log;
@@ -64,50 +63,40 @@ public class PushTask extends Task {
     }
 
     @Override
-    public void run() {
-        super.setStarted();
+    public Void call() throws GitAPIException, IOException {
         this.log.hud(localized("fastback.hud.remote-uploading", 0));
-        try {
-            final WorldConfig worldConfig = WorldConfig.load(git);
-            final String pushUrl = worldConfig.getRemotePushUrl();
-            if (pushUrl == null) {
-                final String msg = "Skipping remote backup because no remote url has been configured.";
-                this.log.warn(msg);
-                super.setFailed();
-                return;
-            }
-            final Collection<Ref> remoteBranchRefs = git.lsRemote().setHeads(true).setTags(false).
-                    setRemote(worldConfig.getRemoteName()).call();
-            final ListMultimap<String, SnapshotId> snapshotsPerWorld =
-                    SnapshotId.getSnapshotsPerWorld(remoteBranchRefs, log);
-            if (worldConfig.isUuidCheckEnabled()) {
-                final boolean uuidCheckResult;
-                try {
-                    uuidCheckResult = doUuidCheck(git, snapshotsPerWorld.keySet(), worldConfig, log);
-                } catch (final GitAPIException | IOException e) {
-                    log.internalError("Skipping remote backup due to failed uuid check", e);
-                    super.setFailed();
-                    return;
-                }
-                if (!uuidCheckResult) {
-                    log.warn("Skipping remote backup due to world mismatch.");
-                    super.setFailed();
-                    return;
-                }
-            }
-            log.info("Pushing to " + worldConfig.getRemotePushUrl());
-            if (worldConfig.isSmartPushEnabled()) {
-                doSmartPush(git, snapshotsPerWorld.get(worldConfig.worldUuid()), this.sid.getBranchName(), worldConfig, log);
-            } else {
-                doNaivePush(git, this.sid.getBranchName(), worldConfig, log);
-            }
-            super.setCompleted();
-            final Duration duration = super.getDuration();
-            log.info("Remote backup complete.  Elapsed time: " + duration.toMinutesPart() + "m " + duration.toSecondsPart() + "s");
-        } catch (GitAPIException | IOException e) {
-            log.internalError("Remote backup failed unexpectedly", e);
-            super.setFailed();
+        final WorldConfig worldConfig = WorldConfig.load(git);
+        final String pushUrl = worldConfig.getRemotePushUrl();
+        if (pushUrl == null) {
+            final String msg = "Skipping remote backup because no remote url has been configured.";
+            this.log.warn(msg);
+            return null;
         }
+        final Collection<Ref> remoteBranchRefs = git.lsRemote().setHeads(true).setTags(false).
+                setRemote(worldConfig.getRemoteName()).call();
+        final ListMultimap<String, SnapshotId> snapshotsPerWorld =
+                SnapshotId.getSnapshotsPerWorld(remoteBranchRefs, log);
+        if (worldConfig.isUuidCheckEnabled()) {
+            final boolean uuidCheckResult;
+            try {
+                uuidCheckResult = doUuidCheck(git, snapshotsPerWorld.keySet(), worldConfig, log);
+            } catch (final GitAPIException | IOException e) {
+                log.internalError("Skipping remote backup due to failed uuid check", e);
+                return null;
+            }
+            if (!uuidCheckResult) {
+                log.warn("Skipping remote backup due to world mismatch.");
+                return null;
+            }
+        }
+        log.info("Pushing to " + worldConfig.getRemotePushUrl());
+        if (worldConfig.isSmartPushEnabled()) {
+            doSmartPush(git, snapshotsPerWorld.get(worldConfig.worldUuid()), this.sid.getBranchName(), worldConfig, log);
+        } else {
+            doNaivePush(git, this.sid.getBranchName(), worldConfig, log);
+        }
+        log.info("Remote backup complete.");
+        return null;
     }
 
     private static void doSmartPush(final Git git, List<SnapshotId> remoteSnapshots, final String branchNameToPush, final WorldConfig worldConfig, final Logger logger) throws GitAPIException, IOException {

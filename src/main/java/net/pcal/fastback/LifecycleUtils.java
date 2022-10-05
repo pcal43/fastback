@@ -89,9 +89,9 @@ public class LifecycleUtils {
             final WorldConfig config = WorldConfig.load(git);
             if (config.isBackupEnabled() && config.shutdownAction() != null) {
                 final Logger screenLogger = CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx));
-                config.shutdownAction().getRunnable(git, ctx, screenLogger).run();
+                config.shutdownAction().getTask(git, ctx, screenLogger).call();
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.internalError("Shutdown action failed.", e);
         }
         ctx.getLogger().info("onWorldStop complete");

@@ -29,6 +29,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.Message.localized;
@@ -42,12 +43,11 @@ import static net.pcal.fastback.tasks.ListSnapshotsTask.sortWorldSnapshots;
  * @author pcal
  * @since 0.0.12
  */
-public class PruneTask implements Runnable {
+public class PruneTask implements Callable<Collection<SnapshotId>> {
 
     private final ModContext ctx;
     private final Logger log;
     private final Git git;
-    private int pruned;
 
     public PruneTask(final Git git,
                      final ModContext ctx,
@@ -58,47 +58,26 @@ public class PruneTask implements Runnable {
     }
 
     @Override
-    public void run()  {
-        final WorldConfig wc;
-        try {
-            wc = WorldConfig.load(git);
-        } catch (IOException e) {
-            log.internalError(e);
-            return;
-        }
+    public Collection<SnapshotId> call() throws IOException, GitAPIException {
+        final WorldConfig wc = WorldConfig.load(git);
         final String policyConfig = wc.retentionPolicy();
         if (policyConfig == null) {
             log.chatError(localized("fastback.chat.prune-no-default"));
-            return;
+            return null;
         }
         final RetentionPolicy policy = RetentionPolicyCodec.INSTANCE.decodePolicy
                 (ctx, ctx.getRetentionPolicyTypes(), policyConfig);
         if (policy == null) {
             log.chatError(localized("fastback.chat.retention-policy-not-set"));
-            return;
+            return null;
         }
-        final Collection<SnapshotId> toPrune;
-        try {
-            toPrune = policy.getSnapshotsToPrune(sortWorldSnapshots(listSnapshots(git, ctx.getLogger()), wc.worldUuid()));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        this.pruned = 0;
+        final Collection<SnapshotId> toPrune = policy.getSnapshotsToPrune(
+                sortWorldSnapshots(listSnapshots(git, ctx.getLogger()), wc.worldUuid()));
         log.hud(localized("fastback.hud.prune-started"));
         for (final SnapshotId sid : toPrune) {
             log.info("Pruning " + sid.getName());
-            try {
-                git.branchDelete().setForce(true).setBranchNames(new String[]{sid.getBranchName()}).call();
-            } catch (GitAPIException e) {
-                log.internalError(e);
-                return;
-            }
-            this.pruned++;
+            git.branchDelete().setForce(true).setBranchNames(new String[]{sid.getBranchName()}).call();
         }
-    }
-
-    public int getPruned() {
-        return this.pruned;
+        return toPrune;
     }
 }
-

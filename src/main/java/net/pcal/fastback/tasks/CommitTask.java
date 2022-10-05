@@ -30,21 +30,19 @@ import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.function.Supplier;
+import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.Message.localized;
 
 @SuppressWarnings("FieldCanBeLocal")
-public class CommitTask extends Task {
+public class CommitTask implements Callable<SnapshotId> {
 
     private final ModContext ctx;
     private final Logger log;
     private final Git git;
-    private final Supplier<SnapshotId> sidSupplier;
 
     public CommitTask(final Git git,
                       final ModContext ctx,
@@ -52,55 +50,20 @@ public class CommitTask extends Task {
         this.git = requireNonNull(git);
         this.ctx = requireNonNull(ctx);
         this.log = requireNonNull(log);
-        this.sidSupplier = () -> {
-            try {
-                return SnapshotId.create(WorldConfig.getWorldUuid(git));
-            } catch (IOException e) {
-                this.log.internalError("uuid lookup failed", e);
-                return null;
-            }
-        };
     }
 
-    public CommitTask(final Git git,
-                      final ModContext ctx,
-                      final Logger log,
-                      final SnapshotId sid) {
-        this.git = requireNonNull(git);
-        this.ctx = requireNonNull(ctx);
-        this.log = requireNonNull(log);
-        this.sidSupplier = () -> sid;
-    }
-
-    public void run() {
-        this.setStarted();
+    @Override
+    public SnapshotId call() throws GitAPIException, IOException {
         this.log.hud(localized("fastback.hud.local-saving"));
-        final SnapshotId sid = this.sidSupplier.get();
-        log.info("Preparing local backup "+sid);
-        if (sid == null) return;
-        final String newBranchName = sid.getBranchName();
-
-// Disabling this here because https://github.com/pcal43/fastback/issues/112
-//        if (ctx.isServerStopping()) {
-//            log.info("Skipping save before backup because server is shutting down.");
-//        } else {
-//            log.info("Saving before backup");
-//            ctx.saveWorld();
-//            log.info("Starting backup");
-//        }
-        try {
-            doCommit(git, ctx, newBranchName, log);
-            final Duration dur = getSplitDuration();
-            log.info("Local backup complete.  Elapsed time: " + dur.toMinutesPart() + "m " + dur.toSecondsPart() + "s");
-        } catch (GitAPIException | IOException e) {
-            log.internalError("Local backup failed.  Unable to commit changes.", e);
-            this.setFailed();
-            return;
-        }
-        this.setCompleted();
+        final SnapshotId newSid = SnapshotId.create(WorldConfig.getWorldUuid(git));
+        log.info("Preparing local backup "+newSid);
+        final String newBranchName = newSid.getBranchName();
+        doCommit(git, ctx, newBranchName, log);
+        log.info("Local backup complete.");
+        return newSid;
     }
 
-    private static void doCommit(Git git, ModContext ctx, String newBranchName, final Logger log) throws GitAPIException, IOException {
+    private static void doCommit(Git git, ModContext ctx, String newBranchName, final Logger log) throws GitAPIException {
         log.debug("doing commit");
         log.debug("checkout");
         git.checkout().setOrphan(true).setName(newBranchName).call();

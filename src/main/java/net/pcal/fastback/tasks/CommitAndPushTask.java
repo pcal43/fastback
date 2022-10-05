@@ -19,16 +19,15 @@
 package net.pcal.fastback.tasks;
 
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
 
-import java.io.IOException;
+import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
 
-public class CommitAndPushTask implements Runnable {
+public class CommitAndPushTask implements Callable<Void> {
 
     private final ModContext ctx;
     private final Logger log;
@@ -42,15 +41,11 @@ public class CommitAndPushTask implements Runnable {
         this.log = requireNonNull(log);
     }
 
-    public void run() {
-        final SnapshotId newSid;
-        try {
-            newSid = SnapshotId.create(WorldConfig.getWorldUuid(git));
-        } catch (IOException e) {
-            this.log.internalError("uuid lookup failed", e);
-            return;
-        }
-        new CommitTask(git, ctx, log, newSid).run();
-        new PushTask(git, ctx, log, newSid).run();
+    @Override
+    public Void call() throws Exception {
+        final SnapshotId newSid = new CommitTask(git, ctx, log).call();
+        new PushTask(git, ctx, log, newSid).call();
+        return null;
     }
+
 }

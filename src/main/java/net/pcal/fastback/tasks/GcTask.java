@@ -25,7 +25,6 @@ import net.pcal.fastback.progress.PercentageProgressMonitor;
 import net.pcal.fastback.utils.FileUtils;
 import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.internal.storage.file.GC;
 import org.eclipse.jgit.lib.ProgressMonitor;
@@ -33,11 +32,10 @@ import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.storage.pack.PackConfig;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.Message.localized;
@@ -54,7 +52,7 @@ import static org.eclipse.jgit.api.ListBranchCommand.ListMode.ALL;
  * @author pcal
  * @since 0.0.12
  */
-public class GcTask extends Task {
+public class GcTask implements Callable<Void> {
 
     private final ModContext ctx;
     private final Logger log;
@@ -69,66 +67,60 @@ public class GcTask extends Task {
         this.log = requireNonNull(log);
     }
 
-    public void run() {
-        this.setStarted();
-        try {
-            final File gitDir = git.getRepository().getDirectory();
-            log.hud(localized("fastback.hud.gc-percent", 0));
-            log.info("Stats before gc:");
-            log.info("" + git.gc().getStatistics());
-            this.sizeBeforeBytes = sizeOfDirectory(gitDir);
-            log.info("Backup size before gc: " + byteCountToDisplaySize(sizeBeforeBytes));
-            if (ctx.isReflogDeletionEnabled()) {
-                // reflogs aren't very useful in our case and cause old snapshots to get retained
-                // longer than people expect.
-                final Path reflogsDir = gitDir.toPath().resolve("logs");
-                log.info("Deleting reflogs " + reflogsDir);
-                FileUtils.rmdir(reflogsDir);
-            }
-            if (ctx.isBranchCleanupEnabled()) {
-                final List<String> branchesToDelete = new ArrayList<>();
-                for (final Ref ref : git.branchList().setListMode(ALL).call()) {
-                    final String branchName = getBranchName(ref);
-                    if (branchName == null) {
-                        log.warn("Non-branch ref returned by branchList: " + ref);
-                    } else if (isTempBranch(branchName)) {
-                        branchesToDelete.add(branchName);
-                    } else if (SnapshotId.isSnapshotBranchName(branchName)) {
-                        // ok fine
-                    } else {
-                        log.warn("Unidentified branch found " + branchName + " - consider removing it with 'git branch -D'");
-                    }
-                }
-                if (branchesToDelete.isEmpty()) {
-                    log.info("No branches to clean up");
-                } else {
-                    log.info("Deleting branches: " + branchesToDelete);
-                    git.branchDelete().setForce(true).setBranchNames(branchesToDelete.toArray(new String[0])).call();
-                    log.info("Branches deleted.");
-                }
-            }
-            final GC gc = new GC(((FileRepository) git.getRepository()));
-            gc.setExpireAgeMillis(0);
-            gc.setPackExpireAgeMillis(0);
-            gc.setAuto(false);
-            final PackConfig pc = new PackConfig();
-            pc.setDeltaCompress(false);
-            gc.setPackConfig(pc);
-            final ProgressMonitor pm = new IncrementalProgressMonitor(new GcProgressMonitor(this.log), 100);
-            gc.setProgressMonitor(pm);
-            log.info("Starting garbage collection");
-            gc.gc(); // TODO progress monitor
-            log.info("Garbage collection complete.");
-            log.info("Stats after gc:");
-            log.info("" + git.gc().getStatistics());
-            this.sizeAfterBytes = sizeOfDirectory(gitDir);
-            log.info("Backup size after gc: " + byteCountToDisplaySize(sizeAfterBytes));
-        } catch (IOException | GitAPIException | ParseException e) {
-            this.setFailed();
-            log.internalError("Failed to gc", e);
-            return;
+    @Override
+    public Void call() throws Exception {
+        final File gitDir = git.getRepository().getDirectory();
+        log.hud(localized("fastback.hud.gc-percent", 0));
+        log.info("Stats before gc:");
+        log.info("" + git.gc().getStatistics());
+        this.sizeBeforeBytes = sizeOfDirectory(gitDir);
+        log.info("Backup size before gc: " + byteCountToDisplaySize(sizeBeforeBytes));
+        if (ctx.isReflogDeletionEnabled()) {
+            // reflogs aren't very useful in our case and cause old snapshots to get retained
+            // longer than people expect.
+            final Path reflogsDir = gitDir.toPath().resolve("logs");
+            log.info("Deleting reflogs " + reflogsDir);
+            FileUtils.rmdir(reflogsDir);
         }
-        this.setCompleted();
+        if (ctx.isBranchCleanupEnabled()) {
+            final List<String> branchesToDelete = new ArrayList<>();
+            for (final Ref ref : git.branchList().setListMode(ALL).call()) {
+                final String branchName = getBranchName(ref);
+                if (branchName == null) {
+                    log.warn("Non-branch ref returned by branchList: " + ref);
+                } else if (isTempBranch(branchName)) {
+                    branchesToDelete.add(branchName);
+                } else if (SnapshotId.isSnapshotBranchName(branchName)) {
+                    // ok fine
+                } else {
+                    log.warn("Unidentified branch found " + branchName + " - consider removing it with 'git branch -D'");
+                }
+            }
+            if (branchesToDelete.isEmpty()) {
+                log.info("No branches to clean up");
+            } else {
+                log.info("Deleting branches: " + branchesToDelete);
+                git.branchDelete().setForce(true).setBranchNames(branchesToDelete.toArray(new String[0])).call();
+                log.info("Branches deleted.");
+            }
+        }
+        final GC gc = new GC(((FileRepository) git.getRepository()));
+        gc.setExpireAgeMillis(0);
+        gc.setPackExpireAgeMillis(0);
+        gc.setAuto(false);
+        final PackConfig pc = new PackConfig();
+        pc.setDeltaCompress(false);
+        gc.setPackConfig(pc);
+        final ProgressMonitor pm = new IncrementalProgressMonitor(new GcProgressMonitor(this.log), 100);
+        gc.setProgressMonitor(pm);
+        log.info("Starting garbage collection");
+        gc.gc(); // TODO progress monitor
+        log.info("Garbage collection complete.");
+        log.info("Stats after gc:");
+        log.info("" + git.gc().getStatistics());
+        this.sizeAfterBytes = sizeOfDirectory(gitDir);
+        log.info("Backup size after gc: " + byteCountToDisplaySize(sizeAfterBytes));
+        return null;
     }
 
     public long getBytesReclaimed() {
@@ -160,11 +152,11 @@ public class GcTask extends Task {
             // Prune loose objects also found in pack files
             // Prune loose, unreferenced objects
             if (task.contains("Writing objects")) {
-                this.logger.hud(localized("fastback.hud.gc-percent", (int)(percentage * 9 / 10)));
+                this.logger.hud(localized("fastback.hud.gc-percent", (int) (percentage * 9 / 10)));
             } else if (task.contains("Selecting commits")) {
-                this.logger.hud(localized("fastback.hud.gc-percent", 90 + (int)(percentage/20)));
+                this.logger.hud(localized("fastback.hud.gc-percent", 90 + (int) (percentage / 20)));
             } else if (task.contains("Prune loose objects")) {
-                this.logger.hud(localized("fastback.hud.gc-percent", 95 + (int)(percentage/20)));
+                this.logger.hud(localized("fastback.hud.gc-percent", 95 + (int) (percentage / 20)));
             }
         }
 
