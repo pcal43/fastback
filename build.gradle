@@ -31,10 +31,10 @@ project.ext.versions = [
     JavaEWAH                    : '1.1.13',
     fabric_permissions          : '0.2-SNAPSHOT',
     server_translations         : '[1.4.17+1.19.2]',
-	junit_jupiter               : '5.8.2',
-	eddsa                       : '0.3.0',
-	test_log4j                  : '2.16.0',
-	packet_tweaker              : '0.3.0+1.18.2'
+    junit_jupiter               : '5.8.2',
+    eddsa                       : '0.3.0',
+    test_log4j                  : '2.16.0',
+    packet_tweaker              : '0.3.0+1.18.2'
 ]
 
 dependencies {
@@ -89,32 +89,10 @@ processResources {
 	}
 }
 
-task hackSshdCommon {
-	doLast {
-		mkdir "$buildDir"
-		copy {
-			from "/home/pcal/.gradle/caches/fabric-loom/temp/modprocessing/sshd-common-${versions.apache_sshd}.jar"
-			into "$buildDir/"
-			rename { String fileName ->
-				fileName.replace("sshd-common-${versions.apache_sshd}.jar", "sshd-common-${versions.apache_sshd}+no-fs.jar")
-			}
-		}
-
-		exec {
-			workingDir "${buildDir}"
-			executable 'zip'
-			args '-d', "sshd-common-${versions.apache_sshd}+no-fs.jar", 'META-INF/services/java.nio.file.spi.FileSystemProvider'
-		}
-	}
-}
-
-
-
 
 sourceSets.test {
 	resources.srcDirs = ["src/test/resources"]
 }
-
 
 tasks.withType(JavaCompile).configureEach {
 	// Minecraft 1.18 (1.18-pre2) upwards uses Java 17.
@@ -173,3 +151,25 @@ modrinth {
 		forgeGradleIntegration = false
 	}
 }
+
+
+tasks.register('hackSshdCommon') {
+	doLast {
+		mkdir "$buildDir"
+		copy {
+			from "${gradle.gradleUserHomeDir}/caches/fabric-loom/temp/modprocessing/sshd-common-${versions.apache_sshd}.jar"
+			into "$buildDir/"
+			rename { String fileName ->
+				fileName.replace("sshd-common-${versions.apache_sshd}.jar", "sshd-common-${versions.apache_sshd}+no-fs.jar")
+			}
+		}
+
+		exec {
+			workingDir "${buildDir}"
+			executable 'zip'
+			args '-d', "sshd-common-${versions.apache_sshd}+no-fs.jar", 'META-INF/services/java.nio.file.spi.FileSystemProvider'
+		}
+	}
+}
+
+classes { finalizedBy hackSshdCommon }

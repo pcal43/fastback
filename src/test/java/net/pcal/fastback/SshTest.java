@@ -25,7 +25,7 @@ import java.nio.file.Path;
 
 public class SshTest {
 
-    @Test
+    //@Test
     public void testSsh() throws Exception {
         Git git = Git.open(Path.of("/Users/pcal/dev/backup-test").toFile());
         git.push().setRemote("origin").call();
