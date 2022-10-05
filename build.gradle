@@ -37,7 +37,8 @@ project.ext.versions = [
     server_translations         : '[1.4.17+1.19.2]',
 	junit_jupiter               : '5.8.2',
 	eddsa                       : '0.3.0',
-	test_log4j                  : '2.16.0'
+	test_log4j                  : '2.16.0',
+	packet_tweaker              : '0.3.0+1.18.2'
 ]
 
 dependencies {
@@ -53,7 +54,7 @@ dependencies {
 
 	// FIXME
 	include /*runtimeOnly*/("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${versions.jgit}") { transitive = false }
-	include /*runtimeOnly*/("org.apache.sshd:sshd-common:${versions.apache_sshd}") { transitive = false }
+	include /*runtimeOnly*/("org.apache.sshd:ssh//backupd-common:${versions.apache_sshd}") { transitive = false }
 	include runtimeOnly("org.apache.sshd:sshd-core:${versions.apache_sshd}") { transitive = false }
 
 	// Enable ed25519 support in apache_sshd
@@ -62,7 +63,7 @@ dependencies {
 
 	// https://github.com/lucko/fabric-permissions-api
 	include modImplementation("fr.catcore:server-translations-api:${versions.server_translations}") { transitive = false }
-	include modRuntimeOnly("xyz.nucleoid:packet-tweaker:0.3.0+1.18.2") { transitive = false }
+	include modRuntimeOnly("xyz.nucleoid:packet-tweaker:${versions.packet_tweaker}") { transitive = false }
 
 	// https://github.com/lucko/fabric-permissions-api
 	include modImplementation("me.lucko:fabric-permissions-api:${versions.fabric_permissions}") { transitive = false }
