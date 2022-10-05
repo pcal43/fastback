@@ -103,7 +103,7 @@ enum HelpCommand implements Command {
             }
             subcommands.append(available);
         }
-        log.chat(localized("commands.fastback.help.subcommands", String.valueOf(subcommands)));
+        log.chat(localized("fastback.help.subcommands", String.valueOf(subcommands)));
 
         if (ctx.isCommandDumpEnabled()) {
             final StringWriter sink = new StringWriter();
@@ -121,7 +121,7 @@ enum HelpCommand implements Command {
         for (String available : getSubcommandNames(cc)) {
             if (subcommand.equals(available)) {
                 final String prefix = "/backup " + subcommand + ": ";
-                log.chat(localized("commands.fastback.help." + subcommand, prefix));
+                log.chat(localized("fastback.help.command." + subcommand, prefix));
                 return SUCCESS;
             }
         }
@@ -141,7 +141,7 @@ enum HelpCommand implements Command {
         out.println("---------------------- | ---");
         for (final String sub : getSubcommandNames(cc)) {
             //FIXME GROSS.  HOW DO WE LOCALIZE WITHOUT GOING THROUGH minecraft.text?
-            net.minecraft.text.Text shortHelp = net.minecraft.text.Text.translatable("commands.fastback.help." + sub);
+            net.minecraft.text.Text shortHelp = net.minecraft.text.Text.translatable("fastback.help.command." + sub);
             String paddedSub = String.format("%-" + 22 + "s", "`" + sub + "`");
             out.println(paddedSub + " | " + shortHelp.getString());
         }
