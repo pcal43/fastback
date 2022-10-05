@@ -39,25 +39,29 @@ project.ext.versions = [
 
 dependencies {
 	// Fabric & Minecraft
-	include(modImplementation(group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: versions.jgit))
-	include group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.ssh.apache', version: versions.jgit
-	include group: 'org.apache.sshd', name: 'sshd-core', version: versions.apache_sshd
-	include group: 'org.apache.sshd', name: 'sshd-common', version: versions.apache_sshd
-	include group: 'com.googlecode.javaewah', name: 'JavaEWAH', version: versions.JavaEWAH
-
-	// Enable ed25519 support per
-	// https://github.com/apache/mina-sshd/blob/dfa109b7b535d64e8ee395ddd0419e7696fb24ee/docs/dependencies.md
-	include group: 'net.i2p.crypto', name: 'eddsa', version: '0.3.0'
-
-	include(modImplementation("fr.catcore:server-translations-api:${versions.server_translations_version}"))
-
-	// https://github.com/lucko/fabric-permissions-api
-	include(modImplementation(group: 'me.lucko', name: 'fabric-permissions-api', version: versions.fabric_permissions))
-
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    // JGit
+	include implementation("org.eclipse.jgit:org.eclipse.jgit:${versions.jgit}")
+	include runtimeOnly("com.googlecode.javaewah:JavaEWAH:${version:versions.JavaEWAH}")
+
+	// FIXME
+	include /*runtimeOnly*/("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${versions.jgit}")
+	include /*runtimeOnly*/("org.apache.sshd:sshd-core:${versions.apache_sshd}")
+	include /*runtimeOnly*/("org.apache.sshd:sshd-common:${versions.apache_sshd}")
+
+	// Enable ed25519 support in apache_sshd
+	// https://github.com/apache/mina-sshd/blob/dfa109b7b535d64e8ee395ddd0419e7696fb24ee/docs/dependencies.md
+	include runtimeOnly("net.i2p.crypto:eddsa:0.3.0")
+
+	// https://github.com/lucko/fabric-permissions-api
+	include modImplementation("fr.catcore:server-translations-api:${versions.server_translations_version}")
+
+	// https://github.com/lucko/fabric-permissions-api
+	include modImplementation("me.lucko:fabric-permissions-api:${versions.fabric_permissions}")
 
 	// JUnit
 	testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.2"
