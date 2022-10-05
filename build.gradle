@@ -45,15 +45,13 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
     // JGit
-	include implementation("org.eclipse.jgit:org.eclipse.jgit:${versions.jgit}") {
-		transitive = false
-	}
+	include implementation("org.eclipse.jgit:org.eclipse.jgit:${versions.jgit}")  { transitive = false }
 	include runtimeOnly("com.googlecode.javaewah:JavaEWAH:${version:versions.JavaEWAH}")
 
 	// FIXME
-	include /*runtimeOnly*/("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${versions.jgit}")
-	include /*runtimeOnly*/("org.apache.sshd:sshd-core:${versions.apache_sshd}")
-	include /*runtimeOnly*/("org.apache.sshd:sshd-common:${versions.apache_sshd}")
+	include runtimeOnly("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${versions.jgit}") { transitive = false }
+	include runtimeOnly("org.apache.sshd:sshd-core:${versions.apache_sshd}") { transitive = false }
+	include /*runtimeOnly*/("org.apache.sshd:sshd-common:${versions.apache_sshd}") { transitive = false }
 
 	// Enable ed25519 support in apache_sshd
 	// https://github.com/apache/mina-sshd/blob/dfa109b7b535d64e8ee395ddd0419e7696fb24ee/docs/dependencies.md
