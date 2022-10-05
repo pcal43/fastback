@@ -20,8 +20,6 @@
   "fastback.help.command.set-retention"        : "Set snapshot retention policy.",
   "fastback.help.command.set-shutdown-action"  : "Set an action to perform on shutdown.",
   "fastback.help.subcommands"                  : "Available subcommands:\n%s\nFor detailed help on a subcommand, run\n/backup help [subcommand]\nor go to https://pcal43.github.io/fastback",
-  "fastback.help.command.uuid"                 : "Show the uuid for this world backup.",
-  "fastback.help.command.version"              : "Show mod version.",
   "fastback.chat.backup-complete"              : "Backup complete.",
   "fastback.chat.create-file-remote-created"   : "Git repository created at %s\nRemote backups enabled to:\n%s",
   "fastback.chat.create-file-remote-dir-exists": "Directory already exists:\n%s",

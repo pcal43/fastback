@@ -12,8 +12,6 @@
   "fastback.help.command.set-remote"             : "Установить адрес для удалённого резервирования.",
   "fastback.help.command.set-shutdown-action"    : "Переключить создание точек восстановления при закрытии мира.",
   "fastback.help.subcommands"                    : "Список доступных аргументов:\n%s\nДля подробного описания аргумента выполните\n/backup help [аргумент]\nили перейдите на https://pcal43.github.io/fastback",
-  "fastback.help.command.uuid"                   : "Показать uuid резервирования этого мира.",
-  "fastback.help.command.version"                : "Показать версию мода.",
   "fastback.chat.backup-complete"                : "Резервирование завершено.",
   "fastback.chat.create-file-remote-created"     : "Git-репозиторий создан в %s\nУдалённое резервирование будет вестись в\n%s",
   "fastback.chat.create-file-remote-dir-exists"  : "Директория уже существует:\n%s",
