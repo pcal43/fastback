@@ -47,12 +47,11 @@ dependencies {
 	include implementation("org.eclipse.jgit:org.eclipse.jgit:${versions.jgit}") { transitive = false }
 	include runtimeOnly("com.googlecode.javaewah:JavaEWAH:${versions.JavaEWAH}")  { transitive = false }
 	include runtimeOnly("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${versions.jgit}") { transitive = false }
+	include runtimeOnly("org.apache.sshd:sshd-core:${versions.apache_sshd}") { transitive = false }
 
 	// FIXME
-	include runtimeOnly("org.apache.sshd:sshd-core:${versions.apache_sshd}") { transitive = false }
-	//include runtimeOnly("org.apache.sshd:sshd-common:${versions.apache_sshd}") { transitive = false }
-
-	include runtimeOnly(files("lib/sshd-common-2.8.0+noRootedFileSystem.jar"))
+	include runtimeOnly(files("${buildDir}/sshd-common-${versions.apache_sshd}+no-fs.jar"))
+	include("org.apache.sshd:sshd-common:${versions.apache_sshd}") { transitive = false }
 
 	// Enable ed25519 support in apache_sshd
 	// https://github.com/apache/mina-sshd/blob/dfa109b7b535d64e8ee395ddd0419e7696fb24ee/docs/dependencies.md
@@ -88,11 +87,35 @@ processResources {
 		from "$projectDir/src/main/resources/assets/fastback/lang"
 		into "$buildDir/resources/main/data/fastback/lang"
 	}
+
 }
+
+task hackSshdCommon {
+	doLast {
+		mkdir "$buildDir"
+		copy {
+			from "/home/pcal/.gradle/caches/fabric-loom/temp/modprocessing/sshd-common-${versions.apache_sshd}.jar"
+			into "$buildDir/"
+			rename { String fileName ->
+				fileName.replace("sshd-common-${versions.apache_sshd}.jar", "sshd-common-${versions.apache_sshd}+no-fs.jar")
+			}
+		}
+
+		exec {
+			workingDir "${buildDir}"
+			executable 'zip'
+			args '-d', "sshd-common-${versions.apache_sshd}+no-fs.jar", 'META-INF/services/java.nio.file.spi.FileSystemProvider'
+		}
+	}
+}
+
+
+
 
 sourceSets.test {
 	resources.srcDirs = ["src/test/resources"]
 }
+
 
 tasks.withType(JavaCompile).configureEach {
 	// Minecraft 1.18 (1.18-pre2) upwards uses Java 17.
