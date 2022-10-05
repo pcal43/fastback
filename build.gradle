@@ -49,7 +49,7 @@ dependencies {
     include runtimeOnly("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${versions.jgit}") { transitive = false }
     include runtimeOnly("org.apache.sshd:sshd-core:${versions.apache_sshd}") { transitive = false }
 
-    // FIXME
+    // See note below on 'stripSshdFileSystem'
     include runtimeOnly(files("${buildDir}/sshd-common-${versions.apache_sshd}+no-fs.jar"))
     include("org.apache.sshd:sshd-common:${versions.apache_sshd}") { transitive = false }
 
@@ -152,8 +152,12 @@ modrinth {
 	}
 }
 
-
-tasks.register('hackSshdCommon') {
+/**
+ *
+ *
+ * 
+ */
+tasks.register('stripSshdFileSystem') {
     doLast {
         mkdir "$buildDir"
         copy {
@@ -172,4 +176,4 @@ tasks.register('hackSshdCommon') {
     }
 }
 
-classes { finalizedBy hackSshdCommon }
+classes { finalizedBy stripSshdFileSystem }
