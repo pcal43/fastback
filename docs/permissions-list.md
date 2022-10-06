@@ -1,8 +1,5 @@
 
-Permission
---------------------------------
-* `fastback.command` (/backup)
-
+* `fastback.command`
 * `fastback.command.create-file-remote`
 * `fastback.command.delete`
 * `fastback.command.disable`
