@@ -38,3 +38,7 @@ ide:
 .PHONY: pr
 pr:
 	firefox https://github.com/pcal43/gitback/pulls
+
+.PHONY: deps
+deps:
+	./gradlew -q dependencies --configuration runtimeClasspath
