@@ -54,6 +54,7 @@ public class FileUtils {
 
     public static void writeResourceToFile(String resourcePath, Path targetFile) throws IOException {
         final String rawResource;
+        if (targetFile.toFile().isFile()) return;
         try (InputStream in = FileUtils.class.getClassLoader().getResourceAsStream(resourcePath)) {
             if (in == null) {
                 throw new FileNotFoundException("Unable to load resource " + resourcePath); // wat
