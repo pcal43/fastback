@@ -23,15 +23,12 @@ import net.pcal.fastback.logging.ChatLogger;
 import net.pcal.fastback.logging.CompositeLogger;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.SaveScreenLogger;
-import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.jgit.api.Git;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.List;
 
 import static net.pcal.fastback.logging.Message.localized;
-import static net.pcal.fastback.utils.FileUtils.writeResourceToFile;
 import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
 /**
@@ -47,7 +44,6 @@ public class LifecycleUtils {
      */
     public static void onInitialize(final ModContext ctx) {
         Commands.registerCommands(ctx, ctx.getCommandName());
-        copyConfigResources(ctx);
         ctx.getLogger().info("onInitialize complete");
     }
 
@@ -97,23 +93,4 @@ public class LifecycleUtils {
         ctx.getLogger().info("onWorldStop complete");
     }
 
-    private static final Iterable<Pair<String, Path>> CONFIG_RESOURCES = List.of(
-            Pair.of("config/fastback/bin/enable", Path.of("bin/enable")),
-            Pair.of("config/fastback/bin/git-hard-gc", Path.of("bin/git-hard-gc"))
-    );
-
-    private static void copyConfigResources(final ModContext ctx) {
-        final Path configDir = ctx.getMinecraftConfigDir();
-        for (final Pair<String, Path> pair : CONFIG_RESOURCES) {
-            final String resourcePath = pair.getLeft();
-            final Path targetFilePath = pair.getRight();
-            ctx.getLogger().debug("writing " + resourcePath + " to " + targetFilePath);
-            final Path configPath = configDir.resolve("fastback").resolve(targetFilePath);
-            try {
-                writeResourceToFile(resourcePath, configDir.resolve(configPath));
-            } catch (IOException e) {
-                ctx.getLogger().internalError("failed to output resource " + resourcePath, e);
-            }
-        }
-    }
 }

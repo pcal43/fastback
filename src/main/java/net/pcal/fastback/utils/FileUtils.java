@@ -26,8 +26,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.apache.commons.io.FileUtils.sizeOfDirectory;
-
 public class FileUtils {
 
     public static void mkdirs(final Path path) throws IOException {
@@ -48,13 +46,9 @@ public class FileUtils {
         org.apache.commons.io.FileUtils.deleteDirectory(path.toFile());
     }
 
-    public static String getDirDisplaySize(File dir) {
-        return org.apache.commons.io.FileUtils.byteCountToDisplaySize(sizeOfDirectory(dir));
-    }
-
-    public static void writeResourceToFile(String resourcePath, Path targetFile) throws IOException {
+    public static void writeResourceToFile(Path resourcePath, Path targetFile) throws IOException {
         final String rawResource;
-        try (InputStream in = FileUtils.class.getClassLoader().getResourceAsStream(resourcePath)) {
+        try (InputStream in = FileUtils.class.getClassLoader().getResourceAsStream(resourcePath.toString())) {
             if (in == null) {
                 throw new FileNotFoundException("Unable to load resource " + resourcePath); // wat
             }
