@@ -61,6 +61,8 @@ public class Commands {
         SetShutdownActionCommand.INSTANCE.register(argb, ctx);
 
         SetRetentionCommand.INSTANCE.register(argb, ctx);
+        SetRemoteRetentionCommand.INSTANCE.register(argb, ctx);
+
         PruneCommand.INSTANCE.register(argb, ctx);
         DeleteCommand.INSTANCE.register(argb, ctx);
         GcCommand.INSTANCE.register(argb, ctx);

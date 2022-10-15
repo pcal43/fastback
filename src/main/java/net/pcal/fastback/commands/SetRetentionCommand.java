@@ -28,11 +28,13 @@ import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;
 import net.pcal.fastback.retention.RetentionPolicyType;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.lib.StoredConfig;
 
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
 import static net.minecraft.server.command.CommandManager.argument;
@@ -57,13 +59,18 @@ enum SetRetentionCommand implements Command {
 
     @Override
     public void register(LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
-        registerSetRetentionCommand(argb, ctx, COMMAND_NAME, (cc, rt)->setLocalPolicy(ctx, cc, rt));
+        registerSetRetentionCommand(argb, ctx, COMMAND_NAME, (cc, rt) -> setLocalPolicy(ctx, cc, rt));
     }
+
+    private static int setLocalPolicy(ModContext ctx, CommandContext<ServerCommandSource> cc, RetentionPolicyType rpt) {
+        return setRetentionPolicy(ctx, cc, rpt, WorldConfig::setLocalRetentionPolicy);
+    }
+
 
     /**
      * Register a 'set retention' command that tab completes with all the policies and the policy arguments.
      * Broken out as a helper methods so this logic can be shared by set-retention and set-remote-retention.
-     *
+     * <p>
      * FIXME? The command parsing here could be more user-friendly.  Not really clear how to implement
      * argument defaults.  Also a lot of noise from bugs like this: https://bugs.mojang.com/browse/MC-165562
      * Just generally not sure how to beat brigadier into submission here.
@@ -88,7 +95,14 @@ enum SetRetentionCommand implements Command {
         argb.then(retainCommand);
     }
 
-    private static int setLocalPolicy(ModContext ctx, CommandContext<ServerCommandSource> cc, RetentionPolicyType rpt) {
+    /**
+     * Does the work to encode a policy configuration and set it in git configuration.
+     * Broken out as a helper methods so this logic can be shared by set-retention and set-remote-retention.
+     */
+    public static int setRetentionPolicy(final ModContext ctx,
+                                         final CommandContext<ServerCommandSource> cc,
+                                         final RetentionPolicyType rpt,
+                                         final BiConsumer<Config, String> setEncodedPolicyFn) {
         final Logger logger = commandLogger(ctx, cc.getSource());
         try {
             final Path worldSaveDir = ctx.getWorldDirectory();
@@ -106,7 +120,7 @@ enum SetRetentionCommand implements Command {
             }
             try (final Git git = Git.open(worldSaveDir.toFile())) {
                 final StoredConfig gitConfig = git.getRepository().getConfig();
-                WorldConfig.setLocalRetentionPolicy(gitConfig, encodedPolicy);
+                setEncodedPolicyFn.accept(gitConfig, encodedPolicy);
                 gitConfig.save();
                 logger.chat(localized("fastback.chat.retention-policy-set"));
                 logger.chat(rp.getDescription());
