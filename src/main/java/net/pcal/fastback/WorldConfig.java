@@ -21,7 +21,6 @@ package net.pcal.fastback;
 import net.pcal.fastback.commands.SchedulableAction;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.FileUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.lib.StoredConfig;
@@ -35,7 +34,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static net.pcal.fastback.utils.FileUtils.writeResourceToFile;
-import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
 public record WorldConfig(
         String worldUuid,
@@ -54,11 +52,8 @@ public record WorldConfig(
     private static final String CONFIG_AUTOBACK_ACTION = "autoback-action";
     private static final String CONFIG_AUTOBACK_WAIT = "autoback-wait";
     private static final String CONFIG_SHUTDOWN_ACTION = "shutdown-action";
-
-    private static final Iterable<Pair<String, Path>> WORLD_RESOURCES = List.of(
-            Pair.of("world/dot-gitignore", Path.of(".gitignore")),
-            Pair.of("world/dot-gitattributes", Path.of(".gitattributes"))
-    );
+    private static final String CONFIG_UPDATE_GITIGNORE_ENABLED = "update-gitignore-enabled";
+    private static final String CONFIG_UPDATE_GITATTRIBUTES_ENABLED = "update-gitattributes-enabled";
 
     public static WorldConfig load(final Git git) throws IOException {
         final StoredConfig gitConfig = git.getRepository().getConfig();
@@ -144,21 +139,6 @@ public record WorldConfig(
                 toAbsolutePath().resolve(WORLD_UUID_PATH)).trim();
     }
 
-    public static boolean isBackupsEnabledOn(Path worldSaveDir) {
-        if (!isGitRepo(worldSaveDir)) return false;
-        if (!worldSaveDir.resolve(WORLD_UUID_PATH).toFile().exists()) return false;
-        return true;
-    }
-
-    public static void doWorldMaintenance(final Git git, final Logger logger) throws IOException {
-        logger.info("Doing world maintenance");
-        final Path worldSaveDir = git.getRepository().getWorkTree().toPath();
-        ensureWorldHasUuid(worldSaveDir, logger);
-        for (final Pair<String, Path> resource2path : WORLD_RESOURCES) {
-            writeResourceToFile(resource2path.getLeft(), worldSaveDir.resolve(resource2path.getRight()));
-        }
-    }
-
     private static void ensureWorldHasUuid(final Path worldSaveDir, final Logger logger) throws IOException {
         final Path worldUuidpath = worldSaveDir.resolve(WORLD_UUID_PATH);
         if (!worldUuidpath.toFile().exists()) {
@@ -169,6 +149,43 @@ public record WorldConfig(
                 fw.append('\n');
             }
             logger.info("Generated new world.uuid " + newUuid);
+        }
+    }
+
+
+    // ====================================================================
+    // Resource management
+
+    private record WorldResource(
+            Path resourcePath,
+            Path targetPath,
+            String permission
+    ) {}
+
+    private static final Iterable<WorldResource> WORLD_RESOURCES = List.of(
+            new WorldResource(
+                    Path.of("world/dot-gitignore"),
+                    Path.of(".gitignore"),
+                    CONFIG_UPDATE_GITIGNORE_ENABLED),
+            new WorldResource(
+                    Path.of("world/dot-gitattributes"),
+                    Path.of(".gitattributes"),
+                    CONFIG_UPDATE_GITATTRIBUTES_ENABLED)
+    );
+
+    public static void doWorldMaintenance(final Git git, final Logger logger) throws IOException {
+        logger.info("Doing world maintenance");
+        final Path worldSaveDir = git.getRepository().getWorkTree().toPath();
+        ensureWorldHasUuid(worldSaveDir, logger);
+        final Config config = git.getRepository().getConfig();
+        for (final WorldResource resource : WORLD_RESOURCES) {
+            if (config.getBoolean(CONFIG_SECTION, resource.permission, true)) {
+                logger.debug("Updating "+resource.targetPath);
+                final Path targetPath = worldSaveDir.resolve(resource.targetPath);
+                writeResourceToFile(resource.resourcePath, targetPath);
+            } else {
+                logger.info("Updates disabled for "+resource.targetPath);
+            }
         }
     }
 }
