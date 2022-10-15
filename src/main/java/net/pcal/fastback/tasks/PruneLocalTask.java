@@ -18,6 +18,7 @@
 
 package net.pcal.fastback.tasks;
 
+import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
@@ -37,21 +38,20 @@ import static net.pcal.fastback.tasks.ListSnapshotsTask.listSnapshots;
 import static net.pcal.fastback.tasks.ListSnapshotsTask.sortWorldSnapshots;
 
 /**
- * Runs git garbage collection.  Aggressively deletes reflogs, tracking branches and stray temporary branches
- * in an attempt to free up objects and reclaim disk space.
+ * Delete local snapshot branches that should not be kept per the retention policy.
  *
  * @author pcal
- * @since 0.0.12
+ * @since 0.3.0
  */
-public class PruneTask implements Callable<Collection<SnapshotId>> {
+public class PruneLocalTask implements Callable<Collection<SnapshotId>> {
 
     private final ModContext ctx;
     private final Logger log;
     private final Git git;
 
-    public PruneTask(final Git git,
-                     final ModContext ctx,
-                     final Logger log) {
+    public PruneLocalTask(final Git git,
+                          final ModContext ctx,
+                          final Logger log) {
         this.git = requireNonNull(git);
         this.ctx = requireNonNull(ctx);
         this.log = requireNonNull(log);
@@ -60,11 +60,20 @@ public class PruneTask implements Callable<Collection<SnapshotId>> {
     @Override
     public Collection<SnapshotId> call() throws IOException, GitAPIException {
         final WorldConfig wc = WorldConfig.load(git);
-        final String policyConfig = wc.retentionPolicy();
-        if (policyConfig == null) {
-            log.chatError(localized("fastback.chat.prune-no-default"));
-            return null;
-        }
+        return doPrune(wc, ctx, log,
+                wc::localRetentionPolicy,
+                () -> listSnapshots(git, ctx.getLogger()),
+                sid -> git.branchDelete().setForce(true).setBranchNames(new String[]{sid.getBranchName()}).call()
+        );
+    }
+
+    static Collection<SnapshotId> doPrune(WorldConfig wc,
+                                          ModContext ctx,
+                                          Logger log,
+                                          JGitSupplier<String> policyConfigFn,
+                                          JGitSupplier<ListMultimap<String, SnapshotId>> listSnapshotsFn,
+                                          JGitConsumer<SnapshotId> deleteSnapshotsFn) throws IOException, GitAPIException {
+        final String policyConfig = policyConfigFn.get();
         final RetentionPolicy policy = RetentionPolicyCodec.INSTANCE.decodePolicy
                 (ctx, ctx.getRetentionPolicyTypes(), policyConfig);
         if (policy == null) {
@@ -72,11 +81,11 @@ public class PruneTask implements Callable<Collection<SnapshotId>> {
             return null;
         }
         final Collection<SnapshotId> toPrune = policy.getSnapshotsToPrune(
-                sortWorldSnapshots(listSnapshots(git, ctx.getLogger()), wc.worldUuid()));
+                sortWorldSnapshots(listSnapshotsFn.get(), wc.worldUuid()));
         log.hud(localized("fastback.hud.prune-started"));
         for (final SnapshotId sid : toPrune) {
             log.info("Pruning " + sid.getName());
-            git.branchDelete().setForce(true).setBranchNames(new String[]{sid.getBranchName()}).call();
+            deleteSnapshotsFn.accept(sid);
         }
         return toPrune;
     }

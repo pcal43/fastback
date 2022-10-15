@@ -68,6 +68,7 @@ public class Commands {
 
         RemoteListCommand.INSTANCE.register(argb, ctx);
         RemoteDeleteCommand.INSTANCE.register(argb, ctx);
+        RemotePruneCommand.INSTANCE.register(argb, ctx);
         RemoteRestoreCommand.INSTANCE.register(argb, ctx);
 
         HelpCommand.INSTANCE.register(argb, ctx);

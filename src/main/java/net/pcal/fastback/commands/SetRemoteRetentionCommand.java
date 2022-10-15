@@ -33,7 +33,6 @@ import org.eclipse.jgit.lib.StoredConfig;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.BiFunction;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -44,43 +43,32 @@ import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
 
 /**
- * Command to set the snapshot retention policy.
+ * Command to set the snapshot retention policy for the remote.
  *
  * @author pcal
  * @since 0.2.0
  */
-enum SetRetentionCommand implements Command {
+enum SetRemoteRetentionCommand implements Command {
 
     INSTANCE;
 
-    private static final String COMMAND_NAME = "set-retention";
+    private static final String COMMAND_NAME = "set-remote-retention";
 
+    //
+    // FIXME? The command parsing here could be more user-friendly.  Not really clear how to implement
+    // argument defaults.  Also a lot of noise from bugs like this: https://bugs.mojang.com/browse/MC-165562
+    // Just generally not sure how to beat brigadier into submission here.
+    //
     @Override
     public void register(LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
-        registerSetRetentionCommand(argb, ctx, COMMAND_NAME, (cc, rt)->setLocalPolicy(ctx, cc, rt));
-    }
-
-    /**
-     * Register a 'set retention' command that tab completes with all the policies and the policy arguments.
-     * Broken out as a helper methods so this logic can be shared by set-retention and set-remote-retention.
-     *
-     * FIXME? The command parsing here could be more user-friendly.  Not really clear how to implement
-     * argument defaults.  Also a lot of noise from bugs like this: https://bugs.mojang.com/browse/MC-165562
-     * Just generally not sure how to beat brigadier into submission here.
-     */
-    static void registerSetRetentionCommand(final LiteralArgumentBuilder<ServerCommandSource> argb,
-                                            final ModContext ctx,
-                                            final String commandName,
-                                            final BiFunction<CommandContext<ServerCommandSource>, RetentionPolicyType, Integer> setPolicyFn) {
-        final LiteralArgumentBuilder<ServerCommandSource> retainCommand =
-                literal(commandName).requires(subcommandPermission(ctx, commandName));
+        final LiteralArgumentBuilder<ServerCommandSource> retainCommand = literal(COMMAND_NAME).
+                requires(subcommandPermission(ctx, COMMAND_NAME));
         for (final RetentionPolicyType rpt : ctx.getRetentionPolicyTypes()) {
             final LiteralArgumentBuilder<ServerCommandSource> policyCommand = literal(rpt.getCommandName());
-            policyCommand.executes(cc -> setPolicyFn.apply(cc, rpt));
+            policyCommand.executes(cc -> setPolicy(ctx, cc, rpt));
             if (rpt.getParameters() != null) {
                 for (RetentionPolicyType.Parameter param : rpt.getParameters()) {
-                    policyCommand.then(argument(param.name(), param.type()).
-                            executes(cc -> setPolicyFn.apply(cc, rpt)));
+                    policyCommand.then(argument(param.name(), param.type()).executes(cc -> setPolicy(ctx, cc, rpt)));
                 }
             }
             retainCommand.then(policyCommand);
@@ -88,7 +76,7 @@ enum SetRetentionCommand implements Command {
         argb.then(retainCommand);
     }
 
-    private static int setLocalPolicy(ModContext ctx, CommandContext<ServerCommandSource> cc, RetentionPolicyType rpt) {
+    private static int setPolicy(ModContext ctx, CommandContext<ServerCommandSource> cc, RetentionPolicyType rpt) {
         final Logger logger = commandLogger(ctx, cc.getSource());
         try {
             final Path worldSaveDir = ctx.getWorldDirectory();

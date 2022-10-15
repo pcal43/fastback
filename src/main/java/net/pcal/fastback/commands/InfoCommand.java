@@ -78,7 +78,7 @@ enum InfoCommand implements Command {
             log.chat(localized("fastback.chat.info-backup-size", byteCountToDisplaySize(backupSize)));
             {
                 // show the snapshot retention policy
-                final String encoded = wc.retentionPolicy();
+                final String encoded = wc.localRetentionPolicy();
                 if (encoded == null) {
                     log.chat(localized("fastback.chat.retention-policy-none"));
                 } else {
