@@ -13,10 +13,12 @@
 * `fastback.command.prune`
 * `fastback.command.remote-delete`
 * `fastback.command.remote-list`
+* `fastback.command.remote-prune`
 * `fastback.command.remote-restore`
 * `fastback.command.restore`
 * `fastback.command.set-autoback-action`
 * `fastback.command.set-autoback-wait`
 * `fastback.command.set-remote`
+* `fastback.command.set-remote-retention`
 * `fastback.command.set-retention`
 * `fastback.command.set-shutdown-action`

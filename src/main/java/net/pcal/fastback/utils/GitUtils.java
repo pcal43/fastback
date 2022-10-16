@@ -23,6 +23,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.RefNotFoundException;
 import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.URIish;
 
@@ -73,14 +74,11 @@ public class GitUtils {
         return null;
     }
 
-    public static boolean isBranchExtant(Git git, String name, Logger logger) throws GitAPIException {
-        try {
-            git.branchList().setContains(name).call();
-            return true;
-        } catch (RefNotFoundException e) {
-            logger.debug(name + " doesn't exist", e);
-            return false;
-        }
+    public static void deleteRemoteBranch(Git git, String remoteName, String remoteBranchName) throws GitAPIException {
+        RefSpec refSpec = new RefSpec()
+                .setSource(null)
+                .setDestination("refs/heads/" + remoteBranchName);
+        git.push().setRefSpecs(refSpec).setRemote(remoteName).call();
     }
 
     public static boolean isGitRepo(Path worldSaveDir) {

@@ -41,14 +41,16 @@ public record WorldConfig(
         SchedulableAction autobackAction,
         Duration autobackWait,
         SchedulableAction shutdownAction,
-        String retentionPolicy,
+        String localRetentionPolicy,
+        String remoteRetentionPolicy,
         String getRemotePushUrl) {
 
     public static final Path WORLD_UUID_PATH = Path.of("fastback/world.uuid");
     private static final String REMOTE_NAME = "origin";
     private static final String CONFIG_SECTION = "fastback";
     private static final String CONFIG_BACKUP_ENABLED = "backup-enabled";
-    private static final String CONFIG_RETENTION_POLICY = "retention-policy";
+    private static final String CONFIG_LOCAL_RETENTION_POLICY = "retention-policy";
+    private static final String CONFIG_REMOTE_RETENTION_POLICY = "remote-retention-policy";
     private static final String CONFIG_AUTOBACK_ACTION = "autoback-action";
     private static final String CONFIG_AUTOBACK_WAIT = "autoback-wait";
     private static final String CONFIG_SHUTDOWN_ACTION = "shutdown-action";
@@ -72,7 +74,8 @@ public record WorldConfig(
                 autobackAction,
                 Duration.ofMinutes(autobackWait),
                 shutdownAction,
-                gitConfig.getString(CONFIG_SECTION, null, CONFIG_RETENTION_POLICY),
+                gitConfig.getString(CONFIG_SECTION, null, CONFIG_LOCAL_RETENTION_POLICY),
+                gitConfig.getString(CONFIG_SECTION, null, CONFIG_REMOTE_RETENTION_POLICY),
                 gitConfig.getString("remote", REMOTE_NAME, "url")
         );
     }
@@ -118,8 +121,12 @@ public record WorldConfig(
         gitConfig.setBoolean(CONFIG_SECTION, null, CONFIG_BACKUP_ENABLED, value);
     }
 
-    public static void setRetentionPolicy(Config gitConfig, String value) {
-        gitConfig.setString(CONFIG_SECTION, null, CONFIG_RETENTION_POLICY, value);
+    public static void setLocalRetentionPolicy(Config gitConfig, String value) {
+        gitConfig.setString(CONFIG_SECTION, null, CONFIG_LOCAL_RETENTION_POLICY, value);
+    }
+
+    public static void setRemoteRetentionPolicy(Config gitConfig, String value) {
+        gitConfig.setString(CONFIG_SECTION, null, CONFIG_REMOTE_RETENTION_POLICY, value);
     }
 
     public static void setAutobackAction(Config gitConfig, SchedulableAction action) {

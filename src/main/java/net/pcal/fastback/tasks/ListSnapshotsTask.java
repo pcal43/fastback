@@ -27,6 +27,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,13 +40,15 @@ import static java.util.Objects.requireNonNull;
 @SuppressWarnings({"Convert2MethodRef", "FunctionalExpressionCanBeFolded"})
 public class ListSnapshotsTask implements Callable<ListMultimap<String, SnapshotId>> {
 
-    public static ListMultimap<String, SnapshotId> listSnapshots(final Git git, final Logger log) throws GitAPIException {
-        final RefProviderTask refProvider = ()->  git.branchList().call();
+    public static ListMultimap<String, SnapshotId> listSnapshots(final Git git, final Logger log)
+            throws GitAPIException, IOException {
+        final JGitSupplier<Collection<Ref>> refProvider = ()->  git.branchList().call();
         return new ListSnapshotsTask(refProvider, log).call();
     }
 
-    public static ListMultimap<String, SnapshotId> listRemoteSnapshots(final Git git, WorldConfig wc, final Logger log) throws GitAPIException {
-        final RefProviderTask refProvider = ()-> git.lsRemote().setRemote(wc.getRemoteName()).setHeads(true).call();
+    public static ListMultimap<String, SnapshotId> listRemoteSnapshots(final Git git, WorldConfig wc, final Logger log)
+            throws GitAPIException, IOException {
+        final JGitSupplier<Collection<Ref>> refProvider = ()-> git.lsRemote().setRemote(wc.getRemoteName()).setHeads(true).call();
         return new ListSnapshotsTask(refProvider, log).call();
     }
 
@@ -56,18 +59,18 @@ public class ListSnapshotsTask implements Callable<ListMultimap<String, Snapshot
         return sids;
     }
 
-    private final RefProviderTask refProvider;
+    private final JGitSupplier<Collection<Ref>> refProvider;
     private final Logger logger;
 
-    public ListSnapshotsTask(final RefProviderTask refProvider, Logger logger) {
+    public ListSnapshotsTask(JGitSupplier<Collection<Ref>> refProvider, Logger logger) {
         this.logger = requireNonNull(logger);
         this.refProvider = requireNonNull(refProvider);
     }
 
     @Override
-    public ListMultimap<String, SnapshotId> call() throws GitAPIException {
+    public ListMultimap<String, SnapshotId> call() throws GitAPIException, IOException {
         final ListMultimap<String, SnapshotId> snapshotsPerWorld = ArrayListMultimap.create();
-        final Collection<Ref> refs = this.refProvider.call();
+        final Collection<Ref> refs = this.refProvider.get();
         for (final Ref ref : refs) {
             final SnapshotId sid;
             try {

@@ -23,7 +23,7 @@ import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.tasks.CommitAndPushTask;
 import net.pcal.fastback.tasks.CommitTask;
 import net.pcal.fastback.tasks.GcTask;
-import net.pcal.fastback.tasks.PruneTask;
+import net.pcal.fastback.tasks.LocalPruneTask;
 import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
 
@@ -66,7 +66,7 @@ public enum SchedulableAction {
         public Callable<Void> getTask(Git git, ModContext ctx, Logger log) {
             return ()->{
                 new CommitAndPushTask(git, ctx, log).call();
-                final Collection<SnapshotId> pruned = new PruneTask(git, ctx, log).call();
+                final Collection<SnapshotId> pruned = new LocalPruneTask(git, ctx, log).call();
                 if (pruned.size() > 0) {
                     new GcTask(git, ctx, log).call();
                 }

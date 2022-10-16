@@ -71,14 +71,14 @@ class DailyRetentionPolicy implements RetentionPolicy {
         for (int i = 1; i < sorted.size(); i++) {
             currentDate = sorted.get(i).snapshotDate().toInstant().atZone(ctx.getTimeZone().toZoneId()).toLocalDate();
             if (currentDate.isAfter(gracePeriodStart)) {
-                ctx.getLogger().info("retaining " + sorted.get(i) + " because still in the grace period");
+                ctx.getLogger().debug("Will retain " + sorted.get(i) + " because still in the grace period");
                 continue;
             }
             if (currentDate.equals(previousDate)) {
-                ctx.getLogger().info("pruning " + sorted.get(i) + " same day as " + sorted.get(i - 1));
+                ctx.getLogger().debug("Will prune " + sorted.get(i) + " same day as " + sorted.get(i - 1));
                 toPrune.add(sorted.get(i));
             } else {
-                ctx.getLogger().info("retaining " + sorted.get(i) + " NOT same day as " + sorted.get(i - 1));
+                ctx.getLogger().debug("Will retain " + sorted.get(i) + " NOT same day as " + sorted.get(i - 1));
             }
             previousDate = currentDate;
         }

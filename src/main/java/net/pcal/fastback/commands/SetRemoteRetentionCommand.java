@@ -19,52 +19,50 @@
 package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
+import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.tasks.LocalPruneTask;
-import net.pcal.fastback.utils.SnapshotId;
+import net.pcal.fastback.retention.RetentionPolicy;
+import net.pcal.fastback.retention.RetentionPolicyCodec;
+import net.pcal.fastback.retention.RetentionPolicyType;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.StoredConfig;
 
-import java.util.Collection;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 
+import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.ModContext.ExecutionLock.WRITE;
+import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
-import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.commands.SetRetentionCommand.registerSetRetentionCommand;
+import static net.pcal.fastback.commands.SetRetentionCommand.setRetentionPolicy;
 import static net.pcal.fastback.logging.Message.localized;
 
 /**
- * Command to prune all snapshots that are not to be retained per the retention policy.
+ * Command to set the snapshot retention policy for the remote.
  *
  * @author pcal
  * @since 0.2.0
  */
-enum PruneCommand implements Command {
+enum SetRemoteRetentionCommand implements Command {
 
     INSTANCE;
 
-    private static final String COMMAND_NAME = "prune";
+    private static final String COMMAND_NAME = "set-remote-retention";
 
     @Override
     public void register(LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
-        argb.then(
-                literal(COMMAND_NAME).
-                        requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(cc -> prune(ctx, cc.getSource()))
-        );
+        registerSetRetentionCommand(argb, ctx, COMMAND_NAME, (cc, rt) -> setRemotePolicy(ctx, cc, rt));
     }
 
-    private static int prune(final ModContext ctx, final ServerCommandSource scs) {
-        final Logger log = commandLogger(ctx, scs);
-        gitOp(ctx, WRITE, log, git -> {
-            final LocalPruneTask pt = new LocalPruneTask(git, ctx, log);
-            final Collection<SnapshotId> pruned = pt.call();
-            log.hud(null);
-            log.chat(localized("fastback.chat.prune-done", pruned.size()));
-            if (pruned.size() > 0) log.chat(localized("fastback.chat.prune-suggest-gc"));
-        });
-        return SUCCESS;
+    private static int setRemotePolicy(ModContext ctx, CommandContext<ServerCommandSource> cc, RetentionPolicyType rpt) {
+        return setRetentionPolicy(ctx, cc, rpt, WorldConfig::setRemoteRetentionPolicy);
     }
+
 }

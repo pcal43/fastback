@@ -36,6 +36,7 @@ import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
+import static net.pcal.fastback.utils.GitUtils.deleteRemoteBranch;
 
 enum RemoteDeleteCommand implements Command {
 
@@ -61,10 +62,7 @@ enum RemoteDeleteCommand implements Command {
             final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
             final WorldConfig wc = WorldConfig.load(git);
             final SnapshotId sid = SnapshotId.fromUuidAndName(wc.worldUuid(), snapshotName);
-            RefSpec refSpec = new RefSpec()
-                    .setSource(null)
-                    .setDestination("refs/heads/"+sid.getBranchName());
-            git.push().setRefSpecs(refSpec).setRemote(wc.getRemoteName()).call();
+            deleteRemoteBranch(git, wc.getRemoteName(), sid.getBranchName());
             log.chat(localized("fastback.chat.remote-delete-done", snapshotName));
         });
         return SUCCESS;
