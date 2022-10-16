@@ -28,3 +28,42 @@ Be aware that you might miss out on future optimizations or bug fixes in these f
 updates, you take full responsibility for maintaining them.  As an alternative, you might want to consider 
 adding custom `.gitignore` or `.gitattributes` files in subdirectories and letting FastBack continue to
 auto-update the root files.
+
+
+### World UUID
+
+FastBack tries to stop you from mixing remote backup snapshots from different worlds.  This is generally a bad idea both in terms of staying organized and backup performance.
+
+If you want to live dangerously, you can view or change the UUID of a world by looking at a file in you world save directory: `fastback/world.uuid`.
+
+
+## Manually Restoring a Remote Snapshot
+
+FastBack backups are just regular git repos.  This means you can use the terminal and the `git` command line tool to interact with them.
+
+To restore from a remote manually using `git`:
+
+1. Install `git`.  Mac and Linux users should already have it; Windows users may need to go [here](https://git-scm.com/downloads).
+
+2. Clone the backup repo and list snapshots
+
+```
+git clone [repo-url]
+cd [directory that just got created]
+git branch
+```
+
+This will list all of your available snapshot branches:
+
+```
+snapshots/12345678-1234-5678-1234-567812345678/2022-10-02_12_56_33
+snapshots/12345678-1234-5678-1234-567812345678/2022-10-07_11_49_31
+```
+
+To retrieve one of them, type:
+
+```
+git checkout snapshots/12345678-1234-5678-1234-567812345678/2022-10-02_12_56_33
+```
+
+Your world save files will appear in the directory.  You can then copy them into your minecraft installation.
