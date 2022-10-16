@@ -14,10 +14,12 @@
 | `prune`|Delete old snapshots according to the retention policy.|
 | `remote-delete`|Delete a remote snapshot.|
 | `remote-list`|List remote snapshots.|
+| `remote-prune`|Delete old snapshots from the remote backup according to the remote retention policy.|
 | `remote-restore`|Restore a remote snapshot.|
 | `restore`|Restore a backup snapshot.|
 | `set-autoback-action`|Set an action to perform during auto-backups.|
 | `set-autoback-wait`|Set the minimum number of minutes to wait between auto-backups.|
 | `set-remote`|Set the url for remote backups.|
+| `set-remote-retention`|Set snapshot retention policy for the remote backup.|
 | `set-retention`|Set snapshot retention policy.|
 | `set-shutdown-action`|Set an action to perform on shutdown.|
