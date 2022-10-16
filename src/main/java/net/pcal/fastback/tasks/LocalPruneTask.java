@@ -43,13 +43,13 @@ import static net.pcal.fastback.tasks.ListSnapshotsTask.sortWorldSnapshots;
  * @author pcal
  * @since 0.3.0
  */
-public class PruneLocalTask implements Callable<Collection<SnapshotId>> {
+public class LocalPruneTask implements Callable<Collection<SnapshotId>> {
 
     private final ModContext ctx;
     private final Logger log;
     private final Git git;
 
-    public PruneLocalTask(final Git git,
+    public LocalPruneTask(final Git git,
                           final ModContext ctx,
                           final Logger log) {
         this.git = requireNonNull(git);
@@ -63,7 +63,8 @@ public class PruneLocalTask implements Callable<Collection<SnapshotId>> {
         return doPrune(wc, ctx, log,
                 wc::localRetentionPolicy,
                 () -> listSnapshots(git, ctx.getLogger()),
-                sid -> git.branchDelete().setForce(true).setBranchNames(new String[]{sid.getBranchName()}).call()
+                sid -> git.branchDelete().setForce(true).setBranchNames(new String[]{sid.getBranchName()}).call(),
+                "fastback.chat.retention-policy-not-set"
         );
     }
 
@@ -72,12 +73,13 @@ public class PruneLocalTask implements Callable<Collection<SnapshotId>> {
                                           Logger log,
                                           JGitSupplier<String> policyConfigFn,
                                           JGitSupplier<ListMultimap<String, SnapshotId>> listSnapshotsFn,
-                                          JGitConsumer<SnapshotId> deleteSnapshotsFn) throws IOException, GitAPIException {
+                                          JGitConsumer<SnapshotId> deleteSnapshotsFn,
+                                          String notSetKey) throws IOException, GitAPIException {
         final String policyConfig = policyConfigFn.get();
         final RetentionPolicy policy = RetentionPolicyCodec.INSTANCE.decodePolicy
                 (ctx, ctx.getRetentionPolicyTypes(), policyConfig);
         if (policy == null) {
-            log.chatError(localized("fastback.chat.retention-policy-not-set"));
+            log.chatError(localized(notSetKey));
             return null;
         }
         final Collection<SnapshotId> toPrune = policy.getSnapshotsToPrune(

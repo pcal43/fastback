@@ -21,8 +21,6 @@ package net.pcal.fastback.tasks;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.retention.RetentionPolicy;
-import net.pcal.fastback.retention.RetentionPolicyCodec;
 import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -32,10 +30,8 @@ import java.util.Collection;
 import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.tasks.ListSnapshotsTask.listRemoteSnapshots;
-import static net.pcal.fastback.tasks.ListSnapshotsTask.sortWorldSnapshots;
-import static net.pcal.fastback.tasks.PruneLocalTask.doPrune;
+import static net.pcal.fastback.tasks.LocalPruneTask.doPrune;
 import static net.pcal.fastback.utils.GitUtils.deleteRemoteBranch;
 
 /**
@@ -44,13 +40,13 @@ import static net.pcal.fastback.utils.GitUtils.deleteRemoteBranch;
  * @author pcal
  * @since 0.7.0
  */
-public class PruneRemoteTask implements Callable<Collection<SnapshotId>> {
+public class RemotePruneTask implements Callable<Collection<SnapshotId>> {
 
     private final ModContext ctx;
     private final Logger log;
     private final Git git;
 
-    public PruneRemoteTask(final Git git,
+    public RemotePruneTask(final Git git,
                            final ModContext ctx,
                            final Logger log) {
         this.git = requireNonNull(git);
@@ -64,7 +60,8 @@ public class PruneRemoteTask implements Callable<Collection<SnapshotId>> {
         return doPrune(wc, ctx, log,
                 wc::remoteRetentionPolicy,
                 () -> listRemoteSnapshots(git, wc, ctx.getLogger()),
-                sid -> deleteRemoteBranch(git, wc.getRemoteName(), sid.getBranchName())
+                sid -> deleteRemoteBranch(git, wc.getRemoteName(), sid.getBranchName()),
+                "fastback.chat.remote-retention-policy-not-set"
         );
     }
 }

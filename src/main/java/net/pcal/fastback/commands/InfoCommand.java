@@ -70,33 +70,42 @@ enum InfoCommand implements Command {
             log.chat(localized("fastback.chat.info-shutdown-action", getActionDisplay(wc.shutdownAction())));
             log.chat(localized("fastback.chat.info-autoback-action", getActionDisplay(wc.autobackAction())));
             log.chat(localized("fastback.chat.info-autoback-wait",
-                    wc.autobackWait() == null ? "" : wc.autobackWait().getSeconds()/60));
+                    wc.autobackWait() == null ? "" : wc.autobackWait().getSeconds() / 60));
             // FIXME? this could be implemented more efficiently
             final long backupSize = sizeOfDirectory(git.getRepository().getDirectory());
             final long worldSize = sizeOfDirectory(git.getRepository().getWorkTree()) - backupSize;
             log.chat(localized("fastback.chat.info-world-size", byteCountToDisplaySize(worldSize)));
             log.chat(localized("fastback.chat.info-backup-size", byteCountToDisplaySize(backupSize)));
-            {
-                // show the snapshot retention policy
-                final String encoded = wc.localRetentionPolicy();
-                if (encoded == null) {
-                    log.chat(localized("fastback.chat.retention-policy-none"));
-                } else {
-                    final RetentionPolicy policy = RetentionPolicyCodec.INSTANCE.
-                            decodePolicy(ctx, RetentionPolicyType.getAvailable(), encoded);
-                    if (policy == null) {
-                        log.chat(localized("fastback.chat.retention-policy-none"));
-                    } else {
-                        log.chat(localized("fastback.chat.retention-policy-set"));
-                        log.chat(policy.getDescription());
-                    }
-                }
-            }
+            showRetentionPolicy(ctx, log,
+                    wc.localRetentionPolicy(),
+                    "fastback.chat.retention-policy-set",
+                    "fastback.chat.retention-policy-none"
+            );
+            showRetentionPolicy(ctx, log,
+                    wc.remoteRetentionPolicy(),
+                    "fastback.chat.remote-retention-policy-set",
+                    "fastback.chat.remote-retention-policy-none"
+            );
         });
         return SUCCESS;
     }
 
     private static String getActionDisplay(SchedulableAction action) {
         return action == null ? SchedulableAction.NONE.getArgumentName() : action.getArgumentName();
+    }
+
+    private static void showRetentionPolicy(ModContext ctx, Logger log, String encodedPolicy, String setKey, String noneKey) {
+        if (encodedPolicy == null) {
+            log.chat(localized(noneKey));
+        } else {
+            final RetentionPolicy policy = RetentionPolicyCodec.INSTANCE.
+                    decodePolicy(ctx, RetentionPolicyType.getAvailable(), encodedPolicy);
+            if (policy == null) {
+                log.chat(localized(noneKey));
+            } else {
+                log.chat(localized(setKey));
+                log.chat(policy.getDescription());
+            }
+        }
     }
 }
