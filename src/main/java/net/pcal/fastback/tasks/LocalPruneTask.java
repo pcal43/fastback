@@ -63,7 +63,10 @@ public class LocalPruneTask implements Callable<Collection<SnapshotId>> {
         return doPrune(wc, ctx, log,
                 wc::localRetentionPolicy,
                 () -> listSnapshots(git, ctx.getLogger()),
-                sid -> git.branchDelete().setForce(true).setBranchNames(new String[]{sid.getBranchName()}).call(),
+                sid -> {
+                    log.info("Pruning local snapshot " + sid.getName());
+                    git.branchDelete().setForce(true).setBranchNames(new String[]{sid.getBranchName()}).call();
+                },
                 "fastback.chat.retention-policy-not-set"
         );
     }
@@ -86,7 +89,6 @@ public class LocalPruneTask implements Callable<Collection<SnapshotId>> {
                 sortWorldSnapshots(listSnapshotsFn.get(), wc.worldUuid()));
         log.hud(localized("fastback.hud.prune-started"));
         for (final SnapshotId sid : toPrune) {
-            log.info("Pruning " + sid.getName());
             deleteSnapshotsFn.accept(sid);
         }
         return toPrune;

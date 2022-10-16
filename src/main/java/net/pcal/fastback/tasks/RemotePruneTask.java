@@ -60,7 +60,10 @@ public class RemotePruneTask implements Callable<Collection<SnapshotId>> {
         return doPrune(wc, ctx, log,
                 wc::remoteRetentionPolicy,
                 () -> listRemoteSnapshots(git, wc, ctx.getLogger()),
-                sid -> deleteRemoteBranch(git, wc.getRemoteName(), sid.getBranchName()),
+                sid -> {
+                    log.info("Pruning remote snapshot " + sid.getName());
+                    deleteRemoteBranch(git, wc.getRemoteName(), sid.getBranchName());
+                },
                 "fastback.chat.remote-retention-policy-not-set"
         );
     }
