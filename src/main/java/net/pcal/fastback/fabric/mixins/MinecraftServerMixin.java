@@ -38,7 +38,7 @@ public class MinecraftServerMixin {
      */
     @Redirect(method = "tick(Ljava/util/function/BooleanSupplier;)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;saveAll(ZZZ)Z"))
-    public boolean autoback_saveAll(MinecraftServer instance, boolean suppressLogs, boolean flush, boolean force) {
+    public boolean fastback_saveAll(MinecraftServer instance, boolean suppressLogs, boolean flush, boolean force) {
         boolean result = instance.saveAll(suppressLogs, flush, force);
         FabricProvider.getInstance().autoSaveCompleted();
         return result;
@@ -48,7 +48,7 @@ public class MinecraftServerMixin {
      * Intercept save so we can hard-disable saving during critical parts of the backup.
      */
     @Inject(at = @At("HEAD"), method = "save(ZZZ)Z", cancellable = true)
-    public void save(boolean suppressLogs, boolean flush, boolean force, CallbackInfoReturnable<Boolean> ci) {
+    public void fastback_save(boolean suppressLogs, boolean flush, boolean force, CallbackInfoReturnable<Boolean> ci) {
         synchronized (this) {
             final FabricProvider ctx = FabricProvider.getInstance();
             if (ctx.isWorldSaveEnabled()) {
@@ -65,7 +65,7 @@ public class MinecraftServerMixin {
      * Intercept saveAll so we can hard-disable saving during critical parts of the backup.
      */
     @Inject(at = @At("HEAD"), method = "saveAll(ZZZ)Z", cancellable = true)
-    public void saveAll(boolean suppressLogs, boolean flush, boolean force, CallbackInfoReturnable<Boolean> ci) {
+    public void fastback_saveAll(boolean suppressLogs, boolean flush, boolean force, CallbackInfoReturnable<Boolean> ci) {
         synchronized (this) {
             final FabricProvider ctx = FabricProvider.getInstance();
             if (ctx.isWorldSaveEnabled()) {
