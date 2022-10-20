@@ -37,14 +37,14 @@ of disk space.
 
 ## Acknowledgements
 
-Fastback's Russian localization provided by [Felix14-v2](https://github.com/Felix14-v2).
-
-Fastback was made possible by the work of committers on these projects:
-* [JGit](https://www.eclipse.org/jgit/) from The Eclipse Software Foundation
-* [sshd](https://mina.apache.org/sshd-project/) from The Apache Software Foundation
-* [JavaEWAH](https://github.com/lemire/javaewah) from Daniel Lemire, et al.
-* [fabric-permissions-api](https://github.com/lucko/fabric-permissions-api) from lucko
-* [server-translations-api](https://github.com/NucleoidMC/Server-Translations) from the Fabric Community
+* Russian localization provided by [Felix14-v2](https://github.com/Felix14-v2).
+* Chinese localization provided by [buiawpkgew1](https://github.com/buiawpkgew1).
+* Fastback includes and was made possible by the work of committers on these projects:
+  * [JGit](https://www.eclipse.org/jgit/) from The Eclipse Software Foundation
+  * [sshd](https://mina.apache.org/sshd-project/) from The Apache Software Foundation
+  * [JavaEWAH](https://github.com/lemire/javaewah) from Daniel Lemire, et al.
+  * [fabric-permissions-api](https://github.com/lucko/fabric-permissions-api) from lucko
+  * [server-translations-api](https://github.com/NucleoidMC/Server-Translations) from the Fabric Community
 
 ## Legal
  
