@@ -46,9 +46,9 @@ public class FileUtils {
         org.apache.commons.io.FileUtils.deleteDirectory(path.toFile());
     }
 
-    public static void writeResourceToFile(Path resourcePath, Path targetFile) throws IOException {
+    public static void writeResourceToFile(String resourcePath, Path targetFile) throws IOException {
         final String rawResource;
-        try (InputStream in = FileUtils.class.getClassLoader().getResourceAsStream(resourcePath.toString())) {
+        try (InputStream in = FileUtils.class.getClassLoader().getResourceAsStream(resourcePath)) {
             if (in == null) {
                 throw new FileNotFoundException("Unable to load resource " + resourcePath); // wat
             }
