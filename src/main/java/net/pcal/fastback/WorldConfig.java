@@ -164,18 +164,18 @@ public record WorldConfig(
     // Resource management
 
     private record WorldResource(
-            Path resourcePath,
+            String resourcePath, // Note to self: needs to be a String, not a Path, because Windows slashes don't work
             Path targetPath,
             String permission
     ) {}
 
     private static final Iterable<WorldResource> WORLD_RESOURCES = List.of(
             new WorldResource(
-                    Path.of("world/dot-gitignore"),
+                    "world/dot-gitignore",
                     Path.of(".gitignore"),
                     CONFIG_UPDATE_GITIGNORE_ENABLED),
             new WorldResource(
-                    Path.of("world/dot-gitattributes"),
+                    "world/dot-gitattributes",
                     Path.of(".gitattributes"),
                     CONFIG_UPDATE_GITATTRIBUTES_ENABLED)
     );
