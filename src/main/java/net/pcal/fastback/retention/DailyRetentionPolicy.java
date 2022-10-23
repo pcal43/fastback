@@ -64,22 +64,21 @@ class DailyRetentionPolicy implements RetentionPolicy {
     public Collection<SnapshotId> getSnapshotsToPrune(NavigableSet<SnapshotId> snapshots) {
         final LocalDate today = LocalDate.now(ctx.getTimeZone().toZoneId());
         final LocalDate gracePeriodStart = today.minus(Period.ofDays(gracePeriod));
-        final List<SnapshotId> sorted = new ArrayList<>(snapshots);
-        Collections.sort(sorted, Collections.reverseOrder());
         final List<SnapshotId> toPrune = new ArrayList<>();
-        LocalDate previousDate = sorted.get(0).snapshotDate().toInstant().atZone(ctx.getTimeZone().toZoneId()).toLocalDate();
-        LocalDate currentDate;
-        for (int i = 1; i < sorted.size(); i++) {
-            currentDate = sorted.get(i).snapshotDate().toInstant().atZone(ctx.getTimeZone().toZoneId()).toLocalDate();
-            if (currentDate.isAfter(gracePeriodStart)) {
-                ctx.getLogger().debug("Will retain " + sorted.get(i) + " because still in the grace period");
-                continue;
-            }
-            if (currentDate.equals(previousDate)) {
-                ctx.getLogger().debug("Will prune " + sorted.get(i) + " same day as " + sorted.get(i - 1));
-                toPrune.add(sorted.get(i));
-            } else {
-                ctx.getLogger().debug("Will retain " + sorted.get(i) + " NOT same day as " + sorted.get(i - 1));
+        LocalDate previousDate = null;
+        for (final SnapshotId sid : snapshots.descendingSet()) {
+            final LocalDate currentDate = sid.snapshotDate().toInstant().atZone(ctx.getTimeZone().toZoneId()).toLocalDate();
+            if (previousDate != null) {
+                if (currentDate.isAfter(gracePeriodStart)) {
+                    ctx.getLogger().debug("Will retain " + sid + " because still in the grace period");
+                    continue;
+                }
+                if (currentDate.equals(previousDate)) {
+                    ctx.getLogger().debug("Will prune " + sid + " same day as " + currentDate);
+                    toPrune.add(sid);
+                } else {
+                    ctx.getLogger().debug("Will retain " + sid + " NOT same day as " + currentDate);
+                }
             }
             previousDate = currentDate;
         }
