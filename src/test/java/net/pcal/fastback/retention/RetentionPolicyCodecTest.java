@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableSet;
 
 import static net.pcal.fastback.logging.Message.raw;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -82,7 +83,7 @@ public class RetentionPolicyCodecTest {
         }
 
         @Override
-        public Collection<SnapshotId> getSnapshotsToPrune(Collection<SnapshotId> fromSnapshots) {
+        public Collection<SnapshotId> getSnapshotsToPrune(NavigableSet<SnapshotId> fromSnapshots) {
             throw new IllegalStateException();
         }
     }

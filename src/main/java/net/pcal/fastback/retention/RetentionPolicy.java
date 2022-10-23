@@ -22,6 +22,7 @@ import net.pcal.fastback.logging.Message;
 import net.pcal.fastback.utils.SnapshotId;
 
 import java.util.Collection;
+import java.util.NavigableSet;
 
 
 /**
@@ -34,5 +35,5 @@ public interface RetentionPolicy {
 
     Message getDescription();
 
-    Collection<SnapshotId> getSnapshotsToPrune(final Collection<SnapshotId> fromSnapshots);
+    Collection<SnapshotId> getSnapshotsToPrune(final NavigableSet<SnapshotId> fromSnapshots);
 }
