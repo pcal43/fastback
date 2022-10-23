@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 
 public class DailyRetentionPolicyTest {
@@ -65,10 +66,11 @@ public class DailyRetentionPolicyTest {
         final SnapshotId lastYearC = SnapshotId.create(uuid,
                 new Date(todayEvening.snapshotDate().getTime() - (373 * DAY_MILLIS) - 10000));
         final int GRACE_PERIOD = 2;
-        Collection<SnapshotId> snapshots = Set.of(todayEvening, todayMorning,
+        TreeSet<SnapshotId> snapshots = new TreeSet<>(Set.of(
+                todayEvening, todayMorning,
                 yesterdayA, yesterdayB, yesterdayC,
                 threeDaysAgoA, threeDaysAgoB, threeDaysAgoC, lastWeek,
-                lastYearA, lastYearB, lastYearC);
+                lastYearA, lastYearB, lastYearC));
         ModContext ctx = MockModContext.create();
         RetentionPolicy policy = DailyRetentionPolicy.DailyRetentionPolicyType.INSTANCE.createPolicy(ctx,
                 Map.of("gracePeriodDays", String.valueOf(GRACE_PERIOD)));

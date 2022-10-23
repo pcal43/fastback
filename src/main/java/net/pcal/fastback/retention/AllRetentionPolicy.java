@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableSet;
 
 import static net.pcal.fastback.logging.Message.localized;
 
@@ -47,7 +48,7 @@ enum AllRetentionPolicy implements RetentionPolicy {
     }
 
     @Override
-    public Collection<SnapshotId> getSnapshotsToPrune(Collection<SnapshotId> fromSnapshots) {
+    public Collection<SnapshotId> getSnapshotsToPrune(NavigableSet<SnapshotId> fromSnapshots) {
         return Collections.emptySet();
     }
 

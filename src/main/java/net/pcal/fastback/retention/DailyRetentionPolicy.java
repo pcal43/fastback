@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableSet;
 
 import static net.pcal.fastback.logging.Message.localized;
 
@@ -60,7 +61,7 @@ class DailyRetentionPolicy implements RetentionPolicy {
     }
 
     @Override
-    public Collection<SnapshotId> getSnapshotsToPrune(Collection<SnapshotId> snapshots) {
+    public Collection<SnapshotId> getSnapshotsToPrune(NavigableSet<SnapshotId> snapshots) {
         final LocalDate today = LocalDate.now(ctx.getTimeZone().toZoneId());
         final LocalDate gracePeriodStart = today.minus(Period.ofDays(gracePeriod));
         final List<SnapshotId> sorted = new ArrayList<>(snapshots);

@@ -29,10 +29,9 @@ import org.eclipse.jgit.lib.Ref;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.NavigableSet;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
@@ -52,11 +51,8 @@ public class ListSnapshotsTask implements Callable<ListMultimap<String, Snapshot
         return new ListSnapshotsTask(refProvider, log).call();
     }
 
-    public static List<SnapshotId> sortWorldSnapshots(ListMultimap<String, SnapshotId> snapshotsPerWorld, String worldUuid) {
-        final List<SnapshotId> sids = new ArrayList<>(snapshotsPerWorld.get(worldUuid));
-        sids.addAll(snapshotsPerWorld.get(worldUuid));
-        Collections.sort(sids);
-        return sids;
+    public static NavigableSet<SnapshotId> sortWorldSnapshots(ListMultimap<String, SnapshotId> snapshotsPerWorld, String worldUuid) {
+        return new TreeSet<>(snapshotsPerWorld.get(worldUuid));
     }
 
     private final JGitSupplier<Collection<Ref>> refProvider;
