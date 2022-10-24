@@ -28,7 +28,10 @@ import org.jetbrains.annotations.NotNull;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 public record SnapshotId(String worldUuid, Date snapshotDate) implements Comparable<SnapshotId> {
 
@@ -88,6 +91,16 @@ public record SnapshotId(String worldUuid, Date snapshotDate) implements Compara
 
     public static boolean isSnapshotBranchName(String branchName) {
         return branchName.startsWith(PREFIX + SEP);
+    }
+
+    /**
+     * Extract the sids that apply to the given world and return them in a sorted list.
+     */
+    public static List<SnapshotId> sortWorldSnapshots(ListMultimap<String, SnapshotId> snapshotsPerWorld, String worldUuid) {
+        final List<SnapshotId> sids = new ArrayList<>(snapshotsPerWorld.get(worldUuid));
+        sids.addAll(snapshotsPerWorld.get(worldUuid));
+        Collections.sort(sids);
+        return sids;
     }
 
     public String getName() {
