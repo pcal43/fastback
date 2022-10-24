@@ -28,10 +28,9 @@ import org.jetbrains.annotations.NotNull;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
+import java.util.NavigableSet;
+import java.util.TreeSet;
 
 public record SnapshotId(String worldUuid, Date snapshotDate) implements Comparable<SnapshotId> {
 
@@ -85,8 +84,8 @@ public record SnapshotId(String worldUuid, Date snapshotDate) implements Compara
         return new SnapshotId(worldUuid, date);
     }
 
-    public static SnapshotId fromUuidAndName(String worldUuid, String snapshoDate) throws ParseException {
-        return new SnapshotId(worldUuid, DATE_FORMAT.parse(snapshoDate));
+    public static SnapshotId fromUuidAndName(String worldUuid, String snapshotDate) throws ParseException {
+        return new SnapshotId(worldUuid, DATE_FORMAT.parse(snapshotDate));
     }
 
     public static boolean isSnapshotBranchName(String branchName) {
@@ -96,11 +95,8 @@ public record SnapshotId(String worldUuid, Date snapshotDate) implements Compara
     /**
      * Extract the sids that apply to the given world and return them in a sorted list.
      */
-    public static List<SnapshotId> sortWorldSnapshots(ListMultimap<String, SnapshotId> snapshotsPerWorld, String worldUuid) {
-        final List<SnapshotId> sids = new ArrayList<>(snapshotsPerWorld.get(worldUuid));
-        sids.addAll(snapshotsPerWorld.get(worldUuid));
-        Collections.sort(sids);
-        return sids;
+    public static NavigableSet<SnapshotId> sortWorldSnapshots(ListMultimap<String, SnapshotId> snapshotsPerWorld, String worldUuid) {
+        return new TreeSet<>(snapshotsPerWorld.get(worldUuid));
     }
 
     public String getName() {
@@ -111,7 +107,6 @@ public record SnapshotId(String worldUuid, Date snapshotDate) implements Compara
         final String formattedDate = DATE_FORMAT.format(this.snapshotDate);
         return PREFIX + SEP + this.worldUuid + SEP + formattedDate;
     }
-
 
     @Override
     public int compareTo(@NotNull SnapshotId o) {

@@ -21,7 +21,6 @@ package net.pcal.fastback;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.utils.SnapshotId;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
@@ -79,9 +78,8 @@ public class SnapshotIdTest {
         sids.put(uuid1, s4);
         sids.put(uuid1, s5);
 
-        assertEquals(List.of(s0, s1, s2), SnapshotId.sortWorldSnapshots(sids, uuid0));
-        assertEquals(List.of(s3, s4, s5), SnapshotId.sortWorldSnapshots(sids, uuid1));
-
+        assertEquals(List.of(s0, s1, s2), List.copyOf(SnapshotId.sortWorldSnapshots(sids, uuid0)));
+        assertEquals(List.of(s3, s4, s5), List.copyOf(SnapshotId.sortWorldSnapshots(sids, uuid1)));
     }
 
 }
