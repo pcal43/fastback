@@ -37,7 +37,7 @@ import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.tasks.ListSnapshotsTask.listRemoteSnapshots;
 import static net.pcal.fastback.tasks.ListSnapshotsTask.listSnapshots;
-import static net.pcal.fastback.tasks.ListSnapshotsTask.sortWorldSnapshots;
+import static net.pcal.fastback.utils.SnapshotId.sortWorldSnapshots;
 
 abstract class SnapshotNameSuggestions implements SuggestionProvider<ServerCommandSource> {
 

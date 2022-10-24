@@ -35,7 +35,7 @@ import java.util.concurrent.Callable;
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.tasks.ListSnapshotsTask.listSnapshots;
-import static net.pcal.fastback.tasks.ListSnapshotsTask.sortWorldSnapshots;
+import static net.pcal.fastback.utils.SnapshotId.sortWorldSnapshots;
 
 /**
  * Delete local snapshot branches that should not be kept per the retention policy.

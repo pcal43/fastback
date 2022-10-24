@@ -30,8 +30,6 @@ import org.eclipse.jgit.lib.Ref;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Collection;
-import java.util.NavigableSet;
-import java.util.TreeSet;
 import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
@@ -49,10 +47,6 @@ public class ListSnapshotsTask implements Callable<ListMultimap<String, Snapshot
             throws GitAPIException, IOException {
         final JGitSupplier<Collection<Ref>> refProvider = ()-> git.lsRemote().setRemote(wc.getRemoteName()).setHeads(true).call();
         return new ListSnapshotsTask(refProvider, log).call();
-    }
-
-    public static NavigableSet<SnapshotId> sortWorldSnapshots(ListMultimap<String, SnapshotId> snapshotsPerWorld, String worldUuid) {
-        return new TreeSet<>(snapshotsPerWorld.get(worldUuid));
     }
 
     private final JGitSupplier<Collection<Ref>> refProvider;
