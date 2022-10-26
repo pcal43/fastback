@@ -8,11 +8,11 @@
 #
 
 # treat everything as binaries
-* -diff -merge -text
+* -diff -merge -text -delta
 
 # ...with a few exceptions (that are unlikely to matter much, tbh).
-*.json diff merge text
-*.txt diff merge text
-*.properties diff merge text
-*.toml diff merge text
-*.yaml diff merge text
+*.json diff merge text delta
+*.txt diff merge text delta
+*.properties diff merge text delta
+*.toml diff merge text delta
+*.yaml diff merge text delta
