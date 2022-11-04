@@ -41,8 +41,9 @@ import static net.pcal.fastback.logging.Message.localized;
 class FixedCountRetentionPolicy implements RetentionPolicy {
 
     private static final int COUNT_DEFAULT = 10;
+    private static final String POLICY_NAME = "fixed";
+    private static final String L10N_KEY = "fastback.retain.fixed.description";
     private static final String COUNT_PARAM = "count";
-    private static final String L10N_KEY = "fastback.retain.count.description";
     private final ModContext ctx;
     private final int count;
 
@@ -85,7 +86,7 @@ class FixedCountRetentionPolicy implements RetentionPolicy {
 
         @Override
         public String getName() {
-            return "fixed";
+            return POLICY_NAME;
         }
 
         @Override
