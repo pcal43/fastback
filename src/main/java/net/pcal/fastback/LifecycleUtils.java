@@ -81,14 +81,16 @@ public class LifecycleUtils {
         final Path worldSaveDir = ctx.getWorldDirectory();
         logger.chat(localized("fastback.chat.thread-waiting"));
         ctx.stopExecutor();
-        try (Git git = Git.open(worldSaveDir.toFile())) {
-            final WorldConfig config = WorldConfig.load(git);
-            if (config.isBackupEnabled() && config.shutdownAction() != null) {
-                final Logger screenLogger = CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx));
-                config.shutdownAction().getTask(git, ctx, screenLogger).call();
+        if (isGitRepo(worldSaveDir)) {
+            try (Git git = Git.open(worldSaveDir.toFile())) {
+                final WorldConfig config = WorldConfig.load(git);
+                if (config.isBackupEnabled() && config.shutdownAction() != null) {
+                    final Logger screenLogger = CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx));
+                    config.shutdownAction().getTask(git, ctx, screenLogger).call();
+                }
+            } catch (Exception e) {
+                logger.internalError("Shutdown action failed.", e);
             }
-        } catch (Exception e) {
-            logger.internalError("Shutdown action failed.", e);
         }
         ctx.getLogger().info("onWorldStop complete");
     }
