@@ -76,6 +76,6 @@
   "fastback.hud.remote-uploading": "正在上传备份 %d%%",
   "fastback.hud.restore-percent": "正在恢复备份 %d%%",
   "fastback.retain.all.description": "保留所有的快照，永远不会惊喜。",
-  "fastback.retain.count.description": "计数：只保留 %s 最新快照。",
+  "fastback.retain.fixed.description": "计数：只保留 %s 最新快照。",
   "fastback.retain.daily.description": "每日：从一天起保持最后一次快照，加上过去 %s 天的所有快照"
 }
