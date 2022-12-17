@@ -32,7 +32,7 @@ project.ext.versions = [
     fabric_permissions          : '0.2-SNAPSHOT',
     server_translations         : '[1.4.19+1.19.3]',
     junit_jupiter               : '5.8.2',
-    eddsa                       : '0.3.0',b
+    eddsa                       : '0.3.0',
     test_log4j                  : '2.16.0',
     packet_tweaker              : '0.3.0+1.18.2'
 ]
