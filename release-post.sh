@@ -18,40 +18,6 @@ if [ "${CURRENT_BRANCH}" != 'main' ]; then
 fi
 
 
-
-RELEASE_VERSION=$(echo $CURRENT_VERSION | sed s/-prerelease//)
-if [ $CURRENT_VERSION = $RELEASE_VERSION ]; then
-    echo "ERROR - current version is not a prerelease: $CURRENT_VERSION"
-    exit 1
-fi
-echo "Release version will be '$RELEASE_VERSION'"
-sed "s/^mod_version =.*/mod_version = $RELEASE_VERSION/" gradle.properties > gradle.properties.temp
-rm gradle.properties
-mv gradle.properties.temp gradle.properties
-
-rm -rf build/libs
-
-./gradlew remapJar
-
-git commit -am "Release ${RELEASE_VERSION}"
-#git tag "${RELEASE_VERSION}"
-git push
-
-#
-# Do github release
-#
-gh release create --generate-notes --title "${RELEASE_VERSION}" --notes "release ${RELEASE_VERSION}" ${RELEASE_VERSION} build/libs/*
-
-#
-# Do modrinth release
-#
-./gradlew modrinth
-
-#
-# Do curseforge release
-#
-./gradlew curseforge
-
 #
 # Bump version number and prepare for next release
 #
