@@ -28,7 +28,10 @@ ifndef SKIP_CHECKS
 	fi
 endif
 # todo port this into the makefile.  i think
-	./release.sh
+	./release-github.sh
+	./release-curseforge.sh
+	./release-modrinth.sh
+	./release-post.sh
 
 .PHONY: ide
 ide:
