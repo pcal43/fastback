@@ -26,13 +26,13 @@ configurations {
 }
 
 project.ext.versions = [
-    jgit                        : '6.2.0.202206071550-r',
+    jgit                        : '6.4.0.202211300538-r',
     apache_sshd                 : '2.8.0',
     JavaEWAH                    : '1.1.13',
     fabric_permissions          : '0.2-SNAPSHOT',
     server_translations         : '[1.4.19+1.19.3]',
     junit_jupiter               : '5.8.2',
-    eddsa                       : '0.3.0',
+    eddsa                       : '0.3.0',b
     test_log4j                  : '2.16.0',
     packet_tweaker              : '0.3.0+1.18.2'
 ]
