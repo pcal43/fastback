@@ -30,7 +30,7 @@ project.ext.versions = [
     apache_sshd                 : '2.8.0',
     JavaEWAH                    : '1.1.13',
     fabric_permissions          : '0.2-SNAPSHOT',
-    server_translations         : '[1.4.18+1.19.2]',
+    server_translations         : '[1.4.19+1.19.3]',
     junit_jupiter               : '5.8.2',
     eddsa                       : '0.3.0',
     test_log4j                  : '2.16.0',
