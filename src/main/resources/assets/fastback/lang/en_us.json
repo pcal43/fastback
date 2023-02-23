@@ -77,5 +77,6 @@
   "fastback.hud.restore-percent"                 : "Restoring backup %d%%",
   "fastback.retain.all.description"              : "Retain all snapshots; never prune.",
   "fastback.retain.fixed.description"            : "Fixed: Keep only the %s most-recent snapshots.",
-  "fastback.retain.daily.description"            : "Daily: Keep the last snapshot from each day, plus all snapshots from the last %s days"
+  "fastback.retain.daily.description"            : "Daily: Keep the last snapshot from each day, plus all snapshots from the last %s days",
+  "fastback.retain.gfs.description"              : "GFS: Keep every backup today + latest daily backup in the last week + latest weekly backup in the last month + latest backup of each month"
 }
