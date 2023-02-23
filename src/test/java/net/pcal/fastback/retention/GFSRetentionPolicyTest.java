@@ -82,5 +82,4 @@ public class GFSRetentionPolicyTest {
         Date date = Date.from(ZonedDateTime.of(LocalDate.of(year, month, day).atTime(hour, 0), TimeZone.getDefault().toZoneId()).toInstant());
         return SnapshotId.create("3552efde-b34d-11ed-afa1-0242ac120002", date);
     }
-
 }

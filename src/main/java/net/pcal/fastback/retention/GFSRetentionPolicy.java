@@ -26,7 +26,6 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.time.temporal.ChronoField;
 import java.time.temporal.IsoFields;
-import java.time.temporal.TemporalField;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -45,7 +44,7 @@ import static net.pcal.fastback.logging.Message.localized;
  * - the latest monthly backup for all past months
  *
  * @author pcal
- * @since 0.2.1
+ * @since 0.9.0
  */
 class GFSRetentionPolicy implements RetentionPolicy {
 
