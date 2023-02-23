@@ -44,7 +44,7 @@ public class RetentionPolicyCodecTest {
         assertEquals("mock-policy baz=bop foo=bar", encodedPolicy);
     }
 
-    @org.junit.Test
+    @Test
     public void testDecodePolicy() {
         final RetentionPolicy policy = RetentionPolicyCodec.INSTANCE.decodePolicy(
                 MockModContext.create(),
