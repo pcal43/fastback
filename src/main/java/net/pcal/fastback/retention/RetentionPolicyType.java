@@ -21,6 +21,7 @@ package net.pcal.fastback.retention;
 import com.mojang.brigadier.arguments.ArgumentType;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Message;
+import net.pcal.fastback.retention.GFSRetentionPolicy.GFSRetentionPolicyType;
 
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,7 @@ public interface RetentionPolicyType {
         return List.of(
                 DailyRetentionPolicy.DailyRetentionPolicyType.INSTANCE,
                 FixedCountRetentionPolicy.Type.INSTANCE,
+                GFSRetentionPolicyType.INSTANCE,
                 AllRetentionPolicy.Type.INSTANCE);
     }
 
