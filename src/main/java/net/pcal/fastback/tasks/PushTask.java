@@ -35,6 +35,7 @@ import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.merge.ContentMergeStrategy;
 import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.RefSpec;
+import org.eclipse.jgit.transport.TrackingRefUpdate;
 import org.eclipse.jgit.transport.URIish;
 
 import java.io.IOException;
@@ -140,24 +141,30 @@ public class PushTask implements Callable<Void> {
         logger.info("Pushing " + tempBranchName);
         final ProgressMonitor pm = new IncrementalProgressMonitor(new PushProgressMonitor(logger), 100);
 
-        git.push().setProgressMonitor(pm).setRemote(remoteName).
+        Iterable<PushResult> result = git.push().setProgressMonitor(pm).setRemote(remoteName).
                 setRefSpecs(new RefSpec(tempBranchName + ":" + tempBranchName),
                         new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
         logger.info("Cleaning up branches");
-        /**
-        if (worldConfig.isTempBranchCleanupEnabled()) {
-            logger.info("deleting local temp branch " + tempBranchName);
-            git.branchDelete().setForce(true).setBranchNames(tempBranchName).call();
+        for(final PushResult pr : result) {
+            for(final TrackingRefUpdate f : pr.getTrackingRefUpdates()) {
+                final String PREFIX = "refs/remotes/";
+                if (f.getLocalName().startsWith(PREFIX)) {
+                    final String trackingBranchName = f.getLocalName().substring(PREFIX.length());
+                    logger.info("Cleaning up " + trackingBranchName);
+                    git.branchDelete().setForce(true).setBranchNames(trackingBranchName).call();
+                } else {
+                    logger.warn("Ignoring unrecognized TrackingRefUpdate "+f.getLocalName());
+                }
+            }
         }
         if (worldConfig.isRemoteTempBranchCleanupEnabled()) {
             final String remoteTempBranch = "refs/heads/" + tempBranchName;
-            logger.info("deleting remote temp branch " + remoteTempBranch);
+            logger.info("Deleting remote temp branch " + remoteTempBranch);
             final RefSpec deleteRemoteBranchSpec = new RefSpec().setSource(null).setDestination(remoteTempBranch);
 
             git.push().setProgressMonitor(pm).setRemote(remoteName).setRefSpecs(deleteRemoteBranchSpec).call();
         }
-         **/
-        logger.info("push complete");
+        logger.info("Push complete");
     }
 
     private static void doNaivePush(final Git git, final String branchNameToPush, final WorldConfig config, final Logger logger) throws IOException, GitAPIException {
