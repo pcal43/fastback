@@ -61,17 +61,6 @@ public class GitUtils {
         }
     }
 
-    @Deprecated
-    public static String getRemoteBranchName(Ref fromBranchRef) {
-        final String REFS_HEADS = "refs/heads/";
-        final String name = fromBranchRef.getName();
-        if (name.startsWith(REFS_HEADS)) {
-            return name.substring(REFS_HEADS.length());
-        } else {
-            return null;
-        }
-    }
-
     public static URIish getRemoteUri(Git git, String remoteName, Logger logger) throws GitAPIException {
         requireNonNull(git);
         requireNonNull(remoteName);
