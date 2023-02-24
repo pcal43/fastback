@@ -129,32 +129,35 @@ public class PushTask implements Callable<Void> {
         }
         // ok, we have a common snapshot that we can use to create a fake merge history.
         final String tempBranchName = getTempBranchName(branchNameToPush);
-        logger.debug("Creating out temp branch " + tempBranchName);
+        logger.info("Creating out temp branch " + tempBranchName);
         git.checkout().setUpstreamMode(SetupUpstreamMode.NOTRACK).setCreateBranch(true).setName(tempBranchName).call();
         final ObjectId branchId = git.getRepository().resolve(latestCommonSnapshot.getBranchName());
-        logger.debug("Merging " + latestCommonSnapshot.getBranchName());
+        logger.info("Merging " + latestCommonSnapshot.getBranchName());
         git.merge().setContentMergeStrategy(ContentMergeStrategy.OURS).
                 include(branchId).setMessage("Merge " + branchId + " into " + tempBranchName).call();
-        logger.debug("Checking out " + branchNameToPush);
+        logger.info("Checking out " + branchNameToPush);
         git.checkout().setUpstreamMode(SetupUpstreamMode.NOTRACK).setName(branchNameToPush).call();
-        logger.debug("Pushing " + tempBranchName);
+        logger.info("Pushing " + tempBranchName);
         final ProgressMonitor pm = new IncrementalProgressMonitor(new PushProgressMonitor(logger), 100);
+
         git.push().setProgressMonitor(pm).setRemote(remoteName).
                 setRefSpecs(new RefSpec(tempBranchName + ":" + tempBranchName),
                         new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
         logger.info("Cleaning up branches");
+        /**
         if (worldConfig.isTempBranchCleanupEnabled()) {
-            logger.debug("deleting local temp branch " + tempBranchName);
+            logger.info("deleting local temp branch " + tempBranchName);
             git.branchDelete().setForce(true).setBranchNames(tempBranchName).call();
         }
         if (worldConfig.isRemoteTempBranchCleanupEnabled()) {
             final String remoteTempBranch = "refs/heads/" + tempBranchName;
-            logger.debug("deleting remote temp branch " + remoteTempBranch);
+            logger.info("deleting remote temp branch " + remoteTempBranch);
             final RefSpec deleteRemoteBranchSpec = new RefSpec().setSource(null).setDestination(remoteTempBranch);
 
             git.push().setProgressMonitor(pm).setRemote(remoteName).setRefSpecs(deleteRemoteBranchSpec).call();
         }
-        logger.debug("push complete");
+         **/
+        logger.info("push complete");
     }
 
     private static void doNaivePush(final Git git, final String branchNameToPush, final WorldConfig config, final Logger logger) throws IOException, GitAPIException {
@@ -181,7 +184,7 @@ public class PushTask implements Callable<Void> {
                 return false;
             }
         }
-        logger.debug("world-uuid check passed.");
+        logger.info("world-uuid check passed.");
         return true;
     }
 
