@@ -63,7 +63,6 @@ enum FullCommand implements Command {
         gitOp(ctx, WRITE, log, git -> {
             new CommitAndPushTask(git, ctx, log).call();
             log.chat(localized("fastback.chat.backup-complete"));
-            log.hud(null);
         });
         return SUCCESS;
     }

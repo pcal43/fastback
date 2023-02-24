@@ -62,7 +62,6 @@ enum GcCommand implements Command {
             final GcTask gc = new GcTask(git, ctx, log);
             gc.call();
             log.chat(localized("fastback.chat.gc-done", byteCountToDisplaySize(gc.getBytesReclaimed())));
-            log.hud(null);
         });
         return SUCCESS;
     }
