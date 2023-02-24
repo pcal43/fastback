@@ -33,6 +33,7 @@ import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ProgressMonitor;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.merge.ContentMergeStrategy;
+import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.URIish;
 
@@ -115,7 +116,7 @@ public class PushTask implements Callable<Void> {
                     SnapshotId.getSnapshotsPerWorld(localBranchRefs, logger);
             final List<SnapshotId> localSnapshots = localSnapshotsPerWorld.get(worldUuid);
             remoteSnapshots.retainAll(localSnapshots);
-            if (remoteSnapshots.isEmpty() || true) {
+            if (remoteSnapshots.isEmpty()) {
                 logger.warn("No common snapshots found between local and remote.");
                 logger.warn("Doing a full push.  This may take some time.");
                 doNaivePush(git, branchNameToPush, worldConfig, logger);
@@ -160,8 +161,11 @@ public class PushTask implements Callable<Void> {
         final ProgressMonitor pm = new IncrementalProgressMonitor(new PushProgressMonitor(logger), 100);
         final String remoteName = config.getRemoteName();
         logger.info("Doing naive push of " + branchNameToPush);
-        git.push().setProgressMonitor(pm).setRemote(remoteName).
+        Iterable<PushResult> result = git.push().setProgressMonitor(pm).setRemote(remoteName).
                 setRefSpecs(new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
+        for(PushResult pr : result) {
+            System.out.println("RESULT: "+pr.getTrackingRefUpdates().toString());
+        }
     }
 
     private static boolean doUuidCheck(Git git, Set<String> remoteWorldUuids, WorldConfig config, Logger logger) throws GitAPIException, IOException {
