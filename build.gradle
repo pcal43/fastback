@@ -7,7 +7,7 @@ plugins {
 
 apply plugin: 'com.matthewprenger.cursegradle'
 
-sourceCompatibility = JavaVersion.VERSION_17
+sourceCompatibility = JavaVersion.VERSION_17asdfasdf
 targetCompatibility = JavaVersion.VERSION_17
 
 archivesBaseName = project.archives_base_name
