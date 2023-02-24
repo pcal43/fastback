@@ -139,19 +139,19 @@ public class PushTask implements Callable<Void> {
         git.checkout().setName(branchNameToPush).call();
         logger.debug("Pushing " + tempBranchName);
         final ProgressMonitor pm = new IncrementalProgressMonitor(new PushProgressMonitor(logger), 100);
-        git.push().setProgressMonitor(pm).setRemote(remoteName).
+        final Iterable<PushResult> pushResult = git.push().setProgressMonitor(pm).setRemote(remoteName).
                 setRefSpecs(new RefSpec(tempBranchName + ":" + tempBranchName),
                         new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
-        logger.info("Cleaning up branches");
-        for(final PushResult pr : result) {
-            for(final TrackingRefUpdate f : pr.getTrackingRefUpdates()) {
+        logger.info("Cleaning up branches:");
+        for (final PushResult pr : pushResult) {
+            for (final TrackingRefUpdate f : pr.getTrackingRefUpdates()) {
                 final String PREFIX = "refs/remotes/";
                 if (f.getLocalName().startsWith(PREFIX)) {
                     final String trackingBranchName = f.getLocalName().substring(PREFIX.length());
-                    logger.info("Cleaning up " + trackingBranchName);
+                    logger.info("- Cleaning up " + trackingBranchName);
                     git.branchDelete().setForce(true).setBranchNames(trackingBranchName).call();
                 } else {
-                    logger.warn("Ignoring unrecognized TrackingRefUpdate "+f.getLocalName());
+                    logger.warn("- Ignoring unrecognized TrackingRefUpdate " + f.getLocalName());
                 }
             }
         }
