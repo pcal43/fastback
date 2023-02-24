@@ -99,6 +99,10 @@ public record WorldConfig(
         return true;
     }
 
+    public boolean isTrackingBranchCleanupEnabled() {
+        return true;
+    }
+
     public boolean isRemoteTempBranchCleanupEnabled() {
         return true;
     }
