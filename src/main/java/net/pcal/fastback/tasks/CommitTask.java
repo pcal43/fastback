@@ -23,6 +23,7 @@ import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.AddCommand;
+import org.eclipse.jgit.api.CreateBranchCommand.SetupUpstreamMode;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.RmCommand;
@@ -66,7 +67,7 @@ public class CommitTask implements Callable<SnapshotId> {
     private static void doCommit(Git git, ModContext ctx, String newBranchName, final Logger log) throws GitAPIException {
         log.debug("doing commit");
         log.debug("checkout");
-        git.checkout().setOrphan(true).setName(newBranchName).call();
+        git.checkout().setUpstreamMode(SetupUpstreamMode.NOTRACK).setOrphan(true).setName(newBranchName).call();
         git.reset().setMode(ResetCommand.ResetType.SOFT).call();
         log.debug("status");
         final Status status = git.status().call();
