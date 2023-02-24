@@ -26,7 +26,6 @@ import net.pcal.fastback.progress.IncrementalProgressMonitor;
 import net.pcal.fastback.progress.PercentageProgressMonitor;
 import net.pcal.fastback.utils.GitUtils;
 import net.pcal.fastback.utils.SnapshotId;
-import org.eclipse.jgit.api.CreateBranchCommand.SetupUpstreamMode;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
@@ -130,18 +129,17 @@ public class PushTask implements Callable<Void> {
         }
         // ok, we have a common snapshot that we can use to create a fake merge history.
         final String tempBranchName = getTempBranchName(branchNameToPush);
-        logger.info("Creating out temp branch " + tempBranchName);
-        git.checkout().setUpstreamMode(SetupUpstreamMode.NOTRACK).setCreateBranch(true).setName(tempBranchName).call();
+        logger.debug("Creating out temp branch " + tempBranchName);
+        git.checkout().setCreateBranch(true).setName(tempBranchName).call();
         final ObjectId branchId = git.getRepository().resolve(latestCommonSnapshot.getBranchName());
-        logger.info("Merging " + latestCommonSnapshot.getBranchName());
+        logger.debug("Merging " + latestCommonSnapshot.getBranchName());
         git.merge().setContentMergeStrategy(ContentMergeStrategy.OURS).
                 include(branchId).setMessage("Merge " + branchId + " into " + tempBranchName).call();
-        logger.info("Checking out " + branchNameToPush);
-        git.checkout().setUpstreamMode(SetupUpstreamMode.NOTRACK).setName(branchNameToPush).call();
-        logger.info("Pushing " + tempBranchName);
+        logger.debug("Checking out " + branchNameToPush);
+        git.checkout().setName(branchNameToPush).call();
+        logger.debug("Pushing " + tempBranchName);
         final ProgressMonitor pm = new IncrementalProgressMonitor(new PushProgressMonitor(logger), 100);
-
-        Iterable<PushResult> result = git.push().setProgressMonitor(pm).setRemote(remoteName).
+        git.push().setProgressMonitor(pm).setRemote(remoteName).
                 setRefSpecs(new RefSpec(tempBranchName + ":" + tempBranchName),
                         new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
         logger.info("Cleaning up branches");
@@ -171,11 +169,8 @@ public class PushTask implements Callable<Void> {
         final ProgressMonitor pm = new IncrementalProgressMonitor(new PushProgressMonitor(logger), 100);
         final String remoteName = config.getRemoteName();
         logger.info("Doing naive push of " + branchNameToPush);
-        Iterable<PushResult> result = git.push().setProgressMonitor(pm).setRemote(remoteName).
+        git.push().setProgressMonitor(pm).setRemote(remoteName).
                 setRefSpecs(new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
-        for(PushResult pr : result) {
-            System.out.println("RESULT: "+pr.getTrackingRefUpdates().toString());
-        }
     }
 
     private static boolean doUuidCheck(Git git, Set<String> remoteWorldUuids, WorldConfig config, Logger logger) throws GitAPIException, IOException {
@@ -184,6 +179,8 @@ public class PushTask implements Callable<Void> {
             logger.warn("Remote has more than one world-uuid.  This is unusual. " + remoteWorldUuids);
         }
         if (remoteWorldUuids.isEmpty()) {
+            logger.debug("Remote does not have any previously-backed up worlds.");
+        } else {
             if (!remoteWorldUuids.contains(localUuid)) {
                 final URIish remoteUri = GitUtils.getRemoteUri(git, config.getRemoteName(), logger);
                 logger.chatError(localized("fastback.chat.push-uuid-mismatch", remoteUri));
@@ -191,7 +188,7 @@ public class PushTask implements Callable<Void> {
                 return false;
             }
         }
-        logger.info("world-uuid check passed.");
+        logger.debug("world-uuid check passed.");
         return true;
     }
 
