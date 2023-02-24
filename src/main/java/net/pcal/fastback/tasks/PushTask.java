@@ -137,29 +137,34 @@ public class PushTask implements Callable<Void> {
                 include(branchId).setMessage("Merge " + branchId + " into " + tempBranchName).call();
         logger.debug("Checking out " + branchNameToPush);
         git.checkout().setName(branchNameToPush).call();
-        logger.debug("Pushing " + tempBranchName);
+        logger.debug("Pushing temp branch " + tempBranchName);
         final ProgressMonitor pm = new IncrementalProgressMonitor(new PushProgressMonitor(logger), 100);
         final Iterable<PushResult> pushResult = git.push().setProgressMonitor(pm).setRemote(remoteName).
                 setRefSpecs(new RefSpec(tempBranchName + ":" + tempBranchName),
                         new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
-        logger.info("Cleaning up branches:");
-        for (final PushResult pr : pushResult) {
-            for (final TrackingRefUpdate f : pr.getTrackingRefUpdates()) {
-                final String PREFIX = "refs/remotes/";
-                if (f.getLocalName().startsWith(PREFIX)) {
-                    final String trackingBranchName = f.getLocalName().substring(PREFIX.length());
-                    logger.info("- Cleaning up " + trackingBranchName);
-                    git.branchDelete().setForce(true).setBranchNames(trackingBranchName).call();
-                } else {
-                    logger.warn("- Ignoring unrecognized TrackingRefUpdate " + f.getLocalName());
+        logger.info("Cleaning up branches...");
+        if (worldConfig.isTrackingBranchCleanupEnabled()) {
+            for (final PushResult pr : pushResult) {
+                for (final TrackingRefUpdate f : pr.getTrackingRefUpdates()) {
+                    final String PREFIX = "refs/remotes/";
+                    if (f.getLocalName().startsWith(PREFIX)) {
+                        final String trackingBranchName = f.getLocalName().substring(PREFIX.length());
+                        logger.info("Cleaning up tracking branch " + trackingBranchName);
+                        git.branchDelete().setForce(true).setBranchNames(trackingBranchName).call();
+                    } else {
+                        logger.warn("Ignoring unrecognized TrackingRefUpdate " + f.getLocalName());
+                    }
                 }
             }
+        }
+        if (worldConfig.isTempBranchCleanupEnabled()) {
+            logger.info("Deleting local temp branch " + tempBranchName);
+            git.branchDelete().setForce(true).setBranchNames(tempBranchName).call();
         }
         if (worldConfig.isRemoteTempBranchCleanupEnabled()) {
             final String remoteTempBranch = "refs/heads/" + tempBranchName;
             logger.info("Deleting remote temp branch " + remoteTempBranch);
             final RefSpec deleteRemoteBranchSpec = new RefSpec().setSource(null).setDestination(remoteTempBranch);
-
             git.push().setProgressMonitor(pm).setRemote(remoteName).setRefSpecs(deleteRemoteBranchSpec).call();
         }
         logger.info("Push complete");
