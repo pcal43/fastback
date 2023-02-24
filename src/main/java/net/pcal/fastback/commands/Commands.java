@@ -112,6 +112,8 @@ public class Commands {
                 }
             } catch (Exception e) {
                 log.internalError("Command execution failed.", e);
+            } finally {
+                log.hud(null); // ensure we always clear the hud text
             }
         });
     }

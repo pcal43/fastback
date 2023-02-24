@@ -61,7 +61,6 @@ enum RemotePruneCommand implements Command {
         gitOp(ctx, WRITE, log, git -> {
             final RemotePruneTask pt = new RemotePruneTask(git, ctx, log);
             final Collection<SnapshotId> pruned = pt.call();
-            log.hud(null);
             log.chat(localized("fastback.chat.prune-done", pruned.size()));
         });
         return SUCCESS;
