@@ -50,8 +50,8 @@ To actually delete the snapshots and reclaim the disk space they occupy, you nee
 /backup gc
 ```
 
-Note that this command can take a long time (5+ minutes) if your world is large or you
-haven't run it in a while.
+WARNING: This command can take a long time (5+ minutes).  For large worlds (1gb+), 
+you may be better off running `git gc` from the command line instead.
 
 ## Managing Snapshots on a Remote
 
