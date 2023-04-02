@@ -128,7 +128,7 @@ modrinth {
     versionType = "release"
     uploadFile = remapJar
     changelog = "<p><a href='https://github.com/pcal43/fastback/releases/tag/${project.mod_version}'>https://github.com/pcal43/fastback/releases/tag/${project.mod_version}</a></p>"
-    gameVersions = ["1.19.3"]
+    gameVersions = ["${project.minecraft_version}"]
     loaders = ["fabric"]
     dependencies {
         required.project "fabric-api"
@@ -148,7 +148,6 @@ modrinth {
         addGameVersion ((String) project.minecraft_version)
         addGameVersion "Fabric"
         mainArtifact(remapJar)
-
         afterEvaluate {
             uploadTask.dependsOn("remapJar")
         }
