@@ -29,12 +29,25 @@ project.ext.versions = [
     jgit                        : '6.4.0.202211300538-r',
     apache_sshd                 : '2.8.0',
     JavaEWAH                    : '1.1.13',
+
+	// https://github.com/lucko/fabric-permissions-api
     fabric_permissions          : '0.2-SNAPSHOT',
-    server_translations         : '[1.4.19+1.19.3]',
-    junit_jupiter               : '5.8.2',
+
+	// https://github.com/NucleoidMC/Server-Translations
+	// https://maven.nucleoid.xyz/xyz/nucleoid/server-translations-api
+    server_translations         : '2.0.0-beta.2+1.19.4-pre2',
+
+	// required by server_translations:
+	// https://github.com/NucleoidMC/Server-Translations/search?q=packet+tweaker
+	packet_tweaker              : '0.3.1+23w06a',
+
+	// Enables ed25519 support in apache_sshd
+	// https://github.com/apache/mina-sshd/blob/dfa109b7b535d64e8ee395ddd0419e7696fb24ee/docs/dependencies.md
     eddsa                       : '0.3.0',
+
     test_log4j                  : '2.16.0',
-    packet_tweaker              : '0.3.0+1.18.2'
+	junit_jupiter               : '5.8.2',
+
 ]
 
 dependencies {
@@ -54,17 +67,10 @@ dependencies {
     include runtimeOnly(files("${buildDir}/sshd-common-${versions.apache_sshd}+no-fs.jar"))
     include("org.apache.sshd:sshd-common:${versions.apache_sshd}") { transitive = false }
 
-    // Enable ed25519 support in apache_sshd
-    // https://github.com/apache/mina-sshd/blob/dfa109b7b535d64e8ee395ddd0419e7696fb24ee/docs/dependencies.md
-    include runtimeOnly("net.i2p.crypto:eddsa:${versions.eddsa}") { transitive = false }
-
-    // https://github.com/NucleoidMC/Server-Translations
-	// https://maven.nucleoid.xyz/fr/catcore/server-translations-api/
-    include modImplementation("fr.catcore:server-translations-api:${versions.server_translations}") { transitive = false }
+	include runtimeOnly("net.i2p.crypto:eddsa:${versions.eddsa}") { transitive = false }
+    include modImplementation("xyz.nucleoid:server-translations-api:${versions.server_translations}") { transitive = false }
     include modRuntimeOnly("xyz.nucleoid:packet-tweaker:${versions.packet_tweaker}") { transitive = false }
-
-    // https://github.com/lucko/fabric-permissions-api
-    include modImplementation("me.lucko:fabric-permissions-api:${versions.fabric_permissions}") { transitive = false }
+	include modImplementation("me.lucko:fabric-permissions-api:${versions.fabric_permissions}") { transitive = false }
 
     // JUnit
     testImplementation "org.junit.jupiter:junit-jupiter-api:${versions.junit_jupiter}"
