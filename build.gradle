@@ -1,8 +1,8 @@
 plugins {
-	id 'fabric-loom' version '1.0-SNAPSHOT'
-	id 'maven-publish'
-	id "com.modrinth.minotaur" version "2.+"
-	id "com.matthewprenger.cursegradle" version "1.4.0"
+    id 'fabric-loom' version '1.0-SNAPSHOT'
+    id 'maven-publish'
+    id "com.modrinth.minotaur" version "2.+"
+    id "com.matthewprenger.cursegradle" version "1.4.0"
 }
 
 apply plugin: 'com.matthewprenger.cursegradle'
@@ -15,34 +15,47 @@ version = project.mod_version
 group = project.maven_group
 
 repositories {
-	// https://docs.gradle.org/current/userguide/declaring_repositories.html
-	maven { url 'https://maven.nucleoid.xyz' }
-	maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+    // https://docs.gradle.org/current/userguide/declaring_repositories.html
+    maven { url 'https://maven.nucleoid.xyz' }
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 }
 
 configurations {
-	// configuration that holds jars to include in the jar
-	extraLibs
+    // configuration that holds jars to include in the jar
+    extraLibs
 }
 
 project.ext.versions = [
     jgit                        : '6.4.0.202211300538-r',
     apache_sshd                 : '2.8.0',
     JavaEWAH                    : '1.1.13',
+
+    // https://github.com/lucko/fabric-permissions-api
     fabric_permissions          : '0.2-SNAPSHOT',
-    server_translations         : '[1.4.19+1.19.3]',
-    junit_jupiter               : '5.8.2',
+
+    // https://github.com/NucleoidMC/Server-Translations
+    // https://maven.nucleoid.xyz/xyz/nucleoid/server-translations-api
+    server_translations         : '2.0.0-beta.2+1.19.4-pre2',
+
+    // required by server_translations:
+    // https://github.com/NucleoidMC/Server-Translations/search?q=packet+tweaker
+    packet_tweaker              : '0.3.1+23w06a',
+
+    // Enables ed25519 support in apache_sshd
+    // https://github.com/apache/mina-sshd/blob/dfa109b7b535d64e8ee395ddd0419e7696fb24ee/docs/dependencies.md
     eddsa                       : '0.3.0',
+
     test_log4j                  : '2.16.0',
-    packet_tweaker              : '0.3.0+1.18.2'
+    junit_jupiter               : '5.8.2',
+
 ]
 
 dependencies {
-	testImplementation 'junit:junit:4.13.1'
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    testImplementation 'junit:junit:4.13.1'
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
     // JGit
     include implementation("org.eclipse.jgit:org.eclipse.jgit:${versions.jgit}") { transitive = false }
@@ -54,16 +67,9 @@ dependencies {
     include runtimeOnly(files("${buildDir}/sshd-common-${versions.apache_sshd}+no-fs.jar"))
     include("org.apache.sshd:sshd-common:${versions.apache_sshd}") { transitive = false }
 
-    // Enable ed25519 support in apache_sshd
-    // https://github.com/apache/mina-sshd/blob/dfa109b7b535d64e8ee395ddd0419e7696fb24ee/docs/dependencies.md
     include runtimeOnly("net.i2p.crypto:eddsa:${versions.eddsa}") { transitive = false }
-
-    // https://github.com/NucleoidMC/Server-Translations
-	// https://maven.nucleoid.xyz/fr/catcore/server-translations-api/
-    include modImplementation("fr.catcore:server-translations-api:${versions.server_translations}") { transitive = false }
+    include modImplementation("xyz.nucleoid:server-translations-api:${versions.server_translations}") { transitive = false }
     include modRuntimeOnly("xyz.nucleoid:packet-tweaker:${versions.packet_tweaker}") { transitive = false }
-
-    // https://github.com/lucko/fabric-permissions-api
     include modImplementation("me.lucko:fabric-permissions-api:${versions.fabric_permissions}") { transitive = false }
 
     // JUnit
@@ -74,83 +80,83 @@ dependencies {
 
 
 test {
-	useJUnitPlatform()
+    useJUnitPlatform()
 }
 
 processResources {
-	inputs.property "version", project.version
+    inputs.property "version", project.version
 
-	filesMatching("fabric.mod.json") {
-		expand "version": project.version
-	}
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
 
-	// localizations need to be under data for server-translations-api
-	copy {
-		from "$projectDir/src/main/resources/assets/fastback/lang"
-		into "$buildDir/resources/main/data/fastback/lang"
-	}
+    // localizations need to be under data for server-translations-api
+    copy {
+        from "$projectDir/src/main/resources/assets/fastback/lang"
+        into "$buildDir/resources/main/data/fastback/lang"
+    }
 }
 
 
 sourceSets.test {
-	resources.srcDirs = ["src/test/resources"]
+    resources.srcDirs = ["src/test/resources"]
 }
 
 tasks.withType(JavaCompile).configureEach {
-	// Minecraft 1.18 (1.18-pre2) upwards uses Java 17.
-	it.options.release = 17
+    // Minecraft 1.18 (1.18-pre2) upwards uses Java 17.
+    it.options.release = 17
 }
 
 java {
-	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-	// if it is present.
-	// If you remove this line, sources will not be generated.
-	withSourcesJar()
+    // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+    // if it is present.
+    // If you remove this line, sources will not be generated.
+    withSourcesJar()
 }
 
 jar {
-	from("LICENSE") {
-		rename { "${it}_${project.archivesBaseName}"}
-	}
+    from("LICENSE") {
+        rename { "${it}_${project.archivesBaseName}"}
+    }
 }
 
 // https://github.com/modrinth/minotaur
 modrinth {
-	token = System.getenv("MODRINTH_TOKEN")
-	projectId = "fastback"
-	versionNumber = project.mod_version
-	versionType = "release"
-	uploadFile = remapJar
-	changelog = "<p><a href='https://github.com/pcal43/fastback/releases/tag/${project.mod_version}'>https://github.com/pcal43/fastback/releases/tag/${project.mod_version}</a></p>"
-	gameVersions = ["1.19.3"]
-	loaders = ["fabric"]
-	dependencies {
-		required.project "fabric-api"
-	}
+    token = System.getenv("MODRINTH_TOKEN")
+    projectId = "fastback"
+    versionNumber = project.mod_version
+    versionType = "release"
+    uploadFile = remapJar
+    changelog = "<p><a href='https://github.com/pcal43/fastback/releases/tag/${project.mod_version}'>https://github.com/pcal43/fastback/releases/tag/${project.mod_version}</a></p>"
+    gameVersions = ["1.19.3"]
+    loaders = ["fabric"]
+    dependencies {
+        required.project "fabric-api"
+    }
 }
 
 
  curseforge {
-	apiKey = System.getenv("CURSEFORGE_TOKEN") ?: 'CURSEFORGE_TOKEN NOT_SET'
+    apiKey = System.getenv("CURSEFORGE_TOKEN") ?: 'CURSEFORGE_TOKEN NOT_SET'
 
-	project {
-		id = "667417"
-		releaseType = "release"
-		changelog = "https://github.com/pcal43/fastback/releases/tag/${project.mod_version}"
-		changelogType = "markdown"
-		mod_version = project.mod_version
-		addGameVersion ((String) project.minecraft_version)
-		addGameVersion "Fabric"
-		mainArtifact(remapJar)
+    project {
+        id = "667417"
+        releaseType = "release"
+        changelog = "https://github.com/pcal43/fastback/releases/tag/${project.mod_version}"
+        changelogType = "markdown"
+        mod_version = project.mod_version
+        addGameVersion ((String) project.minecraft_version)
+        addGameVersion "Fabric"
+        mainArtifact(remapJar)
 
-		afterEvaluate {
-			uploadTask.dependsOn("remapJar")
-		}
-	}
+        afterEvaluate {
+            uploadTask.dependsOn("remapJar")
+        }
+    }
 
-	options {
-		forgeGradleIntegration = false
-	}
+    options {
+        forgeGradleIntegration = false
+    }
 }
 
 /**
