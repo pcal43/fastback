@@ -25,9 +25,6 @@ To enable backups on your world, just run
 Enabled automatic local backups on world shutdown.
 ```
 
-**Note:** Backups currently only run during world shutdown; you can't do a backup while the world is running.
-This limitation will be removed in a future release.
-
 ## Listing available backup snapshots
 
 Every time FastBack runs, it creates a *snapshot* of your world.  Snapshots are identified by the time 
