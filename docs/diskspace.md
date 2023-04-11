@@ -38,7 +38,7 @@ Where `[policy]` is one of
 For example, to change the policy to keep the five most-recent snapshots, run:
 
 ```
-/backup set-retention count 5
+/backup set-retention fixed 5
 ```
 
 ## Collecting Garbage
