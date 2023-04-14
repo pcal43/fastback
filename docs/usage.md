@@ -52,8 +52,10 @@ Restoring 2022-10-02_10-11-12 to
 /home/pcal/minecraft/saves/MyWorld-2022-10-02_10-11-12
 ```
 
-This will create a copy of your world as it was when that snapshot was made.  Note that a restored snapshot is 
-created as a *new* world in your `saves` directory; the files in the current world are never touched by `restore`.
+This will create a copy of your world as it was when that snapshot was made.  
 
-To look at the restored snapshot, quit the current world and open the restored snapshot world.
+Note that files in the current world are never touched by `restore`; the restored snapshot is placed in either your `saves` directory (in singleplayer mode) or under your system temp directory (in server mode).  In either case, the full path to restore location will be output when the command completes.
+
+To look at the restored snapshot, quit the current world and open the restored snapshot world.  (In server mode, you'll have to manually copy
+the restored files from the location displayed at the end of the command).
 
