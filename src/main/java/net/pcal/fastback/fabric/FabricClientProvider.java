@@ -22,6 +22,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.MessageScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.math.MatrixStack;
@@ -98,7 +99,7 @@ final class FabricClientProvider extends FabricProvider implements HudRenderCall
     private boolean statusTextShown = false;
 
     @Override
-    public void onHudRender(MatrixStack matrixStack, float tickDelta) {
+    public void onHudRender(DrawContext drawContext, float tickDelta) {
         if (this.hudText == null) return;
         float previousIndicatorAlpha = this.backupIndicatorAlpha;
         this.backupIndicatorAlpha = MathHelper.lerp(0.2F, this.backupIndicatorAlpha, statusTextShown ? 1.0F : 0.0F);
@@ -113,7 +114,9 @@ final class FabricClientProvider extends FabricProvider implements HudRenderCall
                 int k = 16777215 | i << 24 & -16777216;
                 int scaledWidth = this.client.getWindow().getScaledWidth();
                 int scaledHeight = this.client.getWindow().getScaledHeight();
-                textRenderer.drawWithShadow(matrices, this.hudText, (float) (scaledWidth - j - 5), (float) (scaledHeight - 15), k);
+                int x = scaledWidth - j - 5;
+                int y = scaledHeight - 15;
+                drawContext.drawTextWithShadow(textRenderer, this.hudText, x, y, k);
             } else {
                 hudText = null;
             }
