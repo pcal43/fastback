@@ -75,8 +75,10 @@ public class ModContext {
                     final Duration timeRemaining = config.autobackWait().
                             minus(Duration.ofMillis(System.currentTimeMillis() - lastBackupTime));
                     if (!timeRemaining.isZero() && !timeRemaining.isNegative()) {
-                        getLogger().info("Skipping auto-backup until at least " +
-                                (timeRemaining.toSeconds() / 60) + " more minutes have elapsed.");
+                    //Spam the console every 5 minutes. Super annoying.
+                    //If you wanted it to backup every 12 hours, you would have 144 logs
+                       // getLogger().info("Skipping auto-backup until at least " +
+                               // (timeRemaining.toSeconds() / 60) + " more minutes have elapsed.");
                         return;
                     }
                     getLogger().info("Starting auto-backup");
