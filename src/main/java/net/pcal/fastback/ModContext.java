@@ -78,7 +78,7 @@ public class ModContext {
                     //Changes info to debug. This prevents it from sending into the console.
                     //Before, it would spam the console every 5 minutes. Super annoying.
                     //If you wanted it to backup every 12 hours, you would have 144 logs
-                        getLogger().debbug("Skipping auto-backup until at least " +
+                        getLogger().debug("Skipping auto-backup until at least " +
                                 (timeRemaining.toSeconds() / 60) + " more minutes have elapsed.");
                         return;
                     }
