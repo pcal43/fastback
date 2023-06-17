@@ -66,6 +66,7 @@ enum EnableCommand implements Command {
                         if (worldConfig.shutdownAction() == null) {
                             WorldConfig.setShutdownAction(config, SchedulableAction.DEFAULT_SHUTDOWN_ACTION);
                         }
+                        config.setBoolean("commit", null, "gpgsign", false);
                         config.save();
                         log.chat(localized("fastback.chat.enable-done"));
                     } catch (GitAPIException | IOException e) {
