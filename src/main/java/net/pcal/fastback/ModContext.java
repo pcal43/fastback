@@ -75,7 +75,7 @@ public class ModContext {
                     final Duration timeRemaining = config.autobackWait().
                             minus(Duration.ofMillis(System.currentTimeMillis() - lastBackupTime));
                     if (!timeRemaining.isZero() && !timeRemaining.isNegative()) {
-                        getLogger().info("Skipping auto-backup until at least " +
+                        getLogger().debug("Skipping auto-backup until at least " +
                                 (timeRemaining.toSeconds() / 60) + " more minutes have elapsed.");
                         return;
                     }
