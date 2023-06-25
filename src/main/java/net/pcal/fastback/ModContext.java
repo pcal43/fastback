@@ -75,9 +75,6 @@ public class ModContext {
                     final Duration timeRemaining = config.autobackWait().
                             minus(Duration.ofMillis(System.currentTimeMillis() - lastBackupTime));
                     if (!timeRemaining.isZero() && !timeRemaining.isNegative()) {
-                    //Changes info to debug. This prevents it from sending into the console.
-                    //Before, it would spam the console every 5 minutes. Super annoying.
-                    //If you wanted it to backup every 12 hours, you would have 144 logs
                         getLogger().debug("Skipping auto-backup until at least " +
                                 (timeRemaining.toSeconds() / 60) + " more minutes have elapsed.");
                         return;
