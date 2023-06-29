@@ -113,5 +113,10 @@ public class RestoreSnapshotTask implements Callable<Path> {
         @Override
         public void progressDone(String task) {
         }
+
+        @Override
+        public void showDuration(boolean enabled) {
+        }
+
     }
 }
