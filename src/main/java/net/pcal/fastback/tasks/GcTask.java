@@ -164,5 +164,9 @@ public class GcTask implements Callable<Void> {
         public void progressDone(String task) {
             logger.info("Done " + task);
         }
+
+        @Override
+        public void showDuration(boolean enabled) {
+        }
     }
 }
