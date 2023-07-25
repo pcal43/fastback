@@ -183,8 +183,8 @@ tasks.register('stripSshdFileSystem') {
 
         exec {
             workingDir "${buildDir}"
-            executable 'C:/Program Files/7-Zip/7z.exe'
-            args 'd', "sshd-common-${versions.apache_sshd}+no-fs.jar", 'META-INF/services/java.nio.file.spi.FileSystemProvider'
+            executable 'zip'
+            args '-d', "sshd-common-${versions.apache_sshd}+no-fs.jar", 'META-INF/services/java.nio.file.spi.FileSystemProvider'
         }
     }
 }
