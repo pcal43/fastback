@@ -122,7 +122,7 @@ public abstract class FabricProvider implements ModContext.FrameworkServiceProvi
 
     @Override
     public void sendFeedback(Message message, ServerCommandSource scs) {
-        scs.sendFeedback(()->messageToText(message), false);
+        scs.sendFeedback(messageToText(message), false);
     }
 
     @Override

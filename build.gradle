@@ -26,7 +26,7 @@ configurations {
 }
 
 project.ext.versions = [
-    jgit                        : '6.6.0.202305301015-r',
+    jgit                        : '6.4.0.202211300538-r',
     apache_sshd                 : '2.8.0',
     JavaEWAH                    : '1.1.13',
 
@@ -183,8 +183,8 @@ tasks.register('stripSshdFileSystem') {
 
         exec {
             workingDir "${buildDir}"
-            executable 'zip'
-            args '-d', "sshd-common-${versions.apache_sshd}+no-fs.jar", 'META-INF/services/java.nio.file.spi.FileSystemProvider'
+            executable 'C:/Program Files/7-Zip/7z.exe'
+            args 'd', "sshd-common-${versions.apache_sshd}+no-fs.jar", 'META-INF/services/java.nio.file.spi.FileSystemProvider'
         }
     }
 }
