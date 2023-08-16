@@ -27,7 +27,7 @@ configurations {
 
 project.ext.versions = [
     jgit                        : '6.6.0.202305301015-r',
-    apache_sshd                 : '2.8.0',
+    apache_sshd                 : '2.10.0',
     JavaEWAH                    : '1.1.13',
 
     // https://github.com/lucko/fabric-permissions-api
