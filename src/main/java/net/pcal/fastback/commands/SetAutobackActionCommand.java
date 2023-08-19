@@ -21,7 +21,7 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.WorldConfig;
+import net.pcal.fastback.repo.RepoConfig;
 import net.pcal.fastback.logging.Logger;
 import org.eclipse.jgit.lib.StoredConfig;
 
@@ -55,7 +55,7 @@ enum SetAutobackActionCommand implements Command {
         final Logger log = commandLogger(ctx, scs);
         gitOp(ctx, WRITE_CONFIG, log, git -> {
             final StoredConfig config = git.getRepository().getConfig();
-            WorldConfig.setAutobackAction(config, action);
+            RepoConfig.setAutobackAction(config, action);
             config.save();
             log.chat(localized("fastback.chat.info-autoback-action", action.getArgumentName()));
         });

@@ -23,7 +23,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.WorldConfig;
+import net.pcal.fastback.repo.RepoConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.tasks.ListSnapshotsTask;
 import net.pcal.fastback.utils.SnapshotId;
@@ -59,7 +59,7 @@ enum RemoteListCommand implements Command {
     private static int remoteList(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
         gitOp(ctx, NONE, log, git -> {
-            final WorldConfig wc = WorldConfig.load(git);
+            final RepoConfig wc = RepoConfig.load(git);
             final ListMultimap<String, SnapshotId> snapshotsPerWorld = ListSnapshotsTask.listRemoteSnapshots(git, wc, log);
             final List<SnapshotId> snapshots = new ArrayList<>(snapshotsPerWorld.get(wc.worldUuid()));
             Collections.sort(snapshots);

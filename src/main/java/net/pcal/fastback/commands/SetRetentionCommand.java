@@ -22,7 +22,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.WorldConfig;
+import net.pcal.fastback.repo.RepoConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;
@@ -63,7 +63,7 @@ enum SetRetentionCommand implements Command {
     }
 
     private static int setLocalPolicy(ModContext ctx, CommandContext<ServerCommandSource> cc, RetentionPolicyType rpt) {
-        return setRetentionPolicy(ctx, cc, rpt, WorldConfig::setLocalRetentionPolicy);
+        return setRetentionPolicy(ctx, cc, rpt, RepoConfig::setLocalRetentionPolicy);
     }
 
 

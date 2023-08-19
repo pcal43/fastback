@@ -20,7 +20,7 @@ package net.pcal.fastback.tasks;
 
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.WorldConfig;
+import net.pcal.fastback.repo.RepoConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;
@@ -59,7 +59,7 @@ public class LocalPruneTask implements Callable<Collection<SnapshotId>> {
 
     @Override
     public Collection<SnapshotId> call() throws IOException, GitAPIException {
-        final WorldConfig wc = WorldConfig.load(git);
+        final RepoConfig wc = RepoConfig.load(git);
         return doPrune(wc, ctx, log,
                 wc::localRetentionPolicy,
                 () -> listSnapshots(git, ctx.getLogger()),
@@ -71,7 +71,7 @@ public class LocalPruneTask implements Callable<Collection<SnapshotId>> {
         );
     }
 
-    static Collection<SnapshotId> doPrune(WorldConfig wc,
+    static Collection<SnapshotId> doPrune(RepoConfig wc,
                                           ModContext ctx,
                                           Logger log,
                                           JGitSupplier<String> policyConfigFn,

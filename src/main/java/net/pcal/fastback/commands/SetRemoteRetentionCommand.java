@@ -22,27 +22,11 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.WorldConfig;
-import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.retention.RetentionPolicy;
-import net.pcal.fastback.retention.RetentionPolicyCodec;
+import net.pcal.fastback.repo.RepoConfig;
 import net.pcal.fastback.retention.RetentionPolicyType;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.lib.StoredConfig;
 
-import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
-
-import static net.minecraft.server.command.CommandManager.argument;
-import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.commands.Commands.FAILURE;
-import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.commandLogger;
-import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.commands.SetRetentionCommand.registerSetRetentionCommand;
 import static net.pcal.fastback.commands.SetRetentionCommand.setRetentionPolicy;
-import static net.pcal.fastback.logging.Message.localized;
 
 /**
  * Command to set the snapshot retention policy for the remote.
@@ -62,7 +46,7 @@ enum SetRemoteRetentionCommand implements Command {
     }
 
     private static int setRemotePolicy(ModContext ctx, CommandContext<ServerCommandSource> cc, RetentionPolicyType rpt) {
-        return setRetentionPolicy(ctx, cc, rpt, WorldConfig::setRemoteRetentionPolicy);
+        return setRetentionPolicy(ctx, cc, rpt, RepoConfig::setRemoteRetentionPolicy);
     }
 
 }

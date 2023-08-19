@@ -23,10 +23,9 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.WorldConfig;
+import net.pcal.fastback.repo.RepoConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.SnapshotId;
-import org.eclipse.jgit.transport.RefSpec;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -60,7 +59,7 @@ enum RemoteDeleteCommand implements Command {
         final Logger log = commandLogger(ctx, cc.getSource());
         gitOp(ctx, WRITE, log, git -> {
             final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
-            final WorldConfig wc = WorldConfig.load(git);
+            final RepoConfig wc = RepoConfig.load(git);
             final SnapshotId sid = SnapshotId.fromUuidAndName(wc.worldUuid(), snapshotName);
             deleteRemoteBranch(git, wc.getRemoteName(), sid.getBranchName());
             log.chat(localized("fastback.chat.remote-delete-done", snapshotName));

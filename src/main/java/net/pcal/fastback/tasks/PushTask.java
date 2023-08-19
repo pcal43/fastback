@@ -20,7 +20,7 @@ package net.pcal.fastback.tasks;
 
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.WorldConfig;
+import net.pcal.fastback.repo.RepoConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.progress.IncrementalProgressMonitor;
 import net.pcal.fastback.progress.PercentageProgressMonitor;
@@ -67,21 +67,21 @@ public class PushTask implements Callable<Void> {
     @Override
     public Void call() throws GitAPIException, IOException {
         this.log.hud(localized("fastback.hud.remote-uploading", 0));
-        final WorldConfig worldConfig = WorldConfig.load(git);
-        final String pushUrl = worldConfig.getRemotePushUrl();
+        final RepoConfig repoConfig = RepoConfig.load(git);
+        final String pushUrl = repoConfig.getRemotePushUrl();
         if (pushUrl == null) {
             final String msg = "Skipping remote backup because no remote url has been configured.";
             this.log.warn(msg);
             return null;
         }
         final Collection<Ref> remoteBranchRefs = git.lsRemote().setHeads(true).setTags(false).
-                setRemote(worldConfig.getRemoteName()).call();
+                setRemote(repoConfig.getRemoteName()).call();
         final ListMultimap<String, SnapshotId> snapshotsPerWorld =
                 SnapshotId.getSnapshotsPerWorld(remoteBranchRefs, log);
-        if (worldConfig.isUuidCheckEnabled()) {
+        if (repoConfig.isUuidCheckEnabled()) {
             final boolean uuidCheckResult;
             try {
-                uuidCheckResult = doUuidCheck(git, snapshotsPerWorld.keySet(), worldConfig, log);
+                uuidCheckResult = doUuidCheck(git, snapshotsPerWorld.keySet(), repoConfig, log);
             } catch (final GitAPIException | IOException e) {
                 log.internalError("Skipping remote backup due to failed uuid check", e);
                 return null;
@@ -91,24 +91,24 @@ public class PushTask implements Callable<Void> {
                 return null;
             }
         }
-        log.info("Pushing to " + worldConfig.getRemotePushUrl());
-        if (worldConfig.isSmartPushEnabled()) {
-            doSmartPush(git, snapshotsPerWorld.get(worldConfig.worldUuid()), this.sid.getBranchName(), worldConfig, log);
+        log.info("Pushing to " + repoConfig.getRemotePushUrl());
+        if (repoConfig.isSmartPushEnabled()) {
+            doSmartPush(git, snapshotsPerWorld.get(repoConfig.worldUuid()), this.sid.getBranchName(), repoConfig, log);
         } else {
-            doNaivePush(git, this.sid.getBranchName(), worldConfig, log);
+            doNaivePush(git, this.sid.getBranchName(), repoConfig, log);
         }
         log.info("Remote backup complete.");
         return null;
     }
 
-    private static void doSmartPush(final Git git, List<SnapshotId> remoteSnapshots, final String branchNameToPush, final WorldConfig worldConfig, final Logger logger) throws GitAPIException, IOException {
-        final String remoteName = worldConfig.getRemoteName();
-        final String worldUuid = worldConfig.worldUuid();
+    private static void doSmartPush(final Git git, List<SnapshotId> remoteSnapshots, final String branchNameToPush, final RepoConfig repoConfig, final Logger logger) throws GitAPIException, IOException {
+        final String remoteName = repoConfig.getRemoteName();
+        final String worldUuid = repoConfig.worldUuid();
         final SnapshotId latestCommonSnapshot;
         if (remoteSnapshots.isEmpty()) {
             logger.warn("** This appears to be the first time this world has been pushed.");
             logger.warn("** If the world is large, this may take some time.");
-            doNaivePush(git, branchNameToPush, worldConfig, logger);
+            doNaivePush(git, branchNameToPush, repoConfig, logger);
             return;
         } else {
             final Collection<Ref> localBranchRefs = git.branchList().call();
@@ -119,7 +119,7 @@ public class PushTask implements Callable<Void> {
             if (remoteSnapshots.isEmpty()) {
                 logger.warn("No common snapshots found between local and remote.");
                 logger.warn("Doing a full push.  This may take some time.");
-                doNaivePush(git, branchNameToPush, worldConfig, logger);
+                doNaivePush(git, branchNameToPush, repoConfig, logger);
                 return;
             } else {
                 Collections.sort(remoteSnapshots);
@@ -143,7 +143,7 @@ public class PushTask implements Callable<Void> {
                 setRefSpecs(new RefSpec(tempBranchName + ":" + tempBranchName),
                         new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
         logger.info("Cleaning up branches...");
-        if (worldConfig.isTrackingBranchCleanupEnabled()) {
+        if (repoConfig.isTrackingBranchCleanupEnabled()) {
             for (final PushResult pr : pushResult) {
                 for (final TrackingRefUpdate f : pr.getTrackingRefUpdates()) {
                     final String PREFIX = "refs/remotes/";
@@ -157,11 +157,11 @@ public class PushTask implements Callable<Void> {
                 }
             }
         }
-        if (worldConfig.isTempBranchCleanupEnabled()) {
+        if (repoConfig.isTempBranchCleanupEnabled()) {
             logger.info("Deleting local temp branch " + tempBranchName);
             git.branchDelete().setForce(true).setBranchNames(tempBranchName).call();
         }
-        if (worldConfig.isRemoteTempBranchCleanupEnabled()) {
+        if (repoConfig.isRemoteTempBranchCleanupEnabled()) {
             final String remoteTempBranch = "refs/heads/" + tempBranchName;
             logger.info("Deleting remote temp branch " + remoteTempBranch);
             final RefSpec deleteRemoteBranchSpec = new RefSpec().setSource(null).setDestination(remoteTempBranch);
@@ -170,7 +170,7 @@ public class PushTask implements Callable<Void> {
         logger.info("Push complete");
     }
 
-    private static void doNaivePush(final Git git, final String branchNameToPush, final WorldConfig config, final Logger logger) throws IOException, GitAPIException {
+    private static void doNaivePush(final Git git, final String branchNameToPush, final RepoConfig config, final Logger logger) throws IOException, GitAPIException {
         final ProgressMonitor pm = new IncrementalProgressMonitor(new PushProgressMonitor(logger), 100);
         final String remoteName = config.getRemoteName();
         logger.info("Doing naive push of " + branchNameToPush);
@@ -178,7 +178,7 @@ public class PushTask implements Callable<Void> {
                 setRefSpecs(new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
     }
 
-    private static boolean doUuidCheck(Git git, Set<String> remoteWorldUuids, WorldConfig config, Logger logger) throws GitAPIException, IOException {
+    private static boolean doUuidCheck(Git git, Set<String> remoteWorldUuids, RepoConfig config, Logger logger) throws GitAPIException, IOException {
         final String localUuid = config.worldUuid();
         if (remoteWorldUuids.size() > 2) {
             logger.warn("Remote has more than one world-uuid.  This is unusual. " + remoteWorldUuids);

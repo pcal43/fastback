@@ -22,7 +22,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.WorldConfig;
+import net.pcal.fastback.repo.RepoConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.SnapshotId;
 
@@ -54,7 +54,7 @@ enum ListCommand implements Command {
     private int execute(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
         gitOp(ctx, NONE, log, git -> {
-            final WorldConfig wc = WorldConfig.load(git);
+            final RepoConfig wc = RepoConfig.load(git);
             for (final SnapshotId sid : sortWorldSnapshots(listSnapshots(git, ctx.getLogger()), wc.worldUuid())) {
                 log.chat(raw(sid.getName()));
             }

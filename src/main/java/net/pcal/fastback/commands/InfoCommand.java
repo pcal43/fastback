@@ -21,7 +21,7 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.WorldConfig;
+import net.pcal.fastback.repo.RepoConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;
@@ -58,7 +58,7 @@ enum InfoCommand implements Command {
         requireNonNull(scs);
         final Logger log = commandLogger(ctx, scs);
         gitOp(ctx, NONE, log, git -> {
-            final WorldConfig wc = WorldConfig.load(git);
+            final RepoConfig wc = RepoConfig.load(git);
             log.chat(localized("fastback.chat.info-fastback-version", ctx.getModVersion()));
             log.chat(localized("fastback.chat.info-uuid", wc.worldUuid()));
             if (wc.isBackupEnabled()) {

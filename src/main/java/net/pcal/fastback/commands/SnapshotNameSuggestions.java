@@ -23,7 +23,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.WorldConfig;
+import net.pcal.fastback.repo.RepoConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
@@ -46,7 +46,7 @@ abstract class SnapshotNameSuggestions implements SuggestionProvider<ServerComma
 
             @Override
             protected Collection<SnapshotId> getSnapshotIds(Git git, Logger log) throws Exception {
-                final WorldConfig wc = WorldConfig.load(git);
+                final RepoConfig wc = RepoConfig.load(git);
                 return sortWorldSnapshots(listSnapshots(git, log), wc.worldUuid());
             }
         };
@@ -57,7 +57,7 @@ abstract class SnapshotNameSuggestions implements SuggestionProvider<ServerComma
 
             @Override
             protected Collection<SnapshotId> getSnapshotIds(Git git, Logger log) throws Exception {
-                final WorldConfig wc = WorldConfig.load(git);
+                final RepoConfig wc = RepoConfig.load(git);
                 return sortWorldSnapshots(listRemoteSnapshots(git, wc, log), wc.worldUuid());
             }
         };

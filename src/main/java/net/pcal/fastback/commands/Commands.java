@@ -24,7 +24,7 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.ModContext.ExecutionLock;
-import net.pcal.fastback.WorldConfig;
+import net.pcal.fastback.repo.RepoConfig;
 import net.pcal.fastback.logging.CommandSourceLogger;
 import net.pcal.fastback.logging.CompositeLogger;
 import net.pcal.fastback.logging.Logger;
@@ -104,8 +104,8 @@ public class Commands {
                 return;
             }
             try (final Git git = Git.open(worldSaveDir.toFile())) {
-                final WorldConfig worldConfig = WorldConfig.load(git);
-                if (!worldConfig.isBackupEnabled()) {
+                final RepoConfig repoConfig = RepoConfig.load(git);
+                if (!repoConfig.isBackupEnabled()) {
                     log.chatError(localized("fastback.chat.not-enabled"));
                 } else {
                     op.execute(git);

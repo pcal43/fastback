@@ -21,6 +21,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.commands.SchedulableAction;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.Message;
+import net.pcal.fastback.repo.RepoConfig;
 import net.pcal.fastback.retention.RetentionPolicyType;
 import org.eclipse.jgit.api.Git;
 
@@ -68,7 +69,7 @@ public class ModContext {
                 final Path worldSaveDir = getWorldDirectory();
                 if (!isGitRepo(worldSaveDir)) return;
                 try (Git git = Git.open(worldSaveDir.toFile())) {
-                    final WorldConfig config = WorldConfig.load(git);
+                    final RepoConfig config = RepoConfig.load(git);
                     if (!config.isBackupEnabled()) return;
                     final SchedulableAction autobackAction = config.autobackAction();
                     if (autobackAction == null || autobackAction == NONE) return;

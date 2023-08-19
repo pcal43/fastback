@@ -23,6 +23,7 @@ import net.pcal.fastback.logging.ChatLogger;
 import net.pcal.fastback.logging.CompositeLogger;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.SaveScreenLogger;
+import net.pcal.fastback.repo.RepoConfig;
 import org.eclipse.jgit.api.Git;
 
 import java.io.IOException;
@@ -64,7 +65,7 @@ public class LifecycleUtils {
         final Path worldSaveDir = ctx.getWorldDirectory();
         if (isGitRepo(worldSaveDir)) {
             try (final Git git = Git.open(worldSaveDir.toFile())) {
-                WorldConfig.doWorldMaintenance(git, logger);
+                RepoConfig.doWorldMaintenance(git, logger);
             } catch (IOException e) {
                 logger.internalError("Unable to perform maintenance.  Backups will probably not work correctly", e);
             }
@@ -83,7 +84,7 @@ public class LifecycleUtils {
         ctx.stopExecutor();
         if (isGitRepo(worldSaveDir)) {
             try (Git git = Git.open(worldSaveDir.toFile())) {
-                final WorldConfig config = WorldConfig.load(git);
+                final RepoConfig config = RepoConfig.load(git);
                 if (config.isBackupEnabled() && config.shutdownAction() != null) {
                     final Logger screenLogger = CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx));
                     config.shutdownAction().getTask(git, ctx, screenLogger).call();

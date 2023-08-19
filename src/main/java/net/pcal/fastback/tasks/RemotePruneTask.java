@@ -19,7 +19,7 @@
 package net.pcal.fastback.tasks;
 
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.WorldConfig;
+import net.pcal.fastback.repo.RepoConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
@@ -56,7 +56,7 @@ public class RemotePruneTask implements Callable<Collection<SnapshotId>> {
 
     @Override
     public Collection<SnapshotId> call() throws IOException, GitAPIException {
-        final WorldConfig wc = WorldConfig.load(git);
+        final RepoConfig wc = RepoConfig.load(git);
         return doPrune(wc, ctx, log,
                 wc::remoteRetentionPolicy,
                 () -> listRemoteSnapshots(git, wc, ctx.getLogger()),

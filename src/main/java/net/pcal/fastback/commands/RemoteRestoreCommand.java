@@ -23,7 +23,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.WorldConfig;
+import net.pcal.fastback.repo.RepoConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.tasks.RestoreSnapshotTask;
 import net.pcal.fastback.utils.SnapshotId;
@@ -62,7 +62,7 @@ enum RemoteRestoreCommand implements Command {
     private static int remoteRestore(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
         gitOp(ctx, NONE, log, git -> {
-            final WorldConfig wc = WorldConfig.load(git);
+            final RepoConfig wc = RepoConfig.load(git);
             final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
             final SnapshotId sid = SnapshotId.fromUuidAndName(wc.worldUuid(), snapshotName);
             final String uri =  wc.getRemotePushUrl();

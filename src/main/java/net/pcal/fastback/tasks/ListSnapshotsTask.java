@@ -20,7 +20,7 @@ package net.pcal.fastback.tasks;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
-import net.pcal.fastback.WorldConfig;
+import net.pcal.fastback.repo.RepoConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
@@ -43,7 +43,7 @@ public class ListSnapshotsTask implements Callable<ListMultimap<String, Snapshot
         return new ListSnapshotsTask(refProvider, log).call();
     }
 
-    public static ListMultimap<String, SnapshotId> listRemoteSnapshots(final Git git, WorldConfig wc, final Logger log)
+    public static ListMultimap<String, SnapshotId> listRemoteSnapshots(final Git git, RepoConfig wc, final Logger log)
             throws GitAPIException, IOException {
         final JGitSupplier<Collection<Ref>> refProvider = ()-> git.lsRemote().setRemote(wc.getRemoteName()).setHeads(true).call();
         return new ListSnapshotsTask(refProvider, log).call();

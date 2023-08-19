@@ -22,7 +22,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.WorldConfig;
+import net.pcal.fastback.repo.RepoConfig;
 import net.pcal.fastback.logging.Logger;
 import org.eclipse.jgit.lib.StoredConfig;
 
@@ -53,7 +53,7 @@ enum DisableCommand implements Command {
         final Logger log = commandLogger(ctx, cc.getSource());
         gitOp(ctx, WRITE_CONFIG, log, git -> {
             final StoredConfig gitc = git.getRepository().getConfig();
-            WorldConfig.setBackupEnabled(gitc, false);
+            RepoConfig.setBackupEnabled(gitc, false);
             gitc.save();
             log.chat(localized("fastback.chat.disable-done"));
         });

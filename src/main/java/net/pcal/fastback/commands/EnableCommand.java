@@ -22,7 +22,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.WorldConfig;
+import net.pcal.fastback.repo.RepoConfig;
 import net.pcal.fastback.logging.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -33,7 +33,7 @@ import java.nio.file.Path;
 
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.ModContext.ExecutionLock.NONE;
-import static net.pcal.fastback.WorldConfig.doWorldMaintenance;
+import static net.pcal.fastback.repo.RepoConfig.doWorldMaintenance;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
@@ -61,10 +61,10 @@ enum EnableCommand implements Command {
                     try (final Git git = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
                         doWorldMaintenance(git, log);
                         final StoredConfig config = git.getRepository().getConfig();
-                        final WorldConfig worldConfig = WorldConfig.load(git);
-                        WorldConfig.setBackupEnabled(config, true);
-                        if (worldConfig.shutdownAction() == null) {
-                            WorldConfig.setShutdownAction(config, SchedulableAction.DEFAULT_SHUTDOWN_ACTION);
+                        final RepoConfig repoConfig = RepoConfig.load(git);
+                        RepoConfig.setBackupEnabled(config, true);
+                        if (repoConfig.shutdownAction() == null) {
+                            RepoConfig.setShutdownAction(config, SchedulableAction.DEFAULT_SHUTDOWN_ACTION);
                         }
                         config.save();
                         log.chat(localized("fastback.chat.enable-done"));
