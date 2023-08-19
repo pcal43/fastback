@@ -22,9 +22,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.config.RepoConfig;
-import net.pcal.fastback.config.RepoConfigKey;
 import net.pcal.fastback.logging.Logger;
-import org.eclipse.jgit.lib.StoredConfig;
 
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.ModContext.ExecutionLock.WRITE_CONFIG;

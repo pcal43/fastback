@@ -22,7 +22,6 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.config.RepoConfig;
-import net.pcal.fastback.config.RepoConfigUtils;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;

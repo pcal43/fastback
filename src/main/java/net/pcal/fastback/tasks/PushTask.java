@@ -52,7 +52,7 @@ import static net.pcal.fastback.config.RepoConfigKey.IS_TRACKING_BRANCH_CLEANUP_
 import static net.pcal.fastback.config.RepoConfigKey.IS_UUID_CHECK_ENABLED;
 import static net.pcal.fastback.config.RepoConfigKey.REMOTE_NAME;
 import static net.pcal.fastback.config.RepoConfigKey.REMOTE_PUSH_URL;
-import static net.pcal.fastback.config.RepoConfigUtils.*;
+import static net.pcal.fastback.config.RepoConfigUtils.getWorldUuid;
 import static net.pcal.fastback.logging.Message.localized;
 
 public class PushTask implements Callable<Void> {

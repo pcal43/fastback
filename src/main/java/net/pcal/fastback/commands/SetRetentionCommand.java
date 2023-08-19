@@ -29,7 +29,6 @@ import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;
 import net.pcal.fastback.retention.RetentionPolicyType;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.lib.StoredConfig;
 
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -42,7 +41,7 @@ import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
-import static net.pcal.fastback.config.RepoConfigKey.*;
+import static net.pcal.fastback.config.RepoConfigKey.LOCAL_RETENTION_POLICY;
 import static net.pcal.fastback.logging.Message.localized;
 
 /**

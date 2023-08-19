@@ -35,10 +35,10 @@ import java.nio.file.Path;
 
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.ModContext.ExecutionLock.NONE;
-import static net.pcal.fastback.commands.SchedulableAction.DEFAULT_SHUTDOWN_ACTION;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.commands.SchedulableAction.DEFAULT_SHUTDOWN_ACTION;
 import static net.pcal.fastback.config.RepoConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.config.RepoConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.logging.Message.localized;

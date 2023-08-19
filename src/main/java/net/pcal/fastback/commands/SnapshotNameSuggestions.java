@@ -34,7 +34,7 @@ import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.ModContext.ExecutionLock.NONE;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
-import static net.pcal.fastback.config.RepoConfigUtils.*;
+import static net.pcal.fastback.config.RepoConfigUtils.getWorldUuid;
 import static net.pcal.fastback.tasks.ListSnapshotsTask.listRemoteSnapshots;
 import static net.pcal.fastback.tasks.ListSnapshotsTask.listSnapshots;
 import static net.pcal.fastback.utils.SnapshotId.sortWorldSnapshots;

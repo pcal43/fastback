@@ -19,9 +19,9 @@ package net.pcal.fastback;
 
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.commands.SchedulableAction;
+import net.pcal.fastback.config.RepoConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.Message;
-import net.pcal.fastback.config.RepoConfig;
 import net.pcal.fastback.retention.RetentionPolicyType;
 import org.eclipse.jgit.api.Git;
 

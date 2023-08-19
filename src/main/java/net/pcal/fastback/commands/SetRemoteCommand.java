@@ -26,7 +26,6 @@ import net.pcal.fastback.ModContext;
 import net.pcal.fastback.config.RepoConfig;
 import net.pcal.fastback.config.RepoConfigKey;
 import net.pcal.fastback.logging.Logger;
-import org.eclipse.jgit.lib.StoredConfig;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;

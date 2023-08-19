@@ -34,7 +34,7 @@ import java.util.Collection;
 import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.config.RepoConfigUtils.*;
+import static net.pcal.fastback.config.RepoConfigUtils.getWorldUuid;
 import static net.pcal.fastback.logging.Message.localized;
 
 @SuppressWarnings("FieldCanBeLocal")

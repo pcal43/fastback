@@ -20,12 +20,12 @@ package net.pcal.fastback;
 
 import net.pcal.fastback.commands.Commands;
 import net.pcal.fastback.commands.SchedulableAction;
+import net.pcal.fastback.config.RepoConfig;
 import net.pcal.fastback.config.RepoConfigUtils;
 import net.pcal.fastback.logging.ChatLogger;
 import net.pcal.fastback.logging.CompositeLogger;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.SaveScreenLogger;
-import net.pcal.fastback.config.RepoConfig;
 import org.eclipse.jgit.api.Git;
 
 import java.io.IOException;

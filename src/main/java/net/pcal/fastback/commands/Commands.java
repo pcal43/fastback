@@ -25,7 +25,6 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.ModContext.ExecutionLock;
 import net.pcal.fastback.config.RepoConfig;
-import net.pcal.fastback.config.RepoConfigKey;
 import net.pcal.fastback.logging.CommandSourceLogger;
 import net.pcal.fastback.logging.CompositeLogger;
 import net.pcal.fastback.logging.Logger;

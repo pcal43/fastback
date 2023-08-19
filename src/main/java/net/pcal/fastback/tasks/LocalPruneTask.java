@@ -35,7 +35,7 @@ import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.config.RepoConfigKey.LOCAL_RETENTION_POLICY;
-import static net.pcal.fastback.config.RepoConfigUtils.*;
+import static net.pcal.fastback.config.RepoConfigUtils.getWorldUuid;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.tasks.ListSnapshotsTask.listSnapshots;
 import static net.pcal.fastback.utils.SnapshotId.sortWorldSnapshots;
