@@ -83,7 +83,7 @@ public enum GitConfigKey {
                  final String settingName,
                  final boolean booleanDefault) {
         this.sectionName = requireNonNull(sectionName);
-        this.subSectionName = requireNonNull(subsectionName);
+        this.subSectionName = subsectionName;
         this.settingName = requireNonNull(settingName);
         this.booleanDefault = booleanDefault;
         this.stringDefault = null;
@@ -96,7 +96,7 @@ public enum GitConfigKey {
                  final String settingName,
                  final String stringDefault) {
         this.sectionName = requireNonNull(sectionName);
-        this.subSectionName = requireNonNull(subsectionName);
+        this.subSectionName = subsectionName;
         this.settingName = requireNonNull(settingName);
         this.stringDefault = stringDefault == null ? NULL_STRING : requireNonNull(stringDefault);
         this.booleanDefault = null;
@@ -108,7 +108,7 @@ public enum GitConfigKey {
                  final String settingName,
                  final int intDefault) {
         this.sectionName = requireNonNull(sectionName);
-        this.subSectionName = requireNonNull(subsectionName);
+        this.subSectionName = subsectionName;
         this.settingName = requireNonNull(settingName);
         this.intDefault = intDefault;
         this.booleanDefault = null;

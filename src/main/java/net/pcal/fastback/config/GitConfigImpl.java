@@ -72,18 +72,21 @@ class GitConfigImpl implements GitConfig {
 
         @Override
         public Updater set(GitConfigKey key, boolean newValue) {
+            if (key.getSettingName() == null) throw new IllegalArgumentException(key.name() + " can't be set");
             storedConfig.setBoolean(key.getSectionName(), key.getSubSectionName(), key.getSettingName(), newValue);
             return this;
         }
 
         @Override
         public Updater set(GitConfigKey key, String newValue) {
+            if (key.getSettingName() == null) throw new IllegalArgumentException(key.name() + " can't be set");
             storedConfig.setString(key.getSectionName(), key.getSubSectionName(), key.getSettingName(), newValue);
             return this;
         }
 
         @Override
         public Updater set(GitConfigKey key, int newValue) {
+            if (key.getSettingName() == null) throw new IllegalArgumentException(key.name() + " can't be set");
             storedConfig.setInt(key.getSectionName(), key.getSubSectionName(), key.getSettingName(), newValue);
             return this;
         }
