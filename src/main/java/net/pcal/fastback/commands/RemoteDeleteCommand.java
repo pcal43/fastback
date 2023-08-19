@@ -23,7 +23,8 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.repo.RepoConfig;
+import net.pcal.fastback.config.RepoConfig;
+import net.pcal.fastback.config.RepoConfigUtils;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.SnapshotId;
 
@@ -34,6 +35,7 @@ import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.config.RepoConfigKey.REMOTE_NAME;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.utils.GitUtils.deleteRemoteBranch;
 
@@ -57,11 +59,12 @@ enum RemoteDeleteCommand implements Command {
 
     private static int delete(ModContext ctx, CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, WRITE, log, git -> {
+        gitOp(ctx, WRITE, log, jgit -> {
             final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
-            final RepoConfig wc = RepoConfig.load(git);
-            final SnapshotId sid = SnapshotId.fromUuidAndName(wc.worldUuid(), snapshotName);
-            deleteRemoteBranch(git, wc.getRemoteName(), sid.getBranchName());
+            final RepoConfig conf = RepoConfig.load(jgit);
+            final String uuid = RepoConfigUtils.getWorldUuid(jgit);
+            final SnapshotId sid = SnapshotId.fromUuidAndName(uuid, snapshotName);
+            deleteRemoteBranch(jgit, conf.getString(REMOTE_NAME), sid.getBranchName());
             log.chat(localized("fastback.chat.remote-delete-done", snapshotName));
         });
         return SUCCESS;

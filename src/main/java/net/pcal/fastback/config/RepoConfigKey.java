@@ -16,7 +16,7 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.repo;
+package net.pcal.fastback.config;
 
 import static java.util.Objects.requireNonNull;
 
@@ -39,6 +39,8 @@ public enum RepoConfigKey {
     UPDATE_GITATTRIBUTES_ENABLED("update-gitattributes-enabled", true),
 
     REMOTE_PUSH_URL("remote", "origin", "url", null),
+
+    REMOTE_NAME("origin"),
 
     IS_UUID_CHECK_ENABLED(true),
 
@@ -116,6 +118,15 @@ public enum RepoConfigKey {
         this.booleanDefault = booleanDefault;
         this.intDefault = null;
         this.stringDefault = null;
+    }
+
+    RepoConfigKey(final String stringDefault) {
+        this.sectionName = null;
+        this.subSectionName = null;
+        this.settingName = null;
+        this.stringDefault = stringDefault;
+        this.booleanDefault = null;
+        this.intDefault = null;
     }
 
     String getSectionName() {

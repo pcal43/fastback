@@ -21,7 +21,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.commands.SchedulableAction;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.Message;
-import net.pcal.fastback.repo.RepoConfig;
+import net.pcal.fastback.config.RepoConfig;
 import net.pcal.fastback.retention.RetentionPolicyType;
 import org.eclipse.jgit.api.Git;
 
@@ -39,6 +39,10 @@ import java.util.concurrent.TimeUnit;
 import static java.nio.file.Files.createTempDirectory;
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.commands.SchedulableAction.NONE;
+import static net.pcal.fastback.commands.SchedulableAction.forConfigValue;
+import static net.pcal.fastback.config.RepoConfigKey.AUTOBACK_ACTION;
+import static net.pcal.fastback.config.RepoConfigKey.AUTOBACK_WAIT_MINUTES;
+import static net.pcal.fastback.config.RepoConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
@@ -70,10 +74,11 @@ public class ModContext {
                 if (!isGitRepo(worldSaveDir)) return;
                 try (Git git = Git.open(worldSaveDir.toFile())) {
                     final RepoConfig config = RepoConfig.load(git);
-                    if (!config.isBackupEnabled()) return;
-                    final SchedulableAction autobackAction = config.autobackAction();
+                    if (!config.getBoolean(IS_BACKUP_ENABLED)) return;
+                    final SchedulableAction autobackAction = forConfigValue(config, AUTOBACK_ACTION);
                     if (autobackAction == null || autobackAction == NONE) return;
-                    final Duration timeRemaining = config.autobackWait().
+                    final Duration waitTime = Duration.ofMinutes(config.getInt(AUTOBACK_WAIT_MINUTES));
+                    final Duration timeRemaining = waitTime.
                             minus(Duration.ofMillis(System.currentTimeMillis() - lastBackupTime));
                     if (!timeRemaining.isZero() && !timeRemaining.isNegative()) {
                         getLogger().debug("Skipping auto-backup until at least " +

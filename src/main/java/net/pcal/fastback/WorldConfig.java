@@ -16,7 +16,7 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.repo;
+package net.pcal.fastback;
 
 import net.pcal.fastback.commands.SchedulableAction;
 import net.pcal.fastback.logging.Logger;
@@ -26,6 +26,7 @@ import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.lib.StoredConfig;
 
 import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -34,10 +35,29 @@ import java.util.UUID;
 
 import static net.pcal.fastback.utils.FileUtils.writeResourceToFile;
 
-@Deprecated
-public class RepoConfigUtils {
+public record WorldConfig(
+        String worldUuid,
+        boolean isBackupEnabled,
+        SchedulableAction autobackAction,
+        Duration autobackWait,
+        SchedulableAction shutdownAction,
+        String localRetentionPolicy,
+        String remoteRetentionPolicy,
+        String getRemotePushUrl) {
 
-    public static RepoConfigUtils load(final Git git) throws IOException {
+    public static final Path WORLD_UUID_PATH = Path.of("fastback/world.uuid");
+    private static final String REMOTE_NAME = "origin";
+    private static final String CONFIG_SECTION = "fastback";
+    private static final String CONFIG_BACKUP_ENABLED = "backup-enabled";
+    private static final String CONFIG_LOCAL_RETENTION_POLICY = "retention-policy";
+    private static final String CONFIG_REMOTE_RETENTION_POLICY = "remote-retention-policy";
+    private static final String CONFIG_AUTOBACK_ACTION = "autoback-action";
+    private static final String CONFIG_AUTOBACK_WAIT = "autoback-wait";
+    private static final String CONFIG_SHUTDOWN_ACTION = "shutdown-action";
+    private static final String CONFIG_UPDATE_GITIGNORE_ENABLED = "update-gitignore-enabled";
+    private static final String CONFIG_UPDATE_GITATTRIBUTES_ENABLED = "update-gitattributes-enabled";
+
+    public static WorldConfig load(final Git git) throws IOException {
         final StoredConfig gitConfig = git.getRepository().getConfig();
         final SchedulableAction autobackAction = retrieveAction(gitConfig, CONFIG_AUTOBACK_ACTION);
         final int autobackWait = gitConfig.getInt(CONFIG_SECTION, CONFIG_AUTOBACK_WAIT, 0);
@@ -48,7 +68,7 @@ public class RepoConfigUtils {
                 shutdownAction = SchedulableAction.DEFAULT_SHUTDOWN_ACTION;
             }
         }
-        return new RepoConfigUtils(
+        return new WorldConfig(
                 getWorldUuid(git),
                 gitConfig.getBoolean(CONFIG_SECTION, null, CONFIG_BACKUP_ENABLED, false),
                 autobackAction,
@@ -62,7 +82,67 @@ public class RepoConfigUtils {
 
     private static SchedulableAction retrieveAction(Config gitConfig, String configKey) {
         final String shutdownActionRaw = gitConfig.getString(CONFIG_SECTION, null, configKey);
-        return shutdownActionRaw != null ? SchedulableAction.getForConfigKey(shutdownActionRaw) : null;
+        return shutdownActionRaw != null ? SchedulableAction.forConfigValue(shutdownActionRaw) : null;
+    }
+
+    // THESE ARE EFFECTIVELY CONSTANTS.  HERE BECAUSE WE MIGHT NEED TO MAKE SOME OF THEM CONFIGURABLE SOMEDAY.
+
+    public String getRemoteName() {
+        return REMOTE_NAME;
+    }
+
+    public boolean isUuidCheckEnabled() {
+        return true;
+    }
+
+    public boolean isTempBranchCleanupEnabled() {
+        return true;
+    }
+
+    public boolean isTrackingBranchCleanupEnabled() {
+        return true;
+    }
+
+    public boolean isRemoteTempBranchCleanupEnabled() {
+        return true;
+    }
+
+    public boolean isSmartPushEnabled() {
+        return true;
+    }
+
+    public boolean isPostRestoreCleanupEnabled() {
+        return true;
+    }
+
+    // REMEMBER TO CALL config.save() YOURSELF!!
+
+    public static void setRemoteUrl(Config gitConfig, String url) {
+        gitConfig.setString("remote", REMOTE_NAME, "url", url);
+    }
+
+    public static void setBackupEnabled(Config gitConfig, boolean value) {
+        gitConfig.setBoolean(CONFIG_SECTION, null, CONFIG_BACKUP_ENABLED, value);
+    }
+
+    public static void setLocalRetentionPolicy(Config gitConfig, String value) {
+        gitConfig.setString(CONFIG_SECTION, null, CONFIG_LOCAL_RETENTION_POLICY, value);
+    }
+
+    public static void setRemoteRetentionPolicy(Config gitConfig, String value) {
+        gitConfig.setString(CONFIG_SECTION, null, CONFIG_REMOTE_RETENTION_POLICY, value);
+    }
+
+    public static void setAutobackAction(Config gitConfig, SchedulableAction action) {
+        gitConfig.setString(CONFIG_SECTION, null, CONFIG_AUTOBACK_ACTION, action.getConfigValue());
+    }
+
+    public static void setAutobackWait(Config gitConfig, int waitTimeMinutes) {
+        gitConfig.setInt(CONFIG_SECTION, null, CONFIG_AUTOBACK_WAIT, waitTimeMinutes);
+    }
+
+    public static void setShutdownAction(Config gitConfig, SchedulableAction action) {
+        gitConfig.setString(CONFIG_SECTION, null, CONFIG_SHUTDOWN_ACTION, action.getConfigValue());
     }
 
     public static String getWorldUuid(Git git) throws IOException {

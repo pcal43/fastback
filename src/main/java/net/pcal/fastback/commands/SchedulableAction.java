@@ -19,6 +19,8 @@
 package net.pcal.fastback.commands;
 
 import net.pcal.fastback.ModContext;
+import net.pcal.fastback.config.RepoConfig;
+import net.pcal.fastback.config.RepoConfigKey;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.tasks.CommitAndPushTask;
 import net.pcal.fastback.tasks.CommitTask;
@@ -77,25 +79,31 @@ public enum SchedulableAction {
 
     public static final SchedulableAction DEFAULT_SHUTDOWN_ACTION = FULL;
 
-    public static SchedulableAction getForConfigKey(String configKey) {
+    public static SchedulableAction forConfigValue(final RepoConfig c, final RepoConfigKey key) {
+        String configValue = c.getString(key);
+        if (configValue == null) return null;
+        return forConfigValue(configValue);
+    }
+    public static SchedulableAction forConfigValue(String configValue) {
+        if (configValue == null) return null;
         for (SchedulableAction action : SchedulableAction.values()) {
-            if (action.configKey.equals(configKey)) return action;
+            if (action.configValue.equals(configValue)) return action;
         }
         return null;
     }
 
-    private final String configKey;
+    private final String configValue;
 
-    SchedulableAction(String configKey) {
-        this.configKey = requireNonNull(configKey);
+    SchedulableAction(String configValue) {
+        this.configValue = requireNonNull(configValue);
     }
 
-    public String getConfigKey() {
-        return this.configKey;
+    public String getConfigValue() {
+        return this.configValue;
     }
 
     public String getArgumentName() {
-        return this.configKey;
+        return this.configValue;
     }
 
     public abstract Callable<?> getTask(Git git, ModContext ctx, Logger log);

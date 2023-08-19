@@ -22,11 +22,13 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.repo.RepoConfig;
+import net.pcal.fastback.config.RepoConfig;
+import net.pcal.fastback.config.RepoConfigKey;
 import net.pcal.fastback.retention.RetentionPolicyType;
 
 import static net.pcal.fastback.commands.SetRetentionCommand.registerSetRetentionCommand;
 import static net.pcal.fastback.commands.SetRetentionCommand.setRetentionPolicy;
+import static net.pcal.fastback.config.RepoConfigKey.REMOTE_RETENTION_POLICY;
 
 /**
  * Command to set the snapshot retention policy for the remote.
@@ -46,7 +48,7 @@ enum SetRemoteRetentionCommand implements Command {
     }
 
     private static int setRemotePolicy(ModContext ctx, CommandContext<ServerCommandSource> cc, RetentionPolicyType rpt) {
-        return setRetentionPolicy(ctx, cc, rpt, RepoConfig::setRemoteRetentionPolicy);
+        return setRetentionPolicy(ctx, cc, rpt, REMOTE_RETENTION_POLICY);
     }
 
 }

@@ -22,19 +22,18 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.repo.RepoConfig;
+import net.pcal.fastback.config.RepoConfig;
+import net.pcal.fastback.config.RepoConfigKey;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;
 import net.pcal.fastback.retention.RetentionPolicyType;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.lib.StoredConfig;
 
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
 import static net.minecraft.server.command.CommandManager.argument;
@@ -43,6 +42,7 @@ import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.config.RepoConfigKey.*;
 import static net.pcal.fastback.logging.Message.localized;
 
 /**
@@ -63,7 +63,7 @@ enum SetRetentionCommand implements Command {
     }
 
     private static int setLocalPolicy(ModContext ctx, CommandContext<ServerCommandSource> cc, RetentionPolicyType rpt) {
-        return setRetentionPolicy(ctx, cc, rpt, RepoConfig::setLocalRetentionPolicy);
+        return setRetentionPolicy(ctx, cc, rpt, LOCAL_RETENTION_POLICY);
     }
 
 
@@ -102,7 +102,7 @@ enum SetRetentionCommand implements Command {
     public static int setRetentionPolicy(final ModContext ctx,
                                          final CommandContext<ServerCommandSource> cc,
                                          final RetentionPolicyType rpt,
-                                         final BiConsumer<Config, String> setEncodedPolicyFn) {
+                                         final RepoConfigKey confKey) {
         final Logger logger = commandLogger(ctx, cc.getSource());
         try {
             final Path worldSaveDir = ctx.getWorldDirectory();
@@ -118,10 +118,9 @@ enum SetRetentionCommand implements Command {
                 logger.internalError("Failed to decode policy " + encodedPolicy, new Exception());
                 return FAILURE;
             }
-            try (final Git git = Git.open(worldSaveDir.toFile())) {
-                final StoredConfig gitConfig = git.getRepository().getConfig();
-                setEncodedPolicyFn.accept(gitConfig, encodedPolicy);
-                gitConfig.save();
+            try (final Git jgit = Git.open(worldSaveDir.toFile())) {
+                final RepoConfig conf = RepoConfig.load(jgit);
+                conf.updater().set(confKey, encodedPolicy).save();
                 logger.chat(localized("fastback.chat.retention-policy-set"));
                 logger.chat(rp.getDescription());
             } catch (Exception e) {

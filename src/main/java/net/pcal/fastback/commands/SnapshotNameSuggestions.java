@@ -23,7 +23,6 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.repo.RepoConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
@@ -35,6 +34,7 @@ import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.ModContext.ExecutionLock.NONE;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
+import static net.pcal.fastback.config.RepoConfigUtils.*;
 import static net.pcal.fastback.tasks.ListSnapshotsTask.listRemoteSnapshots;
 import static net.pcal.fastback.tasks.ListSnapshotsTask.listSnapshots;
 import static net.pcal.fastback.utils.SnapshotId.sortWorldSnapshots;
@@ -45,9 +45,8 @@ abstract class SnapshotNameSuggestions implements SuggestionProvider<ServerComma
         return new SnapshotNameSuggestions(ctx) {
 
             @Override
-            protected Collection<SnapshotId> getSnapshotIds(Git git, Logger log) throws Exception {
-                final RepoConfig wc = RepoConfig.load(git);
-                return sortWorldSnapshots(listSnapshots(git, log), wc.worldUuid());
+            protected Collection<SnapshotId> getSnapshotIds(Git jgit, Logger log) throws Exception {
+                return sortWorldSnapshots(listSnapshots(jgit, log), getWorldUuid(jgit));
             }
         };
     }
@@ -56,9 +55,9 @@ abstract class SnapshotNameSuggestions implements SuggestionProvider<ServerComma
         return new SnapshotNameSuggestions(ctx) {
 
             @Override
-            protected Collection<SnapshotId> getSnapshotIds(Git git, Logger log) throws Exception {
-                final RepoConfig wc = RepoConfig.load(git);
-                return sortWorldSnapshots(listRemoteSnapshots(git, wc, log), wc.worldUuid());
+            protected Collection<SnapshotId> getSnapshotIds(Git jgit, Logger log) throws Exception {
+                final String uuid = getWorldUuid(jgit);
+                return sortWorldSnapshots(listRemoteSnapshots(jgit, log), uuid);
             }
         };
     }

@@ -23,7 +23,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.repo.RepoConfig;
+import net.pcal.fastback.config.RepoConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.tasks.ListSnapshotsTask;
 import net.pcal.fastback.utils.SnapshotId;

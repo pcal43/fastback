@@ -24,7 +24,8 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.ModContext.ExecutionLock;
-import net.pcal.fastback.repo.RepoConfig;
+import net.pcal.fastback.config.RepoConfig;
+import net.pcal.fastback.config.RepoConfigKey;
 import net.pcal.fastback.logging.CommandSourceLogger;
 import net.pcal.fastback.logging.CompositeLogger;
 import net.pcal.fastback.logging.Logger;
@@ -34,6 +35,7 @@ import org.eclipse.jgit.api.Git;
 import java.nio.file.Path;
 import java.util.function.Predicate;
 
+import static net.pcal.fastback.config.RepoConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
@@ -93,7 +95,7 @@ public class Commands {
     }
 
     interface GitOp {
-        void execute(Git git) throws Exception;
+        void execute(Git jgit) throws Exception;
     }
 
     static void gitOp(final ModContext ctx, final ExecutionLock lock, final Logger log, final GitOp op) {
@@ -103,12 +105,12 @@ public class Commands {
                 log.chatError(localized("fastback.chat.not-enabled"));
                 return;
             }
-            try (final Git git = Git.open(worldSaveDir.toFile())) {
-                final RepoConfig repoConfig = RepoConfig.load(git);
-                if (!repoConfig.isBackupEnabled()) {
+            try (final Git jgit = Git.open(worldSaveDir.toFile())) {
+                final RepoConfig repoConfig = RepoConfig.load(jgit);
+                if (!repoConfig.getBoolean(IS_BACKUP_ENABLED)) {
                     log.chatError(localized("fastback.chat.not-enabled"));
                 } else {
-                    op.execute(git);
+                    op.execute(jgit);
                 }
             } catch (Exception e) {
                 log.internalError("Command execution failed.", e);

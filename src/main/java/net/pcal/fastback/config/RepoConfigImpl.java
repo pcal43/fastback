@@ -16,7 +16,7 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.repo;
+package net.pcal.fastback.config;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.StoredConfig;
@@ -29,7 +29,7 @@ import static java.util.Objects.requireNonNull;
 public class RepoConfigImpl implements RepoConfig {
 
     public static RepoConfig load(final Path worldSaveDir) throws IOException {
-        return load(Git.open(worldSaveDir.toFile()))
+        return load(Git.open(worldSaveDir.toFile()));
     }
 
     static RepoConfig load(final Git jgit) {
@@ -58,27 +58,34 @@ public class RepoConfigImpl implements RepoConfig {
         return storedConfig.getInt(key.getSectionName(), key.getSubSectionName(), key.getSettingName(), key.getIntDefault());
     }
 
-    class UpdaterImpl implements Updater {
+    @Override
+    public Updater updater() {
+        return new UpdaterImpl();
+    }
+
+    private class UpdaterImpl implements Updater {
 
         @Override
         public Updater set(RepoConfigKey key, boolean newValue) {
-            storedConfig.
+            storedConfig.setBoolean(key.getSectionName(), key.getSubSectionName(), key.getSettingName(), newValue);
             return this;
         }
 
         @Override
         public Updater set(RepoConfigKey key, String newValue) {
+            storedConfig.setString(key.getSectionName(), key.getSubSectionName(), key.getSettingName(), newValue);
             return this;
         }
 
         @Override
         public Updater set(RepoConfigKey key, int newValue) {
+            storedConfig.setInt(key.getSectionName(), key.getSubSectionName(), key.getSettingName(), newValue);
             return this;
         }
 
         @Override
         public void save() throws IOException {
-
+            storedConfig.save();
         }
     }
 }

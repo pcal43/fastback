@@ -22,7 +22,8 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.repo.RepoConfig;
+import net.pcal.fastback.config.RepoConfig;
+import net.pcal.fastback.config.RepoConfigUtils;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.SnapshotId;
 
@@ -32,6 +33,7 @@ import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.config.RepoConfigUtils.getWorldUuid;
 import static net.pcal.fastback.logging.Message.raw;
 import static net.pcal.fastback.tasks.ListSnapshotsTask.listSnapshots;
 import static net.pcal.fastback.utils.SnapshotId.sortWorldSnapshots;
@@ -53,9 +55,9 @@ enum ListCommand implements Command {
 
     private int execute(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, NONE, log, git -> {
-            final RepoConfig wc = RepoConfig.load(git);
-            for (final SnapshotId sid : sortWorldSnapshots(listSnapshots(git, ctx.getLogger()), wc.worldUuid())) {
+        gitOp(ctx, NONE, log, jgit -> {
+            final String uuid = getWorldUuid(jgit);
+            for (final SnapshotId sid : sortWorldSnapshots(listSnapshots(jgit, ctx.getLogger()), uuid)) {
                 log.chat(raw(sid.getName()));
             }
         });

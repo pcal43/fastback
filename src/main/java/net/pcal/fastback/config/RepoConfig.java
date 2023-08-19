@@ -16,17 +16,26 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.repo;
+package net.pcal.fastback.config;
+
+import org.eclipse.jgit.api.Git;
 
 import java.io.IOException;
 
 public interface RepoConfig {
+
+    @Deprecated
+    static RepoConfig load(Git jgit) {
+        return RepoConfigImpl.load(jgit);
+    }
 
     boolean getBoolean(RepoConfigKey key);
 
     String getString(RepoConfigKey key);
 
     int getInt(RepoConfigKey key);
+
+    Updater updater();
 
     interface Updater {
 
