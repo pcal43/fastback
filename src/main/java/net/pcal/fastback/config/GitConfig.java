@@ -22,28 +22,37 @@ import org.eclipse.jgit.api.Git;
 
 import java.io.IOException;
 
-public interface RepoConfig {
+/**
+ * Abstract representation of a git worktree's configuration.
+ *
+ * @author pcal
+ */
+public interface GitConfig {
 
-    @Deprecated
-    static RepoConfig load(Git jgit) {
-        return RepoConfigImpl.load(jgit);
+    // @Deprecated - eventually we want the public contract to stop being
+    // coupled to jgit
+    static GitConfig load(Git jgit) {
+        return GitConfigImpl.load(jgit);
     }
 
-    boolean getBoolean(RepoConfigKey key);
+    boolean getBoolean(GitConfigKey key);
 
-    String getString(RepoConfigKey key);
+    String getString(GitConfigKey key);
 
-    int getInt(RepoConfigKey key);
+    int getInt(GitConfigKey key);
 
     Updater updater();
 
+    /**
+     * Helper for updating the local .git/config file.
+     */
     interface Updater {
 
-        Updater set(RepoConfigKey key, boolean newValue);
+        Updater set(GitConfigKey key, boolean newValue);
 
-        Updater set(RepoConfigKey key, String newValue);
+        Updater set(GitConfigKey key, String newValue);
 
-        Updater set(RepoConfigKey key, int newValue);
+        Updater set(GitConfigKey key, int newValue);
 
         void save() throws IOException;
     }

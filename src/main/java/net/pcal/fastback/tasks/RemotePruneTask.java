@@ -19,8 +19,8 @@
 package net.pcal.fastback.tasks;
 
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.config.RepoConfig;
-import net.pcal.fastback.config.RepoConfigKey;
+import net.pcal.fastback.config.GitConfig;
+import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
@@ -58,12 +58,12 @@ public class RemotePruneTask implements Callable<Collection<SnapshotId>> {
     @Override
     public Collection<SnapshotId> call() throws IOException, GitAPIException {
         return doPrune(jgit, ctx, log,
-                RepoConfigKey.REMOTE_RETENTION_POLICY,
+                GitConfigKey.REMOTE_RETENTION_POLICY,
                 () -> listRemoteSnapshots(jgit, ctx.getLogger()),
                 sid -> {
                     log.info("Pruning remote snapshot " + sid.getName());
-                    RepoConfig conf = RepoConfig.load(jgit);
-                    deleteRemoteBranch(jgit, conf.getString(RepoConfigKey.REMOTE_NAME), sid.getBranchName());
+                    GitConfig conf = GitConfig.load(jgit);
+                    deleteRemoteBranch(jgit, conf.getString(GitConfigKey.REMOTE_NAME), sid.getBranchName());
                 },
                 "fastback.chat.remote-retention-policy-not-set"
         );

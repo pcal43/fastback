@@ -26,35 +26,40 @@ import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
 
-public class RepoConfigImpl implements RepoConfig {
+/**
+ * JGit-based implementation of GitConfig.
+ *
+ * @author pcal
+ */
+class GitConfigImpl implements GitConfig {
 
-    public static RepoConfig load(final Path worldSaveDir) throws IOException {
+    static GitConfig load(final Path worldSaveDir) throws IOException {
         return load(Git.open(worldSaveDir.toFile()));
     }
 
-    static RepoConfig load(final Git jgit) {
-        return new RepoConfigImpl(jgit.getRepository().getConfig());
+    static GitConfig load(final Git jgit) {
+        return new GitConfigImpl(jgit.getRepository().getConfig());
     }
 
     private final StoredConfig storedConfig;
 
-    RepoConfigImpl(StoredConfig jgitConfig) {
+    GitConfigImpl(StoredConfig jgitConfig) {
         this.storedConfig = requireNonNull(jgitConfig);
     }
 
     @Override
-    public boolean getBoolean(RepoConfigKey key) {
+    public boolean getBoolean(GitConfigKey key) {
         return storedConfig.getBoolean(key.getSectionName(), key.getSubSectionName(), key.getSettingName(), key.getBooleanDefault());
     }
 
     @Override
-    public String getString(RepoConfigKey key) {
+    public String getString(GitConfigKey key) {
         final String out = storedConfig.getString(key.getSectionName(), key.getSubSectionName(), key.getSettingName());
         return out != null ? out : key.getStringDefault();
     }
 
     @Override
-    public int getInt(RepoConfigKey key) {
+    public int getInt(GitConfigKey key) {
         return storedConfig.getInt(key.getSectionName(), key.getSubSectionName(), key.getSettingName(), key.getIntDefault());
     }
 
@@ -66,19 +71,19 @@ public class RepoConfigImpl implements RepoConfig {
     private class UpdaterImpl implements Updater {
 
         @Override
-        public Updater set(RepoConfigKey key, boolean newValue) {
+        public Updater set(GitConfigKey key, boolean newValue) {
             storedConfig.setBoolean(key.getSectionName(), key.getSubSectionName(), key.getSettingName(), newValue);
             return this;
         }
 
         @Override
-        public Updater set(RepoConfigKey key, String newValue) {
+        public Updater set(GitConfigKey key, String newValue) {
             storedConfig.setString(key.getSectionName(), key.getSubSectionName(), key.getSettingName(), newValue);
             return this;
         }
 
         @Override
-        public Updater set(RepoConfigKey key, int newValue) {
+        public Updater set(GitConfigKey key, int newValue) {
             storedConfig.setInt(key.getSectionName(), key.getSubSectionName(), key.getSettingName(), newValue);
             return this;
         }

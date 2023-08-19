@@ -29,13 +29,15 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
-import static net.pcal.fastback.config.RepoConfigKey.UPDATE_GITATTRIBUTES_ENABLED;
-import static net.pcal.fastback.config.RepoConfigKey.UPDATE_GITIGNORE_ENABLED;
+import static net.pcal.fastback.config.GitConfigKey.UPDATE_GITATTRIBUTES_ENABLED;
+import static net.pcal.fastback.config.GitConfigKey.UPDATE_GITIGNORE_ENABLED;
 import static net.pcal.fastback.utils.FileUtils.writeResourceToFile;
 
 /**
- * Assorted crap that ended up homeless post-config-refactor.  Will
+ * Assorted crap that ended up homeless after config refactoring.  Will
  * clean this up as well eventually.
+ *
+ * @author pcal
  */
 //@Deprecated
 public class RepoConfigUtils {
@@ -67,7 +69,7 @@ public class RepoConfigUtils {
     private record WorldResource(
             String resourcePath, // Note to self: needs to be a String, not a Path, because Windows slashes don't work
             Path targetPath,
-            RepoConfigKey permission
+            GitConfigKey permission
     ) {}
 
     private static final Iterable<WorldResource> WORLD_RESOURCES = List.of(
@@ -85,7 +87,7 @@ public class RepoConfigUtils {
         logger.info("Doing world maintenance");
         final Path worldSaveDir = jgit.getRepository().getWorkTree().toPath();
         ensureWorldHasUuid(worldSaveDir, logger);
-        final RepoConfig config = RepoConfig.load(jgit);
+        final GitConfig config = GitConfig.load(jgit);
         for (final WorldResource resource : WORLD_RESOURCES) {
             if (config.getBoolean(resource.permission)) {
                 logger.debug("Updating " + resource.targetPath);

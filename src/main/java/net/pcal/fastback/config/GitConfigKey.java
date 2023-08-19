@@ -20,7 +20,12 @@ package net.pcal.fastback.config;
 
 import static java.util.Objects.requireNonNull;
 
-public enum RepoConfigKey {
+/**
+ * .gitconfig settings that fastback cares about.
+ *
+ * @author pcal
+ */
+public enum GitConfigKey {
 
     IS_BACKUP_ENABLED("backup-enabled", false),
 
@@ -54,27 +59,29 @@ public enum RepoConfigKey {
 
     IS_POST_RESTORE_CLEANUP_ENABLED(true);
 
+    private static final String NULL_STRING = "";
+
     private final String sectionName, subSectionName, settingName;
     private final Boolean booleanDefault;
     private final String stringDefault;
     private final Integer intDefault;
 
-    RepoConfigKey(final String settingName, boolean booleanDefaultValue) {
+    GitConfigKey(final String settingName, boolean booleanDefaultValue) {
         this("fastback", null, settingName, booleanDefaultValue);
     }
 
-    RepoConfigKey(final String settingName, String stringDefaultValue) {
+    GitConfigKey(final String settingName, String stringDefaultValue) {
         this("fastback", null, settingName, stringDefaultValue);
     }
 
-    RepoConfigKey(final String settingName, int intDefault) {
+    GitConfigKey(final String settingName, int intDefault) {
         this("fastback", null, settingName, intDefault);
     }
 
-    RepoConfigKey(final String sectionName,
-                  final String subsectionName,
-                  final String settingName,
-                  final boolean booleanDefault) {
+    GitConfigKey(final String sectionName,
+                 final String subsectionName,
+                 final String settingName,
+                 final boolean booleanDefault) {
         this.sectionName = requireNonNull(sectionName);
         this.subSectionName = requireNonNull(subsectionName);
         this.settingName = requireNonNull(settingName);
@@ -84,22 +91,22 @@ public enum RepoConfigKey {
     }
 
 
-    RepoConfigKey(final String sectionName,
-                  final String subsectionName,
-                  final String settingName,
-                  final String stringDefault) {
+    GitConfigKey(final String sectionName,
+                 final String subsectionName,
+                 final String settingName,
+                 final String stringDefault) {
         this.sectionName = requireNonNull(sectionName);
         this.subSectionName = requireNonNull(subsectionName);
         this.settingName = requireNonNull(settingName);
-        this.stringDefault = stringDefault;
+        this.stringDefault = stringDefault == null ? NULL_STRING : requireNonNull(stringDefault);
         this.booleanDefault = null;
         this.intDefault = null;
     }
 
-    RepoConfigKey(final String sectionName,
-                  final String subsectionName,
-                  final String settingName,
-                  final int intDefault) {
+    GitConfigKey(final String sectionName,
+                 final String subsectionName,
+                 final String settingName,
+                 final int intDefault) {
         this.sectionName = requireNonNull(sectionName);
         this.subSectionName = requireNonNull(subsectionName);
         this.settingName = requireNonNull(settingName);
@@ -111,7 +118,7 @@ public enum RepoConfigKey {
     /**
      * For currently-immutable settings that might become configurable someday.
      */
-    RepoConfigKey(final boolean booleanDefault) {
+    GitConfigKey(final boolean booleanDefault) {
         this.sectionName = null;
         this.subSectionName = null;
         this.settingName = null;
@@ -120,7 +127,7 @@ public enum RepoConfigKey {
         this.stringDefault = null;
     }
 
-    RepoConfigKey(final String stringDefault) {
+    GitConfigKey(final String stringDefault) {
         this.sectionName = null;
         this.subSectionName = null;
         this.settingName = null;
@@ -147,10 +154,13 @@ public enum RepoConfigKey {
     }
 
     String getStringDefault() {
+        if (this.stringDefault == null) throw new IllegalStateException();
+        if (this.stringDefault == NULL_STRING) return null;
         return this.stringDefault;
     }
 
     int getIntDefault() {
+        if (this.intDefault == null) throw new IllegalStateException();
         return this.intDefault;
     }
 }

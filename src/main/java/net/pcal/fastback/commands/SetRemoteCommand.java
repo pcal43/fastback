@@ -23,8 +23,8 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.config.RepoConfig;
-import net.pcal.fastback.config.RepoConfigKey;
+import net.pcal.fastback.config.GitConfig;
+import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.Logger;
 
 import static net.minecraft.server.command.CommandManager.argument;
@@ -58,7 +58,7 @@ enum SetRemoteCommand implements Command {
         final Logger log = commandLogger(ctx, cc.getSource());
         gitOp(ctx, WRITE_CONFIG, log, git -> {
             final String newUrl = cc.getArgument(URL_ARGUMENT, String.class);
-            RepoConfig.load(git).updater().set(RepoConfigKey.REMOTE_PUSH_URL, newUrl).save();
+            GitConfig.load(git).updater().set(GitConfigKey.REMOTE_PUSH_URL, newUrl).save();
             log.chat(localized("fastback.chat.remote-enabled", newUrl));
         });
         return SUCCESS;

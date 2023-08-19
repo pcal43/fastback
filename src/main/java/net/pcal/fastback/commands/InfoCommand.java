@@ -21,7 +21,7 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.config.RepoConfig;
+import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;
@@ -34,13 +34,13 @@ import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
-import static net.pcal.fastback.config.RepoConfigKey.AUTOBACK_ACTION;
-import static net.pcal.fastback.config.RepoConfigKey.AUTOBACK_WAIT_MINUTES;
-import static net.pcal.fastback.config.RepoConfigKey.IS_BACKUP_ENABLED;
-import static net.pcal.fastback.config.RepoConfigKey.LOCAL_RETENTION_POLICY;
-import static net.pcal.fastback.config.RepoConfigKey.REMOTE_PUSH_URL;
-import static net.pcal.fastback.config.RepoConfigKey.REMOTE_RETENTION_POLICY;
-import static net.pcal.fastback.config.RepoConfigKey.SHUTDOWN_ACTION;
+import static net.pcal.fastback.config.GitConfigKey.AUTOBACK_ACTION;
+import static net.pcal.fastback.config.GitConfigKey.AUTOBACK_WAIT_MINUTES;
+import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
+import static net.pcal.fastback.config.GitConfigKey.LOCAL_RETENTION_POLICY;
+import static net.pcal.fastback.config.GitConfigKey.REMOTE_PUSH_URL;
+import static net.pcal.fastback.config.GitConfigKey.REMOTE_RETENTION_POLICY;
+import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.config.RepoConfigUtils.getWorldUuid;
 import static net.pcal.fastback.logging.Message.localized;
 import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
@@ -66,7 +66,7 @@ enum InfoCommand implements Command {
         requireNonNull(scs);
         final Logger log = commandLogger(ctx, scs);
         gitOp(ctx, NONE, log, jgit -> {
-            final RepoConfig c = RepoConfig.load(jgit);
+            final GitConfig c = GitConfig.load(jgit);
             log.chat(localized("fastback.chat.info-fastback-version", ctx.getModVersion()));
             log.chat(localized("fastback.chat.info-uuid", getWorldUuid(jgit)));
             if (c.getBoolean(IS_BACKUP_ENABLED)) {

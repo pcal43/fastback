@@ -22,8 +22,8 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.config.RepoConfig;
-import net.pcal.fastback.config.RepoConfigKey;
+import net.pcal.fastback.config.GitConfig;
+import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;
@@ -41,7 +41,7 @@ import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
-import static net.pcal.fastback.config.RepoConfigKey.LOCAL_RETENTION_POLICY;
+import static net.pcal.fastback.config.GitConfigKey.LOCAL_RETENTION_POLICY;
 import static net.pcal.fastback.logging.Message.localized;
 
 /**
@@ -101,7 +101,7 @@ enum SetRetentionCommand implements Command {
     public static int setRetentionPolicy(final ModContext ctx,
                                          final CommandContext<ServerCommandSource> cc,
                                          final RetentionPolicyType rpt,
-                                         final RepoConfigKey confKey) {
+                                         final GitConfigKey confKey) {
         final Logger logger = commandLogger(ctx, cc.getSource());
         try {
             final Path worldSaveDir = ctx.getWorldDirectory();
@@ -118,7 +118,7 @@ enum SetRetentionCommand implements Command {
                 return FAILURE;
             }
             try (final Git jgit = Git.open(worldSaveDir.toFile())) {
-                final RepoConfig conf = RepoConfig.load(jgit);
+                final GitConfig conf = GitConfig.load(jgit);
                 conf.updater().set(confKey, encodedPolicy).save();
                 logger.chat(localized("fastback.chat.retention-policy-set"));
                 logger.chat(rp.getDescription());

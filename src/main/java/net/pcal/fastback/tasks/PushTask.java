@@ -20,7 +20,7 @@ package net.pcal.fastback.tasks;
 
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.config.RepoConfig;
+import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.progress.IncrementalProgressMonitor;
 import net.pcal.fastback.progress.PercentageProgressMonitor;
@@ -45,13 +45,13 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.config.RepoConfigKey.IS_REMOTE_TEMP_BRANCH_CLEANUP_ENABLED;
-import static net.pcal.fastback.config.RepoConfigKey.IS_SMART_PUSH_ENABLED;
-import static net.pcal.fastback.config.RepoConfigKey.IS_TEMP_BRANCH_CLEANUP_ENABLED;
-import static net.pcal.fastback.config.RepoConfigKey.IS_TRACKING_BRANCH_CLEANUP_ENABLED;
-import static net.pcal.fastback.config.RepoConfigKey.IS_UUID_CHECK_ENABLED;
-import static net.pcal.fastback.config.RepoConfigKey.REMOTE_NAME;
-import static net.pcal.fastback.config.RepoConfigKey.REMOTE_PUSH_URL;
+import static net.pcal.fastback.config.GitConfigKey.IS_REMOTE_TEMP_BRANCH_CLEANUP_ENABLED;
+import static net.pcal.fastback.config.GitConfigKey.IS_SMART_PUSH_ENABLED;
+import static net.pcal.fastback.config.GitConfigKey.IS_TEMP_BRANCH_CLEANUP_ENABLED;
+import static net.pcal.fastback.config.GitConfigKey.IS_TRACKING_BRANCH_CLEANUP_ENABLED;
+import static net.pcal.fastback.config.GitConfigKey.IS_UUID_CHECK_ENABLED;
+import static net.pcal.fastback.config.GitConfigKey.REMOTE_NAME;
+import static net.pcal.fastback.config.GitConfigKey.REMOTE_PUSH_URL;
 import static net.pcal.fastback.config.RepoConfigUtils.getWorldUuid;
 import static net.pcal.fastback.logging.Message.localized;
 
@@ -75,7 +75,7 @@ public class PushTask implements Callable<Void> {
     @Override
     public Void call() throws GitAPIException, IOException {
         this.log.hud(localized("fastback.hud.remote-uploading", 0));
-        final RepoConfig conf = RepoConfig.load(jgit);
+        final GitConfig conf = GitConfig.load(jgit);
         final String pushUrl = conf.getString(REMOTE_PUSH_URL);
         if (pushUrl == null) {
             final String msg = "Skipping remote backup because no remote url has been configured.";
@@ -110,7 +110,7 @@ public class PushTask implements Callable<Void> {
         return null;
     }
 
-    private static void doSmartPush(final Git jgit, List<SnapshotId> remoteSnapshots, final String branchNameToPush, final RepoConfig conf, final Logger logger) throws GitAPIException, IOException {
+    private static void doSmartPush(final Git jgit, List<SnapshotId> remoteSnapshots, final String branchNameToPush, final GitConfig conf, final Logger logger) throws GitAPIException, IOException {
         final String remoteName = conf.getString(REMOTE_NAME);
         final String worldUuid = getWorldUuid(jgit);
         final SnapshotId latestCommonSnapshot;
@@ -179,7 +179,7 @@ public class PushTask implements Callable<Void> {
         logger.info("Push complete");
     }
 
-    private static void doNaivePush(final Git jgit, final String branchNameToPush, final RepoConfig conf, final Logger logger) throws IOException, GitAPIException {
+    private static void doNaivePush(final Git jgit, final String branchNameToPush, final GitConfig conf, final Logger logger) throws IOException, GitAPIException {
         final ProgressMonitor pm = new IncrementalProgressMonitor(new PushProgressMonitor(logger), 100);
         final String remoteName = conf.getString(REMOTE_NAME);
         logger.info("Doing naive push of " + branchNameToPush);
@@ -187,7 +187,7 @@ public class PushTask implements Callable<Void> {
                 setRefSpecs(new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
     }
 
-    private static boolean doUuidCheck(Git jgit, Set<String> remoteWorldUuids, RepoConfig config, Logger logger) throws GitAPIException, IOException {
+    private static boolean doUuidCheck(Git jgit, Set<String> remoteWorldUuids, GitConfig config, Logger logger) throws GitAPIException, IOException {
         final String localUuid = getWorldUuid(jgit);
         if (remoteWorldUuids.size() > 2) {
             logger.warn("Remote has more than one world-uuid.  This is unusual. " + remoteWorldUuids);

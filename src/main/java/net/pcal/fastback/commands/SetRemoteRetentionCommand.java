@@ -26,7 +26,7 @@ import net.pcal.fastback.retention.RetentionPolicyType;
 
 import static net.pcal.fastback.commands.SetRetentionCommand.registerSetRetentionCommand;
 import static net.pcal.fastback.commands.SetRetentionCommand.setRetentionPolicy;
-import static net.pcal.fastback.config.RepoConfigKey.REMOTE_RETENTION_POLICY;
+import static net.pcal.fastback.config.GitConfigKey.REMOTE_RETENTION_POLICY;
 
 /**
  * Command to set the snapshot retention policy for the remote.

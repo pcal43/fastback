@@ -23,7 +23,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.config.RepoConfig;
+import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.GitUtils;
 import org.eclipse.jgit.api.Git;
@@ -38,7 +38,7 @@ import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
-import static net.pcal.fastback.config.RepoConfigKey.REMOTE_PUSH_URL;
+import static net.pcal.fastback.config.GitConfigKey.REMOTE_PUSH_URL;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.utils.FileUtils.mkdirs;
 
@@ -78,7 +78,7 @@ enum CreateFileRemoteCommand implements Command {
             }
             final String targetUrl = GitUtils.getFileUri(fupHome);
             final StoredConfig gitc = git.getRepository().getConfig();
-            RepoConfig.load(git).updater().set(REMOTE_PUSH_URL, targetUrl).save();
+            GitConfig.load(git).updater().set(REMOTE_PUSH_URL, targetUrl).save();
             gitc.save();
             log.chat(localized("fastback.chat.create-file-remote-created", targetPath, targetUrl));
         });

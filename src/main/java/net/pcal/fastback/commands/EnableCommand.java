@@ -22,8 +22,8 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.config.RepoConfig;
-import net.pcal.fastback.config.RepoConfig.Updater;
+import net.pcal.fastback.config.GitConfig;
+import net.pcal.fastback.config.GitConfig.Updater;
 import net.pcal.fastback.config.RepoConfigUtils;
 import net.pcal.fastback.logging.Logger;
 import org.eclipse.jgit.api.Git;
@@ -39,8 +39,8 @@ import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.commands.SchedulableAction.DEFAULT_SHUTDOWN_ACTION;
-import static net.pcal.fastback.config.RepoConfigKey.IS_BACKUP_ENABLED;
-import static net.pcal.fastback.config.RepoConfigKey.SHUTDOWN_ACTION;
+import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
+import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.logging.Message.localized;
 
 enum EnableCommand implements Command {
@@ -65,7 +65,7 @@ enum EnableCommand implements Command {
                     try (final Git jgit = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
                         RepoConfigUtils.doWorldMaintenance(jgit, log);
                         final StoredConfig config = jgit.getRepository().getConfig();
-                        final RepoConfig repoConfig = RepoConfig.load(jgit);
+                        final GitConfig repoConfig = GitConfig.load(jgit);
                         final Updater updater = repoConfig.updater();
                         updater.set(IS_BACKUP_ENABLED, true).save();
                         if (repoConfig.getString(SHUTDOWN_ACTION) == null) {

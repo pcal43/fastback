@@ -20,8 +20,8 @@ package net.pcal.fastback.tasks;
 
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.config.RepoConfig;
-import net.pcal.fastback.config.RepoConfigKey;
+import net.pcal.fastback.config.GitConfig;
+import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;
@@ -34,7 +34,7 @@ import java.util.Collection;
 import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.config.RepoConfigKey.LOCAL_RETENTION_POLICY;
+import static net.pcal.fastback.config.GitConfigKey.LOCAL_RETENTION_POLICY;
 import static net.pcal.fastback.config.RepoConfigUtils.getWorldUuid;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.tasks.ListSnapshotsTask.listSnapshots;
@@ -76,11 +76,11 @@ public class LocalPruneTask implements Callable<Collection<SnapshotId>> {
     static Collection<SnapshotId> doPrune(Git jgit,
                                           ModContext ctx,
                                           Logger log,
-                                          RepoConfigKey policyConfigKey,
+                                          GitConfigKey policyConfigKey,
                                           JGitSupplier<ListMultimap<String, SnapshotId>> listSnapshotsFn,
                                           JGitConsumer<SnapshotId> deleteSnapshotsFn,
                                           String notSetKey) throws IOException, GitAPIException {
-        final RepoConfig conf = RepoConfig.load(jgit);
+        final GitConfig conf = GitConfig.load(jgit);
         final String policyConfig = conf.getString(policyConfigKey);
         final RetentionPolicy policy = RetentionPolicyCodec.INSTANCE.decodePolicy
                 (ctx, ctx.getRetentionPolicyTypes(), policyConfig);

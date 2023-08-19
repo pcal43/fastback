@@ -19,8 +19,8 @@
 package net.pcal.fastback.commands;
 
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.config.RepoConfig;
-import net.pcal.fastback.config.RepoConfigKey;
+import net.pcal.fastback.config.GitConfig;
+import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.tasks.CommitAndPushTask;
 import net.pcal.fastback.tasks.CommitTask;
@@ -79,7 +79,7 @@ public enum SchedulableAction {
 
     public static final SchedulableAction DEFAULT_SHUTDOWN_ACTION = FULL;
 
-    public static SchedulableAction forConfigValue(final RepoConfig c, final RepoConfigKey key) {
+    public static SchedulableAction forConfigValue(final GitConfig c, final GitConfigKey key) {
         String configValue = c.getString(key);
         if (configValue == null) return null;
         return forConfigValue(configValue);

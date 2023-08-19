@@ -20,7 +20,7 @@ package net.pcal.fastback;
 
 import net.pcal.fastback.commands.Commands;
 import net.pcal.fastback.commands.SchedulableAction;
-import net.pcal.fastback.config.RepoConfig;
+import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.config.RepoConfigUtils;
 import net.pcal.fastback.logging.ChatLogger;
 import net.pcal.fastback.logging.CompositeLogger;
@@ -31,8 +31,8 @@ import org.eclipse.jgit.api.Git;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import static net.pcal.fastback.config.RepoConfigKey.IS_BACKUP_ENABLED;
-import static net.pcal.fastback.config.RepoConfigKey.SHUTDOWN_ACTION;
+import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
+import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
@@ -88,7 +88,7 @@ public class LifecycleUtils {
         ctx.stopExecutor();
         if (isGitRepo(worldSaveDir)) {
             try (Git jgit = Git.open(worldSaveDir.toFile())) {
-                final RepoConfig config = RepoConfig.load(jgit);
+                final GitConfig config = GitConfig.load(jgit);
                 if (config.getBoolean(IS_BACKUP_ENABLED)) {
                     final SchedulableAction action = SchedulableAction.forConfigValue(config, SHUTDOWN_ACTION);
                     if (action != null) {
