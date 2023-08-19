@@ -163,4 +163,8 @@ public enum GitConfigKey {
         if (this.intDefault == null) throw new IllegalStateException();
         return this.intDefault;
     }
+
+    boolean isConfigurable() {
+        return this.settingName != null;
+    }
 }
