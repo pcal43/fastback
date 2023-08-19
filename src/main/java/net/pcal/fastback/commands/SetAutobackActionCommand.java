@@ -22,6 +22,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.config.RepoConfig;
+import net.pcal.fastback.config.RepoConfigKey;
 import net.pcal.fastback.logging.Logger;
 import org.eclipse.jgit.lib.StoredConfig;
 
@@ -31,6 +32,7 @@ import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.config.RepoConfigKey.AUTOBACK_ACTION;
 import static net.pcal.fastback.logging.Message.localized;
 
 enum SetAutobackActionCommand implements Command {
@@ -53,10 +55,9 @@ enum SetAutobackActionCommand implements Command {
 
     private static int setAutobackAction(final ModContext ctx, final ServerCommandSource scs, SchedulableAction action) {
         final Logger log = commandLogger(ctx, scs);
-        gitOp(ctx, WRITE_CONFIG, log, git -> {
-            final StoredConfig config = git.getRepository().getConfig();
-            RepoConfig.setAutobackAction(config, action);
-            config.save();
+        gitOp(ctx, WRITE_CONFIG, log, jgit -> {
+            final RepoConfig conf = RepoConfig.load(jgit);
+            conf.updater().set(AUTOBACK_ACTION, action.getConfigValue()).save();
             log.chat(localized("fastback.chat.info-autoback-action", action.getArgumentName()));
         });
         return SUCCESS;
