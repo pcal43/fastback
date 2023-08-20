@@ -16,7 +16,7 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.tasks;
+package net.pcal.fastback.tasks.jgit;
 
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
@@ -38,13 +38,13 @@ import static net.pcal.fastback.config.RepoConfigUtils.getWorldUuid;
 import static net.pcal.fastback.logging.Message.localized;
 
 @SuppressWarnings("FieldCanBeLocal")
-public class CommitTask implements Callable<SnapshotId> {
+class CommitTask implements Callable<SnapshotId> {
 
     private final ModContext ctx;
     private final Logger log;
     private final Git jgit;
 
-    public CommitTask(final Git jgit,
+    CommitTask(final Git jgit,
                       final ModContext ctx,
                       final Logger log) {
         this.jgit = requireNonNull(jgit);

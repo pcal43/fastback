@@ -16,7 +16,7 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.tasks;
+package net.pcal.fastback.tasks.jgit;
 
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
@@ -27,13 +27,13 @@ import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
 
-public class CommitAndPushTask implements Callable<Void> {
+class CommitAndPushTask implements Callable<Void> {
 
     private final ModContext ctx;
     private final Logger log;
     private final Git git;
 
-    public CommitAndPushTask(final Git git,
+    CommitAndPushTask(final Git git,
                              final ModContext ctx,
                              final Logger log) {
         this.git = requireNonNull(git);

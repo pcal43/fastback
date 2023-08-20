@@ -73,13 +73,6 @@ public class GitUtils {
         return null;
     }
 
-    public static void deleteRemoteBranch(Git git, String remoteName, String remoteBranchName) throws GitAPIException {
-        RefSpec refSpec = new RefSpec()
-                .setSource(null)
-                .setDestination("refs/heads/" + remoteBranchName);
-        git.push().setRefSpecs(refSpec).setRemote(remoteName).call();
-    }
-
     public static boolean isGitRepo(Path worldSaveDir) {
         final File dotGit = worldSaveDir.resolve(".git").toFile();
         return dotGit.exists() && dotGit.isDirectory();

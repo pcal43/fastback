@@ -41,7 +41,6 @@ import static net.pcal.fastback.config.GitConfigKey.LOCAL_RETENTION_POLICY;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_PUSH_URL;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_RETENTION_POLICY;
 import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
-import static net.pcal.fastback.config.RepoConfigUtils.getWorldUuid;
 import static net.pcal.fastback.logging.Message.localized;
 import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
 import static org.apache.commons.io.FileUtils.sizeOfDirectory;
@@ -65,10 +64,10 @@ enum InfoCommand implements Command {
         requireNonNull(ctx);
         requireNonNull(scs);
         final Logger log = commandLogger(ctx, scs);
-        gitOp(ctx, NONE, log, jgit -> {
-            final GitConfig c = GitConfig.load(jgit);
+        gitOp(ctx, NONE, log, repo -> {
+            final GitConfig c = repo.getConfig();
             log.chat(localized("fastback.chat.info-fastback-version", ctx.getModVersion()));
-            log.chat(localized("fastback.chat.info-uuid", getWorldUuid(jgit)));
+            log.chat(localized("fastback.chat.info-uuid", repo.getWorldUuid()));
             if (c.getBoolean(IS_BACKUP_ENABLED)) {
                 log.chat(localized("fastback.chat.info-local-enabled"));
             } else {
@@ -82,8 +81,8 @@ enum InfoCommand implements Command {
             log.chat(localized("fastback.chat.info-autoback-wait", c.getInt(AUTOBACK_WAIT_MINUTES)));
 
             // FIXME? this could be implemented more efficiently
-            final long backupSize = sizeOfDirectory(jgit.getRepository().getDirectory());
-            final long worldSize = sizeOfDirectory(jgit.getRepository().getWorkTree()) - backupSize;
+            final long backupSize = sizeOfDirectory(repo.getDirectory());
+            final long worldSize = sizeOfDirectory(repo.getWorkTree()) - backupSize;
             log.chat(localized("fastback.chat.info-world-size", byteCountToDisplaySize(worldSize)));
             log.chat(localized("fastback.chat.info-backup-size", byteCountToDisplaySize(backupSize)));
             showRetentionPolicy(ctx, log,

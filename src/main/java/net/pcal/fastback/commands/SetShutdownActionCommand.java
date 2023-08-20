@@ -55,8 +55,8 @@ enum SetShutdownActionCommand implements Command {
 
     private static int setShutdownAction(final ModContext ctx, final ServerCommandSource scs, SchedulableAction action) {
         final Logger log = commandLogger(ctx, scs);
-        gitOp(ctx, WRITE_CONFIG, log, jgit -> {
-            final GitConfig conf = GitConfig.load(jgit);
+        gitOp(ctx, WRITE_CONFIG, log, repo -> {
+            final GitConfig conf = repo.getConfig();
             conf.updater().set(SHUTDOWN_ACTION, action.getConfigValue()).save();
             log.chat(localized("fastback.chat.info-shutdown-action", action.getArgumentName()));
         });

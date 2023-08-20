@@ -22,7 +22,6 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
 
 import static net.minecraft.server.command.CommandManager.literal;
@@ -51,8 +50,8 @@ enum DisableCommand implements Command {
 
     private static int disable(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, WRITE_CONFIG, log, jgit -> {
-            GitConfig.load(jgit).updater().set(IS_BACKUP_ENABLED, false).save();
+        gitOp(ctx, WRITE_CONFIG, log, repo -> {
+            repo.getConfig().updater().set(IS_BACKUP_ENABLED, false).save();
             log.chat(localized("fastback.chat.disable-done"));
         });
         return SUCCESS;

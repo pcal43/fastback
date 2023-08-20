@@ -23,6 +23,8 @@ import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.Message;
 import net.pcal.fastback.retention.RetentionPolicyType;
+import net.pcal.fastback.tasks.RepoMan;
+import net.pcal.fastback.tasks.jgit.JGitRepoMan;
 import org.eclipse.jgit.api.Git;
 
 import java.io.IOException;
@@ -72,8 +74,9 @@ public class ModContext {
             execute(ExecutionLock.WRITE, getLogger(), () -> {
                 final Path worldSaveDir = getWorldDirectory();
                 if (!isGitRepo(worldSaveDir)) return;
-                try (Git git = Git.open(worldSaveDir.toFile())) {
-                    final GitConfig config = GitConfig.load(git);
+                try (Git jgit = Git.open(worldSaveDir.toFile())) {
+                    final RepoMan repo = new JGitRepoMan(jgit, ModContext.this, getLogger()); // FIXME
+                    final GitConfig config = GitConfig.load(jgit);
                     if (!config.getBoolean(IS_BACKUP_ENABLED)) return;
                     final SchedulableAction autobackAction = forConfigValue(config, AUTOBACK_ACTION);
                     if (autobackAction == null || autobackAction == NONE) return;
@@ -86,7 +89,7 @@ public class ModContext {
                         return;
                     }
                     getLogger().info("Starting auto-backup");
-                    autobackAction.getTask(git, ModContext.this, getLogger()).call();
+                    autobackAction.getTask(repo);
                     lastBackupTime = System.currentTimeMillis();
                 } catch (Exception e) {
                     getLogger().internalError("auto-backup failed.", e);

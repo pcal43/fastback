@@ -26,6 +26,7 @@ import net.pcal.fastback.logging.ChatLogger;
 import net.pcal.fastback.logging.CompositeLogger;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.SaveScreenLogger;
+import net.pcal.fastback.tasks.RepoMan;
 import org.eclipse.jgit.api.Git;
 
 import java.io.IOException;
@@ -80,27 +81,27 @@ public class LifecycleUtils {
     /**
      * Must be called when a world is stopping (in either a dedicated or client-embedded server).
      */
-    public static void onWorldStop(final ModContext ctx) {
-        final Logger logger = ctx.isClient() ? CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx))
-                : ctx.getLogger();
-        final Path worldSaveDir = ctx.getWorldDirectory();
+    public static void onWorldStop(final ModContext mod) {
+        final Logger logger = mod.isClient() ? CompositeLogger.of(mod.getLogger(), new SaveScreenLogger(mod))
+                : mod.getLogger();
+        final Path worldSaveDir = mod.getWorldDirectory();
         logger.chat(localized("fastback.chat.thread-waiting"));
-        ctx.stopExecutor();
+        mod.stopExecutor();
         if (isGitRepo(worldSaveDir)) {
-            try (Git jgit = Git.open(worldSaveDir.toFile())) {
-                final GitConfig config = GitConfig.load(jgit);
+            try (final RepoMan repo = RepoMan.load(worldSaveDir, mod, logger)) {
+                final GitConfig config = repo.getConfig();
                 if (config.getBoolean(IS_BACKUP_ENABLED)) {
                     final SchedulableAction action = SchedulableAction.forConfigValue(config, SHUTDOWN_ACTION);
                     if (action != null) {
-                        final Logger screenLogger = CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx));
-                        action.getTask(jgit, ctx, screenLogger).call();
+                        final Logger screenLogger = CompositeLogger.of(mod.getLogger(), new SaveScreenLogger(mod)); //FIXME figure out what to do with this
+                        action.getTask(repo).call();
                     }
                 }
             } catch (Exception e) {
                 logger.internalError("Shutdown action failed.", e);
             }
         }
-        ctx.getLogger().info("onWorldStop complete");
+        mod.getLogger().info("onWorldStop complete");
     }
 
 }

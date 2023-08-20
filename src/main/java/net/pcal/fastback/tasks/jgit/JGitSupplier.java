@@ -16,17 +16,17 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.tasks;
+package net.pcal.fastback.tasks.jgit;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.IOException;
 
 /**
- * Consumer with typed exceptions for typical JGit operations.
+ * Supplier with typed exceptions for typical JGit operations.
  */
 @FunctionalInterface
-interface JGitConsumer<T> {
+interface JGitSupplier<R> {
 
-    void accept(T t) throws IOException, GitAPIException;
+    R get() throws IOException, GitAPIException;
 }

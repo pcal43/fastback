@@ -31,9 +31,7 @@ import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
-import static net.pcal.fastback.config.RepoConfigUtils.getWorldUuid;
 import static net.pcal.fastback.logging.Message.raw;
-import static net.pcal.fastback.tasks.ListSnapshotsTask.listSnapshots;
 import static net.pcal.fastback.utils.SnapshotId.sortWorldSnapshots;
 
 enum ListCommand implements Command {
@@ -53,9 +51,9 @@ enum ListCommand implements Command {
 
     private int execute(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, NONE, log, jgit -> {
-            final String uuid = getWorldUuid(jgit);
-            for (final SnapshotId sid : sortWorldSnapshots(listSnapshots(jgit, ctx.getLogger()), uuid)) {
+        gitOp(ctx, NONE, log, repo -> {
+            final String uuid = repo.getWorldUuid();
+            for (final SnapshotId sid : sortWorldSnapshots(repo.listSnapshots(), uuid)) {
                 log.chat(raw(sid.getName()));
             }
         });

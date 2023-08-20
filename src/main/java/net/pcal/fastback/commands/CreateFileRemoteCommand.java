@@ -23,7 +23,6 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.GitUtils;
 import org.eclipse.jgit.api.Git;
@@ -65,7 +64,7 @@ enum CreateFileRemoteCommand implements Command {
 
     private static int setFileRemote(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, NONE, log, git -> {
+        gitOp(ctx, NONE, log, repo -> {
             final String targetPath = cc.getArgument(ARGUMENT, String.class);
             final Path fupHome = Path.of(targetPath);
             if (fupHome.toFile().exists()) {
@@ -80,9 +79,7 @@ enum CreateFileRemoteCommand implements Command {
                 targetGitc.save();
             }
             final String targetUrl = GitUtils.getFileUri(fupHome);
-            final StoredConfig gitc = git.getRepository().getConfig();
-            GitConfig.load(git).updater().set(REMOTE_PUSH_URL, targetUrl).save();
-            gitc.save();
+            repo.getConfig().updater().set(REMOTE_PUSH_URL, targetUrl).save();
             log.chat(localized("fastback.chat.create-file-remote-created", targetPath, targetUrl));
         });
         return SUCCESS;

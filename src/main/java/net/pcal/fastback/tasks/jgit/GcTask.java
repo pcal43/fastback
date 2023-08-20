@@ -16,7 +16,7 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.tasks;
+package net.pcal.fastback.tasks.jgit;
 
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
@@ -24,7 +24,6 @@ import net.pcal.fastback.progress.IncrementalProgressMonitor;
 import net.pcal.fastback.progress.PercentageProgressMonitor;
 import net.pcal.fastback.utils.FileUtils;
 import net.pcal.fastback.utils.SnapshotId;
-import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.internal.storage.file.GC;
 import org.eclipse.jgit.lib.ProgressMonitor;
@@ -39,7 +38,7 @@ import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.Message.localized;
-import static net.pcal.fastback.tasks.PushTask.isTempBranch;
+import static net.pcal.fastback.tasks.jgit.PushTask.isTempBranch;
 import static net.pcal.fastback.utils.GitUtils.getBranchName;
 import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
 import static org.apache.commons.io.FileUtils.sizeOfDirectory;
@@ -56,23 +55,23 @@ public class GcTask implements Callable<Void> {
 
     private final ModContext ctx;
     private final Logger log;
-    private final Git git;
+    private final JGitRepoMan repo;
     private long sizeBeforeBytes, sizeAfterBytes;
 
-    public GcTask(final Git git,
+    public GcTask(final JGitRepoMan repo,
                   final ModContext ctx,
                   final Logger log) {
-        this.git = requireNonNull(git);
+        this.repo = requireNonNull(repo);
         this.ctx = requireNonNull(ctx);
         this.log = requireNonNull(log);
     }
 
     @Override
     public Void call() throws Exception {
-        final File gitDir = git.getRepository().getDirectory();
+        final File gitDir = repo.getJGit().getRepository().getDirectory();
         log.hud(localized("fastback.hud.gc-percent", 0));
         log.info("Stats before gc:");
-        log.info("" + git.gc().getStatistics());
+        log.info("" + repo.getJGit().gc().getStatistics());
         this.sizeBeforeBytes = sizeOfDirectory(gitDir);
         log.info("Backup size before gc: " + byteCountToDisplaySize(sizeBeforeBytes));
         if (ctx.isReflogDeletionEnabled()) {
@@ -84,7 +83,7 @@ public class GcTask implements Callable<Void> {
         }
         if (ctx.isBranchCleanupEnabled()) {
             final List<String> branchesToDelete = new ArrayList<>();
-            for (final Ref ref : git.branchList().setListMode(ALL).call()) {
+            for (final Ref ref : repo.getJGit().branchList().setListMode(ALL).call()) {
                 final String branchName = getBranchName(ref);
                 if (branchName == null) {
                     log.warn("Non-branch ref returned by branchList: " + ref);
@@ -100,11 +99,11 @@ public class GcTask implements Callable<Void> {
                 log.info("No branches to clean up");
             } else {
                 log.info("Deleting branches: " + branchesToDelete);
-                git.branchDelete().setForce(true).setBranchNames(branchesToDelete.toArray(new String[0])).call();
+                repo.getJGit().branchDelete().setForce(true).setBranchNames(branchesToDelete.toArray(new String[0])).call();
                 log.info("Branches deleted.");
             }
         }
-        final GC gc = new GC(((FileRepository) git.getRepository()));
+        final GC gc = new GC(((FileRepository) repo.getJGit().getRepository()));
         gc.setExpireAgeMillis(0);
         gc.setPackExpireAgeMillis(0);
         gc.setAuto(false);
@@ -117,7 +116,7 @@ public class GcTask implements Callable<Void> {
         gc.gc(); // TODO progress monitor
         log.info("Garbage collection complete.");
         log.info("Stats after gc:");
-        log.info("" + git.gc().getStatistics());
+        log.info("" + repo.getJGit().gc().getStatistics());
         this.sizeAfterBytes = sizeOfDirectory(gitDir);
         log.info("Backup size after gc: " + byteCountToDisplaySize(sizeAfterBytes));
         return null;

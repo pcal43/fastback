@@ -22,7 +22,6 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.tasks.LocalPruneTask;
 import net.pcal.fastback.utils.SnapshotId;
 
 import java.util.Collection;
@@ -58,9 +57,8 @@ enum PruneCommand implements Command {
 
     private static int prune(final ModContext ctx, final ServerCommandSource scs) {
         final Logger log = commandLogger(ctx, scs);
-        gitOp(ctx, WRITE, log, git -> {
-            final LocalPruneTask pt = new LocalPruneTask(git, ctx, log);
-            final Collection<SnapshotId> pruned = pt.call();
+        gitOp(ctx, WRITE, log, repo -> {
+            final Collection<SnapshotId> pruned = repo.createLocalPruneTask().call();
             log.chat(localized("fastback.chat.prune-done", pruned.size()));
             if (pruned.size() > 0) log.chat(localized("fastback.chat.prune-suggest-gc"));
         });

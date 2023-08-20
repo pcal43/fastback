@@ -57,12 +57,12 @@ enum DeleteCommand implements Command {
 
     private static int delete(ModContext ctx, CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, WRITE, log, jgit -> {
+        gitOp(ctx, WRITE, log, repo -> {
             final String snapshotName = getArgumentNicely(ARGUMENT, String.class, cc.getLastChild(), log);
-            final String uuid = RepoConfigUtils.getWorldUuid(jgit);
+            final String uuid = repo.getWorldUuid();
             final SnapshotId sid = SnapshotId.fromUuidAndName(uuid, snapshotName);
             final String branchName = sid.getBranchName();
-            jgit.branchDelete().setForce(true).setBranchNames(branchName).call();
+            repo.deleteBranch(branchName);
             log.chat(localized("fastback.chat.delete-done", snapshotName));
         });
         return SUCCESS;

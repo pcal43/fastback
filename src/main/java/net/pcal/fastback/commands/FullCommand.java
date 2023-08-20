@@ -22,7 +22,6 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.tasks.CommitAndPushTask;
 
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.ModContext.ExecutionLock.WRITE;
@@ -60,8 +59,8 @@ enum FullCommand implements Command {
             ctx.saveWorld();
             log.info("Starting backup");
         }
-        gitOp(ctx, WRITE, log, git -> {
-            new CommitAndPushTask(git, ctx, log).call();
+        gitOp(ctx, WRITE, log, repo -> {
+            repo.createCommitAndPushTask().call();
             log.chat(localized("fastback.chat.backup-complete"));
         });
         return SUCCESS;

@@ -22,7 +22,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.tasks.RemotePruneTask;
+import net.pcal.fastback.tasks.jgit.RemotePruneTask;
 import net.pcal.fastback.utils.SnapshotId;
 
 import java.util.Collection;
@@ -58,8 +58,8 @@ enum RemotePruneCommand implements Command {
 
     private static int remotePrune(final ModContext ctx, final ServerCommandSource scs) {
         final Logger log = commandLogger(ctx, scs);
-        gitOp(ctx, WRITE, log, git -> {
-            final RemotePruneTask pt = new RemotePruneTask(git, ctx, log);
+        gitOp(ctx, WRITE, log, repo -> {
+            final RemotePruneTask pt = new RemotePruneTask(repo, ctx, log);
             final Collection<SnapshotId> pruned = pt.call();
             log.chat(localized("fastback.chat.prune-done", pruned.size()));
         });
