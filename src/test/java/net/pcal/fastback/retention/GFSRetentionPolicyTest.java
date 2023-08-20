@@ -18,6 +18,7 @@
 
 package net.pcal.fastback.retention;
 
+import com.google.common.collect.Lists;
 import net.pcal.fastback.MockModContext;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.utils.SnapshotId;
@@ -70,8 +71,11 @@ public class GFSRetentionPolicyTest {
         ModContext ctx = MockModContext.create();
         RetentionPolicy policy = GFSRetentionPolicy.GFSRetentionPolicyType.INSTANCE.createPolicy(ctx, Collections.emptyMap());
         ((GFSRetentionPolicy)policy).nowSupplier = ()->now;
-        Collection<SnapshotId> toPruneList = policy.getSnapshotsToPrune(snapshots);
-        Assertions.assertEquals(expectPruned, toPruneList);
+        Collection<SnapshotId> toPrune = policy.getSnapshotsToPrune(snapshots);
+        List<SnapshotId> toPruneListSorted = new ArrayList<>(toPrune);
+        Collections.sort(toPruneListSorted);
+        Collections.sort(expectPruned);
+        Assertions.assertEquals(expectPruned, toPruneListSorted);
     }
 
     private static SnapshotId sid(int year, int month, int day) {

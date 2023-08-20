@@ -65,7 +65,7 @@ class GFSRetentionPolicy implements RetentionPolicy {
     @Override
     public Collection<SnapshotId> getSnapshotsToPrune(NavigableSet<SnapshotId> snapshots) {
         final List<SnapshotId> toPrune = new ArrayList<>();
-        final LocalDate now = LocalDate.now(ctx.getTimeZone().toZoneId());
+        final LocalDate now = nowSupplier.get();
         final LocalDate gracePeriodStart = now.minus(Period.ofDays(2));
         final LocalDate oneWeekAgo = now.minus(Period.ofDays(7));
         final LocalDate oneMonthAgo = now.minus(Period.ofDays(30));
