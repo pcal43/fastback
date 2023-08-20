@@ -32,6 +32,7 @@ import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.ModContext.ExecutionLock.WRITE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
+import static net.pcal.fastback.commands.Commands.getArgumentNicely;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
@@ -57,7 +58,7 @@ enum DeleteCommand implements Command {
     private static int delete(ModContext ctx, CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
         gitOp(ctx, WRITE, log, jgit -> {
-            final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
+            final String snapshotName = getArgumentNicely(ARGUMENT, String.class, cc.getLastChild(), log);
             final String uuid = RepoConfigUtils.getWorldUuid(jgit);
             final SnapshotId sid = SnapshotId.fromUuidAndName(uuid, snapshotName);
             final String branchName = sid.getBranchName();

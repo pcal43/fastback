@@ -33,6 +33,7 @@ import static net.pcal.fastback.ModContext.ExecutionLock.WRITE_CONFIG;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
+import static net.pcal.fastback.commands.Commands.missingArgument;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
 
@@ -47,7 +48,9 @@ enum SetRemoteCommand implements Command {
     public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(ctx, COMMAND_NAME)).then(
+                        requires(subcommandPermission(ctx, COMMAND_NAME)).
+                        executes(cc-> missingArgument(URL_ARGUMENT, ctx, cc)).
+                        then(
                                 argument(URL_ARGUMENT, StringArgumentType.greedyString()).
                                         executes(cc -> setRemoteUrl(ctx, cc))
                         )

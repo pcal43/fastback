@@ -37,6 +37,7 @@ import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.config.GitConfigKey.LOCAL_RETENTION_POLICY;
 import static net.pcal.fastback.config.RepoConfigUtils.getWorldUuid;
 import static net.pcal.fastback.logging.Message.localized;
+import static net.pcal.fastback.logging.Message.localizedError;
 import static net.pcal.fastback.tasks.ListSnapshotsTask.listSnapshots;
 import static net.pcal.fastback.utils.SnapshotId.sortWorldSnapshots;
 
@@ -85,7 +86,7 @@ public class LocalPruneTask implements Callable<Collection<SnapshotId>> {
         final RetentionPolicy policy = RetentionPolicyCodec.INSTANCE.decodePolicy
                 (ctx, ctx.getRetentionPolicyTypes(), policyConfig);
         if (policy == null) {
-            log.chatError(localized(notSetKey));
+            log.chat(localizedError(notSetKey));
             return null;
         }
         final Collection<SnapshotId> toPrune = policy.getSnapshotsToPrune(

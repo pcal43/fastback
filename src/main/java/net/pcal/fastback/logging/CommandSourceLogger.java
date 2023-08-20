@@ -35,10 +35,11 @@ public class CommandSourceLogger implements Logger {
     }
 
     @Override
-    public void chat(Message message, ChatMessageType type) {
-        switch(type) {
-            case NORMAL -> ctx.sendFeedback(message, scs);
-            case ERROR ->  ctx.sendError(message, scs);
+    public void chat(Message message) {
+        if (message.isError()) {
+            ctx.sendError(message, scs);
+        } else {
+            ctx.sendFeedback(message, scs);
         }
     }
 

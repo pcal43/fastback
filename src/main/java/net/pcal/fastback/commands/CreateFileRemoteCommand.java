@@ -37,9 +37,11 @@ import static net.pcal.fastback.ModContext.ExecutionLock.NONE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
+import static net.pcal.fastback.commands.Commands.missingArgument;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_PUSH_URL;
 import static net.pcal.fastback.logging.Message.localized;
+import static net.pcal.fastback.logging.Message.localizedError;
 import static net.pcal.fastback.utils.FileUtils.mkdirs;
 
 enum CreateFileRemoteCommand implements Command {
@@ -53,8 +55,9 @@ enum CreateFileRemoteCommand implements Command {
     public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(ctx, COMMAND_NAME)).then(
-                                argument(ARGUMENT, StringArgumentType.greedyString()).
+                        requires(subcommandPermission(ctx, COMMAND_NAME)).
+                        executes(cc-> missingArgument(ARGUMENT, ctx, cc)).
+                        then(argument(ARGUMENT, StringArgumentType.greedyString()).
                                         executes(cc -> setFileRemote(ctx, cc))
                         )
         );
@@ -66,7 +69,7 @@ enum CreateFileRemoteCommand implements Command {
             final String targetPath = cc.getArgument(ARGUMENT, String.class);
             final Path fupHome = Path.of(targetPath);
             if (fupHome.toFile().exists()) {
-                log.chatError(localized("fastback.chat.create-file-remote-dir-exists", fupHome.toString()));
+                log.chat(localizedError("fastback.chat.create-file-remote-dir-exists", fupHome.toString()));
                 return;
             }
             mkdirs(fupHome);

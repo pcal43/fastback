@@ -43,12 +43,12 @@ public interface RetentionPolicyType {
                 AllRetentionPolicy.Type.INSTANCE);
     }
 
-    record Parameter(String name, ArgumentType<?> type) {
+    record Parameter<V>(String name, ArgumentType<V> type, Class<V> clazz) {
     }
 
     String getName();
 
-    List<Parameter> getParameters();
+    List<Parameter<?>> getParameters();
 
     RetentionPolicy createPolicy(ModContext ctx, Map<String, String> config);
 

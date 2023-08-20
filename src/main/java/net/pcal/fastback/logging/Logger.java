@@ -18,18 +18,9 @@
 
 package net.pcal.fastback.logging;
 
-import static net.pcal.fastback.logging.Logger.ChatMessageType.ERROR;
-import static net.pcal.fastback.logging.Logger.ChatMessageType.NORMAL;
-
 public interface Logger {
 
-    enum ChatMessageType { NORMAL, ERROR }
-
-    void chat(Message message, ChatMessageType type);
-
-    default void chat(Message message) { this.chat(message, NORMAL); }
-
-    default void chatError(Message message) { this.chat(message, ERROR); }
+    void chat(Message message);
 
     void hud(Message message);
 

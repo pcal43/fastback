@@ -101,8 +101,8 @@ class DailyRetentionPolicy implements RetentionPolicy {
         }
 
         @Override
-        public List<Parameter> getParameters() {
-            return List.of(new Parameter(GRACE_PERIOD_DAYS, IntegerArgumentType.integer(0)));
+        public List<Parameter<?>> getParameters() {
+            return List.of(new Parameter<>(GRACE_PERIOD_DAYS, IntegerArgumentType.integer(0), Integer.class));
         }
 
         @Override

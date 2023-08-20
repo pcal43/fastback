@@ -117,7 +117,7 @@ class GFSRetentionPolicy implements RetentionPolicy {
         }
 
         @Override
-        public List<Parameter> getParameters() {
+        public List<Parameter<?>> getParameters() {
             return Collections.emptyList();
         }
 
