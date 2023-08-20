@@ -52,7 +52,6 @@ import static net.pcal.fastback.config.GitConfigKey.IS_TRACKING_BRANCH_CLEANUP_E
 import static net.pcal.fastback.config.GitConfigKey.IS_UUID_CHECK_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_NAME;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_PUSH_URL;
-import static net.pcal.fastback.config.RepoConfigUtils.getWorldUuid;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.logging.Message.localizedError;
 
@@ -100,7 +99,7 @@ class JGitPushTask implements Callable<Void> {
         }
         log.info("Pushing to " + pushUrl);
         if (conf.getBoolean(IS_SMART_PUSH_ENABLED)) {
-            final String uuid = getWorldUuid(jgit);
+            final String uuid = repo.getWorldUuid();
             doSmartPush(jgit, snapshotsPerWorld.get(uuid), this.sid.getBranchName(), conf, log);
         } else {
             doNaivePush(jgit, this.sid.getBranchName(), conf, log);
@@ -109,9 +108,9 @@ class JGitPushTask implements Callable<Void> {
         return null;
     }
 
-    private static void doSmartPush(final Git jgit, List<SnapshotId> remoteSnapshots, final String branchNameToPush, final GitConfig conf, final Logger logger) throws GitAPIException, IOException {
+    private void doSmartPush(final Git jgit, List<SnapshotId> remoteSnapshots, final String branchNameToPush, final GitConfig conf, final Logger logger) throws GitAPIException, IOException {
         final String remoteName = conf.getString(REMOTE_NAME);
-        final String worldUuid = getWorldUuid(jgit);
+        final String worldUuid = repo.getWorldUuid();
         final SnapshotId latestCommonSnapshot;
         if (remoteSnapshots.isEmpty()) {
             logger.warn("** This appears to be the first time this world has been pushed.");
@@ -186,8 +185,8 @@ class JGitPushTask implements Callable<Void> {
                 setRefSpecs(new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
     }
 
-    private static boolean doUuidCheck(Git jgit, Set<String> remoteWorldUuids, GitConfig config, Logger logger) throws GitAPIException, IOException {
-        final String localUuid = getWorldUuid(jgit);
+    private boolean doUuidCheck(Git jgit, Set<String> remoteWorldUuids, GitConfig config, Logger logger) throws GitAPIException, IOException {
+        final String localUuid = repo.getWorldUuid();
         if (remoteWorldUuids.size() > 2) {
             logger.warn("Remote has more than one world-uuid.  This is unusual. " + remoteWorldUuids);
         }

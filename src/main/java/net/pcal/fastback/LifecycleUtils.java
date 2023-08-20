@@ -21,15 +21,12 @@ package net.pcal.fastback;
 import net.pcal.fastback.commands.Commands;
 import net.pcal.fastback.commands.SchedulableAction;
 import net.pcal.fastback.config.GitConfig;
-import net.pcal.fastback.config.RepoConfigUtils;
 import net.pcal.fastback.logging.ChatLogger;
 import net.pcal.fastback.logging.CompositeLogger;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.SaveScreenLogger;
 import net.pcal.fastback.repo.Repo;
-import org.eclipse.jgit.api.Git;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
@@ -69,9 +66,9 @@ public class LifecycleUtils {
                 : ctx.getLogger();
         final Path worldSaveDir = ctx.getWorldDirectory();
         if (isGitRepo(worldSaveDir)) {
-            try (final Git git = Git.open(worldSaveDir.toFile())) {
-                RepoConfigUtils.doWorldMaintenance(git, logger);
-            } catch (IOException e) {
+            try (Repo repo = Repo.load(worldSaveDir, ctx, logger)) {
+                repo.doWorldMaintenance(logger);
+            } catch (Exception e) {
                 logger.internalError("Unable to perform maintenance.  Backups will probably not work correctly", e);
             }
         }

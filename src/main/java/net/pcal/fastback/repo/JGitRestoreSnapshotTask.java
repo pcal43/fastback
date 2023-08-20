@@ -31,8 +31,8 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.config.RepoConfigUtils.WORLD_UUID_PATH;
 import static net.pcal.fastback.logging.Message.localized;
+import static net.pcal.fastback.repo.RepoImpl.WORLD_UUID_PATH;
 
 @SuppressWarnings("FieldCanBeLocal")
 class JGitRestoreSnapshotTask implements Callable<Path> {

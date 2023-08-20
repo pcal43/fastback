@@ -24,8 +24,8 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.config.GitConfig.Updater;
-import net.pcal.fastback.config.RepoConfigUtils;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.repo.Repo;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.StoredConfig;
@@ -62,8 +62,9 @@ enum EnableCommand implements Command {
         final Logger log = commandLogger(ctx, cc.getSource());
         ctx.execute(NONE, log, () -> {
                     final Path worldSaveDir = ctx.getWorldDirectory();
-                    try (final Git jgit = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
-                        RepoConfigUtils.doWorldMaintenance(jgit, log);
+                    try (final Git jgit = Git.init().setDirectory(worldSaveDir.toFile()).call()) { //FIXME
+                        final Repo repo = Repo.load(worldSaveDir, ctx, log);
+                        repo.doWorldMaintenance(log);
                         final StoredConfig config = jgit.getRepository().getConfig();
                         final GitConfig repoConfig = GitConfig.load(jgit);
                         final Updater updater = repoConfig.updater();

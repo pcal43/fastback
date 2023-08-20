@@ -21,8 +21,9 @@ package net.pcal.fastback.repo;
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.config.GitConfig;
-import net.pcal.fastback.config.RepoConfigUtils;
+import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.utils.FileUtils;
 import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -31,15 +32,24 @@ import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.transport.RefSpec;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_NAME;
+import static net.pcal.fastback.config.GitConfigKey.UPDATE_GITATTRIBUTES_ENABLED;
+import static net.pcal.fastback.config.GitConfigKey.UPDATE_GITIGNORE_ENABLED;
+import static net.pcal.fastback.utils.FileUtils.writeResourceToFile;
 
 class RepoImpl implements Repo {
+
+    static final Path WORLD_UUID_PATH = Path.of("fastback/world.uuid");
 
     private final Git jgit;
     private final ModContext ctx;
@@ -86,7 +96,7 @@ class RepoImpl implements Repo {
 
     @Override
     public String getWorldUuid() throws IOException {
-        return RepoConfigUtils.getWorldUuid(this.jgit);
+        return Files.readString(getWorkTree().toPath().toAbsolutePath().resolve(WORLD_UUID_PATH)).trim();
     }
 
     @Override
@@ -163,4 +173,56 @@ class RepoImpl implements Repo {
     public void close() {
         this.getJGit().close();
     }
+
+
+    // ====================================================================
+    // Resource management
+
+    private record WorldResource(
+            String resourcePath, // Note to self: needs to be a String, not a Path, because Windows slashes don't work
+            Path targetPath,
+            GitConfigKey permission
+    ) {}
+
+    private static final Iterable<WorldResource> WORLD_RESOURCES = List.of(
+            new WorldResource(
+                    "world/dot-gitignore",
+                    Path.of(".gitignore"),
+                    UPDATE_GITIGNORE_ENABLED),
+            new WorldResource(
+                    "world/dot-gitattributes",
+                    Path.of(".gitattributes"),
+                    UPDATE_GITATTRIBUTES_ENABLED)
+    );
+
+    @Override
+    public void doWorldMaintenance(final Logger logger) throws IOException, IOException {
+        logger.info("Doing world maintenance");
+        final Path worldSaveDir = jgit.getRepository().getWorkTree().toPath();
+        ensureWorldHasUuid(worldSaveDir, logger);
+        final GitConfig config = GitConfig.load(jgit);
+        for (final WorldResource resource : WORLD_RESOURCES) {
+            if (config.getBoolean(resource.permission)) {
+                logger.debug("Updating " + resource.targetPath);
+                final Path targetPath = worldSaveDir.resolve(resource.targetPath);
+                writeResourceToFile(resource.resourcePath, targetPath);
+            } else {
+                logger.info("Updates disabled for " + resource.targetPath);
+            }
+        }
+    }
+
+    private static void ensureWorldHasUuid(final Path worldSaveDir, final Logger logger) throws IOException {
+        final Path worldUuidpath = worldSaveDir.resolve(WORLD_UUID_PATH);
+        if (!worldUuidpath.toFile().exists()) {
+            FileUtils.mkdirs(worldUuidpath.getParent());
+            final String newUuid = UUID.randomUUID().toString();
+            try (final FileWriter fw = new FileWriter(worldUuidpath.toFile())) {
+                fw.append(newUuid);
+                fw.append('\n');
+            }
+            logger.info("Generated new world.uuid " + newUuid);
+        }
+    }
+
 }

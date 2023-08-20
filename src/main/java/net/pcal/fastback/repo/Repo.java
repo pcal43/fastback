@@ -73,4 +73,5 @@ public interface Repo extends AutoCloseable {
 
     void deleteBranch(String branchName) throws GitAPIException;
 
+    void doWorldMaintenance(Logger logger) throws IOException, IOException;
 }
