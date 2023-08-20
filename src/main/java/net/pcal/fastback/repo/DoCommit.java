@@ -27,48 +27,61 @@ import org.eclipse.jgit.api.RmCommand;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.concurrent.Callable;
 
-import static java.util.Objects.requireNonNull;
+import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_ENABLED;
 import static net.pcal.fastback.logging.Message.localized;
+import static net.pcal.fastback.repo.DoExec.doExec;
 
 @SuppressWarnings("FieldCanBeLocal")
-class JGitCommitTask implements Callable<SnapshotId> {
+class DoCommit {
 
-    private final ModContext ctx;
-    private final Logger log;
-    private final RepoImpl repo;
-
-    JGitCommitTask(final RepoImpl repo,
-                   final ModContext ctx,
-                   final Logger log) {
-        this.repo = requireNonNull(repo);
-        this.ctx = requireNonNull(ctx);
-        this.log = requireNonNull(log);
-    }
-
-    @Override
-    public SnapshotId call() throws GitAPIException, IOException {
-        this.log.hud(localized("fastback.hud.local-saving"));
+    static SnapshotId doCommitSnapshot(RepoImpl repo, ModContext ctx, Logger log) throws IOException {
+        log.hud(localized("fastback.hud.local-saving"));
         final String uuid = repo.getWorldUuid();
         final SnapshotId newSid = SnapshotId.create(uuid);
         log.info("Preparing local backup " + newSid);
         final String newBranchName = newSid.getBranchName();
-        doCommit(repo.getJGit(), ctx, newBranchName, log);
+
+        if (repo.getConfig().getBoolean(IS_NATIVE_ENABLED)) {
+            native_commit(newBranchName, repo, ctx, log);
+        } else {
+            try {
+                jgit_commit(newBranchName, repo.getJGit(), ctx, log);
+            } catch (GitAPIException e) {
+                throw new IOException(e);
+            }
+        }
         log.info("Local backup complete.");
         return newSid;
     }
 
-    private static void doCommit(Git git, ModContext ctx, String newBranchName, final Logger log) throws GitAPIException {
-        log.debug("doing commit");
-        log.debug("checkout");
-        git.checkout().setOrphan(true).setName(newBranchName).call();
-        git.reset().setMode(ResetCommand.ResetType.SOFT).call();
+    private static void native_commit(String newBranchName, Repo repo, ModContext ctx, Logger log) throws IOException {
+        log.debug("Starting native_commit");
+        final File worktree = repo.getWorkTree();
+        String[] checkout = { "git", "-C", worktree.getAbsolutePath(), "checkout", "--orphan", newBranchName };
+        doExec(checkout, log);
+        ctx.setWorldSaveEnabled(false);
+        try {
+            String[] add = { "git", "-C", worktree.getAbsolutePath(), "add", "."};
+            doExec(add, log);
+        } finally {
+            ctx.setWorldSaveEnabled(true);
+            log.debug("World save re-enabled.");
+        }
+        String[] commit = { "git", "-C", worktree.getAbsolutePath(), "commit", "-m", newBranchName };
+        doExec(commit, log);
+    }
+
+    private static void jgit_commit(String newBranchName, Git jgit, ModContext ctx, final Logger log) throws GitAPIException {
+        log.debug("Starting jgit_commit");
+        jgit.checkout().setOrphan(true).setName(newBranchName).call();
+        jgit.reset().setMode(ResetCommand.ResetType.SOFT).call();
         log.debug("status");
-        final Status status = git.status().call();
+        final Status status = jgit.status().call();
 
         try {
             log.info("Disabling world save for 'git add'");
@@ -83,7 +96,7 @@ class JGitCommitTask implements Callable<SnapshotId> {
                 toAdd.addAll(status.getUntracked());
                 if (!toAdd.isEmpty()) {
                     log.info("Adding " + toAdd.size() + " new or modified files to index");
-                    final AddCommand gitAdd = git.add();
+                    final AddCommand gitAdd = jgit.add();
                     for (final String file : toAdd) {
                         log.debug("add  " + file);
                         gitAdd.addFilepattern(file);
@@ -97,7 +110,7 @@ class JGitCommitTask implements Callable<SnapshotId> {
                 toDelete.addAll(status.getMissing());
                 if (!toDelete.isEmpty()) {
                     log.info("Removing " + toDelete.size() + " deleted files from index");
-                    final RmCommand gitRm = git.rm();
+                    final RmCommand gitRm = jgit.rm();
                     for (final String file : toDelete) {
                         log.debug("rm  " + file);
                         gitRm.addFilepattern(file);
@@ -110,6 +123,6 @@ class JGitCommitTask implements Callable<SnapshotId> {
             log.info("World save re-enabled.");
         }
         log.debug("commit");
-        git.commit().setMessage(newBranchName).call();
+        jgit.commit().setMessage(newBranchName).call();
     }
 }

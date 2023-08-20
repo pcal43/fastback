@@ -35,7 +35,7 @@ import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.Message.localized;
-import static net.pcal.fastback.repo.JGitPushTask.isTempBranch;
+import static net.pcal.fastback.repo.DoPush.isTempBranch;
 import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
 import static org.apache.commons.io.FileUtils.sizeOfDirectory;
 import static org.eclipse.jgit.api.ListBranchCommand.ListMode.ALL;

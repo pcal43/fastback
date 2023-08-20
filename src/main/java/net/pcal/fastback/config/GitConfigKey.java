@@ -47,6 +47,8 @@ public enum GitConfigKey {
 
     REMOTE_NAME("origin"),
 
+    IS_NATIVE_ENABLED(true),
+
     IS_UUID_CHECK_ENABLED(true),
 
     IS_TEMP_BRANCH_CLEANUP_ENABLED(true),

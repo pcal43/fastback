@@ -61,7 +61,7 @@ enum LocalCommand implements Command {
             log.info("Starting backup");
         }
         gitOp(ctx, WRITE, log, repo -> {
-            repo.createCommitTask().call();
+            repo.doCommitSnapshot();
             log.chat(localized("fastback.chat.backup-complete"));
         });
         return SUCCESS;

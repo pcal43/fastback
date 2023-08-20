@@ -43,9 +43,9 @@ public interface Repo extends AutoCloseable {
 
     File getWorkTree() throws NoWorkTreeException;
 
-    Callable<Void> createCommitAndPushTask();
+    Void doCommitAndPush() throws IOException;
 
-    Callable<SnapshotId> createCommitTask();
+    SnapshotId doCommitSnapshot() throws IOException;
 
     Callable<Collection<SnapshotId>> createLocalPruneTask();
 

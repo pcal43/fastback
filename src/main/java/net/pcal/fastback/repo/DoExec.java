@@ -18,32 +18,35 @@
 
 package net.pcal.fastback.repo;
 
-import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
 
-import java.util.concurrent.Callable;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.stream.Collectors;
 
-import static java.util.Objects.requireNonNull;
 
-class JGitCommitAndPushTask implements Callable<Void> {
+/**
+ *
+ *
+ */
+class DoExec {
 
-    private final RepoImpl repo;
-    private final ModContext ctx;
-    private final Logger log;
-
-    JGitCommitAndPushTask(final RepoImpl repo,
-                          final ModContext ctx,
-                          final Logger log) {
-        this.repo = requireNonNull(repo);
-        this.ctx = requireNonNull(ctx);
-        this.log = requireNonNull(log);
+    static void doExec(String[] args, Logger log) throws IOException {
+        log.info(String.join(" ", args));
+        final Process p = Runtime.getRuntime().exec(args);
+        String stdout = readString(p.getInputStream());
+        String stderr = readString(p.getErrorStream());
+        log.info(stdout);
+        log.info(stderr);
+        log.info("exitCode = "+p.exitValue());
     }
 
-    @Override
-    public Void call() throws Exception {
-        final SnapshotId newSid = new JGitCommitTask(repo, ctx, log).call();
-        new JGitPushTask(repo, log, newSid).call();
-        return null;
+    private static String readString(InputStream in) {
+        return new BufferedReader(new InputStreamReader(in))
+                .lines().collect(Collectors.joining("\n"));
     }
+
 
 }

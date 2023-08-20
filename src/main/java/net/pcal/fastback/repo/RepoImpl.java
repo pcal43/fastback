@@ -64,13 +64,15 @@ class RepoImpl implements Repo {
     }
 
     @Override
-    public Callable<Void> createCommitAndPushTask() {
-        return new JGitCommitAndPushTask(this, ctx, log);
+    public Void doCommitAndPush() throws IOException {
+        final SnapshotId newSid = DoCommit.doCommitSnapshot(this, ctx, log);
+        DoPush.doPush(newSid, this, log);
+        return null;
     }
 
     @Override
-    public Callable<SnapshotId> createCommitTask() {
-        return new JGitCommitTask(this, ctx, log);
+    public SnapshotId doCommitSnapshot() throws IOException {
+        return DoCommit.doCommitSnapshot(this, ctx, log);
     }
 
     @Override

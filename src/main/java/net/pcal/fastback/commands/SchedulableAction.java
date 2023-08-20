@@ -38,33 +38,33 @@ public enum SchedulableAction {
 
     NONE("none") {
         @Override
-        public Callable<Void> getTask(final Repo tf) {
+        public Callable<Void> getTask(final Repo repo) {
             return () -> null;
         }
     },
 
     LOCAL("local") {
         @Override
-        public Callable<SnapshotId> getTask(final Repo tf) {
-            return tf.createCommitTask();
+        public Callable<SnapshotId> getTask(final Repo repo) {
+            return repo::doCommitSnapshot;
         }
     },
 
     FULL("full") {
         @Override
-        public Callable<Void> getTask(final Repo tf) {
-            return tf.createCommitAndPushTask();
+        public Callable<Void> getTask(final Repo repo) {
+            return repo::doCommitAndPush;
         }
     },
 
     FULL_GC("full-gc") {
         @Override
-        public Callable<Void> getTask(final Repo tf) {
+        public Callable<Void> getTask(final Repo repo) {
             return ()->{
-                tf.createCommitAndPushTask().call();
-                final Collection<SnapshotId> pruned = tf.createLocalPruneTask().call();
+                repo.doCommitAndPush();
+                final Collection<SnapshotId> pruned = repo.createLocalPruneTask().call();
                 if (pruned.size() > 0) {
-                    tf.createGcTask().call();
+                    repo.createGcTask().call();
                 }
                 return null;
             };
