@@ -32,6 +32,7 @@ import org.eclipse.jgit.transport.RefSpec;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 
@@ -76,6 +77,11 @@ class RepoImpl implements Repo {
     @Override
     public Callable<Collection<SnapshotId>> createRemotePruneTask() {
         return new RemotePruneTask(this, ctx, log);
+    }
+
+    @Override
+    public Callable<Path> restoreSnapshotTask(String uri, Path restoresDir, String worldName, SnapshotId sid, Logger log) throws IOException {
+        return new JGitRestoreSnapshotTask(uri, restoresDir, worldName, sid, log);
     }
 
     @Override

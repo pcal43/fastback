@@ -63,6 +63,8 @@ public interface Repo extends AutoCloseable {
 
     Callable<Collection<SnapshotId>> createRemotePruneTask();
 
+    Callable<Path> restoreSnapshotTask(String uri, Path restoresDir, String worldName, SnapshotId sid, Logger log) throws IOException;
+
     ListMultimap<String, SnapshotId> listSnapshots() throws IOException;
 
     ListMultimap<String, SnapshotId> listRemoteSnapshots() throws IOException;

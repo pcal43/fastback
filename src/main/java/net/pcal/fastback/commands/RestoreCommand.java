@@ -25,7 +25,6 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.repo.RestoreSnapshotTask;
 import net.pcal.fastback.utils.GitUtils;
 import net.pcal.fastback.utils.SnapshotId;
 
@@ -62,12 +61,11 @@ enum RestoreCommand implements Command {
     private static int restore(ModContext ctx, CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
         gitOp(ctx, NONE, log, repo -> {
-            final GitConfig wc = repo.getConfig();
             final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
             final String uuid = repo.getWorldUuid();
             final SnapshotId sid = SnapshotId.fromUuidAndName(uuid, snapshotName);
             final String uri =  GitUtils.getFileUri(ctx.getWorldDirectory());
-            final Path restoreDir = new RestoreSnapshotTask(uri, ctx.getRestoresDir(),
+            final Path restoreDir = repo.restoreSnapshotTask(uri, ctx.getRestoresDir(),
                     ctx.getWorldName(), sid, log).call();
             log.chat(localized("fastback.chat.restore-done", restoreDir));
         });

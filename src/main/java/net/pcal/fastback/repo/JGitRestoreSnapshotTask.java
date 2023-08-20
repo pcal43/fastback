@@ -35,7 +35,7 @@ import static net.pcal.fastback.config.RepoConfigUtils.WORLD_UUID_PATH;
 import static net.pcal.fastback.logging.Message.localized;
 
 @SuppressWarnings("FieldCanBeLocal")
-public class RestoreSnapshotTask implements Callable<Path> {
+class JGitRestoreSnapshotTask implements Callable<Path> {
 
     private final String repoUri;
     private final SnapshotId sid;
@@ -43,7 +43,7 @@ public class RestoreSnapshotTask implements Callable<Path> {
     private final String worldName;
     private final Logger logger;
 
-    public RestoreSnapshotTask(String repoUri, Path saveDir, String worldName, SnapshotId sid, Logger logger) {
+    JGitRestoreSnapshotTask(String repoUri, Path saveDir, String worldName, SnapshotId sid, Logger logger) {
         this.repoUri = requireNonNull(repoUri);
         this.restoreTargetDir = requireNonNull(saveDir);
         this.sid = requireNonNull(sid);

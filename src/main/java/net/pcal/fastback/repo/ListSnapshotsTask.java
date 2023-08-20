@@ -33,13 +33,13 @@ import java.util.concurrent.Callable;
 import static java.util.Objects.requireNonNull;
 
 @SuppressWarnings({"Convert2MethodRef", "FunctionalExpressionCanBeFolded"})
-public class ListSnapshotsTask implements Callable<ListMultimap<String, SnapshotId>> {
+class ListSnapshotsTask implements Callable<ListMultimap<String, SnapshotId>> {
 
 
     private final JGitSupplier<Collection<Ref>> refProvider;
     private final Logger logger;
 
-    public ListSnapshotsTask(JGitSupplier<Collection<Ref>> refProvider, Logger logger) {
+    ListSnapshotsTask(JGitSupplier<Collection<Ref>> refProvider, Logger logger) {
         this.logger = requireNonNull(logger);
         this.refProvider = requireNonNull(refProvider);
     }

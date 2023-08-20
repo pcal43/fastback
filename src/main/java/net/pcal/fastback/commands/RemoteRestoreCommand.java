@@ -25,7 +25,6 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.repo.RestoreSnapshotTask;
 import net.pcal.fastback.utils.SnapshotId;
 
 import java.nio.file.Path;
@@ -67,7 +66,7 @@ enum RemoteRestoreCommand implements Command {
             final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
             final SnapshotId sid = SnapshotId.fromUuidAndName(repo.getWorldUuid(), snapshotName);
             final String uri =  conf.getString(REMOTE_PUSH_URL);
-            final Path restoreDir = new RestoreSnapshotTask(uri, ctx.getRestoresDir(),
+            final Path restoreDir = repo.restoreSnapshotTask(uri, ctx.getRestoresDir(),
                     ctx.getWorldName(), sid, log).call();
             log.chat(localized("fastback.chat.restore-done", restoreDir));
         });
