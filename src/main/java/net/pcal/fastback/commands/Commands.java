@@ -19,6 +19,7 @@
 package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.command.ServerCommandSource;
@@ -34,8 +35,9 @@ import org.eclipse.jgit.api.Git;
 import java.nio.file.Path;
 import java.util.function.Predicate;
 
+import static net.pcal.fastback.commands.HelpCommand.help;
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
-import static net.pcal.fastback.logging.Message.localized;
+import static net.pcal.fastback.logging.Message.localizedError;
 import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
 public class Commands {
@@ -47,7 +49,8 @@ public class Commands {
 
     public static void registerCommands(final ModContext ctx, final String cmd) {
         final LiteralArgumentBuilder<ServerCommandSource> argb = LiteralArgumentBuilder.<ServerCommandSource>literal(cmd).
-                requires(Permissions.require(BACKUP_COMMAND_PERM, ctx.getDefaultPermLevel()));
+                requires(Permissions.require(BACKUP_COMMAND_PERM, ctx.getDefaultPermLevel())).
+                executes(cc->help(ctx, cc));
         EnableCommand.INSTANCE.register(argb, ctx);
         DisableCommand.INSTANCE.register(argb, ctx);
         LocalCommand.INSTANCE.register(argb, ctx);
@@ -93,6 +96,30 @@ public class Commands {
         return Permissions.require(subcommandPermName(subcommandName), ctx.getDefaultPermLevel());
     }
 
+    /**
+     * Retrieve a command argument. If they forgot to provide it, return null
+     * and log a helpful message rather than blowing up the world.  This is neeed in the
+     * cases where the list of arguments is dynamic (e.g., retention policies) and we can't
+     * rely on brigadier's static parse trees.
+     */
+    public static <V> V getArgumentNicely(final String argName, final Class<V> clazz, final CommandContext<?> cc, Logger log) {
+        try {
+            return cc.<V>getArgument(argName, clazz);
+        } catch(IllegalArgumentException iae) {
+            missingArgument(argName, log);
+            return null;
+        }
+    }
+
+    public static int missingArgument(final String argName, final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
+        return missingArgument(argName, commandLogger(ctx, cc.getSource()));
+    }
+
+    public static int missingArgument(final String argName, final Logger log) {
+        log.chat(localizedError("fastback.chat.missing-argument", argName));
+        return FAILURE;
+    }
+
     interface GitOp {
         void execute(Git jgit) throws Exception;
     }
@@ -101,13 +128,13 @@ public class Commands {
         ctx.execute(lock, log, () -> {
             final Path worldSaveDir = ctx.getWorldDirectory();
             if (!isGitRepo(worldSaveDir)) {
-                log.chatError(localized("fastback.chat.not-enabled"));
+                log.chat(localizedError("fastback.chat.not-enabled"));
                 return;
             }
             try (final Git jgit = Git.open(worldSaveDir.toFile())) {
                 final GitConfig repoConfig = GitConfig.load(jgit);
                 if (!repoConfig.getBoolean(IS_BACKUP_ENABLED)) {
-                    log.chatError(localized("fastback.chat.not-enabled"));
+                    log.chat(localizedError("fastback.chat.not-enabled"));
                 } else {
                     op.execute(jgit);
                 }

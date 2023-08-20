@@ -35,8 +35,8 @@ public class CompositeLogger implements Logger {
     }
 
     @Override
-    public void chat(Message message, ChatMessageType type) {
-        this.delegates.forEach(d -> d.chat(message, type));
+    public void chat(Message message) {
+        this.delegates.forEach(d -> d.chat(message));
     }
 
     @Override

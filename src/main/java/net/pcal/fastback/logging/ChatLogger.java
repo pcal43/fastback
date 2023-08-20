@@ -32,11 +32,8 @@ public class ChatLogger implements Logger {
     }
 
     @Override
-    public void chat(Message message, ChatMessageType type) {
-        switch(type) {
-            case NORMAL -> ctx.sendClientChatMessage(message);
-            case ERROR -> ctx.sendClientChatMessage(message);
-        }
+    public void chat(Message message) {
+        ctx.sendClientChatMessage(message);
     }
 
     @Override

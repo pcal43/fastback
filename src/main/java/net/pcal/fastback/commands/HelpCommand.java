@@ -44,6 +44,7 @@ import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.localized;
+import static net.pcal.fastback.logging.Message.localizedError;
 
 enum HelpCommand implements Command {
 
@@ -89,7 +90,7 @@ enum HelpCommand implements Command {
         }
     }
 
-    private int help(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
+    static int help(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
         StringWriter subcommands = null;
         for (final String available : getSubcommandNames(cc)) {
@@ -115,7 +116,7 @@ enum HelpCommand implements Command {
                 return SUCCESS;
             }
         }
-        log.chatError(localized("fastback.chat.invalid-input", subcommand));
+        log.chat(localizedError("fastback.chat.invalid-input", subcommand));
         return FAILURE;
     }
 

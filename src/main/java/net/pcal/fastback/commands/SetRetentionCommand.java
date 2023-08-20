@@ -40,6 +40,7 @@ import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
+import static net.pcal.fastback.commands.Commands.getArgumentNicely;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.config.GitConfigKey.LOCAL_RETENTION_POLICY;
 import static net.pcal.fastback.logging.Message.localized;
@@ -106,8 +107,9 @@ enum SetRetentionCommand implements Command {
         try {
             final Path worldSaveDir = ctx.getWorldDirectory();
             final Map<String, String> config = new HashMap<>();
-            for (final RetentionPolicyType.Parameter p : rpt.getParameters()) {
-                final Object val = cc.getArgument(p.name(), Object.class);
+            for (final RetentionPolicyType.Parameter<?> p : rpt.getParameters()) {
+                final Object val = getArgumentNicely(p.name(), p.clazz(), cc, logger);
+                if (val == null) return FAILURE;
                 config.put(p.name(), String.valueOf(val));
             }
             final String encodedPolicy = RetentionPolicyCodec.INSTANCE.encodePolicy(ctx, rpt, config);

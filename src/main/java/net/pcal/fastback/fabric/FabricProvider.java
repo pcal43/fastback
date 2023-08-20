@@ -24,7 +24,10 @@ import net.fabricmc.loader.api.metadata.ModMetadata;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextColor;
 import net.minecraft.world.level.storage.LevelStorage;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.fabric.mixins.ServerAccessors;
@@ -159,10 +162,16 @@ public abstract class FabricProvider implements ModContext.FrameworkServiceProvi
     }
 
     static Text messageToText(final Message m) {
+        final MutableText out;
         if (m.localized() != null) {
-            return Text.translatable(m.localized().key(), m.localized().params());
+            out = Text.translatable(m.localized().key(), m.localized().params());
         } else {
-            return Text.literal(m.raw());
+            out = Text.literal(m.raw());
         }
+        if (m.isError()) {
+            final TextColor red = TextColor.parse("red");
+            out.setStyle(Style.EMPTY.withColor(red));
+        }
+        return out;
     }
 }

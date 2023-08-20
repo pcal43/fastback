@@ -98,7 +98,7 @@ public class RetentionPolicyCodecTest {
         }
 
         @Override
-        public List<Parameter> getParameters() {
+        public List<Parameter<?>> getParameters() {
             throw new IllegalStateException();
         }
 

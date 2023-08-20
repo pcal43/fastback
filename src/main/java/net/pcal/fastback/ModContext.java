@@ -43,7 +43,7 @@ import static net.pcal.fastback.commands.SchedulableAction.forConfigValue;
 import static net.pcal.fastback.config.GitConfigKey.AUTOBACK_ACTION;
 import static net.pcal.fastback.config.GitConfigKey.AUTOBACK_WAIT_MINUTES;
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
-import static net.pcal.fastback.logging.Message.localized;
+import static net.pcal.fastback.logging.Message.localizedError;
 import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
 public class ModContext {
@@ -112,7 +112,7 @@ public class ModContext {
                 return true;
             case WRITE:
                 if (this.exclusiveFuture != null && !this.exclusiveFuture.isDone()) {
-                    log.chatError(localized("fastback.chat.thread-busy"));
+                    log.chat(localizedError("fastback.chat.thread-busy"));
                     return false;
                 } else {
                     log.debug("executing " + runnable);

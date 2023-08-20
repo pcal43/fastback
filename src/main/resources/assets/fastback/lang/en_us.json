@@ -43,6 +43,7 @@
   "fastback.chat.internal-error"                 : "An unexpected backup error occurred. See log for details.",
   "fastback.chat.invalid-input"                  : "Invalid input: %s",
   "fastback.chat.list-local-snapshots-header"    : "Local snapshots:",
+  "fastback.chat.missing-argument"               : "Missing argument: %s",
   "fastback.chat.not-enabled"                    : "Backups are not enabled on this world.  Run '/backup enable'",
   "fastback.chat.prune-done"                     : "Pruned %s snapshots.",
   "fastback.chat.prune-no-default"               : "No default pruning policy configured.  Please run /backup set-retention",

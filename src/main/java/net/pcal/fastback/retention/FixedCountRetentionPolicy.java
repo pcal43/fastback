@@ -90,8 +90,8 @@ class FixedCountRetentionPolicy implements RetentionPolicy {
         }
 
         @Override
-        public List<Parameter> getParameters() {
-            return List.of(new Parameter(COUNT_PARAM, IntegerArgumentType.integer(1)));
+        public List<Parameter<?>> getParameters() {
+            return List.of(new Parameter<>(COUNT_PARAM, IntegerArgumentType.integer(1), Integer.class));
         }
 
         @Override

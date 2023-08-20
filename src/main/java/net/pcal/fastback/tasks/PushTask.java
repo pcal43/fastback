@@ -54,6 +54,7 @@ import static net.pcal.fastback.config.GitConfigKey.REMOTE_NAME;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_PUSH_URL;
 import static net.pcal.fastback.config.RepoConfigUtils.getWorldUuid;
 import static net.pcal.fastback.logging.Message.localized;
+import static net.pcal.fastback.logging.Message.localizedError;
 
 public class PushTask implements Callable<Void> {
 
@@ -197,7 +198,7 @@ public class PushTask implements Callable<Void> {
         } else {
             if (!remoteWorldUuids.contains(localUuid)) {
                 final URIish remoteUri = GitUtils.getRemoteUri(jgit, config.getString(REMOTE_NAME), logger);
-                logger.chatError(localized("fastback.chat.push-uuid-mismatch", remoteUri));
+                logger.chat(localizedError("fastback.chat.push-uuid-mismatch", remoteUri));
                 logger.info("local: " + localUuid + ", remote: " + remoteWorldUuids);
                 return false;
             }

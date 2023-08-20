@@ -29,6 +29,7 @@ import static net.pcal.fastback.ModContext.ExecutionLock.WRITE_CONFIG;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
+import static net.pcal.fastback.commands.Commands.missingArgument;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.config.GitConfigKey.AUTOBACK_ACTION;
 import static net.pcal.fastback.logging.Message.localized;
@@ -42,7 +43,8 @@ enum SetAutobackActionCommand implements Command {
     @Override
     public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
         final LiteralArgumentBuilder<ServerCommandSource> setCommand = literal(COMMAND_NAME).
-                requires(subcommandPermission(ctx, COMMAND_NAME));
+                requires(subcommandPermission(ctx, COMMAND_NAME)).
+                executes(cc-> missingArgument("actionName", ctx, cc));
         for (final SchedulableAction action : SchedulableAction.values()) {
             final LiteralArgumentBuilder<ServerCommandSource> azz = literal(action.getArgumentName());
             azz.executes(cc -> setAutobackAction(ctx, cc.getSource(), action));

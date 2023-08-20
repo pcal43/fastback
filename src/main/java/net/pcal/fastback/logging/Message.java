@@ -21,16 +21,25 @@ package net.pcal.fastback.logging;
 
 import static java.util.Objects.requireNonNull;
 
-public record Message(Localized localized, String raw) {
+public record Message(Localized localized, String raw, boolean isError) {
 
     public record Localized(String key, Object... params) {
     }
 
     public static Message localized(String key, Object... params) {
-        return new Message(new Localized(key, params), null);
+        return new Message(new Localized(key, params), null, false);
+    }
+
+    public static Message localizedError(String key, Object... params) {
+        return new Message(new Localized(key, params), null, true);
     }
 
     public static Message raw(String text) {
-        return new Message(null, requireNonNull(text));
+        return new Message(null, requireNonNull(text), false);
     }
+
+    public static Message rawError(String text) {
+        return new Message(null, requireNonNull(text), true);
+    }
+
 }
