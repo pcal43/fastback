@@ -19,6 +19,9 @@
 package net.pcal.fastback;
 
 import net.pcal.fastback.commands.Commands;
+import net.pcal.fastback.commands.SchedulableAction;
+import net.pcal.fastback.config.GitConfig;
+import net.pcal.fastback.config.RepoConfigUtils;
 import net.pcal.fastback.logging.ChatLogger;
 import net.pcal.fastback.logging.CompositeLogger;
 import net.pcal.fastback.logging.Logger;
@@ -28,6 +31,8 @@ import org.eclipse.jgit.api.Git;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
+import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
@@ -64,7 +69,7 @@ public class LifecycleUtils {
         final Path worldSaveDir = ctx.getWorldDirectory();
         if (isGitRepo(worldSaveDir)) {
             try (final Git git = Git.open(worldSaveDir.toFile())) {
-                WorldConfig.doWorldMaintenance(git, logger);
+                RepoConfigUtils.doWorldMaintenance(git, logger);
             } catch (IOException e) {
                 logger.internalError("Unable to perform maintenance.  Backups will probably not work correctly", e);
             }
@@ -82,11 +87,14 @@ public class LifecycleUtils {
         logger.chat(localized("fastback.chat.thread-waiting"));
         ctx.stopExecutor();
         if (isGitRepo(worldSaveDir)) {
-            try (Git git = Git.open(worldSaveDir.toFile())) {
-                final WorldConfig config = WorldConfig.load(git);
-                if (config.isBackupEnabled() && config.shutdownAction() != null) {
-                    final Logger screenLogger = CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx));
-                    config.shutdownAction().getTask(git, ctx, screenLogger).call();
+            try (Git jgit = Git.open(worldSaveDir.toFile())) {
+                final GitConfig config = GitConfig.load(jgit);
+                if (config.getBoolean(IS_BACKUP_ENABLED)) {
+                    final SchedulableAction action = SchedulableAction.forConfigValue(config, SHUTDOWN_ACTION);
+                    if (action != null) {
+                        final Logger screenLogger = CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx));
+                        action.getTask(jgit, ctx, screenLogger).call();
+                    }
                 }
             } catch (Exception e) {
                 logger.internalError("Shutdown action failed.", e);

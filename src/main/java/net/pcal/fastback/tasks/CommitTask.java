@@ -19,7 +19,6 @@
 package net.pcal.fastback.tasks;
 
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.WorldConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.AddCommand;
@@ -35,6 +34,7 @@ import java.util.Collection;
 import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
+import static net.pcal.fastback.config.RepoConfigUtils.getWorldUuid;
 import static net.pcal.fastback.logging.Message.localized;
 
 @SuppressWarnings("FieldCanBeLocal")
@@ -42,12 +42,12 @@ public class CommitTask implements Callable<SnapshotId> {
 
     private final ModContext ctx;
     private final Logger log;
-    private final Git git;
+    private final Git jgit;
 
-    public CommitTask(final Git git,
+    public CommitTask(final Git jgit,
                       final ModContext ctx,
                       final Logger log) {
-        this.git = requireNonNull(git);
+        this.jgit = requireNonNull(jgit);
         this.ctx = requireNonNull(ctx);
         this.log = requireNonNull(log);
     }
@@ -55,10 +55,11 @@ public class CommitTask implements Callable<SnapshotId> {
     @Override
     public SnapshotId call() throws GitAPIException, IOException {
         this.log.hud(localized("fastback.hud.local-saving"));
-        final SnapshotId newSid = SnapshotId.create(WorldConfig.getWorldUuid(git));
+        final String uuid = getWorldUuid(jgit);
+        final SnapshotId newSid = SnapshotId.create(uuid);
         log.info("Preparing local backup "+newSid);
         final String newBranchName = newSid.getBranchName();
-        doCommit(git, ctx, newBranchName, log);
+        doCommit(jgit, ctx, newBranchName, log);
         log.info("Local backup complete.");
         return newSid;
     }

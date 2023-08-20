@@ -23,7 +23,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.WorldConfig;
+import net.pcal.fastback.config.RepoConfigUtils;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.SnapshotId;
 
@@ -56,12 +56,12 @@ enum DeleteCommand implements Command {
 
     private static int delete(ModContext ctx, CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, WRITE, log, git -> {
+        gitOp(ctx, WRITE, log, jgit -> {
             final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
-            final WorldConfig wc = WorldConfig.load(git);
-            final SnapshotId sid = SnapshotId.fromUuidAndName(wc.worldUuid(), snapshotName);
+            final String uuid = RepoConfigUtils.getWorldUuid(jgit);
+            final SnapshotId sid = SnapshotId.fromUuidAndName(uuid, snapshotName);
             final String branchName = sid.getBranchName();
-            git.branchDelete().setForce(true).setBranchNames(branchName).call();
+            jgit.branchDelete().setForce(true).setBranchNames(branchName).call();
             log.chat(localized("fastback.chat.delete-done", snapshotName));
         });
         return SUCCESS;

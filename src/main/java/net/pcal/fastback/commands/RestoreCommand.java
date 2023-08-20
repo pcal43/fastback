@@ -23,7 +23,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.WorldConfig;
+import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.tasks.RestoreSnapshotTask;
 import net.pcal.fastback.utils.GitUtils;
@@ -38,6 +38,7 @@ import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.config.RepoConfigUtils.getWorldUuid;
 import static net.pcal.fastback.logging.Message.localized;
 
 enum RestoreCommand implements Command {
@@ -61,10 +62,11 @@ enum RestoreCommand implements Command {
 
     private static int restore(ModContext ctx, CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, NONE, log, git -> {
-            final WorldConfig wc = WorldConfig.load(git);
+        gitOp(ctx, NONE, log, jgit -> {
+            final GitConfig wc = GitConfig.load(jgit);
             final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
-            final SnapshotId sid = SnapshotId.fromUuidAndName(wc.worldUuid(), snapshotName);
+            final String uuid = getWorldUuid(jgit);
+            final SnapshotId sid = SnapshotId.fromUuidAndName(uuid, snapshotName);
             final String uri =  GitUtils.getFileUri(ctx.getWorldDirectory());
             final Path restoreDir = new RestoreSnapshotTask(uri, ctx.getRestoresDir(),
                     ctx.getWorldName(), sid, log).call();

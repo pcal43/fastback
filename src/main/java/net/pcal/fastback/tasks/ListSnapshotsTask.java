@@ -20,7 +20,7 @@ package net.pcal.fastback.tasks;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
-import net.pcal.fastback.WorldConfig;
+import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
+import static net.pcal.fastback.config.GitConfigKey.REMOTE_NAME;
 
 @SuppressWarnings({"Convert2MethodRef", "FunctionalExpressionCanBeFolded"})
 public class ListSnapshotsTask implements Callable<ListMultimap<String, SnapshotId>> {
@@ -43,9 +44,11 @@ public class ListSnapshotsTask implements Callable<ListMultimap<String, Snapshot
         return new ListSnapshotsTask(refProvider, log).call();
     }
 
-    public static ListMultimap<String, SnapshotId> listRemoteSnapshots(final Git git, WorldConfig wc, final Logger log)
+    public static ListMultimap<String, SnapshotId> listRemoteSnapshots(final Git jgit, final Logger log)
             throws GitAPIException, IOException {
-        final JGitSupplier<Collection<Ref>> refProvider = ()-> git.lsRemote().setRemote(wc.getRemoteName()).setHeads(true).call();
+        final GitConfig conf = GitConfig.load(jgit);
+        final String remoteName = conf.getString(REMOTE_NAME);
+        final JGitSupplier<Collection<Ref>> refProvider = ()-> jgit.lsRemote().setRemote(remoteName).setHeads(true).call();
         return new ListSnapshotsTask(refProvider, log).call();
     }
 

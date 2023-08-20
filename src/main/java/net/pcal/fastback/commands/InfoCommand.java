@@ -21,7 +21,7 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.WorldConfig;
+import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;
@@ -34,6 +34,14 @@ import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.config.GitConfigKey.AUTOBACK_ACTION;
+import static net.pcal.fastback.config.GitConfigKey.AUTOBACK_WAIT_MINUTES;
+import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
+import static net.pcal.fastback.config.GitConfigKey.LOCAL_RETENTION_POLICY;
+import static net.pcal.fastback.config.GitConfigKey.REMOTE_PUSH_URL;
+import static net.pcal.fastback.config.GitConfigKey.REMOTE_RETENTION_POLICY;
+import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
+import static net.pcal.fastback.config.RepoConfigUtils.getWorldUuid;
 import static net.pcal.fastback.logging.Message.localized;
 import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
 import static org.apache.commons.io.FileUtils.sizeOfDirectory;
@@ -57,32 +65,34 @@ enum InfoCommand implements Command {
         requireNonNull(ctx);
         requireNonNull(scs);
         final Logger log = commandLogger(ctx, scs);
-        gitOp(ctx, NONE, log, git -> {
-            final WorldConfig wc = WorldConfig.load(git);
+        gitOp(ctx, NONE, log, jgit -> {
+            final GitConfig c = GitConfig.load(jgit);
             log.chat(localized("fastback.chat.info-fastback-version", ctx.getModVersion()));
-            log.chat(localized("fastback.chat.info-uuid", wc.worldUuid()));
-            if (wc.isBackupEnabled()) {
+            log.chat(localized("fastback.chat.info-uuid", getWorldUuid(jgit)));
+            if (c.getBoolean(IS_BACKUP_ENABLED)) {
                 log.chat(localized("fastback.chat.info-local-enabled"));
             } else {
                 log.chat(localized("fastback.chat.info-local-disabled"));
             }
-            log.chat(localized("fastback.chat.info-remote-url", wc.getRemotePushUrl()));
-            log.chat(localized("fastback.chat.info-shutdown-action", getActionDisplay(wc.shutdownAction())));
-            log.chat(localized("fastback.chat.info-autoback-action", getActionDisplay(wc.autobackAction())));
-            log.chat(localized("fastback.chat.info-autoback-wait",
-                    wc.autobackWait() == null ? "" : wc.autobackWait().getSeconds() / 60));
+            log.chat(localized("fastback.chat.info-remote-url", c.getString(REMOTE_PUSH_URL)));
+            final SchedulableAction shutdownAction = SchedulableAction.forConfigValue(c.getString(SHUTDOWN_ACTION));
+            log.chat(localized("fastback.chat.info-shutdown-action", getActionDisplay(shutdownAction)));
+            final SchedulableAction autobackAction = SchedulableAction.forConfigValue(c.getString(AUTOBACK_ACTION));
+            log.chat(localized("fastback.chat.info-autoback-action", getActionDisplay(autobackAction)));
+            log.chat(localized("fastback.chat.info-autoback-wait", c.getInt(AUTOBACK_WAIT_MINUTES)));
+
             // FIXME? this could be implemented more efficiently
-            final long backupSize = sizeOfDirectory(git.getRepository().getDirectory());
-            final long worldSize = sizeOfDirectory(git.getRepository().getWorkTree()) - backupSize;
+            final long backupSize = sizeOfDirectory(jgit.getRepository().getDirectory());
+            final long worldSize = sizeOfDirectory(jgit.getRepository().getWorkTree()) - backupSize;
             log.chat(localized("fastback.chat.info-world-size", byteCountToDisplaySize(worldSize)));
             log.chat(localized("fastback.chat.info-backup-size", byteCountToDisplaySize(backupSize)));
             showRetentionPolicy(ctx, log,
-                    wc.localRetentionPolicy(),
+                    c.getString(LOCAL_RETENTION_POLICY),
                     "fastback.chat.retention-policy-set",
                     "fastback.chat.retention-policy-none"
             );
             showRetentionPolicy(ctx, log,
-                    wc.remoteRetentionPolicy(),
+                    c.getString(REMOTE_RETENTION_POLICY),
                     "fastback.chat.remote-retention-policy-set",
                     "fastback.chat.remote-retention-policy-none"
             );

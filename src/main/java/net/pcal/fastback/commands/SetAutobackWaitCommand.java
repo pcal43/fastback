@@ -23,9 +23,9 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
-import net.pcal.fastback.WorldConfig;
+import net.pcal.fastback.config.GitConfig;
+import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.Logger;
-import org.eclipse.jgit.lib.StoredConfig;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -56,12 +56,11 @@ enum SetAutobackWaitCommand implements Command {
 
     private static int setWait(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, WRITE_CONFIG, log, git -> {
-            final int wait = cc.getArgument(ARGUMENT, int.class);
-            final StoredConfig config = git.getRepository().getConfig();
-            WorldConfig.setAutobackWait(config, wait);
-            config.save();
-            log.chat(localized("fastback.chat.info-autoback-wait", wait));
+        gitOp(ctx, WRITE_CONFIG, log, jgit -> {
+            final int waitMinutes = cc.getArgument(ARGUMENT, int.class);
+            final GitConfig conf = GitConfig.load(jgit);
+            conf.updater().set(GitConfigKey.AUTOBACK_WAIT_MINUTES, waitMinutes).save();
+            log.chat(localized("fastback.chat.info-autoback-wait", waitMinutes));
         });
         return SUCCESS;
     }
