@@ -21,29 +21,19 @@ package net.pcal.fastback.repo;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
 
-import java.util.concurrent.Callable;
+import java.io.IOException;
+import java.nio.file.Path;
 
-import static java.util.Objects.requireNonNull;
+public interface RepoFactory {
 
-class JGitCommitAndPushTask implements Callable<Void> {
-
-    private final RepoImpl repo;
-    private final ModContext ctx;
-    private final Logger log;
-
-    JGitCommitAndPushTask(final RepoImpl repo,
-                          final ModContext ctx,
-                          final Logger log) {
-        this.repo = requireNonNull(repo);
-        this.ctx = requireNonNull(ctx);
-        this.log = requireNonNull(log);
+    static RepoFactory get() {
+        return new RepoFactoryImpl();
     }
 
-    @Override
-    public Void call() throws Exception {
-        final SnapshotId newSid = new JGitCommitTask(repo, ctx, log).call();
-        new JGitPushTask(repo, log, newSid).call();
-        return null;
-    }
+    Repo init(Path worldSaveDir, ModContext mod, Logger log) throws IOException;
+
+    Repo load(Path worldSaveDir, ModContext mod, Logger log) throws IOException;
+
+    boolean isGitRepo(Path worldSaveDir);
 
 }

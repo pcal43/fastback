@@ -16,13 +16,13 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.progress;
+package net.pcal.fastback.repo;
 
 import org.eclipse.jgit.lib.ProgressMonitor;
 
 import static java.util.Objects.requireNonNull;
 
-public class IncrementalProgressMonitor implements ProgressMonitor {
+class JGitIncrementalProgressMonitor implements ProgressMonitor {
 
     private final ProgressMonitor delegate;
     private final int totalIncrements;
@@ -31,7 +31,7 @@ public class IncrementalProgressMonitor implements ProgressMonitor {
     private int workCompletedInIncrement;
     private int workCompleteScaled;
 
-    public IncrementalProgressMonitor(ProgressMonitor delegate, int totalIncrements) {
+    public JGitIncrementalProgressMonitor(ProgressMonitor delegate, int totalIncrements) {
         this.delegate = requireNonNull(delegate);
         this.totalIncrements = totalIncrements;
     }

@@ -19,11 +19,8 @@
 package net.pcal.fastback.repo;
 
 import com.google.common.collect.ListMultimap;
-import net.pcal.fastback.ModContext;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.utils.SnapshotId;
-import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
 
@@ -37,13 +34,6 @@ import java.util.concurrent.Callable;
  * @author pcal
  */
 public interface Repo extends AutoCloseable {
-
-    static Repo load(Path worldSaveDir, ModContext mod, Logger log) throws IOException {
-        final Git jgit = Git.open(worldSaveDir.toFile());
-        //final GitConfig conf = GitConfig.load(jgit);
-        final RepoImpl jrepo = new RepoImpl(jgit, mod, log);
-        return jrepo;
-    }
 
     GitConfig getConfig();
 

@@ -26,13 +26,13 @@ import net.pcal.fastback.logging.CompositeLogger;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.SaveScreenLogger;
 import net.pcal.fastback.repo.Repo;
+import net.pcal.fastback.repo.RepoFactory;
 
 import java.nio.file.Path;
 
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.logging.Message.localized;
-import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
 /**
  * Framework-agnostic lifecycle logic.
@@ -65,8 +65,9 @@ public class LifecycleUtils {
         final Logger logger = ctx.isClient() ? CompositeLogger.of(ctx.getLogger(), new ChatLogger(ctx)) //FIXME CAN WE KILL THIS?
                 : ctx.getLogger();
         final Path worldSaveDir = ctx.getWorldDirectory();
-        if (isGitRepo(worldSaveDir)) {
-            try (Repo repo = Repo.load(worldSaveDir, ctx, logger)) {
+        final RepoFactory rf = RepoFactory.get();
+        if (rf.isGitRepo(worldSaveDir)) {
+            try (Repo repo = rf.load(worldSaveDir, ctx, logger)) {
                 repo.doWorldMaintenance(logger);
             } catch (Exception e) {
                 logger.internalError("Unable to perform maintenance.  Backups will probably not work correctly", e);
@@ -84,8 +85,9 @@ public class LifecycleUtils {
         final Path worldSaveDir = mod.getWorldDirectory();
         logger.chat(localized("fastback.chat.thread-waiting"));
         mod.stopExecutor();
-        if (isGitRepo(worldSaveDir)) {
-            try (final Repo repo = Repo.load(worldSaveDir, mod, logger)) {
+        final RepoFactory rf = RepoFactory.get();
+        if (rf.isGitRepo(worldSaveDir)) {
+            try (final Repo repo = rf.load(worldSaveDir, mod, logger)) {
                 final GitConfig config = repo.getConfig();
                 if (config.getBoolean(IS_BACKUP_ENABLED)) {
                     final SchedulableAction action = SchedulableAction.forConfigValue(config, SHUTDOWN_ACTION);
@@ -100,5 +102,4 @@ public class LifecycleUtils {
         }
         mod.getLogger().info("onWorldStop complete");
     }
-
 }

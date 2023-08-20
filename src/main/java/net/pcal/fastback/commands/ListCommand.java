@@ -23,7 +23,7 @@ import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.utils.SnapshotId;
+import net.pcal.fastback.repo.SnapshotId;
 
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.ModContext.ExecutionLock.NONE;
@@ -32,7 +32,7 @@ import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.Message.raw;
-import static net.pcal.fastback.utils.SnapshotId.sortWorldSnapshots;
+import static net.pcal.fastback.repo.SnapshotId.sortWorldSnapshots;
 
 enum ListCommand implements Command {
 

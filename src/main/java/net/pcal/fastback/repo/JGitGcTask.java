@@ -20,10 +20,7 @@ package net.pcal.fastback.repo;
 
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.progress.IncrementalProgressMonitor;
-import net.pcal.fastback.progress.PercentageProgressMonitor;
 import net.pcal.fastback.utils.FileUtils;
-import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.internal.storage.file.GC;
 import org.eclipse.jgit.lib.ProgressMonitor;
@@ -39,7 +36,6 @@ import java.util.concurrent.Callable;
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.repo.JGitPushTask.isTempBranch;
-import static net.pcal.fastback.utils.GitUtils.getBranchName;
 import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
 import static org.apache.commons.io.FileUtils.sizeOfDirectory;
 import static org.eclipse.jgit.api.ListBranchCommand.ListMode.ALL;
@@ -64,6 +60,17 @@ class JGitGcTask implements Callable<Void> {
         this.repo = requireNonNull(repo);
         this.ctx = requireNonNull(ctx);
         this.log = requireNonNull(log);
+    }
+
+    @Deprecated
+    public static String getBranchName(Ref fromBranchRef) {
+        final String REFS_HEADS = "refs/heads/";
+        final String name = fromBranchRef.getName();
+        if (name.startsWith(REFS_HEADS)) {
+            return name.substring(REFS_HEADS.length());
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -110,7 +117,7 @@ class JGitGcTask implements Callable<Void> {
         final PackConfig pc = new PackConfig();
         pc.setDeltaCompress(false);
         gc.setPackConfig(pc);
-        final ProgressMonitor pm = new IncrementalProgressMonitor(new GcProgressMonitor(this.log), 100);
+        final ProgressMonitor pm = new JGitIncrementalProgressMonitor(new GcProgressMonitor(this.log), 100);
         gc.setProgressMonitor(pm);
         log.info("Starting garbage collection");
         gc.gc(); // TODO progress monitor
@@ -126,7 +133,7 @@ class JGitGcTask implements Callable<Void> {
         return this.sizeBeforeBytes - this.sizeAfterBytes;
     }
 
-    private static class GcProgressMonitor extends PercentageProgressMonitor {
+    private static class GcProgressMonitor extends JGitPercentageProgressMonitor {
 
         private final Logger logger;
 

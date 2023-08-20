@@ -16,17 +16,17 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.progress;
+package net.pcal.fastback.repo;
 
 import org.eclipse.jgit.lib.ProgressMonitor;
 
-public abstract class PercentageProgressMonitor implements ProgressMonitor {
+abstract class JGitPercentageProgressMonitor implements ProgressMonitor {
 
     private String currentTask;
     private int currentTotalWork;
     private int totalCompleted;
 
-    protected PercentageProgressMonitor() {
+    protected JGitPercentageProgressMonitor() {
     }
 
     @Override

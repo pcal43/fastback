@@ -21,7 +21,7 @@ package net.pcal.fastback.retention;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Message;
-import net.pcal.fastback.utils.SnapshotId;
+import net.pcal.fastback.repo.SnapshotId;
 
 import java.time.LocalDate;
 import java.time.Period;

@@ -21,7 +21,7 @@ package net.pcal.fastback.commands;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.repo.Repo;
-import net.pcal.fastback.utils.SnapshotId;
+import net.pcal.fastback.repo.SnapshotId;
 
 import java.util.Collection;
 import java.util.concurrent.Callable;

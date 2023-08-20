@@ -16,11 +16,11 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback;
+package net.pcal.fastback.repo;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
-import net.pcal.fastback.utils.SnapshotId;
+import net.pcal.fastback.repo.SnapshotId;
 import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;

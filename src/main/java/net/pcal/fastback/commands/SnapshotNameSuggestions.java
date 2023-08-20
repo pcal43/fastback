@@ -25,7 +25,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.repo.Repo;
-import net.pcal.fastback.utils.SnapshotId;
+import net.pcal.fastback.repo.SnapshotId;
 
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
@@ -34,7 +34,7 @@ import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.ModContext.ExecutionLock.NONE;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
-import static net.pcal.fastback.utils.SnapshotId.sortWorldSnapshots;
+import static net.pcal.fastback.repo.SnapshotId.sortWorldSnapshots;
 
 abstract class SnapshotNameSuggestions implements SuggestionProvider<ServerCommandSource> {
 

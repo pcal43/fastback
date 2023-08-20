@@ -19,13 +19,8 @@
 package net.pcal.fastback.repo;
 
 import com.google.common.collect.ListMultimap;
-import net.pcal.fastback.ModContext;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.progress.IncrementalProgressMonitor;
-import net.pcal.fastback.progress.PercentageProgressMonitor;
-import net.pcal.fastback.utils.GitUtils;
-import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
@@ -34,6 +29,7 @@ import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.merge.ContentMergeStrategy;
 import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.RefSpec;
+import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.TrackingRefUpdate;
 import org.eclipse.jgit.transport.URIish;
 
@@ -67,6 +63,19 @@ class JGitPushTask implements Callable<Void> {
         this.repo = requireNonNull(repo);
         this.log = requireNonNull(log);
         this.sid = requireNonNull(sid);
+    }
+
+    public static URIish getRemoteUri(Git git, String remoteName, Logger logger) throws GitAPIException {
+        requireNonNull(git);
+        requireNonNull(remoteName);
+        final List<RemoteConfig> remotes = git.remoteList().call();
+        for (final RemoteConfig remote : remotes) {
+            logger.debug("getRemoteUri " + remote);
+            if (remote.getName().equals(remoteName)) {
+                return remote.getPushURIs() != null && !remote.getURIs().isEmpty() ? remote.getURIs().get(0) : null;
+            }
+        }
+        return null;
     }
 
     @Override
@@ -145,7 +154,7 @@ class JGitPushTask implements Callable<Void> {
         logger.debug("Checking out " + branchNameToPush);
         jgit.checkout().setName(branchNameToPush).call();
         logger.debug("Pushing temp branch " + tempBranchName);
-        final ProgressMonitor pm = new IncrementalProgressMonitor(new PushProgressMonitor(logger), 100);
+        final ProgressMonitor pm = new JGitIncrementalProgressMonitor(new PushProgressMonitor(logger), 100);
         final Iterable<PushResult> pushResult = jgit.push().setProgressMonitor(pm).setRemote(remoteName).
                 setRefSpecs(new RefSpec(tempBranchName + ":" + tempBranchName),
                         new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
@@ -178,7 +187,7 @@ class JGitPushTask implements Callable<Void> {
     }
 
     private static void doNaivePush(final Git jgit, final String branchNameToPush, final GitConfig conf, final Logger logger) throws IOException, GitAPIException {
-        final ProgressMonitor pm = new IncrementalProgressMonitor(new PushProgressMonitor(logger), 100);
+        final ProgressMonitor pm = new JGitIncrementalProgressMonitor(new PushProgressMonitor(logger), 100);
         final String remoteName = conf.getString(REMOTE_NAME);
         logger.info("Doing naive push of " + branchNameToPush);
         jgit.push().setProgressMonitor(pm).setRemote(remoteName).
@@ -194,7 +203,7 @@ class JGitPushTask implements Callable<Void> {
             logger.debug("Remote does not have any previously-backed up worlds.");
         } else {
             if (!remoteWorldUuids.contains(localUuid)) {
-                final URIish remoteUri = GitUtils.getRemoteUri(jgit, config.getString(REMOTE_NAME), logger);
+                final URIish remoteUri = getRemoteUri(jgit, config.getString(REMOTE_NAME), logger);
                 logger.chat(localizedError("fastback.chat.push-uuid-mismatch", remoteUri));
                 logger.info("local: " + localUuid + ", remote: " + remoteWorldUuids);
                 return false;
@@ -212,7 +221,7 @@ class JGitPushTask implements Callable<Void> {
         return "temp/" + uniqueName;
     }
 
-    private static class PushProgressMonitor extends PercentageProgressMonitor {
+    private static class PushProgressMonitor extends JGitPercentageProgressMonitor {
 
         private final Logger logger;
 

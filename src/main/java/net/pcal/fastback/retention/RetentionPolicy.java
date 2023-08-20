@@ -19,7 +19,7 @@
 package net.pcal.fastback.retention;
 
 import net.pcal.fastback.logging.Message;
-import net.pcal.fastback.utils.SnapshotId;
+import net.pcal.fastback.repo.SnapshotId;
 
 import java.util.Collection;
 import java.util.NavigableSet;

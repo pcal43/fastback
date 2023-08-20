@@ -19,10 +19,7 @@
 package net.pcal.fastback.repo;
 
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.progress.IncrementalProgressMonitor;
-import net.pcal.fastback.progress.PercentageProgressMonitor;
 import net.pcal.fastback.utils.FileUtils;
-import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ProgressMonitor;
 
@@ -57,7 +54,7 @@ class JGitRestoreSnapshotTask implements Callable<Path> {
         final Path restoreDir = getTargetDir(this.restoreTargetDir, this.worldName, this.sid.getName());
         final String branchName = sid.getBranchName();
         this.logger.hud(localized("fastback.hud.restore-percent", 0));
-        final ProgressMonitor pm = new IncrementalProgressMonitor(new RestoreProgressMonitor(logger), 100);
+        final ProgressMonitor pm = new JGitIncrementalProgressMonitor(new RestoreProgressMonitor(logger), 100);
         try (Git git = Git.cloneRepository().setProgressMonitor(pm).setDirectory(restoreDir.toFile()).
                 setBranchesToClone(List.of("refs/heads/" + branchName)).setBranch(branchName).setURI(this.repoUri).call()) {
         }
@@ -81,7 +78,7 @@ class JGitRestoreSnapshotTask implements Callable<Path> {
         return candidate;
     }
 
-    private static class RestoreProgressMonitor extends PercentageProgressMonitor {
+    private static class RestoreProgressMonitor extends JGitPercentageProgressMonitor {
 
         private final Logger logger;
 

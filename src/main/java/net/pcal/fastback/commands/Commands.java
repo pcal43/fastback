@@ -31,6 +31,7 @@ import net.pcal.fastback.logging.CompositeLogger;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.SaveScreenLogger;
 import net.pcal.fastback.repo.Repo;
+import net.pcal.fastback.repo.RepoFactory;
 
 import java.nio.file.Path;
 import java.util.function.Predicate;
@@ -38,7 +39,6 @@ import java.util.function.Predicate;
 import static net.pcal.fastback.commands.HelpCommand.help;
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.logging.Message.localizedError;
-import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
 public class Commands {
 
@@ -127,11 +127,12 @@ public class Commands {
     static void gitOp(final ModContext mod, final ExecutionLock lock, final Logger log, final GitOp op) {
         mod.execute(lock, log, () -> {
             final Path worldSaveDir = mod.getWorldDirectory();
-            if (!isGitRepo(worldSaveDir)) {
+            final RepoFactory rf = RepoFactory.get();
+            if (!rf.isGitRepo(worldSaveDir)) {
                 log.chat(localizedError("fastback.chat.not-enabled"));
                 return;
             }
-            try (final Repo repo = Repo.load(worldSaveDir, mod, log)) {
+            try (final Repo repo = rf.load(worldSaveDir, mod, log)) {
                 final GitConfig repoConfig = repo.getConfig();
                 if (!repoConfig.getBoolean(IS_BACKUP_ENABLED)) {
                     log.chat(localizedError("fastback.chat.not-enabled"));

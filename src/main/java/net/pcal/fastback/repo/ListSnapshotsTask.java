@@ -21,7 +21,6 @@ package net.pcal.fastback.repo;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
 

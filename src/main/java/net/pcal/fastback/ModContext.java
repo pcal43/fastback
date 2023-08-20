@@ -22,8 +22,9 @@ import net.pcal.fastback.commands.SchedulableAction;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.Message;
-import net.pcal.fastback.retention.RetentionPolicyType;
 import net.pcal.fastback.repo.Repo;
+import net.pcal.fastback.repo.RepoFactory;
+import net.pcal.fastback.retention.RetentionPolicyType;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -44,7 +45,6 @@ import static net.pcal.fastback.config.GitConfigKey.AUTOBACK_ACTION;
 import static net.pcal.fastback.config.GitConfigKey.AUTOBACK_WAIT_MINUTES;
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.logging.Message.localizedError;
-import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
 public class ModContext {
 
@@ -70,9 +70,10 @@ public class ModContext {
             //TODO implement indicator
             // final Logger screenLogger = CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx));
             execute(ExecutionLock.WRITE, getLogger(), () -> {
+                RepoFactory rf = RepoFactory.get();
                 final Path worldSaveDir = getWorldDirectory();
-                if (!isGitRepo(worldSaveDir)) return;
-                try (final Repo repo = Repo.load(worldSaveDir, ModContext.this, getLogger())) {
+                if (!rf.isGitRepo(worldSaveDir)) return;
+                try (final Repo repo = rf.load(worldSaveDir, ModContext.this, getLogger())) {
                     final GitConfig config = repo.getConfig();
                     if (!config.getBoolean(IS_BACKUP_ENABLED)) return;
                     final SchedulableAction autobackAction = forConfigValue(config, AUTOBACK_ACTION);

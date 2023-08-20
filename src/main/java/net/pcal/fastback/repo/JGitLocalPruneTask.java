@@ -25,7 +25,6 @@ import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;
-import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.IOException;
@@ -36,7 +35,7 @@ import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.config.GitConfigKey.LOCAL_RETENTION_POLICY;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.logging.Message.localizedError;
-import static net.pcal.fastback.utils.SnapshotId.sortWorldSnapshots;
+import static net.pcal.fastback.repo.SnapshotId.sortWorldSnapshots;
 
 /**
  * Delete local snapshot branches that should not be kept per the retention policy.
