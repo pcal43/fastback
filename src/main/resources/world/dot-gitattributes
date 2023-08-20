@@ -6,13 +6,10 @@
 #
 # https://pcal43.github.io/fastback/advanced.html#disabling-file-updates
 #
-
-# treat everything as binaries
-* -diff -merge -text -delta
-
-# ...with a few exceptions (that are unlikely to matter much, tbh).
-*.json diff merge text delta
-*.txt diff merge text delta
-*.properties diff merge text delta
-*.toml diff merge text delta
-*.yaml diff merge text delta
+*.dat filter=lfs diff=lfs merge=lfs -text
+*.dat_old filter=lfs diff=lfs merge=lfs -text
+*.jar filter=lfs diff=lfs merge=lfs -text
+*.jar.disabled filter=lfs diff=lfs merge=lfs -text
+*.mca filter=lfs diff=lfs merge=lfs -text
+*.xz filter=lfs diff=lfs merge=lfs -text
+*.zip filter=lfs diff=lfs merge=lfs -text

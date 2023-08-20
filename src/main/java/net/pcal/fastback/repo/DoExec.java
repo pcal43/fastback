@@ -24,6 +24,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -35,7 +39,19 @@ class DoExec {
 
     static void doExec(String[] args, Logger log) throws IOException {
         log.info(String.join(" ", args));
-        final Process p = Runtime.getRuntime().exec(args);
+        Map<String,String> env = new HashMap<>();
+        env.putAll(System.getenv());
+        env.put("GIT_TRACE", "1");
+        env.put("GIT_CURL_VERBOSE", "1");
+
+        pretty sure the problem is you're not draining stderr
+
+        List<String> envlist = new ArrayList<>();
+        for(Map.Entry<String, String> entry : env.entrySet()) {
+            envlist.add(entry.getKey()+"="+entry.getValue());
+        }
+        String[] enva = envlist.toArray(new String[0]);
+        final Process p = Runtime.getRuntime().exec(args, enva);
         String stdout = readString(p.getInputStream());
         String stderr = readString(p.getErrorStream());
         log.info(stdout);
