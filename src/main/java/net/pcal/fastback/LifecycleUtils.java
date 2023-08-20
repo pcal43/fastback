@@ -26,7 +26,7 @@ import net.pcal.fastback.logging.ChatLogger;
 import net.pcal.fastback.logging.CompositeLogger;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.SaveScreenLogger;
-import net.pcal.fastback.tasks.RepoMan;
+import net.pcal.fastback.repo.Repo;
 import org.eclipse.jgit.api.Git;
 
 import java.io.IOException;
@@ -88,7 +88,7 @@ public class LifecycleUtils {
         logger.chat(localized("fastback.chat.thread-waiting"));
         mod.stopExecutor();
         if (isGitRepo(worldSaveDir)) {
-            try (final RepoMan repo = RepoMan.load(worldSaveDir, mod, logger)) {
+            try (final Repo repo = Repo.load(worldSaveDir, mod, logger)) {
                 final GitConfig config = repo.getConfig();
                 if (config.getBoolean(IS_BACKUP_ENABLED)) {
                     final SchedulableAction action = SchedulableAction.forConfigValue(config, SHUTDOWN_ACTION);

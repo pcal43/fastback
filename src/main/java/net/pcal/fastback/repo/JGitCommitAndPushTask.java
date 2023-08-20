@@ -16,7 +16,7 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.tasks.jgit;
+package net.pcal.fastback.repo;
 
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
@@ -27,24 +27,24 @@ import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
 
-class CommitAndPushTask implements Callable<Void> {
+class JGitCommitAndPushTask implements Callable<Void> {
 
+    private final RepoImpl repo;
     private final ModContext ctx;
     private final Logger log;
-    private final Git git;
 
-    CommitAndPushTask(final Git git,
-                             final ModContext ctx,
-                             final Logger log) {
-        this.git = requireNonNull(git);
+    JGitCommitAndPushTask(final RepoImpl repo,
+                          final ModContext ctx,
+                          final Logger log) {
+        this.repo = requireNonNull(repo);
         this.ctx = requireNonNull(ctx);
         this.log = requireNonNull(log);
     }
 
     @Override
     public Void call() throws Exception {
-        final SnapshotId newSid = new CommitTask(git, ctx, log).call();
-        new PushTask(git, ctx, log, newSid).call();
+        final SnapshotId newSid = new JGitCommitTask(repo, ctx, log).call();
+        new JGitPushTask(repo, log, newSid).call();
         return null;
     }
 

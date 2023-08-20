@@ -16,14 +16,13 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.tasks.jgit;
+package net.pcal.fastback.repo;
 
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.config.RepoConfigUtils;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.tasks.RepoMan;
 import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -39,89 +38,119 @@ import java.util.concurrent.Callable;
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_NAME;
 
-public class JGitRepoMan implements RepoMan {
+class RepoImpl implements Repo {
 
-    private final Git repo;
+    private final Git jgit;
     private final ModContext ctx;
     private final Logger log;
 
-    public JGitRepoMan(final Git git,
-                       final ModContext ctx,
-                       final Logger logger) {
-        this.repo = requireNonNull(git);
+    RepoImpl(final Git git,
+             final ModContext ctx,
+             final Logger logger) {
+        this.jgit = requireNonNull(git);
         this.ctx = requireNonNull(ctx);
         this.log = requireNonNull(logger);
 
     }
+
     @Override
     public Callable<Void> createCommitAndPushTask() {
-        return new CommitAndPushTask(repo, ctx, log);
+        return new JGitCommitAndPushTask(this, ctx, log);
     }
 
     @Override
     public Callable<SnapshotId> createCommitTask() {
-        return new CommitTask(repo, ctx, log);
+        return new JGitCommitTask(this, ctx, log);
     }
 
     @Override
     public Callable<Collection<SnapshotId>> createLocalPruneTask() {
-        return new LocalPruneTask(this, ctx, log);
+        return new JGitLocalPruneTask(this, ctx, log);
     }
 
     @Override
     public Callable<Void> createGcTask() {
-        return new GcTask(this, ctx, log);
+        return new JGitGcTask(this, ctx, log);
+    }
+
+    @Override
+    public Callable<Collection<SnapshotId>> createRemotePruneTask() {
+        return new RemotePruneTask(this, ctx, log);
     }
 
     @Override
     public String getWorldUuid() throws IOException {
-        return RepoConfigUtils.getWorldUuid(this.repo);
+        return RepoConfigUtils.getWorldUuid(this.jgit);
     }
 
     @Override
-    public ListMultimap<String, SnapshotId> listSnapshots() throws GitAPIException, IOException {
-        final JGitSupplier<Collection<Ref>> refProvider = ()->  repo.branchList().call();
-        return new ListSnapshotsTask(refProvider, this.log).call();
+    public ListMultimap<String, SnapshotId> listSnapshots() throws IOException {
+        final JGitSupplier<Collection<Ref>> refProvider = () -> {
+            try {
+                return jgit.branchList().call();
+            } catch (GitAPIException e) {
+                throw new IOException(e);
+            }
+        };
+        try {
+            return new ListSnapshotsTask(refProvider, this.log).call();
+        } catch (GitAPIException e) {
+            throw new IOException(e);
+        }
     }
 
     @Override
-    public ListMultimap<String, SnapshotId> listRemoteSnapshots() throws GitAPIException, IOException {
-        final GitConfig conf = GitConfig.load(repo);
+    public ListMultimap<String, SnapshotId> listRemoteSnapshots() throws IOException {
+        final GitConfig conf = GitConfig.load(jgit);
         final String remoteName = conf.getString(REMOTE_NAME);
-        final JGitSupplier<Collection<Ref>> refProvider = ()-> repo.lsRemote().setRemote(remoteName).setHeads(true).call();
-        return new ListSnapshotsTask(refProvider, log).call();
+        final JGitSupplier<Collection<Ref>> refProvider = () -> {
+            try {
+                return jgit.lsRemote().setRemote(remoteName).setHeads(true).call();
+            } catch (GitAPIException e) {
+                throw new IOException(e);
+            }
+        };
+        try {
+            return new ListSnapshotsTask(refProvider, log).call();
+        } catch (GitAPIException e) {
+            throw new IOException(e);
+        }
     }
 
     @Override
     public GitConfig getConfig() {
-        return GitConfig.load(this.repo);
+        return GitConfig.load(this.jgit);
     }
 
     @Override
     public File getDirectory() throws NoWorkTreeException {
-        return this.repo.getRepository().getDirectory();
+        return this.jgit.getRepository().getDirectory();
     }
 
     @Override
     public File getWorkTree() throws NoWorkTreeException {
-        return this.repo.getRepository().getWorkTree();
+        return this.jgit.getRepository().getWorkTree();
     }
 
     @Override
-    public void deleteRemoteBranch(String remoteName, String remoteBranchName) throws GitAPIException {
+    public void deleteRemoteBranch(String remoteName, String remoteBranchName) throws IOException {
         RefSpec refSpec = new RefSpec()
                 .setSource(null)
                 .setDestination("refs/heads/" + remoteBranchName);
-        this.repo.push().setRefSpecs(refSpec).setRemote(remoteName).call();
+        try {
+            this.jgit.push().setRefSpecs(refSpec).setRemote(remoteName).call();
+        } catch (GitAPIException e) {
+            throw new IOException(e);
+        }
     }
 
     @Override
     public void deleteBranch(String branchName) throws GitAPIException {
-        this.repo.branchDelete().setForce(true).setBranchNames(branchName).call();
+        this.jgit.branchDelete().setForce(true).setBranchNames(branchName).call();
     }
 
     Git getJGit() {
-        return this.repo;
+        return this.jgit;
     }
 
     @Override

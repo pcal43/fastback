@@ -16,7 +16,7 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.tasks.jgit;
+package net.pcal.fastback.repo;
 
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.ModContext;
@@ -56,19 +56,16 @@ import static net.pcal.fastback.config.RepoConfigUtils.getWorldUuid;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.logging.Message.localizedError;
 
-public class PushTask implements Callable<Void> {
+class JGitPushTask implements Callable<Void> {
 
-    private final ModContext ctx;
+    private final RepoImpl repo;
     private final Logger log;
-    private final Git jgit;
     private final SnapshotId sid;
 
-    public PushTask(final Git jgit,
-                    final ModContext ctx,
-                    final Logger log,
-                    final SnapshotId sid) {
-        this.jgit = requireNonNull(jgit);
-        this.ctx = requireNonNull(ctx);
+    JGitPushTask(final RepoImpl repo,
+                 final Logger log,
+                 final SnapshotId sid) {
+        this.repo = requireNonNull(repo);
         this.log = requireNonNull(log);
         this.sid = requireNonNull(sid);
     }
@@ -76,13 +73,14 @@ public class PushTask implements Callable<Void> {
     @Override
     public Void call() throws GitAPIException, IOException {
         this.log.hud(localized("fastback.hud.remote-uploading", 0));
-        final GitConfig conf = GitConfig.load(jgit);
+        final GitConfig conf = repo.getConfig();
         final String pushUrl = conf.getString(REMOTE_PUSH_URL);
         if (pushUrl == null) {
             final String msg = "Skipping remote backup because no remote url has been configured.";
             this.log.warn(msg);
             return null;
         }
+        final Git jgit = repo.getJGit();
         final Collection<Ref> remoteBranchRefs = jgit.lsRemote().setHeads(true).setTags(false).
                 setRemote(conf.getString(REMOTE_NAME)).call();
         final ListMultimap<String, SnapshotId> snapshotsPerWorld =
@@ -232,15 +230,15 @@ public class PushTask implements Callable<Void> {
         public void progressUpdate(String task, int percentage) {
             this.logger.info(task + " " + percentage + "%");
             if (task.contains("Finding sources")) {
-                this.logger.hud(localized("fastback.hud.remote-preparing", percentage/2));
+                this.logger.hud(localized("fastback.hud.remote-preparing", percentage / 2));
             } else if (task.contains("Writing objects")) {
-                this.logger.hud(localized("fastback.hud.remote-uploading", 50 +(percentage/2)));
+                this.logger.hud(localized("fastback.hud.remote-uploading", 50 + (percentage / 2)));
             }
         }
 
         @Override
         public void progressDone(String task) {
-            logger.info("Done "+task);
+            logger.info("Done " + task);
         }
 
         @Override

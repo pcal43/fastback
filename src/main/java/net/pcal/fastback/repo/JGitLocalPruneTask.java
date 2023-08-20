@@ -16,7 +16,7 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.tasks.jgit;
+package net.pcal.fastback.repo;
 
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.ModContext;
@@ -25,9 +25,7 @@ import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;
-import net.pcal.fastback.tasks.RepoMan;
 import net.pcal.fastback.utils.SnapshotId;
-import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.IOException;
@@ -36,7 +34,6 @@ import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.config.GitConfigKey.LOCAL_RETENTION_POLICY;
-import static net.pcal.fastback.config.RepoConfigUtils.getWorldUuid;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.logging.Message.localizedError;
 import static net.pcal.fastback.utils.SnapshotId.sortWorldSnapshots;
@@ -47,40 +44,44 @@ import static net.pcal.fastback.utils.SnapshotId.sortWorldSnapshots;
  * @author pcal
  * @since 0.3.0
  */
-class LocalPruneTask implements Callable<Collection<SnapshotId>> {
+class JGitLocalPruneTask implements Callable<Collection<SnapshotId>> {
 
     private final ModContext ctx;
     private final Logger log;
-    private final JGitRepoMan repo;
+    private final RepoImpl repo;
 
-    public LocalPruneTask(final JGitRepoMan repo,
-                          final ModContext ctx,
-                          final Logger log) {
+    JGitLocalPruneTask(final RepoImpl repo,
+                       final ModContext ctx,
+                       final Logger log) {
         this.repo = requireNonNull(repo);
         this.ctx = requireNonNull(ctx);
         this.log = requireNonNull(log);
     }
 
     @Override
-    public Collection<SnapshotId> call() throws IOException, GitAPIException {
+    public Collection<SnapshotId> call() throws IOException {
         return doPrune(repo, ctx, log,
                 LOCAL_RETENTION_POLICY,
                 repo::listSnapshots,
                 sid -> {
                     log.info("Pruning local snapshot " + sid.getName());
-                    repo.getJGit().branchDelete().setForce(true).setBranchNames(new String[]{sid.getBranchName()}).call();
+                    try {
+                        repo.getJGit().branchDelete().setForce(true).setBranchNames(new String[]{sid.getBranchName()}).call();
+                    } catch (GitAPIException e) {
+                        throw new IOException(e);
+                    }
                 },
                 "fastback.chat.retention-policy-not-set"
         );
     }
 
-    static Collection<SnapshotId> doPrune(RepoMan repo,
+    static Collection<SnapshotId> doPrune(Repo repo,
                                           ModContext ctx,
                                           Logger log,
                                           GitConfigKey policyConfigKey,
                                           JGitSupplier<ListMultimap<String, SnapshotId>> listSnapshotsFn,
                                           JGitConsumer<SnapshotId> deleteSnapshotsFn,
-                                          String notSetKey) throws IOException, GitAPIException {
+                                          String notSetKey) throws IOException {
         final GitConfig conf = repo.getConfig();
         final String policyConfig = conf.getString(policyConfigKey);
         final RetentionPolicy policy = RetentionPolicyCodec.INSTANCE.decodePolicy

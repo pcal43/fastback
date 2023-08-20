@@ -20,7 +20,7 @@ package net.pcal.fastback.commands;
 
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.config.GitConfigKey;
-import net.pcal.fastback.tasks.RepoMan;
+import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.utils.SnapshotId;
 
 import java.util.Collection;
@@ -38,28 +38,28 @@ public enum SchedulableAction {
 
     NONE("none") {
         @Override
-        public Callable<Void> getTask(final RepoMan tf) {
+        public Callable<Void> getTask(final Repo tf) {
             return () -> null;
         }
     },
 
     LOCAL("local") {
         @Override
-        public Callable<SnapshotId> getTask(final RepoMan tf) {
+        public Callable<SnapshotId> getTask(final Repo tf) {
             return tf.createCommitTask();
         }
     },
 
     FULL("full") {
         @Override
-        public Callable<Void> getTask(final RepoMan tf) {
+        public Callable<Void> getTask(final Repo tf) {
             return tf.createCommitAndPushTask();
         }
     },
 
     FULL_GC("full-gc") {
         @Override
-        public Callable<Void> getTask(final RepoMan tf) {
+        public Callable<Void> getTask(final Repo tf) {
             return ()->{
                 tf.createCommitAndPushTask().call();
                 final Collection<SnapshotId> pruned = tf.createLocalPruneTask().call();
@@ -100,6 +100,6 @@ public enum SchedulableAction {
         return this.configValue;
     }
 
-    public abstract Callable<?> getTask(RepoMan repo);
+    public abstract Callable<?> getTask(Repo repo);
 }
 

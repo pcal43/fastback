@@ -23,9 +23,7 @@ import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.Message;
 import net.pcal.fastback.retention.RetentionPolicyType;
-import net.pcal.fastback.tasks.RepoMan;
-import net.pcal.fastback.tasks.jgit.JGitRepoMan;
-import org.eclipse.jgit.api.Git;
+import net.pcal.fastback.repo.Repo;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -74,9 +72,8 @@ public class ModContext {
             execute(ExecutionLock.WRITE, getLogger(), () -> {
                 final Path worldSaveDir = getWorldDirectory();
                 if (!isGitRepo(worldSaveDir)) return;
-                try (Git jgit = Git.open(worldSaveDir.toFile())) {
-                    final RepoMan repo = new JGitRepoMan(jgit, ModContext.this, getLogger()); // FIXME
-                    final GitConfig config = GitConfig.load(jgit);
+                try (final Repo repo = Repo.load(worldSaveDir, ModContext.this, getLogger())) {
+                    final GitConfig config = repo.getConfig();
                     if (!config.getBoolean(IS_BACKUP_ENABLED)) return;
                     final SchedulableAction autobackAction = forConfigValue(config, AUTOBACK_ACTION);
                     if (autobackAction == null || autobackAction == NONE) return;

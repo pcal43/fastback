@@ -25,7 +25,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.tasks.jgit.RestoreSnapshotTask;
+import net.pcal.fastback.repo.RestoreSnapshotTask;
 import net.pcal.fastback.utils.SnapshotId;
 
 import java.nio.file.Path;
@@ -38,7 +38,6 @@ import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_PUSH_URL;
-import static net.pcal.fastback.config.RepoConfigUtils.getWorldUuid;
 import static net.pcal.fastback.logging.Message.localized;
 
 enum RemoteRestoreCommand implements Command {

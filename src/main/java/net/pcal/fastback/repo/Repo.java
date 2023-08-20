@@ -16,13 +16,12 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.tasks;
+package net.pcal.fastback.repo;
 
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.tasks.jgit.JGitRepoMan;
 import net.pcal.fastback.utils.SnapshotId;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -34,7 +33,25 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 
-public interface RepoMan extends AutoCloseable {
+/**
+ * @author pcal
+ */
+public interface Repo extends AutoCloseable {
+
+    static Repo load(Path worldSaveDir, ModContext mod, Logger log) throws IOException {
+        final Git jgit = Git.open(worldSaveDir.toFile());
+        //final GitConfig conf = GitConfig.load(jgit);
+        final RepoImpl jrepo = new RepoImpl(jgit, mod, log);
+        return jrepo;
+    }
+
+    GitConfig getConfig();
+
+    String getWorldUuid() throws IOException;
+
+    File getDirectory() throws NoWorkTreeException;
+
+    File getWorkTree() throws NoWorkTreeException;
 
     Callable<Void> createCommitAndPushTask();
 
@@ -44,28 +61,14 @@ public interface RepoMan extends AutoCloseable {
 
     Callable<Void> createGcTask();
 
-    String getWorldUuid() throws IOException;
+    Callable<Collection<SnapshotId>> createRemotePruneTask();
 
-    ListMultimap<String, SnapshotId> listSnapshots() throws GitAPIException, IOException;
+    ListMultimap<String, SnapshotId> listSnapshots() throws IOException;
 
-    ListMultimap<String, SnapshotId> listRemoteSnapshots() throws GitAPIException, IOException;
+    ListMultimap<String, SnapshotId> listRemoteSnapshots() throws IOException;
 
-    GitConfig getConfig();
-
-
-    File getDirectory() throws NoWorkTreeException;
-
-    File getWorkTree() throws NoWorkTreeException;
-
-    void deleteRemoteBranch(String remoteName, String remoteBranchName) throws GitAPIException;
+    void deleteRemoteBranch(String remoteName, String remoteBranchName) throws IOException;
 
     void deleteBranch(String branchName) throws GitAPIException;
 
-
-    static RepoMan load(Path worldSaveDir, ModContext mod, Logger log) throws IOException {
-        final Git jgit = Git.open(worldSaveDir.toFile());
-        final GitConfig conf = GitConfig.load(jgit);
-        final JGitRepoMan jrepo = new JGitRepoMan(jgit, mod, log);
-        return jrepo;
-     }
 }

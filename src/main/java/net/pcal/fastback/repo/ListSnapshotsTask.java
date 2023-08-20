@@ -16,15 +16,12 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.tasks.jgit;
+package net.pcal.fastback.repo;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
-import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.tasks.RepoMan;
 import net.pcal.fastback.utils.SnapshotId;
-import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
 
@@ -34,7 +31,6 @@ import java.util.Collection;
 import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.config.GitConfigKey.REMOTE_NAME;
 
 @SuppressWarnings({"Convert2MethodRef", "FunctionalExpressionCanBeFolded"})
 public class ListSnapshotsTask implements Callable<ListMultimap<String, SnapshotId>> {
@@ -56,8 +52,8 @@ public class ListSnapshotsTask implements Callable<ListMultimap<String, Snapshot
             final SnapshotId sid;
             try {
                 sid = requireNonNull(SnapshotId.fromBranchRef(ref));
-            } catch(ParseException pe) {
-                logger.warn("Ignoring unrecognized branch "+ref.getName());
+            } catch (ParseException pe) {
+                logger.warn("Ignoring unrecognized branch " + ref.getName());
                 continue;
             }
             snapshotsPerWorld.put(sid.worldUuid(), sid);

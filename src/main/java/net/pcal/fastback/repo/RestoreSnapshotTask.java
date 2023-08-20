@@ -16,7 +16,7 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.tasks.jgit;
+package net.pcal.fastback.repo;
 
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.progress.IncrementalProgressMonitor;
@@ -56,13 +56,13 @@ public class RestoreSnapshotTask implements Callable<Path> {
     public Path call() throws Exception {
         final Path restoreDir = getTargetDir(this.restoreTargetDir, this.worldName, this.sid.getName());
         final String branchName = sid.getBranchName();
-            this.logger.hud(localized("fastback.hud.restore-percent", 0));
-            final ProgressMonitor pm = new IncrementalProgressMonitor(new RestoreProgressMonitor(logger), 100);
-            try (Git git = Git.cloneRepository().setProgressMonitor(pm).setDirectory(restoreDir.toFile()).
-                    setBranchesToClone(List.of("refs/heads/" + branchName)).setBranch(branchName).setURI(this.repoUri).call()) {
-            }
-            FileUtils.rmdir(restoreDir.resolve(".git"));
-            restoreDir.resolve(WORLD_UUID_PATH).toFile().delete();
+        this.logger.hud(localized("fastback.hud.restore-percent", 0));
+        final ProgressMonitor pm = new IncrementalProgressMonitor(new RestoreProgressMonitor(logger), 100);
+        try (Git git = Git.cloneRepository().setProgressMonitor(pm).setDirectory(restoreDir.toFile()).
+                setBranchesToClone(List.of("refs/heads/" + branchName)).setBranch(branchName).setURI(this.repoUri).call()) {
+        }
+        FileUtils.rmdir(restoreDir.resolve(".git"));
+        restoreDir.resolve(WORLD_UUID_PATH).toFile().delete();
         return restoreDir;
     }
 

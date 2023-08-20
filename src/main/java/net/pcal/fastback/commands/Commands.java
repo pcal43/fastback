@@ -30,9 +30,7 @@ import net.pcal.fastback.logging.CommandSourceLogger;
 import net.pcal.fastback.logging.CompositeLogger;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.SaveScreenLogger;
-import net.pcal.fastback.tasks.RepoMan;
-import net.pcal.fastback.tasks.jgit.JGitRepoMan;
-import org.eclipse.jgit.api.Git;
+import net.pcal.fastback.repo.Repo;
 
 import java.nio.file.Path;
 import java.util.function.Predicate;
@@ -123,7 +121,7 @@ public class Commands {
     }
 
     interface GitOp {
-        void execute(RepoMan repo) throws Exception;
+        void execute(Repo repo) throws Exception;
     }
 
     static void gitOp(final ModContext mod, final ExecutionLock lock, final Logger log, final GitOp op) {
@@ -133,12 +131,11 @@ public class Commands {
                 log.chat(localizedError("fastback.chat.not-enabled"));
                 return;
             }
-            try (final Git jgit = Git.open(worldSaveDir.toFile())) {
-                final GitConfig repoConfig = GitConfig.load(jgit);
+            try (final Repo repo = Repo.load(worldSaveDir, mod, log)) {
+                final GitConfig repoConfig = repo.getConfig();
                 if (!repoConfig.getBoolean(IS_BACKUP_ENABLED)) {
                     log.chat(localizedError("fastback.chat.not-enabled"));
                 } else {
-                    JGitRepoMan repo = new JGitRepoMan(jgit, mod, log); // FIXME
                     op.execute(repo);
                 }
             } catch (Exception e) {

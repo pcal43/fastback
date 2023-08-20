@@ -16,7 +16,7 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.tasks.jgit;
+package net.pcal.fastback.repo;
 
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
@@ -38,7 +38,7 @@ import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.Message.localized;
-import static net.pcal.fastback.tasks.jgit.PushTask.isTempBranch;
+import static net.pcal.fastback.repo.JGitPushTask.isTempBranch;
 import static net.pcal.fastback.utils.GitUtils.getBranchName;
 import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
 import static org.apache.commons.io.FileUtils.sizeOfDirectory;
@@ -51,16 +51,16 @@ import static org.eclipse.jgit.api.ListBranchCommand.ListMode.ALL;
  * @author pcal
  * @since 0.0.12
  */
-public class GcTask implements Callable<Void> {
+class JGitGcTask implements Callable<Void> {
 
     private final ModContext ctx;
     private final Logger log;
-    private final JGitRepoMan repo;
+    private final RepoImpl repo;
     private long sizeBeforeBytes, sizeAfterBytes;
 
-    public GcTask(final JGitRepoMan repo,
-                  final ModContext ctx,
-                  final Logger log) {
+    JGitGcTask(final RepoImpl repo,
+               final ModContext ctx,
+               final Logger log) {
         this.repo = requireNonNull(repo);
         this.ctx = requireNonNull(ctx);
         this.log = requireNonNull(log);

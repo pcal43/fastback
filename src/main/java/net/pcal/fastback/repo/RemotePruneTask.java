@@ -16,22 +16,20 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.tasks.jgit;
+package net.pcal.fastback.repo;
 
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.tasks.RepoMan;
 import net.pcal.fastback.utils.SnapshotId;
-import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.tasks.jgit.LocalPruneTask.doPrune;
+import static net.pcal.fastback.repo.JGitLocalPruneTask.doPrune;
 
 /**
  * Delete remote snapshot branches that should not be kept per the retention policy.
@@ -39,22 +37,22 @@ import static net.pcal.fastback.tasks.jgit.LocalPruneTask.doPrune;
  * @author pcal
  * @since 0.7.0
  */
-public class RemotePruneTask implements Callable<Collection<SnapshotId>> {
+class RemotePruneTask implements Callable<Collection<SnapshotId>> {
 
     private final ModContext ctx;
     private final Logger log;
-    private final RepoMan repo;
+    private final Repo repo;
 
-    public RemotePruneTask(final RepoMan repo,
-                           final ModContext ctx,
-                           final Logger log) {
+    RemotePruneTask(final Repo repo,
+                    final ModContext ctx,
+                    final Logger log) {
         this.repo = requireNonNull(repo);
         this.ctx = requireNonNull(ctx);
         this.log = requireNonNull(log);
     }
 
     @Override
-    public Collection<SnapshotId> call() throws IOException, GitAPIException {
+    public Collection<SnapshotId> call() throws IOException {
         return doPrune(repo, ctx, log,
                 GitConfigKey.REMOTE_RETENTION_POLICY,
                 repo::listRemoteSnapshots,
