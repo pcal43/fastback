@@ -90,7 +90,7 @@ enum HelpCommand implements Command {
         }
     }
 
-    public static int help(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
+    static int help(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
         StringWriter subcommands = null;
         for (final String available : getSubcommandNames(cc)) {

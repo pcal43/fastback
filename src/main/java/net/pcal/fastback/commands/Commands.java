@@ -35,14 +35,9 @@ import org.eclipse.jgit.api.Git;
 import java.nio.file.Path;
 import java.util.function.Predicate;
 
-
-import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
-import static net.pcal.fastback.logging.Message.localized;
-
 import static net.pcal.fastback.commands.HelpCommand.help;
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.logging.Message.localizedError;
-
 import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
 public class Commands {

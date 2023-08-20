@@ -43,7 +43,6 @@ import static net.pcal.fastback.commands.SchedulableAction.forConfigValue;
 import static net.pcal.fastback.config.GitConfigKey.AUTOBACK_ACTION;
 import static net.pcal.fastback.config.GitConfigKey.AUTOBACK_WAIT_MINUTES;
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
-import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.logging.Message.localizedError;
 import static net.pcal.fastback.utils.GitUtils.isGitRepo;
 
