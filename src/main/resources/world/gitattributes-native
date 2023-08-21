@@ -6,6 +6,10 @@
 #
 # https://pcal43.github.io/fastback/advanced.html#disabling-file-updates
 #
+
+
+# native git configuration
+
 *.dat filter=lfs diff=lfs merge=lfs -text
 *.dat_old filter=lfs diff=lfs merge=lfs -text
 *.jar filter=lfs diff=lfs merge=lfs -text

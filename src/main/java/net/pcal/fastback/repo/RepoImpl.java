@@ -21,7 +21,6 @@ package net.pcal.fastback.repo;
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.config.GitConfig;
-import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.FileUtils;
 import org.eclipse.jgit.api.Git;
@@ -36,11 +35,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
+import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_NAME;
 import static net.pcal.fastback.config.GitConfigKey.UPDATE_GITATTRIBUTES_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.UPDATE_GITIGNORE_ENABLED;
@@ -60,7 +59,6 @@ class RepoImpl implements Repo {
         this.jgit = requireNonNull(git);
         this.ctx = requireNonNull(ctx);
         this.log = requireNonNull(logger);
-
     }
 
     @Override
@@ -175,40 +173,22 @@ class RepoImpl implements Repo {
         this.getJGit().close();
     }
 
-
-    // ====================================================================
-    // Resource management
-
-    private record WorldResource(
-            String resourcePath, // Note to self: needs to be a String, not a Path, because Windows slashes don't work
-            Path targetPath,
-            GitConfigKey permission
-    ) {}
-
-    private static final Iterable<WorldResource> WORLD_RESOURCES = List.of(
-            new WorldResource(
-                    "world/dot-gitignore",
-                    Path.of(".gitignore"),
-                    UPDATE_GITIGNORE_ENABLED),
-            new WorldResource(
-                    "world/dot-gitattributes",
-                    Path.of(".gitattributes"),
-                    UPDATE_GITATTRIBUTES_ENABLED)
-    );
-
     @Override
     public void doWorldMaintenance(final Logger logger) throws IOException, IOException {
         logger.info("Doing world maintenance");
         final Path worldSaveDir = jgit.getRepository().getWorkTree().toPath();
         ensureWorldHasUuid(worldSaveDir, logger);
         final GitConfig config = GitConfig.load(jgit);
-        for (final WorldResource resource : WORLD_RESOURCES) {
-            if (config.getBoolean(resource.permission)) {
-                logger.debug("Updating " + resource.targetPath);
-                final Path targetPath = worldSaveDir.resolve(resource.targetPath);
-                writeResourceToFile(resource.resourcePath, targetPath);
+        if (config.getBoolean(UPDATE_GITIGNORE_ENABLED)) {
+            final Path targetPath = worldSaveDir.resolve(".gitignore");
+            writeResourceToFile("world/gitignore", targetPath);
+        }
+        if (config.getBoolean(UPDATE_GITATTRIBUTES_ENABLED)) {
+            final Path targetPath = worldSaveDir.resolve(".gitattributes");
+            if (config.getBoolean(IS_NATIVE_ENABLED)) {
+                writeResourceToFile("world/gitattributes-native", targetPath);
             } else {
-                logger.info("Updates disabled for " + resource.targetPath);
+                writeResourceToFile("world/gitattributes-jgit", targetPath);
             }
         }
     }
@@ -225,5 +205,4 @@ class RepoImpl implements Repo {
             logger.info("Generated new world.uuid " + newUuid);
         }
     }
-
 }

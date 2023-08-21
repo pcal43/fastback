@@ -1,0 +1,20 @@
+#
+# DO NOT EDIT.  CHANGES WILL BE OVERWRITTEN.
+#
+# This file is automatically updated by FastBack.  If you need to customize
+# these rules, please read this:
+#
+# https://pcal43.github.io/fastback/advanced.html#disabling-file-updates
+#
+
+
+# jgit configuration
+
+# treat everything as binaries
+* -diff -merge -text -delta
+# ...with a few exceptions (that are unlikely to matter much, tbh).
+*.json diff merge text delta
+*.txt diff merge text delta
+*.properties diff merge text delta
+*.toml diff merge text delta
+*.yaml diff merge text delta

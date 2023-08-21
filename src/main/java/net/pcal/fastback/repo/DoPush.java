@@ -63,7 +63,7 @@ class DoPush {
 
     static void doPush(SnapshotId sid, RepoImpl repo, Logger log) throws IOException {
         try {
-            log.hud(localized("fastback.hud.remote-uploading", 0));
+            log.hud(localized("fastback.chat.push-started"));
             final GitConfig conf = repo.getConfig();
             final String pushUrl = conf.getString(REMOTE_PUSH_URL);
             if (pushUrl == null) {
