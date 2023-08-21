@@ -19,6 +19,8 @@
 package net.pcal.fastback.repo;
 
 import net.pcal.fastback.ModContext;
+import net.pcal.fastback.config.GitConfig;
+import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.FileUtils;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
@@ -34,6 +36,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
+import static net.pcal.fastback.config.GitConfigKey.*;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.repo.PushUtils.isTempBranch;
 import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
@@ -49,16 +52,13 @@ import static org.eclipse.jgit.api.ListBranchCommand.ListMode.ALL;
  */
 class JGitGcTask implements Callable<Void> {
 
-    private final ModContext ctx;
     private final Logger log;
     private final RepoImpl repo;
     private long sizeBeforeBytes, sizeAfterBytes;
 
     JGitGcTask(final RepoImpl repo,
-               final ModContext ctx,
                final Logger log) {
         this.repo = requireNonNull(repo);
-        this.ctx = requireNonNull(ctx);
         this.log = requireNonNull(log);
     }
 
@@ -76,19 +76,20 @@ class JGitGcTask implements Callable<Void> {
     @Override
     public Void call() throws Exception {
         final File gitDir = repo.getJGit().getRepository().getDirectory();
+        final GitConfig config = repo.getConfig();
         log.hud(localized("fastback.hud.gc-percent", 0));
         log.info("Stats before gc:");
         log.info("" + repo.getJGit().gc().getStatistics());
         this.sizeBeforeBytes = sizeOfDirectory(gitDir);
         log.info("Backup size before gc: " + byteCountToDisplaySize(sizeBeforeBytes));
-        if (ctx.isReflogDeletionEnabled()) {
+        if (config.getBoolean(IS_REFLOG_DELETION_ENABLED)) {
             // reflogs aren't very useful in our case and cause old snapshots to get retained
             // longer than people expect.
             final Path reflogsDir = gitDir.toPath().resolve("logs");
             log.info("Deleting reflogs " + reflogsDir);
             FileUtils.rmdir(reflogsDir);
         }
-        if (ctx.isBranchCleanupEnabled()) {
+        if (config.getBoolean(IS_BRANCH_CLEANUP_ENABLED)) {
             final List<String> branchesToDelete = new ArrayList<>();
             for (final Ref ref : repo.getJGit().branchList().setListMode(ALL).call()) {
                 final String branchName = getBranchName(ref);

@@ -63,7 +63,11 @@ public enum GitConfigKey {
 
     IS_GIT_HUD_OUTPUT_ENABLED(true),
 
-    IS_POST_RESTORE_CLEANUP_ENABLED(true);
+    IS_POST_RESTORE_CLEANUP_ENABLED(true),
+
+    IS_REFLOG_DELETION_ENABLED(true),
+
+    IS_BRANCH_CLEANUP_ENABLED(true);
 
     private static final String NULL_STRING = "";
 

@@ -18,6 +18,11 @@
 
 package net.pcal.fastback.logging;
 
+/**
+ * Singleton logger instance that logs to the minecraft console only.
+ *
+ * @author pcal
+ */
 public class ConsoleLogger {
 
     private static Logger INSTANCE = null;

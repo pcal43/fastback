@@ -28,6 +28,7 @@ import net.pcal.fastback.ModContext.ExecutionLock;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.CommandSourceLogger;
 import net.pcal.fastback.logging.CompositeLogger;
+import net.pcal.fastback.logging.ConsoleLogger;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.SaveScreenLogger;
 import net.pcal.fastback.repo.Repo;
@@ -85,7 +86,7 @@ public class Commands {
     }
 
     public static Logger commandLogger(final ModContext ctx, final ServerCommandSource scs) {
-        return CompositeLogger.of(ctx.getConsoleLogger(), new CommandSourceLogger(ctx, scs), new SaveScreenLogger(ctx));
+        return CompositeLogger.of(ConsoleLogger.get(), new CommandSourceLogger(ctx, scs), new SaveScreenLogger(ctx));
     }
 
     public static String subcommandPermName(String subcommandName) {

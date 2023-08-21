@@ -81,12 +81,12 @@ class RepoImpl implements Repo {
 
     @Override
     public Callable<Collection<SnapshotId>> createLocalPruneTask() {
-        return new JGitLocalPruneTask(this,  log);
+        return new JGitLocalPruneTask(this, log);
     }
 
     @Override
     public Callable<Void> createGcTask() {
-        return new JGitGcTask(this, ctx, log);
+        return new JGitGcTask(this, log);
     }
 
     @Override

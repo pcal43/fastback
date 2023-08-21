@@ -27,6 +27,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.CommandNode;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
+import net.pcal.fastback.logging.ConsoleLogger;
 import net.pcal.fastback.logging.Logger;
 
 import java.io.StringWriter;
@@ -83,7 +84,7 @@ enum HelpCommand implements Command {
             try {
                 completableFuture.complete(builder.buildFuture().get());
             } catch (InterruptedException | ExecutionException e) {
-                this.ctx.getConsoleLogger().internalError("looking up help topics", e);
+                ConsoleLogger.get().internalError("looking up help topics", e);
                 return null;
             }
             return completableFuture;

@@ -25,13 +25,10 @@ import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.Message;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.RepoFactory;
-import net.pcal.fastback.retention.RetentionPolicyType;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.List;
-import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -71,11 +68,11 @@ public class ModContext {
         public void run() {
             //TODO implement indicator
             // final Logger screenLogger = CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx));
-            execute(ExecutionLock.WRITE, getConsoleLogger(), () -> {
+            execute(ExecutionLock.WRITE, ConsoleLogger.get(), () -> {
                 RepoFactory rf = RepoFactory.get();
                 final Path worldSaveDir = getWorldDirectory();
                 if (!rf.isGitRepo(worldSaveDir)) return;
-                try (final Repo repo = rf.load(worldSaveDir, ModContext.this, getConsoleLogger())) {
+                try (final Repo repo = rf.load(worldSaveDir, ModContext.this, ConsoleLogger.get())) {
                     final GitConfig config = repo.getConfig();
                     if (!config.getBoolean(IS_BACKUP_ENABLED)) return;
                     final SchedulableAction autobackAction = forConfigValue(config, AUTOBACK_ACTION);
@@ -84,15 +81,15 @@ public class ModContext {
                     final Duration timeRemaining = waitTime.
                             minus(Duration.ofMillis(System.currentTimeMillis() - lastBackupTime));
                     if (!timeRemaining.isZero() && !timeRemaining.isNegative()) {
-                        getConsoleLogger().debug("Skipping auto-backup until at least " +
+                        ConsoleLogger.get().debug("Skipping auto-backup until at least " +
                                 (timeRemaining.toSeconds() / 60) + " more minutes have elapsed.");
                         return;
                     }
-                    getConsoleLogger().info("Starting auto-backup");
+                    ConsoleLogger.get().info("Starting auto-backup");
                     autobackAction.getTask(repo);
                     lastBackupTime = System.currentTimeMillis();
                 } catch (Exception e) {
-                    getConsoleLogger().internalError("auto-backup failed.", e);
+                    ConsoleLogger.get().internalError("auto-backup failed.", e);
                 }
             });
         }
@@ -159,14 +156,6 @@ public class ModContext {
         return this.spi.getModVersion();
     }
 
-    public String getMinecraftVersion() {
-        return this.spi.getMinecraftVersion();
-    }
-
-    public Path getMinecraftConfigDir() {
-        return this.spi.getConfigDir();
-    }
-
     public void setWorldSaveEnabled(boolean enabled) {
         this.spi.setWorldSaveEnabled(enabled);
     }
@@ -207,39 +196,20 @@ public class ModContext {
         return this.spi.getWorldName();
     }
 
-    @Deprecated
-    public Logger getConsoleLogger() {
-        return ConsoleLogger.get();
-    }
-
     // TODO make these configurable via properties
 
+    @Deprecated
     public boolean isExperimentalCommandsEnabled() {
         return false;
     }
 
-    public boolean isStartupNotificationEnabled() {
-        return true;
-    }
-
+    @Deprecated
     public boolean isFileRemoteBare() {
-        return true;
-    }
-
-    public boolean isReflogDeletionEnabled() {
-        return true;
-    }
-
-    public boolean isBranchCleanupEnabled() {
         return true;
     }
 
     public int getDefaultPermLevel() {
         return spi.isClient() ? 0 : 4;
-    }
-
-    public List<RetentionPolicyType> getRetentionPolicyTypes() {
-        return RetentionPolicyType.getAvailable();
     }
 
     public void saveWorld() {
