@@ -20,7 +20,6 @@ package net.pcal.fastback.repo;
 
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.repo.DoExec.LogConsumer;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
@@ -37,7 +36,7 @@ import java.util.function.Consumer;
 
 import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_ENABLED;
 import static net.pcal.fastback.logging.Message.localized;
-import static net.pcal.fastback.repo.DoExec.doExec;
+import static net.pcal.fastback.utils.ExecUtils.doExec;
 
 @SuppressWarnings("FieldCanBeLocal")
 class DoCommit {

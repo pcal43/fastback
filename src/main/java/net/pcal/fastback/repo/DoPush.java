@@ -21,7 +21,6 @@ package net.pcal.fastback.repo;
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.repo.DoExec.LogConsumer;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
@@ -54,7 +53,7 @@ import static net.pcal.fastback.config.GitConfigKey.REMOTE_NAME;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_PUSH_URL;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.logging.Message.localizedError;
-import static net.pcal.fastback.repo.DoExec.doExec;
+import static net.pcal.fastback.utils.ExecUtils.doExec;
 
 class DoPush {
 

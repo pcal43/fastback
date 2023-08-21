@@ -16,13 +16,11 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.repo;
+package net.pcal.fastback.utils;
 
 import net.pcal.fastback.logging.Logger;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
@@ -32,62 +30,36 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.logging.Message.raw;
 
 
 /**
  *
- *
  */
-class DoExec {
+public class ExecUtils {
 
-    static int doExec(String[] args, final Map<String, String> envOriginal, Consumer<String> stdoutSink, Consumer<String> stderrSink, Logger log) throws IOException, InterruptedException {
-        log.info(String.join(" ", args));
-
+    public static int doExec(String[] args, final Map<String, String> envOriginal, Consumer<String> stdoutSink, Consumer<String> stderrSink, Logger log) throws IOException, InterruptedException {
+        log.debug("Executing " + String.join(" ", args));
         final Map<String, String> env = new HashMap<>(envOriginal);
         env.putAll(System.getenv());
-
-        List<String> envlist = new ArrayList<>();
-        for(Map.Entry<String, String> entry : env.entrySet()) {
-            envlist.add(entry.getKey()+"="+entry.getValue());
+        final List<String> envlist = new ArrayList<>();
+        for (Map.Entry<String, String> entry : env.entrySet()) {
+            envlist.add(entry.getKey() + "=" + entry.getValue());
         }
-        String[] enva = envlist.toArray(new String[0]);
+        final String[] enva = envlist.toArray(new String[0]);
         final Process p = Runtime.getRuntime().exec(args, enva);
-
-        return drainAndWait(p, new RectifyingWriter(stdoutSink), new RectifyingWriter(stderrSink));
+        return drainAndWait(p, new LineWriter(stdoutSink), new LineWriter(stderrSink));
     }
 
-    static class LogConsumer implements Consumer<String> {
-
-        private final Logger log;
-
-        LogConsumer(Logger log) {
-            this.log = requireNonNull(log);
-        }
-
-        @Override
-        public void accept(String s) {
-            log.info(s);
-            int p = s.indexOf("%");
-            if (true || p != -1) {
-                //log.hud(raw(s.substring(0, p+1)));
-                log.hud(raw(s));
-            }
-        }
-    }
-
-    private static class RectifyingWriter extends Writer {
+    private static class LineWriter extends Writer {
 
         private final Consumer<String> sink;
         private final StringBuilder buffer = new StringBuilder();
 
-        private RectifyingWriter(final Consumer<String> sink) {
+        private LineWriter(final Consumer<String> sink) {
             this.sink = requireNonNull(sink);
         }
-
 
         @Override
         public void write(char[] cbuf, int off, int len) throws IOException {
@@ -128,7 +100,6 @@ class DoExec {
         }
     }
 
-
     private static int drainAndWait(Process process, Writer stdoutSink, Writer stderrSink) throws IOException, InterruptedException {
 
         Reader stdoutReader = new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8);
@@ -141,11 +112,11 @@ class DoExec {
             //
             // process stdin
             //
-            if (stdoutReader != null && stdoutReader.ready()){
+            if (stdoutReader != null && stdoutReader.ready()) {
                 int read = stdoutReader.read(buffer, 0, buffer.length);
-                if (read < 0){
+                if (read < 0) {
                     stdoutReader = null;
-                } else if (read > 0){
+                } else if (read > 0) {
                     readAny = true;
                     stdoutSink.write(buffer, 0, read);
                 }
@@ -153,11 +124,11 @@ class DoExec {
             //
             // process stdout
             //
-            if (stderrReader != null && stderrReader.ready()){
+            if (stderrReader != null && stderrReader.ready()) {
                 int read = stderrReader.read(buffer, 0, buffer.length);
-                if (read < 0){
+                if (read < 0) {
                     stderrReader = null;
-                } else if (read > 0){
+                } else if (read > 0) {
                     readAny = true;
                     stderrSink.write(buffer, 0, read);
                 }
@@ -170,18 +141,11 @@ class DoExec {
             } else {
                 try {
                     Thread.sleep(10); // FIXME add timeout?
-                } catch (InterruptedException ie){
+                } catch (InterruptedException ie) {
                     process.destroy();
                     throw ie;
                 }
             }
         }
     }
-
-    private static String readString(InputStream in) {
-        return new BufferedReader(new InputStreamReader(in))
-                .lines().collect(Collectors.joining("\n"));
-    }
-
-
 }

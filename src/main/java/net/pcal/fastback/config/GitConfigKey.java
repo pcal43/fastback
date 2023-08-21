@@ -29,6 +29,8 @@ public enum GitConfigKey {
 
     IS_BACKUP_ENABLED("backup-enabled", false),
 
+    IS_NATIVE_ENABLED("native-git-enabled", true), //FIXME
+
     AUTOBACK_ACTION("autoback-action", null),
 
     SHUTDOWN_ACTION("shutdown-action", null),
@@ -47,7 +49,7 @@ public enum GitConfigKey {
 
     REMOTE_NAME("origin"),
 
-    IS_NATIVE_ENABLED(true),
+
 
     IS_UUID_CHECK_ENABLED(true),
 

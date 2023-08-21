@@ -27,12 +27,15 @@ import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.SaveScreenLogger;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.RepoFactory;
+import net.pcal.fastback.utils.NativeGitUtils;
 
 import java.nio.file.Path;
 
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
+import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.logging.Message.localized;
+import static net.pcal.fastback.utils.NativeGitUtils.*;
 
 /**
  * Framework-agnostic lifecycle logic.
@@ -47,7 +50,25 @@ public class LifecycleUtils {
      */
     public static void onInitialize(final ModContext ctx) {
         Commands.registerCommands(ctx, ctx.getCommandName());
-        ctx.getLogger().info("onInitialize complete");
+        final Logger log = ctx.getLogger();
+        {
+            final String gitVersion = getGitVersion(log);
+            if (gitVersion == null) {
+                log.info("git is not installed.");
+            } else {
+                log.info("git is installed: " + gitVersion);
+            }
+        }
+        {
+            final String gitLfsVersion = getGitLfsVersion(log);
+            if (gitLfsVersion == null) {
+                log.info("git-lfs is not installed.");
+            } else {
+                log.info("git-lfs is installed: " + gitLfsVersion);
+            }
+        }
+        log.info("onInitialize complete");
+
     }
 
     /**
