@@ -29,7 +29,7 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.world.level.storage.LevelStorage;
-import net.pcal.fastback.mod.ModContext;
+import net.pcal.fastback.mod.FrameworkServiceProvider;
 import net.pcal.fastback.mod.fabric.mixins.ServerAccessors;
 import net.pcal.fastback.mod.fabric.mixins.SessionAccessors;
 import net.pcal.fastback.logging.Log4jLogger;
@@ -46,7 +46,7 @@ import static java.util.Objects.requireNonNull;
  * @author pcal
  * @since 0.1.0
  */
-public abstract class FabricProvider implements ModContext.FrameworkServiceProvider {
+public abstract class FabricProvider implements FrameworkServiceProvider {
 
     private static FabricProvider INSTANCE;
     private MinecraftServer minecraftServer;

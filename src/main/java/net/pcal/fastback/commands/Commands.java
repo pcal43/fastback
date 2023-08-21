@@ -99,7 +99,7 @@ public class Commands {
 
     /**
      * Retrieve a command argument. If they forgot to provide it, return null
-     * and log a helpful message rather than blowing up the world.  This is neeed in the
+     * and log a helpful message rather than blowing up the world.  This is needed in the
      * cases where the list of arguments is dynamic (e.g., retention policies) and we can't
      * rely on brigadier's static parse trees.
      */

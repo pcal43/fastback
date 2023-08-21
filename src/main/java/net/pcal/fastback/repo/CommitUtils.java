@@ -36,7 +36,7 @@ import java.util.function.Consumer;
 
 import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_ENABLED;
 import static net.pcal.fastback.logging.Message.localized;
-import static net.pcal.fastback.utils.ExecUtils.doExec;
+import static net.pcal.fastback.utils.ProcessUtils.doExec;
 
 @SuppressWarnings("FieldCanBeLocal")
 class CommitUtils {

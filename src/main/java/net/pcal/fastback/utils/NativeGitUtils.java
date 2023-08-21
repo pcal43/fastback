@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static net.pcal.fastback.utils.ExecUtils.doExec;
+import static net.pcal.fastback.utils.ProcessUtils.doExec;
 
 public class NativeGitUtils {
 

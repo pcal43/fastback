@@ -22,6 +22,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.Log4jLogger;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.Message;
+import net.pcal.fastback.mod.FrameworkServiceProvider;
 import net.pcal.fastback.mod.ModContext;
 import org.apache.logging.log4j.LogManager;
 
@@ -33,7 +34,7 @@ public class MockModContext {
         return ModContext.create(new MockFrameworkSpi());
     }
 
-    private static class MockFrameworkSpi implements ModContext.FrameworkServiceProvider {
+    private static class MockFrameworkSpi implements FrameworkServiceProvider {
 
         private final Log4jLogger logger;
 

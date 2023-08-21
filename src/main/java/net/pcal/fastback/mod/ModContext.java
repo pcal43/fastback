@@ -103,6 +103,7 @@ public class ModContext {
 
     private Future<?> exclusiveFuture = null;
 
+    //FIXME break this out, probably into a singleton
     public boolean execute(ExecutionLock lock, Logger log, Runnable runnable) {
         if (this.executor == null) throw new IllegalStateException("Executor not started");
         switch (lock) {
@@ -214,47 +215,6 @@ public class ModContext {
 
     public void saveWorld() {
         this.spi.saveWorld();
-    }
-
-    public interface FrameworkServiceProvider {
-
-        Logger getConsoleLogger();
-
-        String getModId();
-
-        String getModVersion();
-
-        Path getConfigDir();
-
-        String getMinecraftVersion();
-
-        Path getWorldDirectory();
-
-        String getWorldName();
-
-        void setClientSavingScreenText(Message message);
-
-        void sendClientChatMessage(Message message);
-
-        Path getSnapshotRestoreDir();
-
-        boolean isClient();
-
-        boolean isWorldSaveEnabled();
-
-        void setWorldSaveEnabled(boolean enabled);
-
-        void saveWorld();
-
-        boolean isServerStopping();
-
-        void setHudText(Message message);
-
-        void sendFeedback(Message message, ServerCommandSource scs);
-
-        void sendError(Message message, ServerCommandSource scs);
-
-        void setAutoSaveListener(Runnable runnable);
     }
 
 

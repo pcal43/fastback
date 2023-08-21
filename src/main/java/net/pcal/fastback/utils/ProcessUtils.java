@@ -37,7 +37,7 @@ import static java.util.Objects.requireNonNull;
 /**
  *
  */
-public class ExecUtils {
+public class ProcessUtils {
 
     public static int doExec(String[] args, final Map<String, String> envOriginal, Consumer<String> stdoutSink, Consumer<String> stderrSink, Logger log) throws IOException, InterruptedException {
         log.debug("Executing " + String.join(" ", args));

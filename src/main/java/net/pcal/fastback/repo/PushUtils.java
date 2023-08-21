@@ -53,7 +53,7 @@ import static net.pcal.fastback.config.GitConfigKey.REMOTE_NAME;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_PUSH_URL;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.logging.Message.localizedError;
-import static net.pcal.fastback.utils.ExecUtils.doExec;
+import static net.pcal.fastback.utils.ProcessUtils.doExec;
 
 class PushUtils {
 
