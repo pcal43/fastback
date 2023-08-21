@@ -29,9 +29,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.concurrent.Callable;
 
-import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.config.GitConfigKey.LOCAL_RETENTION_POLICY;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.logging.Message.localizedError;
@@ -43,27 +41,16 @@ import static net.pcal.fastback.repo.SnapshotId.sortWorldSnapshots;
  * @author pcal
  * @since 0.3.0
  */
-//TODO write PruneUtils instead
-class JGitLocalPruneTask implements Callable<Collection<SnapshotId>> {
+class PruneUtils {
 
-    private final Logger log;
-    private final RepoImpl repo;
-
-    JGitLocalPruneTask(final RepoImpl repo,
-                       final Logger log) {
-        this.repo = requireNonNull(repo);
-        this.log = requireNonNull(log);
-    }
-
-    @Override
-    public Collection<SnapshotId> call() throws IOException {
+    public static Collection<SnapshotId> doLocalPrune(final RepoImpl repo, final Logger log) throws IOException {
         return doPrune(repo, log,
                 LOCAL_RETENTION_POLICY,
                 repo::listSnapshots,
                 sid -> {
                     log.info("Pruning local snapshot " + sid.getName());
                     try {
-                        repo.getJGit().branchDelete().setForce(true).setBranchNames(new String[]{sid.getBranchName()}).call();
+                        repo.deleteBranch(sid.getBranchName());
                     } catch (GitAPIException e) {
                         throw new IOException(e);
                     }
@@ -72,12 +59,25 @@ class JGitLocalPruneTask implements Callable<Collection<SnapshotId>> {
         );
     }
 
-    static Collection<SnapshotId> doPrune(Repo repo,
-                                          Logger log,
-                                          GitConfigKey policyConfigKey,
-                                          JGitSupplier<ListMultimap<String, SnapshotId>> listSnapshotsFn,
-                                          JGitConsumer<SnapshotId> deleteSnapshotsFn,
-                                          String notSetKey) throws IOException {
+    public static Collection<SnapshotId> doRemotePrune(RepoImpl repo, Logger log) throws IOException {
+        return doPrune(repo, log,
+                GitConfigKey.REMOTE_RETENTION_POLICY,
+                repo::listRemoteSnapshots,
+                sid -> {
+                    log.info("Pruning remote snapshot " + sid.getName());
+                    GitConfig conf = repo.getConfig();
+                    repo.deleteRemoteBranch(conf.getString(GitConfigKey.REMOTE_NAME), sid.getBranchName());
+                },
+                "fastback.chat.remote-retention-policy-not-set"
+        );
+    }
+
+    private static Collection<SnapshotId> doPrune(Repo repo,
+                                                  Logger log,
+                                                  GitConfigKey policyConfigKey,
+                                                  JGitSupplier<ListMultimap<String, SnapshotId>> listSnapshotsFn,
+                                                  JGitConsumer<SnapshotId> deleteSnapshotsFn,
+                                                  String notSetKey) throws IOException {
         final GitConfig conf = repo.getConfig();
         final String policyConfig = conf.getString(policyConfigKey);
         final RetentionPolicy policy = RetentionPolicyCodec.INSTANCE.decodePolicy(RetentionPolicyType.getAvailable(), policyConfig);
@@ -93,4 +93,5 @@ class JGitLocalPruneTask implements Callable<Collection<SnapshotId>> {
         }
         return toPrune;
     }
+
 }

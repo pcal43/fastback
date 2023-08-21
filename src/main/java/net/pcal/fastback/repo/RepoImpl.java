@@ -80,18 +80,18 @@ class RepoImpl implements Repo {
     }
 
     @Override
-    public Callable<Collection<SnapshotId>> createLocalPruneTask() {
-        return new JGitLocalPruneTask(this, log);
+    public Collection<SnapshotId> doLocalPrune() throws IOException {
+        return PruneUtils.doLocalPrune(this, log);
+    }
+
+    @Override
+    public Collection<SnapshotId> doRemotePrune() throws IOException {
+        return PruneUtils.doRemotePrune(this, log);
     }
 
     @Override
     public Callable<Void> createGcTask() {
         return new JGitGcTask(this, log);
-    }
-
-    @Override
-    public Callable<Collection<SnapshotId>> createRemotePruneTask() {
-        return new RemotePruneTask(this, log);
     }
 
     @Override

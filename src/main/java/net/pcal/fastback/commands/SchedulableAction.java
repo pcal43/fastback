@@ -62,7 +62,7 @@ public enum SchedulableAction {
         public Callable<Void> getTask(final Repo repo) {
             return ()->{
                 repo.doCommitAndPush();
-                final Collection<SnapshotId> pruned = repo.createLocalPruneTask().call();
+                final Collection<SnapshotId> pruned = repo.doLocalPrune();
                 if (pruned.size() > 0) {
                     repo.createGcTask().call();
                 }

@@ -47,11 +47,11 @@ public interface Repo extends AutoCloseable {
 
     void doCommitSnapshot() throws IOException;
 
-    Callable<Collection<SnapshotId>> createLocalPruneTask();
+    Collection<SnapshotId> doLocalPrune() throws IOException;
+
+    Collection<SnapshotId> doRemotePrune() throws IOException;
 
     Callable<Void> createGcTask();
-
-    Callable<Collection<SnapshotId>> createRemotePruneTask();
 
     Callable<Path> restoreSnapshotTask(String uri, Path restoresDir, String worldName, SnapshotId sid, Logger log) throws IOException;
 

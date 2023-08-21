@@ -58,7 +58,7 @@ enum PruneCommand implements Command {
     private static int prune(final ModContext ctx, final ServerCommandSource scs) {
         final Logger log = commandLogger(ctx, scs);
         gitOp(ctx, WRITE, log, repo -> {
-            final Collection<SnapshotId> pruned = repo.createLocalPruneTask().call();
+            final Collection<SnapshotId> pruned = repo.doLocalPrune();
             log.chat(localized("fastback.chat.prune-done", pruned.size()));
             if (pruned.size() > 0) log.chat(localized("fastback.chat.prune-suggest-gc"));
         });

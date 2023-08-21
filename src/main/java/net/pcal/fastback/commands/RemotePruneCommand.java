@@ -58,7 +58,7 @@ enum RemotePruneCommand implements Command {
     private static int remotePrune(final ModContext ctx, final ServerCommandSource scs) {
         final Logger log = commandLogger(ctx, scs);
         gitOp(ctx, WRITE, log, repo -> {
-            final Collection<SnapshotId> pruned = repo.createRemotePruneTask().call();
+            final Collection<SnapshotId> pruned = repo.doRemotePrune();
             log.chat(localized("fastback.chat.prune-done", pruned.size()));
         });
         return SUCCESS;
