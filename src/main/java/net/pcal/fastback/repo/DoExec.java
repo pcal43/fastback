@@ -24,11 +24,18 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import static java.util.Objects.requireNonNull;
+import static net.pcal.fastback.logging.Message.raw;
 
 
 /**
@@ -37,14 +44,11 @@ import java.util.stream.Collectors;
  */
 class DoExec {
 
-    static void doExec(String[] args, Logger log) throws IOException {
+    static int doExec(String[] args, final Map<String, String> envOriginal, Consumer<String> stdoutSink, Consumer<String> stderrSink, Logger log) throws IOException, InterruptedException {
         log.info(String.join(" ", args));
-        Map<String,String> env = new HashMap<>();
-        env.putAll(System.getenv());
-        env.put("GIT_TRACE", "1");
-        env.put("GIT_CURL_VERBOSE", "1");
 
-        pretty sure the problem is you're not draining stderr
+        final Map<String, String> env = new HashMap<>(envOriginal);
+        env.putAll(System.getenv());
 
         List<String> envlist = new ArrayList<>();
         for(Map.Entry<String, String> entry : env.entrySet()) {
@@ -52,11 +56,126 @@ class DoExec {
         }
         String[] enva = envlist.toArray(new String[0]);
         final Process p = Runtime.getRuntime().exec(args, enva);
-        String stdout = readString(p.getInputStream());
-        String stderr = readString(p.getErrorStream());
-        log.info(stdout);
-        log.info(stderr);
-        log.info("exitCode = "+p.exitValue());
+
+        return drainAndWait(p, new RectifyingWriter(stdoutSink), new RectifyingWriter(stderrSink));
+    }
+
+    static class LogConsumer implements Consumer<String> {
+
+        private final Logger log;
+
+        LogConsumer(Logger log) {
+            this.log = requireNonNull(log);
+        }
+
+        @Override
+        public void accept(String s) {
+            log.info(s);
+            int p = s.indexOf("%");
+            if (true || p != -1) {
+                //log.hud(raw(s.substring(0, p+1)));
+                log.hud(raw(s));
+            }
+        }
+    }
+
+    private static class RectifyingWriter extends Writer {
+
+        private final Consumer<String> sink;
+        private final StringBuilder buffer = new StringBuilder();
+
+        private RectifyingWriter(final Consumer<String> sink) {
+            this.sink = requireNonNull(sink);
+        }
+
+
+        @Override
+        public void write(char[] cbuf, int off, int len) throws IOException {
+            buffer.append(cbuf, off, len);
+            outputLines();
+        }
+
+        private void outputLines() {
+            int lineStart = 0, lineEnd;
+            while ((lineEnd = findLineEnd(buffer, lineStart)) != -1) {
+                final String line = buffer.substring(lineStart, lineEnd).trim();
+                if (line.length() > 0) this.sink.accept(line);
+                lineStart = lineEnd + 1;
+            }
+            if (lineStart != 0) {
+                buffer.delete(0, lineStart);
+            }
+        }
+
+        private static int findLineEnd(StringBuilder buffer, int lineStart) {
+            int newLine = buffer.indexOf("\n", lineStart);
+            int carriage = buffer.indexOf("\r", lineStart);
+            if (newLine == -1) return carriage;
+            if (carriage == -1) return newLine;
+            return Math.min(newLine, carriage);
+        }
+
+        @Override
+        public void flush() throws IOException {
+            outputLines();
+            if (buffer.length() > 0) {
+                this.sink.accept(buffer.toString());
+            }
+        }
+
+        @Override
+        public void close() throws IOException {
+        }
+    }
+
+
+    private static int drainAndWait(Process process, Writer stdoutSink, Writer stderrSink) throws IOException, InterruptedException {
+
+        Reader stdoutReader = new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8);
+        Reader stderrReader = new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8);
+
+        char[] buffer = new char[1024];
+
+        while (true) {
+            boolean readAny = false;
+            //
+            // process stdin
+            //
+            if (stdoutReader != null && stdoutReader.ready()){
+                int read = stdoutReader.read(buffer, 0, buffer.length);
+                if (read < 0){
+                    stdoutReader = null;
+                } else if (read > 0){
+                    readAny = true;
+                    stdoutSink.write(buffer, 0, read);
+                }
+            }
+            //
+            // process stdout
+            //
+            if (stderrReader != null && stderrReader.ready()){
+                int read = stderrReader.read(buffer, 0, buffer.length);
+                if (read < 0){
+                    stderrReader = null;
+                } else if (read > 0){
+                    readAny = true;
+                    stderrSink.write(buffer, 0, read);
+                }
+            }
+
+            if (readAny) {
+                continue;
+            } else if (!process.isAlive()) {
+                return process.exitValue();
+            } else {
+                try {
+                    Thread.sleep(10); // FIXME add timeout?
+                } catch (InterruptedException ie){
+                    process.destroy();
+                    throw ie;
+                }
+            }
+        }
     }
 
     private static String readString(InputStream in) {

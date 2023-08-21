@@ -20,6 +20,7 @@ package net.pcal.fastback.repo;
 
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.repo.DoExec.LogConsumer;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
@@ -31,6 +32,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
+import java.util.function.Consumer;
 
 import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_ENABLED;
 import static net.pcal.fastback.logging.Message.localized;
@@ -46,34 +49,40 @@ class DoCommit {
         log.info("Preparing local backup " + newSid);
         final String newBranchName = newSid.getBranchName();
 
-        if (repo.getConfig().getBoolean(IS_NATIVE_ENABLED)) {
-            native_commit(newBranchName, repo, ctx, log);
-        } else {
-            try {
+        try {
+            if (repo.getConfig().getBoolean(IS_NATIVE_ENABLED)) {
+                native_commit(newBranchName, repo, ctx, log);
+            } else {
                 jgit_commit(newBranchName, repo.getJGit(), ctx, log);
-            } catch (GitAPIException e) {
-                throw new IOException(e);
             }
+        } catch (GitAPIException | InterruptedException e) {
+            throw new IOException(e);
         }
+
         log.info("Local backup complete.");
         return newSid;
     }
 
-    private static void native_commit(String newBranchName, Repo repo, ModContext ctx, Logger log) throws IOException {
-        log.debug("Starting native_commit");
+    private static void native_commit(String newBranchName, Repo repo, ModContext ctx, Logger log) throws IOException, InterruptedException {
+        log.debug("Start native_commit");
         final File worktree = repo.getWorkTree();
-        String[] checkout = { "git", "-C", worktree.getAbsolutePath(), "checkout", "--orphan", newBranchName };
-        doExec(checkout, log);
+        final Map<String,String> env = Map.of("GIT_LFS_FORCE_PROGRESS", "1");
+        final Consumer<String> logConsumer = new LogConsumer(log);
+        String[] checkout = {"git", "-C", worktree.getAbsolutePath(), "checkout", "--orphan", newBranchName};
+        doExec(checkout, env, logConsumer, logConsumer, log);
         ctx.setWorldSaveEnabled(false);
         try {
-            String[] add = { "git", "-C", worktree.getAbsolutePath(), "add", "."};
-            doExec(add, log);
+            String[] add = {"git", "-C", worktree.getAbsolutePath(), "add", "-v", "."};
+            doExec(add, env, logConsumer, logConsumer, log);
         } finally {
             ctx.setWorldSaveEnabled(true);
             log.debug("World save re-enabled.");
         }
-        String[] commit = { "git", "-C", worktree.getAbsolutePath(), "commit", "-m", newBranchName };
-        doExec(commit, log);
+        {
+            String[] commit = {"git", "-C", worktree.getAbsolutePath(), "commit", "-m", newBranchName};
+            doExec(commit, env, logConsumer, logConsumer, log);
+        }
+        log.debug("End native_commit");
     }
 
     private static void jgit_commit(String newBranchName, Git jgit, ModContext ctx, final Logger log) throws GitAPIException {

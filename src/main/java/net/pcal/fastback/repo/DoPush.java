@@ -21,6 +21,7 @@ package net.pcal.fastback.repo;
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.repo.DoExec.LogConsumer;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
@@ -38,7 +39,9 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_ENABLED;
@@ -97,19 +100,21 @@ class DoPush {
                 jgit_doNaivePush(jgit, sid.getBranchName(), conf, log);
             }
             log.info("Remote backup complete.");
-        } catch (GitAPIException e) {
+        } catch (GitAPIException | InterruptedException e) {
             throw new IOException(e);
         }
     }
 
-    private static void native_doPush(final Repo repo, final String branchNameToPush, final Logger log) throws IOException {
-        log.debug("Starting native_push");
+    private static void native_doPush(final Repo repo, final String branchNameToPush, final Logger log) throws IOException, InterruptedException {
+        log.debug("Start native_push");
         final File worktree = repo.getWorkTree();
         final GitConfig conf = repo.getConfig();
         String remoteName = conf.getString(REMOTE_NAME);
-        final String[] push = { "git", "-C", worktree.getAbsolutePath(), "push", "--set-upstream", remoteName, branchNameToPush };
-        doExec(push, log);
-        log.debug("Done native_push");
+        final String[] push = { "git", "-C", worktree.getAbsolutePath(), "push", "--progress", "--set-upstream", remoteName, branchNameToPush };
+        final Map<String,String> env = Map.of("GIT_LFS_FORCE_PROGRESS", "1");
+        final Consumer<String> logConsumer = new LogConsumer(log);
+        doExec(push, env, logConsumer, logConsumer, log);
+        log.debug("End native_push");
     }
 
     private static void jgit_doSmartPush(final RepoImpl repo, List<SnapshotId> remoteSnapshots, final String branchNameToPush, final GitConfig conf, final Logger logger) throws IOException {

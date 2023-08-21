@@ -113,9 +113,8 @@ final class FabricClientProvider extends FabricProvider implements HudRenderCall
                 int j = textRenderer.getWidth(this.hudText);
                 int k = 16777215 | i << 24 & -16777216;
                 int scaledWidth = this.client.getWindow().getScaledWidth();
-                int scaledHeight = this.client.getWindow().getScaledHeight();
-                int x = scaledWidth - j - 5;
-                int y = scaledHeight - 15;
+                int x = 2; //scaledWidth - j - 5;
+                int y = 2;
                 drawContext.drawTextWithShadow(textRenderer, this.hudText, x, y, k);
             } else {
                 hudText = null;
