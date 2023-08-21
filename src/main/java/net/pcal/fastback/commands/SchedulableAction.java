@@ -45,15 +45,15 @@ public enum SchedulableAction {
 
     LOCAL("local") {
         @Override
-        public Callable<SnapshotId> getTask(final Repo repo) {
-            return repo::doCommitSnapshot;
+        public Callable<Void> getTask(final Repo repo) {
+            return ()->{ repo.doCommitSnapshot(); return null; };
         }
     },
 
     FULL("full") {
         @Override
         public Callable<Void> getTask(final Repo repo) {
-            return repo::doCommitAndPush;
+            return ()->{ repo.doCommitAndPush(); return null; };
         }
     },
 

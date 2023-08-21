@@ -55,7 +55,7 @@ import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.logging.Message.localizedError;
 import static net.pcal.fastback.utils.ExecUtils.doExec;
 
-class DoPush {
+class PushUtils {
 
     static boolean isTempBranch(String branchName) {
         return branchName.startsWith("temp/");

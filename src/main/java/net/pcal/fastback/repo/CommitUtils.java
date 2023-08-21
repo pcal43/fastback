@@ -39,7 +39,7 @@ import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.utils.ExecUtils.doExec;
 
 @SuppressWarnings("FieldCanBeLocal")
-class DoCommit {
+class CommitUtils {
 
     static SnapshotId doCommitSnapshot(RepoImpl repo, ModContext ctx, Logger log) throws IOException {
         log.hud(localized("fastback.hud.local-saving"));

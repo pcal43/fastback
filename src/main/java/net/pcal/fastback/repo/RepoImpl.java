@@ -22,7 +22,9 @@ import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.Message;
 import net.pcal.fastback.utils.FileUtils;
+import net.pcal.fastback.utils.NativeGitUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
@@ -43,6 +45,7 @@ import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_NAME;
 import static net.pcal.fastback.config.GitConfigKey.UPDATE_GITATTRIBUTES_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.UPDATE_GITIGNORE_ENABLED;
+import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.utils.FileUtils.writeResourceToFile;
 
 class RepoImpl implements Repo {
@@ -62,15 +65,18 @@ class RepoImpl implements Repo {
     }
 
     @Override
-    public Void doCommitAndPush() throws IOException {
-        final SnapshotId newSid = DoCommit.doCommitSnapshot(this, ctx, log);
-        DoPush.doPush(newSid, this, log);
-        return null;
+    public void doCommitAndPush() throws IOException {
+        if (!doNativeCheck()) return;
+        final SnapshotId newSid = CommitUtils.doCommitSnapshot(this, ctx, log);
+        PushUtils.doPush(newSid, this, log);
+        log.chat(localized("fastback.chat.backup-complete"));
     }
 
     @Override
-    public SnapshotId doCommitSnapshot() throws IOException {
-        return DoCommit.doCommitSnapshot(this, ctx, log);
+    public void doCommitSnapshot() throws IOException {
+        if (!doNativeCheck()) return;
+        CommitUtils.doCommitSnapshot(this, ctx, log);
+        log.chat(localized("fastback.chat.backup-complete"));
     }
 
     @Override
@@ -191,6 +197,17 @@ class RepoImpl implements Repo {
                 writeResourceToFile("world/gitattributes-jgit", targetPath);
             }
         }
+    }
+
+    private boolean doNativeCheck() {
+        final GitConfig config = this.getConfig();
+        if (config.getBoolean(IS_NATIVE_ENABLED)) {
+            if (!NativeGitUtils.isNativeGitInstalled(this.log)) {
+                log.chat(Message.rawError("Unable to backup: native mode enabled but git is not installed."));
+                return false;
+            }
+        }
+        return true;
     }
 
     private static void ensureWorldHasUuid(final Path worldSaveDir, final Logger logger) throws IOException {

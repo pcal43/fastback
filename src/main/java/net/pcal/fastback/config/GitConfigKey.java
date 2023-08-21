@@ -61,6 +61,8 @@ public enum GitConfigKey {
 
     IS_SMART_PUSH_ENABLED(true),
 
+    IS_GIT_HUD_OUTPUT_ENABLED(true),
+
     IS_POST_RESTORE_CLEANUP_ENABLED(true);
 
     private static final String NULL_STRING = "";

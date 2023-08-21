@@ -22,6 +22,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.repo.Repo;
 
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.ModContext.ExecutionLock.WRITE;
@@ -60,10 +61,7 @@ enum LocalCommand implements Command {
             ctx.saveWorld();
             log.info("Starting backup");
         }
-        gitOp(ctx, WRITE, log, repo -> {
-            repo.doCommitSnapshot();
-            log.chat(localized("fastback.chat.backup-complete"));
-        });
+        gitOp(ctx, WRITE, log, Repo::doCommitSnapshot);
         return SUCCESS;
     }
 }

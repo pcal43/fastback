@@ -47,7 +47,7 @@ public class NativeGitUtils {
         try {
             exit = doExec(cmd, Collections.emptyMap(), stdout::add, line -> {}, log);
         } catch (IOException | InterruptedException e) {
-            log.internalError(e);
+            log.debug("Could not run "+ String.join(" ", cmd), e);
             return null;
         }
         return exit == 0 ? stdout.get(0) : null;
