@@ -41,7 +41,7 @@ public class MockModContext {
         }
 
         @Override
-        public Logger getLogger() {
+        public Logger getConsoleLogger() {
             return this.logger;
         }
 

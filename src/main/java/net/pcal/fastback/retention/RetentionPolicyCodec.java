@@ -19,6 +19,7 @@
 package net.pcal.fastback.retention;
 
 import net.pcal.fastback.ModContext;
+import net.pcal.fastback.logging.ConsoleLogger;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,10 +40,8 @@ public enum RetentionPolicyCodec {
 
     INSTANCE;
 
-    public RetentionPolicy decodePolicy(final ModContext ctx,
-                                        final List<RetentionPolicyType> availablePolicyTypes,
+    public RetentionPolicy decodePolicy(final List<RetentionPolicyType> availablePolicyTypes,
                                         final String encodedPolicyOriginal) {
-        requireNonNull(ctx);
         requireNonNull(availablePolicyTypes);
         requireNonNull(encodedPolicyOriginal);
         final String encodedPolicy = encodedPolicyOriginal.trim();
@@ -54,39 +53,37 @@ public enum RetentionPolicyCodec {
             encodedTypeName = encodedPolicy.trim();
         } else {
             encodedTypeName = encodedPolicy.substring(0, firstSpace).trim();
-            config = decodeMap(ctx, encodedPolicy.substring(firstSpace + 1));
+            config = decodeMap(encodedPolicy.substring(firstSpace + 1));
         }
         for (final RetentionPolicyType rtp : availablePolicyTypes) {
             if (rtp.getEncodedName().equals(encodedTypeName)) {
-                return rtp.createPolicy(ctx, config);
+                return rtp.createPolicy(config);
             }
         }
-        ctx.getLogger().internalError("Invalid retention policy " + encodedPolicy, new Exception());
+        ConsoleLogger.get().debug("Ignoring invalid retention policy " + encodedPolicy);
         return null;
     }
 
-    public String encodePolicy(final ModContext ctx,
-                               final RetentionPolicyType policyType,
-                               final Map<String, String> config) {
-        return policyType.getEncodedName() + " " + encodeMap(ctx, config);
+    public String encodePolicy(final RetentionPolicyType policyType, final Map<String, String> config) {
+        return policyType.getEncodedName() + " " + encodeMap(config);
     }
 
     // ====================================================================
     // Package-private methods
 
-    static final String encodeMap(ModContext ctx, Map<String, String> map) {
+    static String encodeMap(Map<String, String> map) {
         final StringBuilder out = new StringBuilder();
         List<String> keys = new ArrayList<>(map.keySet());
         Collections.sort(keys);
         boolean isFirst = true;
         for (final String key : keys) {
             if (!isValidForEncode(key)) {
-                ctx.getLogger().internalError("Ignoring invalid key " + key, new Exception());
+                ConsoleLogger.get().debug("Ignoring invalid key " + key);
                 continue;
             }
             final String value = map.get(key);
             if (!isValidForEncode(value)) {
-                ctx.getLogger().internalError("Ignoring invalid value " + value, new Exception());
+                ConsoleLogger.get().debug("Ignoring invalid value " + value);
                 continue;
             }
             if (!isFirst) {
@@ -102,13 +99,13 @@ public enum RetentionPolicyCodec {
         return out.toString();
     }
 
-    static final Map<String, String> decodeMap(ModContext ctx, String encodedMap) {
+    static final Map<String, String> decodeMap(String encodedMap) {
         final Map<String, String> out = new HashMap<>();
         final String[] tokens = encodedMap.split(" ");
         for (final String token : tokens) {
             final String[] keyVal = token.split("=");
             if (keyVal.length != 2) {
-                ctx.getLogger().internalError("Ignoring invalid token " + Arrays.toString(keyVal), new Exception());
+                ConsoleLogger.get().debug("Ignoring invalid token " + Arrays.toString(keyVal));
                 continue;
             }
             out.put(keyVal[0].trim(), keyVal[1].trim());

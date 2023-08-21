@@ -18,24 +18,17 @@
 
 package net.pcal.fastback.logging;
 
-public interface Logger {
+public class ConsoleLogger {
 
-    void chat(Message message);
+    private static Logger INSTANCE = null;
 
-    void hud(Message message);
+    public static Logger get() {
+        if (INSTANCE == null) throw new IllegalStateException();
+        return INSTANCE;
+    }
 
-    void internalError(String message, Throwable t);
-
-    default void internalError(Throwable t) { this.internalError(t.getMessage(), t); }
-
-    void warn(String message);
-
-    void info(String message);
-
-    void debug(String message);
-
-    void debug(String message, Throwable t);
-
-    default void debug(Throwable t) { this.debug(t.getMessage(), t); }
-
+    public static void register(Logger logger) {
+        //if (INSTANCE != null) throw new IllegalStateException();
+        INSTANCE = logger;
+    }
 }

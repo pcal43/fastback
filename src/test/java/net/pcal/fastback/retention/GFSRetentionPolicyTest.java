@@ -18,9 +18,10 @@
 
 package net.pcal.fastback.retention;
 
-import net.pcal.fastback.MockModContext;
-import net.pcal.fastback.ModContext;
+import net.pcal.fastback.logging.ConsoleLogger;
+import net.pcal.fastback.logging.Log4jLogger;
 import net.pcal.fastback.repo.SnapshotId;
+import org.apache.logging.log4j.LogManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -67,8 +68,8 @@ public class GFSRetentionPolicyTest {
                 sid(2022, 11, 4), pruned.apply(sid(2022, 11, 3)), pruned.apply(sid(2022, 11, 2))
 
         ));
-        ModContext ctx = MockModContext.create();
-        RetentionPolicy policy = GFSRetentionPolicy.GFSRetentionPolicyType.INSTANCE.createPolicy(ctx, Collections.emptyMap());
+        ConsoleLogger.register(new Log4jLogger(LogManager.getLogger("mocklogger")));
+        RetentionPolicy policy = GFSRetentionPolicy.GFSRetentionPolicyType.INSTANCE.createPolicy(Collections.emptyMap());
         ((GFSRetentionPolicy)policy).nowSupplier = ()->now;
         Collection<SnapshotId> toPruneList = policy.getSnapshotsToPrune(snapshots);
         Assertions.assertEquals(expectPruned, toPruneList);

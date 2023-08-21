@@ -27,12 +27,10 @@ import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.SaveScreenLogger;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.RepoFactory;
-import net.pcal.fastback.utils.NativeGitUtils;
 
 import java.nio.file.Path;
 
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
-import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.utils.NativeGitUtils.*;
@@ -50,7 +48,7 @@ public class LifecycleUtils {
      */
     public static void onInitialize(final ModContext ctx) {
         Commands.registerCommands(ctx, ctx.getCommandName());
-        final Logger log = ctx.getLogger();
+        final Logger log = ctx.getConsoleLogger();
         {
             final String gitVersion = getGitVersion(log);
             if (gitVersion == null) {
@@ -75,7 +73,7 @@ public class LifecycleUtils {
      * Must be called when either client or server is terminating.
      */
     public static void onTermination(ModContext ctx) {
-        ctx.getLogger().info("onTermination complete");
+        ctx.getConsoleLogger().info("onTermination complete");
     }
 
     /**
@@ -83,8 +81,8 @@ public class LifecycleUtils {
      */
     public static void onWorldStart(final ModContext ctx) {
         ctx.startExecutor();
-        final Logger logger = ctx.isClient() ? CompositeLogger.of(ctx.getLogger(), new ChatLogger(ctx)) //FIXME CAN WE KILL THIS?
-                : ctx.getLogger();
+        final Logger logger = ctx.isClient() ? CompositeLogger.of(ctx.getConsoleLogger(), new ChatLogger(ctx)) //FIXME CAN WE KILL THIS?
+                : ctx.getConsoleLogger();
         final Path worldSaveDir = ctx.getWorldDirectory();
         final RepoFactory rf = RepoFactory.get();
         if (rf.isGitRepo(worldSaveDir)) {
@@ -94,15 +92,15 @@ public class LifecycleUtils {
                 logger.internalError("Unable to perform maintenance.  Backups will probably not work correctly", e);
             }
         }
-        ctx.getLogger().info("onWorldStart complete");
+        ctx.getConsoleLogger().info("onWorldStart complete");
     }
 
     /**
      * Must be called when a world is stopping (in either a dedicated or client-embedded server).
      */
     public static void onWorldStop(final ModContext mod) {
-        final Logger logger = mod.isClient() ? CompositeLogger.of(mod.getLogger(), new SaveScreenLogger(mod))
-                : mod.getLogger();
+        final Logger logger = mod.isClient() ? CompositeLogger.of(mod.getConsoleLogger(), new SaveScreenLogger(mod))
+                : mod.getConsoleLogger();
         final Path worldSaveDir = mod.getWorldDirectory();
         logger.chat(localized("fastback.chat.thread-waiting"));
         mod.stopExecutor();
@@ -113,7 +111,7 @@ public class LifecycleUtils {
                 if (config.getBoolean(IS_BACKUP_ENABLED)) {
                     final SchedulableAction action = SchedulableAction.forConfigValue(config, SHUTDOWN_ACTION);
                     if (action != null) {
-                        final Logger screenLogger = CompositeLogger.of(mod.getLogger(), new SaveScreenLogger(mod)); //FIXME figure out what to do with this
+                        final Logger screenLogger = CompositeLogger.of(mod.getConsoleLogger(), new SaveScreenLogger(mod)); //FIXME figure out what to do with this
                         action.getTask(repo).call();
                     }
                 }
@@ -121,6 +119,6 @@ public class LifecycleUtils {
                 logger.internalError("Shutdown action failed.", e);
             }
         }
-        mod.getLogger().info("onWorldStop complete");
+        mod.getConsoleLogger().info("onWorldStop complete");
     }
 }

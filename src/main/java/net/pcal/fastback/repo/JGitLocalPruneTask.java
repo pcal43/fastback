@@ -25,6 +25,7 @@ import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;
+import net.pcal.fastback.retention.RetentionPolicyType;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.IOException;
@@ -43,23 +44,21 @@ import static net.pcal.fastback.repo.SnapshotId.sortWorldSnapshots;
  * @author pcal
  * @since 0.3.0
  */
+//TODO write PruneUtils instead
 class JGitLocalPruneTask implements Callable<Collection<SnapshotId>> {
 
-    private final ModContext ctx;
     private final Logger log;
     private final RepoImpl repo;
 
     JGitLocalPruneTask(final RepoImpl repo,
-                       final ModContext ctx,
                        final Logger log) {
         this.repo = requireNonNull(repo);
-        this.ctx = requireNonNull(ctx);
         this.log = requireNonNull(log);
     }
 
     @Override
     public Collection<SnapshotId> call() throws IOException {
-        return doPrune(repo, ctx, log,
+        return doPrune(repo, log,
                 LOCAL_RETENTION_POLICY,
                 repo::listSnapshots,
                 sid -> {
@@ -75,7 +74,6 @@ class JGitLocalPruneTask implements Callable<Collection<SnapshotId>> {
     }
 
     static Collection<SnapshotId> doPrune(Repo repo,
-                                          ModContext ctx,
                                           Logger log,
                                           GitConfigKey policyConfigKey,
                                           JGitSupplier<ListMultimap<String, SnapshotId>> listSnapshotsFn,
@@ -83,8 +81,7 @@ class JGitLocalPruneTask implements Callable<Collection<SnapshotId>> {
                                           String notSetKey) throws IOException {
         final GitConfig conf = repo.getConfig();
         final String policyConfig = conf.getString(policyConfigKey);
-        final RetentionPolicy policy = RetentionPolicyCodec.INSTANCE.decodePolicy
-                (ctx, ctx.getRetentionPolicyTypes(), policyConfig);
+        final RetentionPolicy policy = RetentionPolicyCodec.INSTANCE.decodePolicy(RetentionPolicyType.getAvailable(), policyConfig);
         if (policy == null) {
             log.chat(localizedError(notSetKey));
             return null;

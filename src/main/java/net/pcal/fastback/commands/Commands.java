@@ -85,7 +85,7 @@ public class Commands {
     }
 
     public static Logger commandLogger(final ModContext ctx, final ServerCommandSource scs) {
-        return CompositeLogger.of(ctx.getLogger(), new CommandSourceLogger(ctx, scs), new SaveScreenLogger(ctx));
+        return CompositeLogger.of(ctx.getConsoleLogger(), new CommandSourceLogger(ctx, scs), new SaveScreenLogger(ctx));
     }
 
     public static String subcommandPermName(String subcommandName) {

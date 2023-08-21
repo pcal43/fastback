@@ -19,7 +19,6 @@
 package net.pcal.fastback.retention;
 
 import com.mojang.brigadier.arguments.ArgumentType;
-import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Message;
 import net.pcal.fastback.retention.GFSRetentionPolicy.GFSRetentionPolicyType;
 
@@ -50,7 +49,7 @@ public interface RetentionPolicyType {
 
     List<Parameter<?>> getParameters();
 
-    RetentionPolicy createPolicy(ModContext ctx, Map<String, String> config);
+    RetentionPolicy createPolicy(Map<String, String> config);
 
     default String getEncodedName() {
         return getName();

@@ -83,7 +83,7 @@ enum HelpCommand implements Command {
             try {
                 completableFuture.complete(builder.buildFuture().get());
             } catch (InterruptedException | ExecutionException e) {
-                this.ctx.getLogger().internalError("looking up help topics", e);
+                this.ctx.getConsoleLogger().internalError("looking up help topics", e);
                 return null;
             }
             return completableFuture;

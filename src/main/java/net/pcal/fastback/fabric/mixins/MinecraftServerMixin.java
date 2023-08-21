@@ -52,9 +52,9 @@ public class MinecraftServerMixin {
         synchronized (this) {
             final FabricProvider ctx = FabricProvider.getInstance();
             if (ctx.isWorldSaveEnabled()) {
-                ctx.getLogger().debug("world saves are enabled, doing requested save");
+                ctx.getConsoleLogger().debug("world saves are enabled, doing requested save");
             } else {
-                ctx.getLogger().warn("Skipping requested save because a backup is in progress.");
+                ctx.getConsoleLogger().warn("Skipping requested save because a backup is in progress.");
                 ci.setReturnValue(false);
                 ci.cancel();
             }
@@ -69,10 +69,10 @@ public class MinecraftServerMixin {
         synchronized (this) {
             final FabricProvider ctx = FabricProvider.getInstance();
             if (ctx.isWorldSaveEnabled()) {
-                ctx.getLogger().debug("world saves are enabled, doing requested saveAll");
+                ctx.getConsoleLogger().debug("world saves are enabled, doing requested saveAll");
                 //TODO should call save here to ensure all synced?
             } else {
-                ctx.getLogger().warn("Skipping requested saveAll because a backup is in progress.");
+                ctx.getConsoleLogger().warn("Skipping requested saveAll because a backup is in progress.");
                 ci.setReturnValue(false);
                 ci.cancel();
             }

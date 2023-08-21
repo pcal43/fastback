@@ -108,7 +108,7 @@ enum InfoCommand implements Command {
             log.chat(localized(noneKey));
         } else {
             final RetentionPolicy policy = RetentionPolicyCodec.INSTANCE.
-                    decodePolicy(ctx, RetentionPolicyType.getAvailable(), encodedPolicy);
+                    decodePolicy(RetentionPolicyType.getAvailable(), encodedPolicy);
             if (policy == null) {
                 log.chat(localized(noneKey));
             } else {

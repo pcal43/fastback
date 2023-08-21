@@ -38,21 +38,18 @@ import static net.pcal.fastback.repo.JGitLocalPruneTask.doPrune;
  */
 class RemotePruneTask implements Callable<Collection<SnapshotId>> {
 
-    private final ModContext ctx;
     private final Logger log;
     private final Repo repo;
 
     RemotePruneTask(final Repo repo,
-                    final ModContext ctx,
                     final Logger log) {
         this.repo = requireNonNull(repo);
-        this.ctx = requireNonNull(ctx);
         this.log = requireNonNull(log);
     }
 
     @Override
     public Collection<SnapshotId> call() throws IOException {
-        return doPrune(repo, ctx, log,
+        return doPrune(repo, log,
                 GitConfigKey.REMOTE_RETENTION_POLICY,
                 repo::listRemoteSnapshots,
                 sid -> {

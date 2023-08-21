@@ -18,7 +18,6 @@
 
 package net.pcal.fastback.retention;
 
-import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.Message;
 import net.pcal.fastback.repo.SnapshotId;
 
@@ -67,7 +66,7 @@ enum AllRetentionPolicy implements RetentionPolicy {
         }
 
         @Override
-        public RetentionPolicy createPolicy(final ModContext ctx, final Map<String, String> config) {
+        public RetentionPolicy createPolicy(final Map<String, String> config) {
             return AllRetentionPolicy.INSTANCE;
         }
 

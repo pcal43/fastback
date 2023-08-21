@@ -81,7 +81,7 @@ class RepoImpl implements Repo {
 
     @Override
     public Callable<Collection<SnapshotId>> createLocalPruneTask() {
-        return new JGitLocalPruneTask(this, ctx, log);
+        return new JGitLocalPruneTask(this,  log);
     }
 
     @Override
@@ -91,7 +91,7 @@ class RepoImpl implements Repo {
 
     @Override
     public Callable<Collection<SnapshotId>> createRemotePruneTask() {
-        return new RemotePruneTask(this, ctx, log);
+        return new RemotePruneTask(this, log);
     }
 
     @Override

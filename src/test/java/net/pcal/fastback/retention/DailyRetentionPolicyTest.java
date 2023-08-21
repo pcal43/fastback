@@ -20,7 +20,10 @@ package net.pcal.fastback.retention;
 
 import net.pcal.fastback.MockModContext;
 import net.pcal.fastback.ModContext;
+import net.pcal.fastback.logging.ConsoleLogger;
+import net.pcal.fastback.logging.Log4jLogger;
 import net.pcal.fastback.repo.SnapshotId;
+import org.apache.logging.log4j.LogManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -71,8 +74,9 @@ public class DailyRetentionPolicyTest {
                 yesterdayA, yesterdayB, yesterdayC,
                 threeDaysAgoA, threeDaysAgoB, threeDaysAgoC, lastWeek,
                 lastYearA, lastYearB, lastYearC));
-        ModContext ctx = MockModContext.create();
-        RetentionPolicy policy = DailyRetentionPolicy.DailyRetentionPolicyType.INSTANCE.createPolicy(ctx,
+
+        ConsoleLogger.register(new Log4jLogger(LogManager.getLogger("mocklogger")));
+        RetentionPolicy policy = DailyRetentionPolicy.DailyRetentionPolicyType.INSTANCE.createPolicy(
                 Map.of("gracePeriodDays", String.valueOf(GRACE_PERIOD)));
         Collection<SnapshotId> toPruneList = policy.getSnapshotsToPrune(snapshots);
         Assertions.assertEquals(List.of(threeDaysAgoB, threeDaysAgoA, lastYearB, lastYearA), toPruneList);

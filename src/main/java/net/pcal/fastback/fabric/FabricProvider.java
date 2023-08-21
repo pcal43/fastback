@@ -59,7 +59,7 @@ public abstract class FabricProvider implements ModContext.FrameworkServiceProvi
 
     private static final String MOD_ID = "fastback";
     private boolean isWorldSaveEnabled = true;
-    private final Logger logger = new Log4jLogger(LogManager.getLogger(MOD_ID));
+    private final Logger consoleLogger = new Log4jLogger(LogManager.getLogger(MOD_ID));
 
     protected FabricProvider() {
         if (INSTANCE != null) throw new IllegalStateException();
@@ -72,8 +72,8 @@ public abstract class FabricProvider implements ModContext.FrameworkServiceProvi
     }
 
     @Override
-    public Logger getLogger() {
-        return this.logger;
+    public Logger getConsoleLogger() {
+        return this.consoleLogger;
     }
 
     @Override
@@ -157,7 +157,7 @@ public abstract class FabricProvider implements ModContext.FrameworkServiceProvi
         if (this.autoSaveListener != null) {
             this.autoSaveListener.run();
         } else {
-            this.getLogger().warn("Autosave just happened but, unexpectedly, no one is listening.");
+            this.getConsoleLogger().warn("Autosave just happened but, unexpectedly, no one is listening.");
         }
     }
 

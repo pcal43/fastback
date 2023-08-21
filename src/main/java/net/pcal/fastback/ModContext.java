@@ -20,6 +20,7 @@ package net.pcal.fastback;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.commands.SchedulableAction;
 import net.pcal.fastback.config.GitConfig;
+import net.pcal.fastback.logging.ConsoleLogger;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.Message;
 import net.pcal.fastback.repo.Repo;
@@ -59,6 +60,7 @@ public class ModContext {
     private ModContext(FrameworkServiceProvider spi) {
         this.spi = requireNonNull(spi);
         spi.setAutoSaveListener(new AutosaveListener());
+        ConsoleLogger.register(requireNonNull(spi.getConsoleLogger()));
     }
 
     class AutosaveListener implements Runnable {
@@ -69,11 +71,11 @@ public class ModContext {
         public void run() {
             //TODO implement indicator
             // final Logger screenLogger = CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx));
-            execute(ExecutionLock.WRITE, getLogger(), () -> {
+            execute(ExecutionLock.WRITE, getConsoleLogger(), () -> {
                 RepoFactory rf = RepoFactory.get();
                 final Path worldSaveDir = getWorldDirectory();
                 if (!rf.isGitRepo(worldSaveDir)) return;
-                try (final Repo repo = rf.load(worldSaveDir, ModContext.this, getLogger())) {
+                try (final Repo repo = rf.load(worldSaveDir, ModContext.this, getConsoleLogger())) {
                     final GitConfig config = repo.getConfig();
                     if (!config.getBoolean(IS_BACKUP_ENABLED)) return;
                     final SchedulableAction autobackAction = forConfigValue(config, AUTOBACK_ACTION);
@@ -82,15 +84,15 @@ public class ModContext {
                     final Duration timeRemaining = waitTime.
                             minus(Duration.ofMillis(System.currentTimeMillis() - lastBackupTime));
                     if (!timeRemaining.isZero() && !timeRemaining.isNegative()) {
-                        getLogger().debug("Skipping auto-backup until at least " +
+                        getConsoleLogger().debug("Skipping auto-backup until at least " +
                                 (timeRemaining.toSeconds() / 60) + " more minutes have elapsed.");
                         return;
                     }
-                    getLogger().info("Starting auto-backup");
+                    getConsoleLogger().info("Starting auto-backup");
                     autobackAction.getTask(repo);
                     lastBackupTime = System.currentTimeMillis();
                 } catch (Exception e) {
-                    getLogger().internalError("auto-backup failed.", e);
+                    getConsoleLogger().internalError("auto-backup failed.", e);
                 }
             });
         }
@@ -205,8 +207,9 @@ public class ModContext {
         return this.spi.getWorldName();
     }
 
-    public Logger getLogger() {
-        return this.spi.getLogger();
+    @Deprecated
+    public Logger getConsoleLogger() {
+        return ConsoleLogger.get();
     }
 
     // TODO make these configurable via properties
@@ -239,17 +242,13 @@ public class ModContext {
         return RetentionPolicyType.getAvailable();
     }
 
-    public TimeZone getTimeZone() {
-        return TimeZone.getDefault();
-    }
-
     public void saveWorld() {
         this.spi.saveWorld();
     }
 
     public interface FrameworkServiceProvider {
 
-        Logger getLogger();
+        Logger getConsoleLogger();
 
         String getModId();
 

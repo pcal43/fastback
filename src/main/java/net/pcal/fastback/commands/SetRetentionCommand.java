@@ -81,7 +81,7 @@ enum SetRetentionCommand implements Command {
                                             final BiFunction<CommandContext<ServerCommandSource>, RetentionPolicyType, Integer> setPolicyFn) {
         final LiteralArgumentBuilder<ServerCommandSource> retainCommand =
                 literal(commandName).requires(subcommandPermission(ctx, commandName));
-        for (final RetentionPolicyType rpt : ctx.getRetentionPolicyTypes()) {
+        for (final RetentionPolicyType rpt : RetentionPolicyType.getAvailable()) {
             final LiteralArgumentBuilder<ServerCommandSource> policyCommand = literal(rpt.getCommandName());
             policyCommand.executes(cc -> setPolicyFn.apply(cc, rpt));
             if (rpt.getParameters() != null) {
@@ -112,9 +112,9 @@ enum SetRetentionCommand implements Command {
                 if (val == null) return FAILURE;
                 config.put(p.name(), String.valueOf(val));
             }
-            final String encodedPolicy = RetentionPolicyCodec.INSTANCE.encodePolicy(ctx, rpt, config);
+            final String encodedPolicy = RetentionPolicyCodec.INSTANCE.encodePolicy(rpt, config);
             final RetentionPolicy rp =
-                    RetentionPolicyCodec.INSTANCE.decodePolicy(ctx, RetentionPolicyType.getAvailable(), encodedPolicy);
+                    RetentionPolicyCodec.INSTANCE.decodePolicy(RetentionPolicyType.getAvailable(), encodedPolicy);
             if (rp == null) {
                 logger.internalError("Failed to decode policy " + encodedPolicy, new Exception());
                 return FAILURE;
