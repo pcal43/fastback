@@ -19,7 +19,6 @@
 package net.pcal.fastback.repo;
 
 import com.google.common.collect.ListMultimap;
-import net.pcal.fastback.ModContext;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.Logger;

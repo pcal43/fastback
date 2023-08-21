@@ -18,7 +18,7 @@
 
 package net.pcal.fastback.logging;
 
-import net.pcal.fastback.ModContext;
+import net.pcal.fastback.mod.ModContext;
 
 import static java.util.Objects.requireNonNull;
 

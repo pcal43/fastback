@@ -19,7 +19,7 @@
 package net.pcal.fastback.logging;
 
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.ModContext;
+import net.pcal.fastback.mod.ModContext;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.Message.localized;

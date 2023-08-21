@@ -16,7 +16,7 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.fabric;
+package net.pcal.fastback.mod.fabric;
 
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.loader.api.FabricLoader;
@@ -28,7 +28,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
-import net.pcal.fastback.fabric.mixins.ScreenAccessors;
+import net.pcal.fastback.mod.fabric.mixins.ScreenAccessors;
 import net.pcal.fastback.logging.Message;
 
 import java.nio.file.Path;

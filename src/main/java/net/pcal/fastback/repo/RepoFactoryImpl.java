@@ -18,7 +18,7 @@
 
 package net.pcal.fastback.repo;
 
-import net.pcal.fastback.ModContext;
+import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.logging.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;

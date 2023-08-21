@@ -20,7 +20,7 @@ package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.ModContext;
+import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.retention.RetentionPolicy;
@@ -29,7 +29,7 @@ import net.pcal.fastback.retention.RetentionPolicyType;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.ModContext.ExecutionLock.NONE;
+import static net.pcal.fastback.mod.ModContext.ExecutionLock.NONE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;

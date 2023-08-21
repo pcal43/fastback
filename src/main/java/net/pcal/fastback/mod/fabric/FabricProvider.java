@@ -16,7 +16,7 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.fabric;
+package net.pcal.fastback.mod.fabric;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
@@ -29,9 +29,9 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.world.level.storage.LevelStorage;
-import net.pcal.fastback.ModContext;
-import net.pcal.fastback.fabric.mixins.ServerAccessors;
-import net.pcal.fastback.fabric.mixins.SessionAccessors;
+import net.pcal.fastback.mod.ModContext;
+import net.pcal.fastback.mod.fabric.mixins.ServerAccessors;
+import net.pcal.fastback.mod.fabric.mixins.SessionAccessors;
 import net.pcal.fastback.logging.Log4jLogger;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.Message;

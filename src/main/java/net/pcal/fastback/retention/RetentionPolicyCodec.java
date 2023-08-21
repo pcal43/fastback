@@ -18,7 +18,6 @@
 
 package net.pcal.fastback.retention;
 
-import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.ConsoleLogger;
 
 import java.util.ArrayList;

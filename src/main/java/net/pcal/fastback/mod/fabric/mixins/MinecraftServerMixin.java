@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
-package net.pcal.fastback.fabric.mixins;
+package net.pcal.fastback.mod.fabric.mixins;
 
 import net.minecraft.server.MinecraftServer;
-import net.pcal.fastback.fabric.FabricProvider;
+import net.pcal.fastback.mod.fabric.FabricProvider;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

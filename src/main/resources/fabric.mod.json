@@ -15,10 +15,10 @@
   "environment": "*",
   "entrypoints": {
     "client": [
-      "net.pcal.fastback.fabric.FabricClientInitializer"
+      "net.pcal.fastback.mod.fabric.FabricClientInitializer"
     ],
     "server": [
-      "net.pcal.fastback.fabric.FabricServerInitializer"
+      "net.pcal.fastback.mod.fabric.FabricServerInitializer"
     ]
   },
   "mixins": [

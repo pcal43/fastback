@@ -16,37 +16,18 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.fabric;
+package net.pcal.fastback.mod.fabric.mixins;
 
-import net.pcal.fastback.logging.Message;
-
-import java.nio.file.Path;
+import net.minecraft.world.level.storage.LevelStorage;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Accessor;
 
 /**
  * @author pcal
- * @since 0.1.0
+ * @since 0.0.1
  */
-public class FabricServerProvider extends FabricProvider {
-
-    @Override
-    public boolean isClient() {
-        return false;
-    }
-
-    @Override
-    public Path getSnapshotRestoreDir() {
-        return null;
-    }
-
-    @Override
-    public void setClientSavingScreenText(Message message) {
-    }
-
-    @Override
-    public void sendClientChatMessage(Message message) {
-    }
-
-    @Override
-    public void setHudText(Message message) {
-    }
+@Mixin(LevelStorage.Session.class)
+public interface SessionAccessors {
+    @Accessor
+    LevelStorage.LevelSave getDirectory();
 }

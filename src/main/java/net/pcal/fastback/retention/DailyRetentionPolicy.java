@@ -19,7 +19,6 @@
 package net.pcal.fastback.retention;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
-import net.pcal.fastback.ModContext;
 import net.pcal.fastback.logging.ConsoleLogger;
 import net.pcal.fastback.logging.Message;
 import net.pcal.fastback.repo.SnapshotId;

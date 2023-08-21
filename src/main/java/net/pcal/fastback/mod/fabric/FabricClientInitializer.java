@@ -16,14 +16,14 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.fabric;
+package net.pcal.fastback.mod.fabric;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.pcal.fastback.LifecycleUtils;
-import net.pcal.fastback.ModContext;
+import net.pcal.fastback.mod.LifecycleUtils;
+import net.pcal.fastback.mod.ModContext;
 
 /**
  * Initializer that runs in a client.
