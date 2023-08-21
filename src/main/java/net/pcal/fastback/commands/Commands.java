@@ -105,7 +105,7 @@ public class Commands {
      */
     public static <V> V getArgumentNicely(final String argName, final Class<V> clazz, final CommandContext<?> cc, Logger log) {
         try {
-            return cc.<V>getArgument(argName, clazz);
+            return cc.getArgument(argName, clazz);
         } catch(IllegalArgumentException iae) {
             missingArgument(argName, log);
             return null;
