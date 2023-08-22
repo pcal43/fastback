@@ -70,5 +70,8 @@ public interface FrameworkServiceProvider {
      */
     void setHudText(Text text);
 
+    void setMessageScreenText(Text text);
+
     void setAutoSaveListener(Runnable runnable);
+
 }

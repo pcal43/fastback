@@ -74,6 +74,14 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
     }
 
     @Override
+    public void setMessageScreenText(Text text) {
+        final Screen screen = client.currentScreen;
+        if (screen instanceof MessageScreen) {
+            ((ScreenAccessors) screen).setTitle(text);
+        }
+    }
+
+    @Override
     public Path getSavesDir() {
         return FabricLoader.getInstance().getGameDir().resolve("saves");
     }

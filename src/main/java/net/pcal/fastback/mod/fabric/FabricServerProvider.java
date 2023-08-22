@@ -41,4 +41,9 @@ public class FabricServerProvider extends BaseFabricProvider {
     @Override
     public void setHudText(Text text) {
     }
+
+    @Override
+    public void setMessageScreenText(Text text) {
+
+    }
 }

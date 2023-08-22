@@ -82,6 +82,7 @@
   "fastback.hud.remote-preparing"                : "Preparing remote backup %d%%",
   "fastback.hud.remote-uploading"                : "Uploading backup %d%%",
   "fastback.hud.restore-percent"                 : "Restoring backup %d%%",
+  "fastback.message.backing-up"                  : "Backing up...",
   "fastback.retain.all.description"              : "Retain all snapshots; never prune.",
   "fastback.retain.fixed.description"            : "Fixed: Keep only the %s most-recent snapshots.",
   "fastback.retain.daily.description"            : "Daily: Keep the last snapshot from each day, plus all snapshots from the last %s days",

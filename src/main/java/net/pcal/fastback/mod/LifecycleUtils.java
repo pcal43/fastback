@@ -24,15 +24,18 @@ import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.CompositeLogger;
 import net.pcal.fastback.logging.ConsoleLogger;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.RepoFactory;
 
 import java.nio.file.Path;
 
+import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
+import static net.pcal.fastback.logging.UserMessage.localized;
 import static net.pcal.fastback.utils.EnvironmentUtils.getGitLfsVersion;
 import static net.pcal.fastback.utils.EnvironmentUtils.getGitVersion;
 
@@ -91,7 +94,7 @@ public class LifecycleUtils {
         final Logger consoleLogger = ConsoleLogger.get();
         final Logger logger = mod.isClient() ? CompositeLogger.of(consoleLogger) : consoleLogger;
         final Path worldSaveDir = mod.getWorldDirectory();
-        logger.chat(UserMessage.localized("fastback.chat.thread-waiting"));
+        logger.chat(localized("fastback.chat.thread-waiting"));
         mod.stopExecutor();
         final RepoFactory rf = RepoFactory.get();
         if (rf.isGitRepo(worldSaveDir)) {
@@ -100,8 +103,8 @@ public class LifecycleUtils {
                 if (config.getBoolean(IS_BACKUP_ENABLED)) {
                     final SchedulableAction action = SchedulableAction.forConfigValue(config, SHUTDOWN_ACTION);
                     if (action != null) {
-                        final Logger screenLogger = CompositeLogger.of(consoleLogger); //FIXME figure out what to do with this
-                        action.getTask(repo, logger).call();
+                        mod.setMessageScreenText(localized("fastback.message.backing-up"));
+                        action.getTask(repo, new SaveScreenLogger(mod)).call();
                     }
                 }
             } catch (Exception e) {
@@ -109,5 +112,24 @@ public class LifecycleUtils {
             }
         }
         syslog().debug("onWorldStop complete");
+    }
+
+    private static class SaveScreenLogger implements UserLogger {
+
+        private final ModContext ctx;
+
+        SaveScreenLogger(ModContext ctx){
+            this.ctx = requireNonNull(ctx);
+        }
+
+        @Override
+        public void chat(UserMessage message) {
+
+        }
+
+        @Override
+        public void hud(UserMessage message) {
+            ctx.setHudText(message);
+        }
     }
 }

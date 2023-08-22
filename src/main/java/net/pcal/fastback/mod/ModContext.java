@@ -171,6 +171,10 @@ public class ModContext {
         return spi.isClient();
     }
 
+    public void setMessageScreenText(UserMessage message) {
+        this.spi.setMessageScreenText(messageToText(message));
+    }
+
     public void sendChat(UserMessage message, ServerCommandSource scs) {
         if (message.style() == ERROR) {
             scs.sendError(messageToText(message));
