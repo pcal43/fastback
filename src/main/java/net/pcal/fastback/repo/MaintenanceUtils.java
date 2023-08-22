@@ -78,8 +78,9 @@ public interface MaintenanceUtils {
         boolean currentSetting = repo.getConfig().getBoolean(IS_NATIVE_GIT_ENABLED);
         if (currentSetting == newSetting) return; // no-op
         if (!repo.listSnapshots().isEmpty()) {
-            user.chat(Message.rawError("Existing snapshots found.  You can't change the native-git setting after you've done a backup."));
-            user.chat(Message.rawError("Consider making a fresh copy of your world and changing the setting there."));
+            user.chat(Message.rawError(
+                    "Existing snapshots found.  You can't change the native-git setting after you've done a backup.  " +
+                    "Consider making a fresh copy of your world and changing the setting there."));
             return;
         }
         if (newSetting) {
@@ -107,8 +108,10 @@ public interface MaintenanceUtils {
         if (EnvironmentUtils.isNativeGitInstalled()) {
             final boolean isNativeEnabled = repo.getConfig().getBoolean(IS_NATIVE_GIT_ENABLED);
             final String action = isNativeEnabled ? "install" : "uninstall";
-            final String[] cmd = { "git", "-C", repo.getWorkTree().getAbsolutePath(), "lfs", action, "--local" };
-            doExec(cmd, Collections.emptyMap(), s->{}, s->{});
+            final String[] cmd = {"git", "-C", repo.getWorkTree().getAbsolutePath(), "lfs", action, "--local"};
+            doExec(cmd, Collections.emptyMap(), s -> {
+            }, s -> {
+            });
         }
     }
 

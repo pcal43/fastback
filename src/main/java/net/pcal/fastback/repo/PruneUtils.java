@@ -83,7 +83,6 @@ class PruneUtils {
                 repo::listRemoteSnapshots,
                 sid -> {
                     log.info("Pruning remote snapshot " + sid.getName());
-                    GitConfig conf = repo.getConfig();
                     repo.deleteRemoteBranch(sid.getBranchName());
                 },
                 "fastback.chat.remote-retention-policy-not-set"

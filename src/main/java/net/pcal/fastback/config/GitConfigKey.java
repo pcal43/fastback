@@ -29,7 +29,7 @@ public enum GitConfigKey {
 
     IS_BACKUP_ENABLED("backup-enabled", false),
 
-    IS_NATIVE_GIT_ENABLED("native-git-enabled", true), //FIXME
+    IS_NATIVE_GIT_ENABLED("native-git-enabled", false),
 
     AUTOBACK_ACTION("autoback-action", null),
 

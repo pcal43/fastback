@@ -22,6 +22,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.mod.ModContext;
 
 import static net.minecraft.server.command.CommandManager.literal;
@@ -67,8 +68,9 @@ enum SetCommand implements Command {
 
     private static int setNativeGit(final ModContext ctx, final CommandContext<ServerCommandSource> cc, boolean value) {
         final Logger log = commandLogger(ctx, cc.getSource());
+        final UserLogger user = log;
         gitOp(ctx, WRITE_CONFIG, log, repo -> {
-            repo.setNativeGitEnabled(value, log);
+            repo.setNativeGitEnabled(value, user);
         });
         return SUCCESS;
     }
