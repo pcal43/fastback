@@ -148,16 +148,12 @@ public class ModContext {
         Path restoreDir = this.spi.getSavesDir();
         if (restoreDir != null) return restoreDir;
         if (tempRestoresDirectory == null) {
-            tempRestoresDirectory = createTempDirectory(getModId() + "-restore");
+            tempRestoresDirectory = createTempDirectory("fastback-restore");
         }
         return tempRestoresDirectory;
     }
 
     // PASSTHROUGH IMPLEMENTATIONS
-
-    String getModId() {
-        return this.spi.getModId();
-    }
 
     public String getModVersion() {
         return this.spi.getModVersion();

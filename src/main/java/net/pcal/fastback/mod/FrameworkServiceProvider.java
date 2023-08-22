@@ -25,16 +25,18 @@ import java.nio.file.Path;
 /**
  * Services that must be provided by the underlying mod framework.  Currently, that means fabric only.
  *
- * But abstracting it away like this ensures that it would be relatively straightforward to support other frameworks
- * if there's ever a desire or need for that.
+ * But abstracting it away like this ensures that it would be relatively straightforward to support other
+ * frameworks if there's ever a desire or need for that.  If you're interested in helping port Fastback
+ * to (say) Forge, this is the place to start.
  *
  * @author pcal
  * @since 0.1.0
  */
 public interface FrameworkServiceProvider {
 
-    String getModId();
-
+    /**
+     * @return the version of the fastback mod.
+     */
     String getModVersion();
 
     /**
@@ -70,6 +72,10 @@ public interface FrameworkServiceProvider {
      */
     void setHudText(Text text);
 
+    /**
+     * If we're clientside and a minecraft MessageScreen is being displayed (e.g., the 'saving' screen), set
+     * the title of the screen.  Otherwise does nothing.
+     */
     void setMessageScreenText(Text text);
 
     void setAutoSaveListener(Runnable runnable);

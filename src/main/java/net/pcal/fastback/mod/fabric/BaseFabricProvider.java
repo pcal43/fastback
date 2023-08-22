@@ -63,11 +63,6 @@ public abstract class BaseFabricProvider implements FrameworkServiceProvider {
     }
 
     @Override
-    public String getModId() {
-        return MOD_ID;
-    }
-
-    @Override
     public String getModVersion() {
         Optional<ModContainer> optionalModContainer = FabricLoader.getInstance().getModContainer(MOD_ID);
         if (optionalModContainer.isEmpty()) {
