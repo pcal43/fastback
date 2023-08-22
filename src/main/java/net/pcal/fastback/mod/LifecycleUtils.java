@@ -21,7 +21,6 @@ package net.pcal.fastback.mod;
 import net.pcal.fastback.commands.Commands;
 import net.pcal.fastback.commands.SchedulableAction;
 import net.pcal.fastback.config.GitConfig;
-import net.pcal.fastback.logging.CompositeLogger;
 import net.pcal.fastback.logging.ConsoleLogger;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.UserLogger;
@@ -92,7 +91,7 @@ public class LifecycleUtils {
      */
     public static void onWorldStop(final ModContext mod) {
         final Logger consoleLogger = ConsoleLogger.get();
-        final Logger logger = mod.isClient() ? CompositeLogger.of(consoleLogger) : consoleLogger;
+        final Logger logger = consoleLogger;
         final Path worldSaveDir = mod.getWorldDirectory();
         logger.chat(localized("fastback.chat.thread-waiting"));
         mod.stopExecutor();
