@@ -21,6 +21,7 @@ package net.pcal.fastback.repo;
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.UserLogger;
 import org.eclipse.jgit.errors.NoWorkTreeException;
 
 import java.io.File;
@@ -62,7 +63,8 @@ public interface Repo extends AutoCloseable {
 
     void deleteRemoteBranch(String remoteName, String remoteBranchName) throws IOException;
 
+    void setNativeGitEnabled(boolean enabled, UserLogger userlog) throws IOException;
 
+    @Deprecated
     void doWorldMaintenance(Logger logger) throws IOException, IOException;
-
 }

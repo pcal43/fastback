@@ -34,7 +34,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_ENABLED;
+import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.utils.ProcessUtils.doExec;
 
@@ -49,7 +49,7 @@ class CommitUtils {
         final String newBranchName = newSid.getBranchName();
 
         try {
-            if (repo.getConfig().getBoolean(IS_NATIVE_ENABLED)) {
+            if (repo.getConfig().getBoolean(IS_NATIVE_GIT_ENABLED)) {
                 native_commit(newBranchName, repo, ctx, log);
             } else {
                 jgit_commit(newBranchName, repo.getJGit(), ctx, log);

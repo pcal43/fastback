@@ -78,6 +78,8 @@ public class Commands {
         RemotePruneCommand.INSTANCE.register(argb, ctx);
         RemoteRestoreCommand.INSTANCE.register(argb, ctx);
 
+        SetCommand.INSTANCE.register(argb, ctx);
+
         HelpCommand.INSTANCE.register(argb, ctx);
         if (ctx.isExperimentalCommandsEnabled()) {
             SaveCommand.INSTANCE.register(argb, ctx);

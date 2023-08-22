@@ -18,11 +18,11 @@
 
 package net.pcal.fastback.logging;
 
-public interface Logger extends UserLogger, SystemLogger {
+public interface SystemLogger {
 
-    void chat(Message message);
-
-    void hud(Message message);
+    static SystemLogger get() {
+        return ConsoleLogger.get();
+    }
 
     void internalError(String message, Throwable t);
 

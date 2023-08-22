@@ -43,7 +43,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_ENABLED;
+import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.IS_REMOTE_TEMP_BRANCH_CLEANUP_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.IS_SMART_PUSH_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.IS_TEMP_BRANCH_CLEANUP_ENABLED;
@@ -90,7 +90,7 @@ class PushUtils {
                 }
             }
             log.info("Pushing to " + pushUrl);
-            if (conf.getBoolean(IS_NATIVE_ENABLED)) {
+            if (conf.getBoolean(IS_NATIVE_GIT_ENABLED)) {
                 native_doPush(repo, sid.getBranchName(), log);
             } else if (conf.getBoolean(IS_SMART_PUSH_ENABLED)) {
                 final String uuid = repo.getWorldUuid();
@@ -109,7 +109,7 @@ class PushUtils {
         final File worktree = repo.getWorkTree();
         final GitConfig conf = repo.getConfig();
         String remoteName = conf.getString(REMOTE_NAME);
-        final String[] push = { "git", "-C", worktree.getAbsolutePath(), "push", "--progress", "--set-upstream", remoteName, branchNameToPush };
+        final String[] push = { "git", "-C", worktree.getAbsolutePath(), "-c", "push.autosetupremote=false", "push", "--progress", "--set-upstream", remoteName, branchNameToPush };
         final Map<String,String> env = Map.of("GIT_LFS_FORCE_PROGRESS", "1");
         final Consumer<String> logConsumer = new LogConsumer(log);
         doExec(push, env, logConsumer, logConsumer);

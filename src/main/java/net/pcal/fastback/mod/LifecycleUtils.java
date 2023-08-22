@@ -34,7 +34,7 @@ import java.nio.file.Path;
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.logging.Message.localized;
-import static net.pcal.fastback.utils.NativeGitUtils.*;
+import static net.pcal.fastback.utils.EnvironmentUtils.*;
 
 /**
  * Framework-agnostic lifecycle logic.

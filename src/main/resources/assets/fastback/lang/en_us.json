@@ -15,6 +15,7 @@
   "fastback.help.command.remote-prune"           : "Delete old snapshots from the remote backup according to the remote retention policy.",
   "fastback.help.command.remote-restore"         : "Restore a remote snapshot.",
   "fastback.help.command.restore"                : "Restore a backup snapshot.",
+  "fastback.help.command.set"                    : "Change configuration settings.",
   "fastback.help.command.set-autoback-action"    : "Set an action to perform during auto-backups.",
   "fastback.help.command.set-autoback-wait"      : "Set the minimum number of minutes to wait between auto-backups.",
   "fastback.help.command.set-remote"             : "Set the url for remote backups.",

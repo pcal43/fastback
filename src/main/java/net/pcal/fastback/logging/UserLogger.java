@@ -18,24 +18,9 @@
 
 package net.pcal.fastback.logging;
 
-public interface Logger extends UserLogger, SystemLogger {
+public interface UserLogger {
 
     void chat(Message message);
 
     void hud(Message message);
-
-    void internalError(String message, Throwable t);
-
-    default void internalError(Throwable t) { this.internalError(t.getMessage(), t); }
-
-    void warn(String message);
-
-    void info(String message);
-
-    void debug(String message);
-
-    void debug(String message, Throwable t);
-
-    default void debug(Throwable t) { this.debug(t.getMessage(), t); }
-
 }

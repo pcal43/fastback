@@ -22,9 +22,9 @@ import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.Message;
+import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.mod.ModContext;
-import net.pcal.fastback.utils.FileUtils;
-import net.pcal.fastback.utils.NativeGitUtils;
+import net.pcal.fastback.utils.EnvironmentUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
@@ -32,21 +32,16 @@ import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.transport.RefSpec;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_ENABLED;
+import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_NAME;
-import static net.pcal.fastback.config.GitConfigKey.UPDATE_GITATTRIBUTES_ENABLED;
-import static net.pcal.fastback.config.GitConfigKey.UPDATE_GITIGNORE_ENABLED;
 import static net.pcal.fastback.logging.Message.localized;
-import static net.pcal.fastback.utils.FileUtils.writeResourceToFile;
 
 /**
  * @author pcal
@@ -196,22 +191,12 @@ class RepoImpl implements Repo {
 
     @Override
     public void doWorldMaintenance(final Logger logger) throws IOException {
-        logger.info("Doing world maintenance");
-        final Path worldSaveDir = jgit.getRepository().getWorkTree().toPath();
-        ensureWorldHasUuid(worldSaveDir, logger);
-        final GitConfig config = GitConfig.load(jgit);
-        if (config.getBoolean(UPDATE_GITIGNORE_ENABLED)) {
-            final Path targetPath = worldSaveDir.resolve(".gitignore");
-            writeResourceToFile("world/gitignore", targetPath);
-        }
-        if (config.getBoolean(UPDATE_GITATTRIBUTES_ENABLED)) {
-            final Path targetPath = worldSaveDir.resolve(".gitattributes");
-            if (config.getBoolean(IS_NATIVE_ENABLED)) {
-                writeResourceToFile("world/gitattributes-native", targetPath);
-            } else {
-                writeResourceToFile("world/gitattributes-jgit", targetPath);
-            }
-        }
+        MaintenanceUtils.doPreflight(this);
+    }
+
+    @Override
+    public void setNativeGitEnabled(boolean enabled, UserLogger userlog) throws IOException {
+        MaintenanceUtils.setNativeGitEnabled(enabled, this, userlog);
     }
 
     // ======================================================================
@@ -219,8 +204,8 @@ class RepoImpl implements Repo {
 
     private boolean doNativeCheck() {
         final GitConfig config = this.getConfig();
-        if (config.getBoolean(IS_NATIVE_ENABLED)) {
-            if (!NativeGitUtils.isNativeGitInstalled()) {
+        if (config.getBoolean(IS_NATIVE_GIT_ENABLED)) {
+            if (!EnvironmentUtils.isNativeGitInstalled()) {
                 log.chat(Message.rawError("Unable to backup: native mode enabled but git is not installed."));
                 return false;
             }
@@ -228,16 +213,4 @@ class RepoImpl implements Repo {
         return true;
     }
 
-    private static void ensureWorldHasUuid(final Path worldSaveDir, final Logger logger) throws IOException {
-        final Path worldUuidpath = worldSaveDir.resolve(WORLD_UUID_PATH);
-        if (!worldUuidpath.toFile().exists()) {
-            FileUtils.mkdirs(worldUuidpath.getParent());
-            final String newUuid = UUID.randomUUID().toString();
-            try (final FileWriter fw = new FileWriter(worldUuidpath.toFile())) {
-                fw.append(newUuid);
-                fw.append('\n');
-            }
-            logger.info("Generated new world.uuid " + newUuid);
-        }
-    }
 }

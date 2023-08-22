@@ -19,7 +19,6 @@
 package net.pcal.fastback.utils;
 
 import net.pcal.fastback.logging.ConsoleLogger;
-import net.pcal.fastback.logging.Logger;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,7 +27,7 @@ import java.util.List;
 
 import static net.pcal.fastback.utils.ProcessUtils.doExec;
 
-public class NativeGitUtils {
+public class EnvironmentUtils {
 
     public static boolean isNativeGitInstalled() {
         return getGitVersion() != null && getGitLfsVersion() != null;

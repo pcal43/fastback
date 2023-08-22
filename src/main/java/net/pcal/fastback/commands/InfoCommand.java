@@ -27,11 +27,10 @@ import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;
 import net.pcal.fastback.retention.RetentionPolicyType;
-import net.pcal.fastback.utils.NativeGitUtils;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_ENABLED;
+import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.mod.ModContext.ExecutionLock.NONE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
@@ -45,8 +44,8 @@ import static net.pcal.fastback.config.GitConfigKey.REMOTE_PUSH_URL;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_RETENTION_POLICY;
 import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.logging.Message.localized;
-import static net.pcal.fastback.utils.NativeGitUtils.*;
-import static net.pcal.fastback.utils.NativeGitUtils.getGitVersion;
+import static net.pcal.fastback.utils.EnvironmentUtils.*;
+import static net.pcal.fastback.utils.EnvironmentUtils.getGitVersion;
 import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
 import static org.apache.commons.io.FileUtils.sizeOfDirectory;
 
@@ -104,7 +103,7 @@ enum InfoCommand implements Command {
             final Text disabled = Text.translatable("fastback.values.disabled");
             final Text enabled = Text.translatable("fastback.values.enabled");
             final Text notInstalled = Text.translatable("fastback.values.not-installed");
-            if (c.getBoolean(IS_NATIVE_ENABLED)) { // TODO display this all the time
+            if (c.getBoolean(IS_NATIVE_GIT_ENABLED)) { // TODO display this all the time
                 log.chat(localized("fastback.chat.info-native-git", enabled));
                 final String gitVersion = getGitVersion();
                 log.chat(localized("fastback.chat.info-native-git-version", gitVersion != null ? gitVersion : notInstalled));
