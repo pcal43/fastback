@@ -37,22 +37,22 @@ import static net.pcal.fastback.logging.SystemLogger.syslog;
  * @author pcal
  * @since 0.1.0
  */
-public abstract class FabricProvider implements FrameworkServiceProvider {
+public abstract class BaseFabricProvider implements FrameworkServiceProvider {
 
     static final String MOD_ID = "fastback";
 
-    private static FabricProvider INSTANCE;
+    private static BaseFabricProvider INSTANCE;
     private MinecraftServer minecraftServer;
     private Runnable autoSaveListener;
 
-    public static FabricProvider getInstance() {
+    public static BaseFabricProvider getInstance() {
         if (INSTANCE == null) throw new IllegalStateException("not initialized");
         return INSTANCE;
     }
 
     private boolean isWorldSaveEnabled = true;
 
-    protected FabricProvider() {
+    protected BaseFabricProvider() {
         if (INSTANCE != null) throw new IllegalStateException();
         INSTANCE = this;
     }

@@ -26,7 +26,7 @@ import net.pcal.fastback.mod.LifecycleUtils;
 import net.pcal.fastback.mod.ModContext;
 import org.apache.logging.log4j.LogManager;
 
-import static net.pcal.fastback.mod.fabric.FabricProvider.MOD_ID;
+import static net.pcal.fastback.mod.fabric.BaseFabricProvider.MOD_ID;
 
 /**
  * Initializer that runs in a dedicated server.
@@ -39,7 +39,7 @@ public class FabricServerInitializer implements DedicatedServerModInitializer {
     @Override
     public void onInitializeServer() {
         SystemLogger.register(new Log4jLogger(LogManager.getLogger(MOD_ID)));
-        final FabricProvider fsp = new FabricServerProvider();
+        final BaseFabricProvider fsp = new FabricServerProvider();
         final ModContext modContext = ModContext.create(fsp);
         ServerLifecycleEvents.SERVER_STARTING.register(
                 minecraftServer -> {

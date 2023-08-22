@@ -35,7 +35,7 @@ import java.nio.file.Path;
  * @author pcal
  * @since 0.1.0
  */
-final class FabricClientProvider extends FabricProvider implements HudRenderCallback {
+final class FabricClientProvider extends BaseFabricProvider implements HudRenderCallback {
 
     private MinecraftClient client = null;
     private Text overlayText;

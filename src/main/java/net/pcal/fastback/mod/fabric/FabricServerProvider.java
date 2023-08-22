@@ -19,7 +19,6 @@
 package net.pcal.fastback.mod.fabric;
 
 import net.minecraft.text.Text;
-import net.pcal.fastback.logging.UserMessage;
 
 import java.nio.file.Path;
 
@@ -27,7 +26,7 @@ import java.nio.file.Path;
  * @author pcal
  * @since 0.1.0
  */
-public class FabricServerProvider extends FabricProvider {
+public class FabricServerProvider extends BaseFabricProvider {
 
     @Override
     public boolean isClient() {

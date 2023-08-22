@@ -28,7 +28,7 @@ import net.pcal.fastback.mod.LifecycleUtils;
 import net.pcal.fastback.mod.ModContext;
 import org.apache.logging.log4j.LogManager;
 
-import static net.pcal.fastback.mod.fabric.FabricProvider.MOD_ID;
+import static net.pcal.fastback.mod.fabric.BaseFabricProvider.MOD_ID;
 
 
 /**
