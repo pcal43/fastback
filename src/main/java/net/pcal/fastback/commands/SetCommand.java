@@ -71,9 +71,8 @@ enum SetCommand implements Command {
     }
 
     private static int setNativeGit(final ModContext ctx, final CommandContext<ServerCommandSource> cc, boolean value) {
-        final Logger log = commandLogger(ctx, cc.getSource());
-        final UserLogger ulog = log;
-        gitOp(ctx, WRITE_CONFIG, log, repo -> {
+        final UserLogger ulog = commandLogger(ctx, cc.getSource());
+        gitOp(ctx, WRITE_CONFIG, ulog, repo -> {
             repo.setNativeGitEnabled(value, ulog);
         });
         return SUCCESS;

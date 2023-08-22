@@ -26,7 +26,6 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.CommandSourceLogger;
 import net.pcal.fastback.logging.CompositeLogger;
-import net.pcal.fastback.logging.ConsoleLogger;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.SaveScreenLogger;
 import net.pcal.fastback.logging.UserLogger;
@@ -91,7 +90,7 @@ public class Commands {
     }
 
     public static Logger commandLogger(final ModContext ctx, final ServerCommandSource scs) {
-        return CompositeLogger.of(ConsoleLogger.get(), new CommandSourceLogger(ctx, scs), new SaveScreenLogger(ctx));
+        return CompositeLogger.of(new CommandSourceLogger(ctx, scs), new SaveScreenLogger(ctx));
     }
 
     public static String subcommandPermName(String subcommandName) {
@@ -108,7 +107,7 @@ public class Commands {
      * cases where the list of arguments is dynamic (e.g., retention policies) and we can't
      * rely on brigadier's static parse trees.
      */
-    public static <V> V getArgumentNicely(final String argName, final Class<V> clazz, final CommandContext<?> cc, Logger log) {
+    public static <V> V getArgumentNicely(final String argName, final Class<V> clazz, final CommandContext<?> cc, UserLogger log) {
         try {
             return cc.getArgument(argName, clazz);
         } catch(IllegalArgumentException iae) {
@@ -121,7 +120,7 @@ public class Commands {
         return missingArgument(argName, commandLogger(ctx, cc.getSource()));
     }
 
-    public static int missingArgument(final String argName, final Logger log) {
+    public static int missingArgument(final String argName, final UserLogger log) {
         log.chat(styledLocalized("fastback.chat.missing-argument", ERROR, argName));
         return FAILURE;
     }

@@ -22,6 +22,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.ModContext;
 
@@ -54,11 +55,11 @@ enum SetShutdownActionCommand implements Command {
     }
 
     private static int setShutdownAction(final ModContext ctx, final ServerCommandSource scs, SchedulableAction action) {
-        final Logger log = commandLogger(ctx, scs);
-        gitOp(ctx, WRITE_CONFIG, log, repo -> {
+        final UserLogger ulog = commandLogger(ctx, scs);
+        gitOp(ctx, WRITE_CONFIG, ulog, repo -> {
             final GitConfig conf = repo.getConfig();
             conf.updater().set(SHUTDOWN_ACTION, action.getConfigValue()).save();
-            log.chat(UserMessage.localized("fastback.chat.info-shutdown-action", action.getArgumentName()));
+            ulog.chat(UserMessage.localized("fastback.chat.info-shutdown-action", action.getArgumentName()));
         });
         return SUCCESS;
     }

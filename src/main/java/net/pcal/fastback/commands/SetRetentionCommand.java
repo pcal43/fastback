@@ -23,7 +23,7 @@ import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.config.GitConfigKey;
-import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.retention.RetentionPolicy;
@@ -44,6 +44,7 @@ import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.getArgumentNicely;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.config.GitConfigKey.LOCAL_RETENTION_POLICY;
+import static net.pcal.fastback.logging.SystemLogger.syslog;
 
 /**
  * Command to set the snapshot retention policy.
@@ -105,12 +106,12 @@ enum SetRetentionCommand implements Command {
                                          final CommandContext<ServerCommandSource> cc,
                                          final RetentionPolicyType rpt,
                                          final GitConfigKey confKey) {
-        final Logger logger = commandLogger(ctx, cc.getSource());
+        final UserLogger ulog = commandLogger(ctx, cc.getSource());
         try {
             final Path worldSaveDir = ctx.getWorldDirectory();
             final Map<String, String> config = new HashMap<>();
             for (final RetentionPolicyType.Parameter<?> p : rpt.getParameters()) {
-                final Object val = getArgumentNicely(p.name(), p.clazz(), cc, logger);
+                final Object val = getArgumentNicely(p.name(), p.clazz(), cc, ulog);
                 if (val == null) return FAILURE;
                 config.put(p.name(), String.valueOf(val));
             }
@@ -118,21 +119,21 @@ enum SetRetentionCommand implements Command {
             final RetentionPolicy rp =
                     RetentionPolicyCodec.INSTANCE.decodePolicy(RetentionPolicyType.getAvailable(), encodedPolicy);
             if (rp == null) {
-                logger.error("Failed to decode policy " + encodedPolicy, new Exception());
+                syslog().error("Failed to decode policy " + encodedPolicy, new Exception());
                 return FAILURE;
             }
             try (final Git jgit = Git.open(worldSaveDir.toFile())) {
                 final GitConfig conf = GitConfig.load(jgit);
                 conf.updater().set(confKey, encodedPolicy).save();
-                logger.chat(UserMessage.localized("fastback.chat.retention-policy-set"));
-                logger.chat(rp.getDescription());
+                ulog.chat(UserMessage.localized("fastback.chat.retention-policy-set"));
+                ulog.chat(rp.getDescription());
             } catch (Exception e) {
-                logger.error("Command execution failed.", e);
+                syslog().error("Command execution failed.", e);
                 return FAILURE;
             }
             return SUCCESS;
         } catch (Exception e) {
-            logger.error("Failed to set retention policy", e);
+            syslog().error("Failed to set retention policy", e);
             return FAILURE;
         }
     }

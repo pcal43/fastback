@@ -18,7 +18,6 @@
 
 package net.pcal.fastback.retention;
 
-import net.pcal.fastback.logging.ConsoleLogger;
 import net.pcal.fastback.logging.Log4jLogger;
 import net.pcal.fastback.logging.SystemLogger;
 import net.pcal.fastback.repo.SnapshotId;

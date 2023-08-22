@@ -23,6 +23,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.ModContext;
 import org.eclipse.jgit.api.Git;
@@ -62,12 +63,12 @@ enum CreateFileRemoteCommand implements Command {
     }
 
     private static int setFileRemote(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
-        final Logger log = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, NONE, log, repo -> {
+        final UserLogger ulog = commandLogger(ctx, cc.getSource());
+        gitOp(ctx, NONE, ulog, repo -> {
             final String targetPath = cc.getArgument(ARGUMENT, String.class);
             final Path fupHome = Path.of(targetPath);
             if (fupHome.toFile().exists()) {
-                log.chat(localizedError("fastback.chat.create-file-remote-dir-exists", fupHome.toString()));
+                ulog.chat(localizedError("fastback.chat.create-file-remote-dir-exists", fupHome.toString()));
                 return;
             }
             mkdirs(fupHome);
@@ -79,7 +80,7 @@ enum CreateFileRemoteCommand implements Command {
             }
             final String targetUrl = "file://" + fupHome.toAbsolutePath();
             repo.getConfig().updater().set(REMOTE_PUSH_URL, targetUrl).save();
-            log.chat(UserMessage.localized("fastback.chat.create-file-remote-created", targetPath, targetUrl));
+            ulog.chat(UserMessage.localized("fastback.chat.create-file-remote-created", targetPath, targetUrl));
         });
         return SUCCESS;
     }

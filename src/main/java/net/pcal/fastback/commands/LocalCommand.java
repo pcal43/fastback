@@ -18,9 +18,11 @@
 
 package net.pcal.fastback.commands;
 
+import com.mojang.authlib.yggdrasil.response.User;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.mod.ModContext;
 
 import static net.minecraft.server.command.CommandManager.literal;
@@ -53,7 +55,7 @@ enum LocalCommand implements Command {
     }
 
     public static int run(ModContext ctx, ServerCommandSource scs) {
-        final Logger ulog = commandLogger(ctx, scs);
+        final UserLogger ulog = commandLogger(ctx, scs);
         {
             // workaround for https://github.com/pcal43/fastback/issues/112
             syslog().info("Saving before backup");

@@ -23,6 +23,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.SnapshotId;
@@ -42,7 +43,7 @@ abstract class SnapshotNameSuggestions implements SuggestionProvider<ServerComma
         return new SnapshotNameSuggestions(ctx) {
 
             @Override
-            protected Collection<SnapshotId> getSnapshotIds(Repo repo, Logger log) throws Exception {
+            protected Collection<SnapshotId> getSnapshotIds(Repo repo, UserLogger ulog) throws Exception {
                 return sortWorldSnapshots(repo.listSnapshots(), repo.getWorldUuid());
             }
         };
@@ -52,7 +53,7 @@ abstract class SnapshotNameSuggestions implements SuggestionProvider<ServerComma
         return new SnapshotNameSuggestions(ctx) {
 
             @Override
-            protected Collection<SnapshotId> getSnapshotIds(Repo repo, Logger log) throws Exception {
+            protected Collection<SnapshotId> getSnapshotIds(Repo repo, UserLogger ulog) throws Exception {
                 return sortWorldSnapshots(repo.listRemoteSnapshots(), repo.getWorldUuid());
             }
         };
@@ -78,6 +79,6 @@ abstract class SnapshotNameSuggestions implements SuggestionProvider<ServerComma
         return completableFuture;
     }
 
-    abstract protected Collection<SnapshotId> getSnapshotIds(Repo repo, Logger log) throws Exception;
+    abstract protected Collection<SnapshotId> getSnapshotIds(Repo repo, UserLogger log) throws Exception;
 
 }

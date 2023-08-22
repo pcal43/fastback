@@ -18,10 +18,12 @@
 
 package net.pcal.fastback.commands;
 
+import com.mojang.authlib.yggdrasil.response.User;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.repo.SnapshotId;
@@ -50,11 +52,11 @@ enum ListCommand implements Command {
     }
 
     private int execute(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
-        final Logger log = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, NONE, log, repo -> {
+        final UserLogger ulog = commandLogger(ctx, cc.getSource());
+        gitOp(ctx, NONE, ulog, repo -> {
             final String uuid = repo.getWorldUuid();
             for (final SnapshotId sid : sortWorldSnapshots(repo.listSnapshots(), uuid)) {
-                log.chat(UserMessage.raw(sid.getName()));
+                ulog.chat(UserMessage.raw(sid.getName()));
             }
         });
         return SUCCESS;

@@ -18,10 +18,12 @@
 
 package net.pcal.fastback.commands;
 
+import com.mojang.authlib.yggdrasil.response.User;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.ModContext;
 
@@ -49,10 +51,10 @@ enum DisableCommand implements Command {
     }
 
     private static int disable(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
-        final Logger log = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, WRITE_CONFIG, log, repo -> {
+        final UserLogger ulog = commandLogger(ctx, cc.getSource());
+        gitOp(ctx, WRITE_CONFIG, ulog, repo -> {
             repo.getConfig().updater().set(IS_BACKUP_ENABLED, false).save();
-            log.chat(UserMessage.localized("fastback.chat.disable-done"));
+            ulog.chat(UserMessage.localized("fastback.chat.disable-done"));
         });
         return SUCCESS;
     }

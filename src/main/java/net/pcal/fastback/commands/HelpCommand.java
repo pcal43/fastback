@@ -27,6 +27,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.CommandNode;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.ModContext;
 
@@ -89,7 +90,7 @@ enum HelpCommand implements Command {
     }
 
     static int help(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
-        final Logger log = commandLogger(ctx, cc.getSource());
+        final UserLogger log = commandLogger(ctx, cc.getSource());
         StringWriter subcommands = null;
         for (final String available : getSubcommandNames(cc)) {
             if (subcommands == null) {
@@ -104,7 +105,7 @@ enum HelpCommand implements Command {
     }
 
     private int helpSubcommand(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
-        final Logger log = commandLogger(ctx, cc.getSource());
+        final UserLogger log = commandLogger(ctx, cc.getSource());
         final Collection<CommandNode<ServerCommandSource>> subcommands = cc.getNodes().get(0).getNode().getChildren();
         final String subcommand = cc.getLastChild().getArgument(ARGUMENT, String.class);
         for (String available : getSubcommandNames(cc)) {

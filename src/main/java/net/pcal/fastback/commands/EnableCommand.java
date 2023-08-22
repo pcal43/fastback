@@ -22,7 +22,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.config.GitConfig.Updater;
-import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.RepoFactory;
@@ -36,6 +36,7 @@ import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.commands.SchedulableAction.DEFAULT_SHUTDOWN_ACTION;
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
+import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.localized;
 import static net.pcal.fastback.mod.ModContext.ExecutionLock.NONE;
 
@@ -55,8 +56,8 @@ enum EnableCommand implements Command {
     }
 
     private static int enable(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
-        final Logger log = commandLogger(ctx, cc.getSource());
-        ctx.execute(NONE, log, () -> {
+        final UserLogger ulog = commandLogger(ctx, cc.getSource());
+        ctx.execute(NONE, ulog, () -> {
                     final Path worldSaveDir = ctx.getWorldDirectory();
                     final RepoFactory rf = RepoFactory.get();
                     try (final Repo repo = rf.init(worldSaveDir, ctx)) {
@@ -67,9 +68,9 @@ enum EnableCommand implements Command {
                             updater.set(SHUTDOWN_ACTION, DEFAULT_SHUTDOWN_ACTION.getConfigValue());
                         }
                         updater.save();
-                        log.chat(localized("fastback.chat.enable-done"));
+                        ulog.chat(localized("fastback.chat.enable-done"));
                     } catch (Exception e) {
-                        log.error("Error enabling backups", e);
+                        syslog().error("Error enabling backups", e);
                     }
                 }
         );
