@@ -25,10 +25,6 @@ public interface Logger extends UserLogger, SystemLogger {
 
     void hud(UserMessage message);
 
-    void internalError(String message, Throwable t);
-
-    default void internalError(Throwable t) { this.internalError(t.getMessage(), t); }
-
     void warn(String message);
 
     void info(String message);
@@ -36,7 +32,5 @@ public interface Logger extends UserLogger, SystemLogger {
     void debug(String message);
 
     void debug(String message, Throwable t);
-
-    default void debug(Throwable t) { this.debug(t.getMessage(), t); }
 
 }

@@ -42,12 +42,16 @@ public class SaveScreenLogger implements Logger {
     }
 
     @Override
-    public void internalError(String message, Throwable t) {
+    public void setForceDebugEnabled(boolean debug) {
+
     }
 
     @Override
-    public void setForceDebugEnabled(boolean debug) {
+    public void error(String message) {
+    }
 
+    @Override
+    public void error(String message, Throwable t) {
     }
 
     @Override

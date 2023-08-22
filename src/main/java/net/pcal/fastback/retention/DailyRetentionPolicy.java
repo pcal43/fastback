@@ -19,7 +19,6 @@
 package net.pcal.fastback.retention;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
-import net.pcal.fastback.logging.ConsoleLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.repo.SnapshotId;
 
@@ -31,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
 import java.util.TimeZone;
+
+import static net.pcal.fastback.logging.SystemLogger.syslog;
 
 /**
  * Policy that retains only the last snapshot of each day, along with all snapshots in
@@ -66,14 +67,14 @@ class DailyRetentionPolicy implements RetentionPolicy {
             final LocalDate currentDate = sid.snapshotDate().toInstant().atZone(TimeZone.getDefault().toZoneId()).toLocalDate();
             if (previousDate != null) {
                 if (currentDate.isAfter(gracePeriodStart)) {
-                    ConsoleLogger.get().debug("Will retain " + sid + " because still in the grace period");
+                    syslog().debug("Will retain " + sid + " because still in the grace period");
                     continue;
                 }
                 if (currentDate.equals(previousDate)) {
-                    ConsoleLogger.get().debug("Will prune " + sid + " same day as " + currentDate);
+                    syslog().debug("Will prune " + sid + " same day as " + currentDate);
                     toPrune.add(sid);
                 } else {
-                    ConsoleLogger.get().debug("Will retain " + sid + " NOT same day as " + currentDate);
+                    syslog().debug("Will retain " + sid + " NOT same day as " + currentDate);
                 }
             }
             previousDate = currentDate;
@@ -109,7 +110,7 @@ class DailyRetentionPolicy implements RetentionPolicy {
                 try {
                     gracePeriodTemp = Integer.parseInt(config.get(GRACE_PERIOD_DAYS));
                 } catch (NumberFormatException nfe) {
-                    ConsoleLogger.get().debug("Ignoring invalid grace period " + config.get(GRACE_PERIOD_DAYS), nfe);
+                    syslog().debug("Ignoring invalid grace period " + config.get(GRACE_PERIOD_DAYS), nfe);
                 }
             }
             final int gracePeriod = gracePeriodTemp;

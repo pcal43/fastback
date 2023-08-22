@@ -19,14 +19,11 @@
 package net.pcal.fastback.mod;
 
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.UserMessage;
 
 import java.nio.file.Path;
 
 public interface FrameworkServiceProvider {
-
-    Logger getConsoleLogger();
 
     String getModId();
 

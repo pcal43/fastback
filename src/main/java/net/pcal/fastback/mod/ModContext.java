@@ -23,6 +23,7 @@ import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.ConsoleLogger;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.UserMessage;
+import net.pcal.fastback.logging.UserMessage.UserMessageStyle;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.RepoFactory;
 
@@ -42,7 +43,9 @@ import static net.pcal.fastback.commands.SchedulableAction.forConfigValue;
 import static net.pcal.fastback.config.GitConfigKey.AUTOBACK_ACTION;
 import static net.pcal.fastback.config.GitConfigKey.AUTOBACK_WAIT_MINUTES;
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
-import static net.pcal.fastback.logging.UserMessage.localizedError;
+import static net.pcal.fastback.logging.SystemLogger.syslog;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
+import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 
 public class ModContext {
 
@@ -57,7 +60,6 @@ public class ModContext {
     private ModContext(FrameworkServiceProvider spi) {
         this.spi = requireNonNull(spi);
         spi.setAutoSaveListener(new AutosaveListener());
-        ConsoleLogger.register(requireNonNull(spi.getConsoleLogger()));
     }
 
     class AutosaveListener implements Runnable {
@@ -81,15 +83,15 @@ public class ModContext {
                     final Duration timeRemaining = waitTime.
                             minus(Duration.ofMillis(System.currentTimeMillis() - lastBackupTime));
                     if (!timeRemaining.isZero() && !timeRemaining.isNegative()) {
-                        ConsoleLogger.get().debug("Skipping auto-backup until at least " +
+                        syslog().debug("Skipping auto-backup until at least " +
                                 (timeRemaining.toSeconds() / 60) + " more minutes have elapsed.");
                         return;
                     }
-                    ConsoleLogger.get().info("Starting auto-backup");
+                    syslog().info("Starting auto-backup");
                     autobackAction.getTask(repo);
                     lastBackupTime = System.currentTimeMillis();
                 } catch (Exception e) {
-                    ConsoleLogger.get().internalError("auto-backup failed.", e);
+                    syslog().error("auto-backup failed.", e);
                 }
             });
         }
@@ -113,7 +115,7 @@ public class ModContext {
                 return true;
             case WRITE:
                 if (this.exclusiveFuture != null && !this.exclusiveFuture.isDone()) {
-                    log.chat(localizedError("fastback.chat.thread-busy"));
+                    log.chat(styledLocalized("fastback.chat.thread-busy", ERROR));
                     return false;
                 } else {
                     log.debug("executing " + runnable);

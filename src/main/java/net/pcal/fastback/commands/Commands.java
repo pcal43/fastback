@@ -39,7 +39,8 @@ import java.util.function.Predicate;
 
 import static net.pcal.fastback.commands.HelpCommand.help;
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
-import static net.pcal.fastback.logging.UserMessage.localizedError;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
+import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 
 public class Commands {
 
@@ -119,7 +120,7 @@ public class Commands {
     }
 
     public static int missingArgument(final String argName, final Logger log) {
-        log.chat(localizedError("fastback.chat.missing-argument", argName));
+        log.chat(styledLocalized("fastback.chat.missing-argument", ERROR, argName));
         return FAILURE;
     }
 
@@ -132,18 +133,18 @@ public class Commands {
             final Path worldSaveDir = mod.getWorldDirectory();
             final RepoFactory rf = RepoFactory.get();
             if (!rf.isGitRepo(worldSaveDir)) {
-                log.chat(localizedError("fastback.chat.not-enabled"));
+                log.chat(styledLocalized("fastback.chat.not-enabled", ERROR));
                 return;
             }
             try (final Repo repo = rf.load(worldSaveDir, mod, log)) {
                 final GitConfig repoConfig = repo.getConfig();
                 if (!repoConfig.getBoolean(IS_BACKUP_ENABLED)) {
-                    log.chat(localizedError("fastback.chat.not-enabled"));
+                    log.chat(styledLocalized("fastback.chat.not-enabled", ERROR));
                 } else {
                     op.execute(repo);
                 }
             } catch (Exception e) {
-                log.internalError("Command execution failed.", e);
+                log.error("Command execution failed.", e);
             } finally {
                 log.hud(null); // ensure we always clear the hud text
             }

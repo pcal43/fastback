@@ -18,13 +18,12 @@
 
 package net.pcal.fastback.utils;
 
-import net.pcal.fastback.logging.ConsoleLogger;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.utils.ProcessUtils.doExec;
 
 public class EnvironmentUtils {
@@ -47,7 +46,7 @@ public class EnvironmentUtils {
         try {
             exit = doExec(cmd, Collections.emptyMap(), stdout::add, line -> {});
         } catch (IOException | InterruptedException e) {
-            ConsoleLogger.get().debug("Could not run "+ String.join(" ", cmd), e);
+            syslog().debug("Could not run "+ String.join(" ", cmd), e);
             return null;
         }
         return exit == 0 ? stdout.get(0) : null;

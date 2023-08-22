@@ -70,7 +70,7 @@ enum EnableCommand implements Command {
                         updater.save();
                         log.chat(localized("fastback.chat.enable-done"));
                     } catch (Exception e) {
-                        log.internalError("Error enabling backups", e);
+                        log.error("Error enabling backups", e);
                     }
                 }
         );

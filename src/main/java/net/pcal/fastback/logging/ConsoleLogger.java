@@ -29,7 +29,8 @@ public class ConsoleLogger {
         return INSTANCE;
     }
 
-    public static void register(Logger logger) {
+    @Deprecated
+    static void register(Logger logger) {
         //if (INSTANCE != null) throw new IllegalStateException();
         INSTANCE = logger;
     }

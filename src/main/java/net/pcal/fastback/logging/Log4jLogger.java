@@ -38,13 +38,18 @@ public class Log4jLogger implements Logger {
     }
 
     @Override
-    public void internalError(String message, Throwable t) {
-        this.log4j.error(message, t);
+    public void setForceDebugEnabled(boolean forceDebugEnabled) {
+        this.forceDebugEnabled = forceDebugEnabled;
     }
 
     @Override
-    public void setForceDebugEnabled(boolean forceDebugEnabled) {
-        this.forceDebugEnabled = forceDebugEnabled;
+    public void error(String message) {
+        this.log4j.error(message);
+    }
+
+    @Override
+    public void error(String message, Throwable t) {
+        this.log4j.error(message, t);
     }
 
     @Override
@@ -74,5 +79,4 @@ public class Log4jLogger implements Logger {
             this.log4j.debug(message, t);
         }
     }
-
 }

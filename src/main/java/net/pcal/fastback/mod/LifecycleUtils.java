@@ -107,7 +107,7 @@ public class LifecycleUtils {
                     }
                 }
             } catch (Exception e) {
-                syslog().internalError("Shutdown action failed.", e);
+                syslog().error("Shutdown action failed.", e);
             }
         }
         syslog().debug("onWorldStop complete");

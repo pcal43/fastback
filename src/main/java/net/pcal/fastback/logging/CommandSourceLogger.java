@@ -44,17 +44,22 @@ public class CommandSourceLogger implements Logger {
     }
 
     @Override
-    public void internalError(String rawMessageIgnored, Throwable t) {
-        ctx.sendError(UserMessage.localized("fastback.chat.internal-error"), scs);
-    }
-
-    @Override
     public void hud(UserMessage message) {
     }
 
     @Override
     public void setForceDebugEnabled(boolean debug) {
 
+    }
+
+    @Override
+    public void error(String message) {
+        ctx.sendError(UserMessage.localized("fastback.chat.internal-error"), scs);
+    }
+
+    @Override
+    public void error(String message, Throwable t) {
+        ctx.sendError(UserMessage.localized("fastback.chat.internal-error"), scs);
     }
 
     @Override

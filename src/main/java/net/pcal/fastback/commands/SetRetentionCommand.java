@@ -98,6 +98,8 @@ enum SetRetentionCommand implements Command {
     /**
      * Does the work to encode a policy configuration and set it in git configuration.
      * Broken out as a helper methods so this logic can be shared by set-retention and set-remote-retention.
+     *
+     * TODO this should probably move to Repo.
      */
     public static int setRetentionPolicy(final ModContext ctx,
                                          final CommandContext<ServerCommandSource> cc,
@@ -116,7 +118,7 @@ enum SetRetentionCommand implements Command {
             final RetentionPolicy rp =
                     RetentionPolicyCodec.INSTANCE.decodePolicy(RetentionPolicyType.getAvailable(), encodedPolicy);
             if (rp == null) {
-                logger.internalError("Failed to decode policy " + encodedPolicy, new Exception());
+                logger.error("Failed to decode policy " + encodedPolicy, new Exception());
                 return FAILURE;
             }
             try (final Git jgit = Git.open(worldSaveDir.toFile())) {
@@ -125,12 +127,12 @@ enum SetRetentionCommand implements Command {
                 logger.chat(UserMessage.localized("fastback.chat.retention-policy-set"));
                 logger.chat(rp.getDescription());
             } catch (Exception e) {
-                logger.internalError("Command execution failed.", e);
+                logger.error("Command execution failed.", e);
                 return FAILURE;
             }
             return SUCCESS;
         } catch (Exception e) {
-            logger.internalError("Failed to set retention policy", e);
+            logger.error("Failed to set retention policy", e);
             return FAILURE;
         }
     }

@@ -20,7 +20,11 @@ package net.pcal.fastback.repo;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
+import net.pcal.fastback.logging.Log4jLogger;
+import net.pcal.fastback.logging.SystemLogger;
 import net.pcal.fastback.repo.SnapshotId;
+import org.apache.logging.log4j.LogManager;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
@@ -34,6 +38,11 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SnapshotIdTest {
+
+    @BeforeAll
+    public static void setup() {
+        SystemLogger.register(new Log4jLogger(LogManager.getLogger("mocklogger")));
+    }
 
     @Test
     public void testParseBranch() throws ParseException {

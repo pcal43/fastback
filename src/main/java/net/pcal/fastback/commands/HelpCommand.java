@@ -26,10 +26,9 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.CommandNode;
 import net.minecraft.server.command.ServerCommandSource;
+import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.ModContext;
-import net.pcal.fastback.logging.ConsoleLogger;
-import net.pcal.fastback.logging.Logger;
 
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -38,14 +37,15 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
-import static net.pcal.fastback.logging.UserMessage.localizedError;
+import static net.pcal.fastback.logging.SystemLogger.syslog;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
+import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 
 enum HelpCommand implements Command {
 
@@ -62,7 +62,7 @@ enum HelpCommand implements Command {
                         executes(cc->help(ctx, cc)).
                         then(
                                 argument(ARGUMENT, StringArgumentType.word()).
-                                        suggests(new HelpTopicSuggestions(ctx)).
+                                        suggests(new HelpTopicSuggestions()).
                                         executes(cc->helpSubcommand(ctx, cc))
                         )
         );
@@ -70,11 +70,8 @@ enum HelpCommand implements Command {
 
     private static class HelpTopicSuggestions implements SuggestionProvider<ServerCommandSource> {
 
-        private final ModContext ctx;
 
-        HelpTopicSuggestions(ModContext ctx) {
-            this.ctx = requireNonNull(ctx);
-        }
+        HelpTopicSuggestions() {}
 
         @Override
         public CompletableFuture<Suggestions> getSuggestions(final CommandContext<ServerCommandSource> cc,
@@ -84,7 +81,7 @@ enum HelpCommand implements Command {
             try {
                 completableFuture.complete(builder.buildFuture().get());
             } catch (InterruptedException | ExecutionException e) {
-                ConsoleLogger.get().internalError("looking up help topics", e);
+                syslog().error("looking up help topics", e);
                 return null;
             }
             return completableFuture;
@@ -117,7 +114,7 @@ enum HelpCommand implements Command {
                 return SUCCESS;
             }
         }
-        log.chat(localizedError("fastback.chat.invalid-input", subcommand));
+        log.chat(styledLocalized("fastback.chat.invalid-input", ERROR, subcommand));
         return FAILURE;
     }
 

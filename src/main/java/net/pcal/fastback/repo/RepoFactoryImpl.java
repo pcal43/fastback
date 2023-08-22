@@ -38,7 +38,7 @@ class RepoFactoryImpl implements RepoFactory {
         try (final Git jgit = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
             return new RepoImpl(jgit, mod, log);
         } catch (GitAPIException e) {
-            log.internalError("Error initializing repo", e);
+            log.error("Error initializing repo", e);
             throw new IOException(e);
         }
     }

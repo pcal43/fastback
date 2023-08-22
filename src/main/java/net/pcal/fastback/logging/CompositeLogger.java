@@ -45,12 +45,17 @@ public class CompositeLogger implements Logger {
     }
 
     @Override
-    public void internalError(String message, Throwable t) {
-        this.delegates.forEach(d -> d.internalError(message, t));
+    public void setForceDebugEnabled(boolean debug) {
     }
 
     @Override
-    public void setForceDebugEnabled(boolean debug) {
+    public void error(String message) {
+        this.delegates.forEach(d -> d.error(message));
+    }
+
+    @Override
+    public void error(String message, Throwable t) {
+        this.delegates.forEach(d -> d.error(message, t));
     }
 
     @Override

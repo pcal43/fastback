@@ -29,25 +29,25 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.world.level.storage.LevelStorage;
-import net.pcal.fastback.logging.Log4jLogger;
-import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.logging.UserMessage.UserMessageStyle;
 import net.pcal.fastback.mod.FrameworkServiceProvider;
 import net.pcal.fastback.mod.fabric.mixins.ServerAccessors;
 import net.pcal.fastback.mod.fabric.mixins.SessionAccessors;
-import org.apache.logging.log4j.LogManager;
 
 import java.nio.file.Path;
 import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
+import static net.pcal.fastback.logging.SystemLogger.syslog;
 
 /**
  * @author pcal
  * @since 0.1.0
  */
 public abstract class FabricProvider implements FrameworkServiceProvider {
+
+    static final String MOD_ID = "fastback";
 
     private static FabricProvider INSTANCE;
     private MinecraftServer minecraftServer;
@@ -58,9 +58,7 @@ public abstract class FabricProvider implements FrameworkServiceProvider {
         return INSTANCE;
     }
 
-    private static final String MOD_ID = "fastback";
     private boolean isWorldSaveEnabled = true;
-    private final Logger consoleLogger = new Log4jLogger(LogManager.getLogger(MOD_ID));
 
     protected FabricProvider() {
         if (INSTANCE != null) throw new IllegalStateException();
@@ -70,11 +68,6 @@ public abstract class FabricProvider implements FrameworkServiceProvider {
     void setMinecraftServer(MinecraftServer serverOrNull) {
         if ((serverOrNull == null) == (this.minecraftServer == null)) throw new IllegalStateException();
         this.minecraftServer = serverOrNull;
-    }
-
-    @Override
-    public Logger getConsoleLogger() {
-        return this.consoleLogger;
     }
 
     @Override
@@ -161,7 +154,7 @@ public abstract class FabricProvider implements FrameworkServiceProvider {
         if (this.autoSaveListener != null) {
             this.autoSaveListener.run();
         } else {
-            this.getConsoleLogger().warn("Autosave just happened but, unexpectedly, no one is listening.");
+            syslog().warn("Autosave just happened but, unexpectedly, no one is listening.");
         }
     }
 
