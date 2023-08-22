@@ -94,15 +94,6 @@ public abstract class BaseFabricProvider implements FrameworkServiceProvider {
     }
 
     @Override
-    public boolean isServerStopping() {
-        if (this.minecraftServer == null) throw new IllegalStateException();
-        return this.minecraftServer.isStopped() || this.minecraftServer.isStopping();
-    }
-
-    // TODO do we really need to use sendFeedback/error.  Can't we just sendMessage all the time?  I don't
-    // understand the difference
-
-    @Override
     public void setAutoSaveListener(Runnable runnable) {
         if (this.autoSaveListener != null) throw new IllegalStateException();
         this.autoSaveListener = requireNonNull(runnable);

@@ -64,8 +64,6 @@ public interface FrameworkServiceProvider {
 
     void saveWorld();
 
-    boolean isServerStopping();
-
     /**
      * Display ephemeral status text on the screen to the user,.  This could be part of the in-game HUD
      * or any other floating text, depending on what screen the user is on.  Has no effect if we're serverside.

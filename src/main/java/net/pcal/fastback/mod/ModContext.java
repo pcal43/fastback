@@ -171,10 +171,6 @@ public class ModContext {
         return spi.isClient();
     }
 
-    public boolean isServerStopping() {
-        return spi.isServerStopping();
-    }
-
     public void sendChat(UserMessage message, ServerCommandSource scs) {
         if (message.style() == ERROR) {
             scs.sendError(messageToText(message));
