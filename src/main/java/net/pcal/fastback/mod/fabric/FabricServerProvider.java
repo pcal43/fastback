@@ -47,6 +47,6 @@ public class FabricServerProvider extends FabricProvider {
     }
 
     @Override
-    public void setHudText(UserMessage message) {
+    public void setClientOverlayText(UserMessage message) {
     }
 }

@@ -150,6 +150,9 @@ public abstract class FabricProvider implements FrameworkServiceProvider {
         return session.getLevelSummary().getLevelInfo().getLevelName();
     }
 
+    /**
+     * Called by the mixins.
+     */
     public void autoSaveCompleted() {
         if (this.autoSaveListener != null) {
             this.autoSaveListener.run();

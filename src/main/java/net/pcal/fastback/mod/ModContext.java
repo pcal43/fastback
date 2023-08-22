@@ -187,7 +187,7 @@ public class ModContext {
     }
 
     public void renderBackupIndicator(UserMessage message) {
-        this.spi.setHudText(message);
+        this.spi.setClientOverlayText(message);
     }
 
     public Path getWorldDirectory() {

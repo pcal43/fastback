@@ -25,7 +25,6 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.MessageScreen;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
 import net.pcal.fastback.logging.UserMessage;
@@ -40,7 +39,7 @@ import java.nio.file.Path;
 final class FabricClientProvider extends FabricProvider implements HudRenderCallback {
 
     private MinecraftClient client = null;
-    private Text hudText;
+    private Text overlayText;
 
     FabricClientProvider() {
     }
@@ -62,12 +61,16 @@ final class FabricClientProvider extends FabricProvider implements HudRenderCall
     }
 
     @Override
-    public void setHudText(UserMessage message) {
+    public void setClientOverlayText(UserMessage message) {
         if (message == null) {
-            this.statusTextShown = false;
+            this.overlayTextShown = false;
         } else {
-            this.hudText = messageToText(message);
-            this.statusTextShown = true;
+            this.overlayText = messageToText(message); // so the hud renderer can find it
+            this.overlayTextShown = true;
+            final Screen screen = client.currentScreen;
+            if (screen instanceof MessageScreen) {
+                ((ScreenAccessors) screen).setTitle(overlayText);
+            }
         }
     }
 
@@ -92,32 +95,28 @@ final class FabricClientProvider extends FabricProvider implements HudRenderCall
     }
 
     // ====================================================================
-    // HudRender implementation
-
+    // HudRenderCallback implementation
 
     private float backupIndicatorAlpha;
-    private boolean statusTextShown = false;
+    private boolean overlayTextShown = false;
 
     @Override
     public void onHudRender(DrawContext drawContext, float tickDelta) {
-        if (this.hudText == null) return;
+        if (this.overlayText == null) return;
         float previousIndicatorAlpha = this.backupIndicatorAlpha;
-        this.backupIndicatorAlpha = MathHelper.lerp(0.2F, this.backupIndicatorAlpha, statusTextShown ? 1.0F : 0.0F);
-
+        this.backupIndicatorAlpha = MathHelper.lerp(0.2F, this.backupIndicatorAlpha, overlayTextShown ? 1.0F : 0.0F);
         if (this.client.options.getShowAutosaveIndicator().getValue() && (this.backupIndicatorAlpha > 0.0F || previousIndicatorAlpha > 0.0F)) {
             int i = MathHelper.floor(255.0F * MathHelper.clamp(MathHelper.lerp(this.client.getTickDelta(), previousIndicatorAlpha, this.backupIndicatorAlpha), 0.0F, 1.0F));
-
             if (i > 8) {
-                MatrixStack matrices = new MatrixStack();
-                TextRenderer textRenderer = this.client.textRenderer;
-                int j = textRenderer.getWidth(this.hudText);
+                final TextRenderer textRenderer = this.client.textRenderer;
+                // int j = textRenderer.getWidth(this.hudText);
                 int k = 16777215 | i << 24 & -16777216;
-                int scaledWidth = this.client.getWindow().getScaledWidth();
+                // int scaledWidth = this.client.getWindow().getScaledWidth();
                 int x = 2; //scaledWidth - j - 5;
                 int y = 2;
-                drawContext.drawTextWithShadow(textRenderer, this.hudText, x, y, k);
+                drawContext.drawTextWithShadow(textRenderer, this.overlayText, x, y, k);
             } else {
-                hudText = null;
+                overlayText = null;
             }
         }
     }

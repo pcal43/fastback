@@ -23,6 +23,7 @@ import net.pcal.fastback.mod.ModContext;
 import static java.util.Objects.requireNonNull;
 
 // TODO can we just kill this and have a single UserLogger that is smart about context?
+@Deprecated
 public class SaveScreenLogger implements Logger {
 
     private final ModContext ctx;

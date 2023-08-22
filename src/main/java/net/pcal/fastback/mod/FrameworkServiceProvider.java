@@ -23,6 +23,15 @@ import net.pcal.fastback.logging.UserMessage;
 
 import java.nio.file.Path;
 
+/**
+ * Services that must be provided by the underlying mod framework.  Currently, that means fabric only.
+ *
+ * But abstracting it away like this ensures that it would be relatively straightforward to support other frameworks
+ * if there's ever a desire or need for that.
+ *
+ * @author pcal
+ * @since 0.1.0
+ */
 public interface FrameworkServiceProvider {
 
     String getModId();
@@ -37,10 +46,6 @@ public interface FrameworkServiceProvider {
 
     String getWorldName();
 
-    void setClientSavingScreenText(UserMessage message);
-
-    void sendClientChatMessage(UserMessage message);
-
     Path getSnapshotRestoreDir();
 
     boolean isClient();
@@ -53,7 +58,16 @@ public interface FrameworkServiceProvider {
 
     boolean isServerStopping();
 
-    void setHudText(UserMessage message);
+    @Deprecated // just merge with setClientStatusText
+    void setClientSavingScreenText(UserMessage message);
+
+    void sendClientChatMessage(UserMessage message);
+
+    /**
+     * Display ephemeral status text on the screen to the user, if we have a UI client.  This will either be in the
+     * HUD or on the saving screen.
+     */
+    void setClientOverlayText(UserMessage message);
 
     void sendFeedback(UserMessage message, ServerCommandSource scs);
 
