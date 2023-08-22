@@ -189,11 +189,6 @@ class RepoImpl implements Repo {
     }
 
     @Override
-    public void doWorldMaintenance(final Logger logger) throws IOException {
-        MaintenanceUtils.doPreflight(this);
-    }
-
-    @Override
     public void setNativeGitEnabled(boolean enabled, UserLogger userlog) throws IOException {
         MaintenanceUtils.setNativeGitEnabled(enabled, this, userlog);
     }
