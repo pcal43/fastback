@@ -18,9 +18,9 @@
 
 package net.pcal.fastback.retention;
 
-import net.pcal.fastback.ModContext;
-import net.pcal.fastback.logging.Message;
-import net.pcal.fastback.utils.SnapshotId;
+import net.pcal.fastback.logging.ConsoleLogger;
+import net.pcal.fastback.logging.UserMessage;
+import net.pcal.fastback.repo.SnapshotId;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -32,9 +32,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
+import java.util.TimeZone;
 import java.util.function.Supplier;
-
-import static net.pcal.fastback.logging.Message.localized;
 
 /**
  * Policy that implements a simple 'Grandfather-Father-Son' strategy.  It retains
@@ -49,17 +48,15 @@ import static net.pcal.fastback.logging.Message.localized;
 class GFSRetentionPolicy implements RetentionPolicy {
 
     private static final String L10N_KEY = "fastback.retain.gfs.description";
-    private final ModContext ctx;
     Supplier<LocalDate> nowSupplier = () ->
-            LocalDate.now(GFSRetentionPolicy.this.ctx.getTimeZone().toZoneId());
+            LocalDate.now(TimeZone.getDefault().toZoneId());
 
-    public GFSRetentionPolicy(final ModContext ctx) {
-        this.ctx = ctx;
+    public GFSRetentionPolicy() {
     }
 
     @Override
-    public Message getDescription() {
-        return localized(L10N_KEY);
+    public UserMessage getDescription() {
+        return UserMessage.localized(L10N_KEY);
     }
 
     @Override
@@ -71,9 +68,9 @@ class GFSRetentionPolicy implements RetentionPolicy {
         final LocalDate oneMonthAgo = now.minus(Period.ofDays(30));
         Integer currentDay = null, currentWeek = null, currentMonth = null;
         for (final SnapshotId sid : snapshots.descendingSet()) {
-            final LocalDate snapshotDate = sid.snapshotDate().toInstant().atZone(ctx.getTimeZone().toZoneId()).toLocalDate();
+            final LocalDate snapshotDate = sid.snapshotDate().toInstant().atZone(TimeZone.getDefault().toZoneId()).toLocalDate();
             if (snapshotDate.isAfter(gracePeriodStart)) {
-                ctx.getLogger().debug("Will retain " + sid + " because still in the grace period");
+                ConsoleLogger.get().debug("Will retain " + sid + " because still in the grace period");
             } else if (snapshotDate.isAfter(oneWeekAgo)) {
                 final int snapshotDay = snapshotDate.get(ChronoField.DAY_OF_MONTH);
                 if (currentDay == null || currentDay != snapshotDay) {
@@ -122,13 +119,13 @@ class GFSRetentionPolicy implements RetentionPolicy {
         }
 
         @Override
-        public RetentionPolicy createPolicy(final ModContext ctx, final Map<String, String> config) {
-            return new GFSRetentionPolicy(ctx);
+        public RetentionPolicy createPolicy(final Map<String, String> config) {
+            return new GFSRetentionPolicy();
         }
 
         @Override
-        public Message getDescription() {
-            return localized(L10N_KEY);
+        public UserMessage getDescription() {
+            return UserMessage.localized(L10N_KEY);
         }
     }
 }

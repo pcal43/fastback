@@ -1,0 +1,19 @@
+#
+# DO NOT EDIT.  CHANGES WILL BE OVERWRITTEN.
+#
+# This file is automatically updated by FastBack.  If you need to customize
+# these rules, please read this:
+#
+# https://pcal43.github.io/fastback/advanced.html#disabling-file-updates
+#
+
+
+# native git configuration
+
+*.dat filter=lfs diff=lfs merge=lfs -text
+*.dat_old filter=lfs diff=lfs merge=lfs -text
+*.jar filter=lfs diff=lfs merge=lfs -text
+*.jar.disabled filter=lfs diff=lfs merge=lfs -text
+*.mca filter=lfs diff=lfs merge=lfs -text
+*.xz filter=lfs diff=lfs merge=lfs -text
+*.zip filter=lfs diff=lfs merge=lfs -text

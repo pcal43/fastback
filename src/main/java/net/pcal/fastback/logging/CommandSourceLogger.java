@@ -19,10 +19,10 @@
 package net.pcal.fastback.logging;
 
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.ModContext;
+import net.pcal.fastback.logging.UserMessage.UserMessageStyle;
+import net.pcal.fastback.mod.ModContext;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.logging.Message.localized;
 
 public class CommandSourceLogger implements Logger {
 
@@ -35,8 +35,8 @@ public class CommandSourceLogger implements Logger {
     }
 
     @Override
-    public void chat(Message message) {
-        if (message.isError()) {
+    public void chat(UserMessage message) {
+        if (message.style() == UserMessageStyle.ERROR) {
             ctx.sendError(message, scs);
         } else {
             ctx.sendFeedback(message, scs);
@@ -45,11 +45,16 @@ public class CommandSourceLogger implements Logger {
 
     @Override
     public void internalError(String rawMessageIgnored, Throwable t) {
-        ctx.sendError(localized("fastback.chat.internal-error"), scs);
+        ctx.sendError(UserMessage.localized("fastback.chat.internal-error"), scs);
     }
 
     @Override
-    public void hud(Message message) {
+    public void hud(UserMessage message) {
+    }
+
+    @Override
+    public void setForceDebugEnabled(boolean debug) {
+
     }
 
     @Override

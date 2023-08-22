@@ -18,11 +18,11 @@
 
 package net.pcal.fastback.logging;
 
-import net.pcal.fastback.ModContext;
+import net.pcal.fastback.mod.ModContext;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.logging.Message.localized;
 
+@Deprecated
 public class ChatLogger implements Logger {
 
     private final ModContext ctx;
@@ -32,17 +32,22 @@ public class ChatLogger implements Logger {
     }
 
     @Override
-    public void chat(Message message) {
+    public void chat(UserMessage message) {
         ctx.sendClientChatMessage(message);
     }
 
     @Override
     public void internalError(String message, Throwable t) {
-        ctx.sendClientChatMessage(localized("fastback.chat.internal-error"));
+        ctx.sendClientChatMessage(UserMessage.localized("fastback.chat.internal-error"));
     }
 
     @Override
-    public void hud(Message message) {
+    public void hud(UserMessage message) {
+
+    }
+
+    @Override
+    public void setForceDebugEnabled(boolean debug) {
 
     }
 

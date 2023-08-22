@@ -23,22 +23,28 @@ import static java.util.Objects.requireNonNull;
 public class Log4jLogger implements Logger {
 
     private final org.apache.logging.log4j.Logger log4j;
+    private boolean forceDebugEnabled = false;
 
     public Log4jLogger(org.apache.logging.log4j.Logger log4j) {
         this.log4j = requireNonNull(log4j);
     }
 
     @Override
-    public void chat(Message message) {
+    public void chat(UserMessage message) {
     }
 
     @Override
-    public void hud(Message message) {
+    public void hud(UserMessage message) {
     }
 
     @Override
     public void internalError(String message, Throwable t) {
         this.log4j.error(message, t);
+    }
+
+    @Override
+    public void setForceDebugEnabled(boolean forceDebugEnabled) {
+        this.forceDebugEnabled = forceDebugEnabled;
     }
 
     @Override
@@ -53,12 +59,20 @@ public class Log4jLogger implements Logger {
 
     @Override
     public void debug(String message) {
-        this.log4j.debug(message);
+        if (this.forceDebugEnabled) {
+            this.log4j.info("[DEBUG] "+ message);
+        } else {
+            this.log4j.debug(message);
+        }
     }
 
     @Override
     public void debug(String message, Throwable t) {
-        this.log4j.debug(message, t);
+        if (this.forceDebugEnabled) {
+            this.log4j.info("[DEBUG] "+ message, t);
+        } else {
+            this.log4j.debug(message, t);
+        }
     }
 
 }

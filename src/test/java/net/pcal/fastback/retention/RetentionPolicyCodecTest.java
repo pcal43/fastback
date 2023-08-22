@@ -18,10 +18,8 @@
 
 package net.pcal.fastback.retention;
 
-import net.pcal.fastback.MockModContext;
-import net.pcal.fastback.ModContext;
-import net.pcal.fastback.logging.Message;
-import net.pcal.fastback.utils.SnapshotId;
+import net.pcal.fastback.logging.UserMessage;
+import net.pcal.fastback.repo.SnapshotId;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
@@ -29,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
 
-import static net.pcal.fastback.logging.Message.raw;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -38,7 +35,6 @@ public class RetentionPolicyCodecTest {
     @Test
     public void testEncodePolicy() {
         final String encodedPolicy = RetentionPolicyCodec.INSTANCE.encodePolicy(
-                MockModContext.create(),
                 MockRetentionPolicyType.INSTANCE,
                 Map.of("foo", "bar", "baz","bop", "bad key", "whatever"));
         assertEquals("mock-policy baz=bop foo=bar", encodedPolicy);
@@ -47,7 +43,6 @@ public class RetentionPolicyCodecTest {
     @Test
     public void testDecodePolicy() {
         final RetentionPolicy policy = RetentionPolicyCodec.INSTANCE.decodePolicy(
-                MockModContext.create(),
                 List.of(MockRetentionPolicyType.INSTANCE),
                 "mock-policy foo=bar baz=bop random junk should be ignored"
         );
@@ -57,7 +52,7 @@ public class RetentionPolicyCodecTest {
 
     @Test
     public void testEncodeMap() {
-        String encoded = RetentionPolicyCodec.encodeMap(MockModContext.create(),
+        String encoded = RetentionPolicyCodec.encodeMap(
                 Map.of("foo", "bar", "baz","bop", "bad key", "whatever"));
         assertEquals("baz=bop foo=bar", encoded);
     }
@@ -65,7 +60,7 @@ public class RetentionPolicyCodecTest {
     @Test
     public void testDecodeMap() {
         final String encoded = "foo=bar baz=bop random junk should be ignored";
-        Map<String, String> decoded = RetentionPolicyCodec.decodeMap(MockModContext.create(), encoded);
+        Map<String, String> decoded = RetentionPolicyCodec.decodeMap(encoded);
         assertEquals(Map.of("foo", "bar", "baz", "bop"), decoded);
     }
 
@@ -78,8 +73,8 @@ public class RetentionPolicyCodecTest {
         }
 
         @Override
-        public Message getDescription() {
-            return raw("mock policy");
+        public UserMessage getDescription() {
+            return UserMessage.raw("mock policy");
         }
 
         @Override
@@ -103,13 +98,13 @@ public class RetentionPolicyCodecTest {
         }
 
         @Override
-        public RetentionPolicy createPolicy(ModContext ctx, Map<String, String> config) {
+        public RetentionPolicy createPolicy(Map<String, String> config) {
             return new MockRetentionPolicy(config);
         }
 
         @Override
-        public Message getDescription() {
-            return raw("mock retention policy");
+        public UserMessage getDescription() {
+            return UserMessage.raw("mock retention policy");
         }
     };
 }

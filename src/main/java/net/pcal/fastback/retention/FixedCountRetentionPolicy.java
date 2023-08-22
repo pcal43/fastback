@@ -19,9 +19,9 @@
 package net.pcal.fastback.retention;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
-import net.pcal.fastback.ModContext;
-import net.pcal.fastback.logging.Message;
-import net.pcal.fastback.utils.SnapshotId;
+import net.pcal.fastback.logging.ConsoleLogger;
+import net.pcal.fastback.logging.UserMessage;
+import net.pcal.fastback.repo.SnapshotId;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,8 +29,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
-
-import static net.pcal.fastback.logging.Message.localized;
 
 /**
  * Retention policy that keeps only the n most-recent snapshots.
@@ -44,29 +42,27 @@ class FixedCountRetentionPolicy implements RetentionPolicy {
     private static final String POLICY_NAME = "fixed";
     private static final String L10N_KEY = "fastback.retain.fixed.description";
     private static final String COUNT_PARAM = "count";
-    private final ModContext ctx;
     private final int count;
 
-    public static FixedCountRetentionPolicy create(Map<String, String> config, ModContext ctx) {
+    public static FixedCountRetentionPolicy create(Map<String, String> config) {
         int count = COUNT_DEFAULT;
         if (config != null && config.containsKey(COUNT_PARAM)) {
             try {
                 count = Integer.parseInt(config.get(COUNT_PARAM));
             } catch (NumberFormatException nfe) {
-                ctx.getLogger().internalError("invalid count " + config.get(COUNT_PARAM), nfe);
+                ConsoleLogger.get().debug("Ignoring invalided fixed count " + config.get(COUNT_PARAM), nfe);
             }
         }
-        return new FixedCountRetentionPolicy(ctx, count);
+        return new FixedCountRetentionPolicy(count);
     }
 
-    private FixedCountRetentionPolicy(ModContext ctx, int count) {
-        this.ctx = ctx;
+    private FixedCountRetentionPolicy(int count) {
         this.count = count;
     }
 
     @Override
-    public Message getDescription() {
-        return localized(L10N_KEY, this.count);
+    public UserMessage getDescription() {
+        return UserMessage.localized(L10N_KEY, this.count);
     }
 
     @Override
@@ -95,13 +91,13 @@ class FixedCountRetentionPolicy implements RetentionPolicy {
         }
 
         @Override
-        public RetentionPolicy createPolicy(final ModContext ctx, final Map<String, String> config) {
-            return create(config, ctx);
+        public RetentionPolicy createPolicy(final Map<String, String> config) {
+            return create(config);
         }
 
         @Override
-        public Message getDescription() {
-            return localized(L10N_KEY, "<" + COUNT_PARAM + ">");
+        public UserMessage getDescription() {
+            return UserMessage.localized(L10N_KEY, "<" + COUNT_PARAM + ">");
         }
     }
 }

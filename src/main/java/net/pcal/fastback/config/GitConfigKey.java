@@ -29,6 +29,8 @@ public enum GitConfigKey {
 
     IS_BACKUP_ENABLED("backup-enabled", false),
 
+    IS_NATIVE_GIT_ENABLED("native-git-enabled", false),
+
     AUTOBACK_ACTION("autoback-action", null),
 
     SHUTDOWN_ACTION("shutdown-action", null),
@@ -47,6 +49,8 @@ public enum GitConfigKey {
 
     REMOTE_NAME("origin"),
 
+
+
     IS_UUID_CHECK_ENABLED(true),
 
     IS_TEMP_BRANCH_CLEANUP_ENABLED(true),
@@ -57,7 +61,13 @@ public enum GitConfigKey {
 
     IS_SMART_PUSH_ENABLED(true),
 
-    IS_POST_RESTORE_CLEANUP_ENABLED(true);
+    IS_GIT_HUD_OUTPUT_ENABLED(true),
+
+    IS_POST_RESTORE_CLEANUP_ENABLED(true),
+
+    IS_REFLOG_DELETION_ENABLED(true),
+
+    IS_BRANCH_CLEANUP_ENABLED(true);
 
     private static final String NULL_STRING = "";
 

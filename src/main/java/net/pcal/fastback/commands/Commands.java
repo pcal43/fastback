@@ -23,22 +23,23 @@ import com.mojang.brigadier.context.CommandContext;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.ModContext;
-import net.pcal.fastback.ModContext.ExecutionLock;
+import net.pcal.fastback.mod.ModContext;
+import net.pcal.fastback.mod.ModContext.ExecutionLock;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.CommandSourceLogger;
 import net.pcal.fastback.logging.CompositeLogger;
+import net.pcal.fastback.logging.ConsoleLogger;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.SaveScreenLogger;
-import org.eclipse.jgit.api.Git;
+import net.pcal.fastback.repo.Repo;
+import net.pcal.fastback.repo.RepoFactory;
 
 import java.nio.file.Path;
 import java.util.function.Predicate;
 
 import static net.pcal.fastback.commands.HelpCommand.help;
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
-import static net.pcal.fastback.logging.Message.localizedError;
-import static net.pcal.fastback.utils.GitUtils.isGitRepo;
+import static net.pcal.fastback.logging.UserMessage.localizedError;
 
 public class Commands {
 
@@ -77,6 +78,8 @@ public class Commands {
         RemotePruneCommand.INSTANCE.register(argb, ctx);
         RemoteRestoreCommand.INSTANCE.register(argb, ctx);
 
+        SetCommand.INSTANCE.register(argb, ctx);
+
         HelpCommand.INSTANCE.register(argb, ctx);
         if (ctx.isExperimentalCommandsEnabled()) {
             SaveCommand.INSTANCE.register(argb, ctx);
@@ -85,7 +88,7 @@ public class Commands {
     }
 
     public static Logger commandLogger(final ModContext ctx, final ServerCommandSource scs) {
-        return CompositeLogger.of(ctx.getLogger(), new CommandSourceLogger(ctx, scs), new SaveScreenLogger(ctx));
+        return CompositeLogger.of(ConsoleLogger.get(), new CommandSourceLogger(ctx, scs), new SaveScreenLogger(ctx));
     }
 
     public static String subcommandPermName(String subcommandName) {
@@ -98,13 +101,13 @@ public class Commands {
 
     /**
      * Retrieve a command argument. If they forgot to provide it, return null
-     * and log a helpful message rather than blowing up the world.  This is neeed in the
+     * and log a helpful message rather than blowing up the world.  This is needed in the
      * cases where the list of arguments is dynamic (e.g., retention policies) and we can't
      * rely on brigadier's static parse trees.
      */
     public static <V> V getArgumentNicely(final String argName, final Class<V> clazz, final CommandContext<?> cc, Logger log) {
         try {
-            return cc.<V>getArgument(argName, clazz);
+            return cc.getArgument(argName, clazz);
         } catch(IllegalArgumentException iae) {
             missingArgument(argName, log);
             return null;
@@ -121,22 +124,23 @@ public class Commands {
     }
 
     interface GitOp {
-        void execute(Git jgit) throws Exception;
+        void execute(Repo repo) throws Exception;
     }
 
-    static void gitOp(final ModContext ctx, final ExecutionLock lock, final Logger log, final GitOp op) {
-        ctx.execute(lock, log, () -> {
-            final Path worldSaveDir = ctx.getWorldDirectory();
-            if (!isGitRepo(worldSaveDir)) {
+    static void gitOp(final ModContext mod, final ExecutionLock lock, final Logger log, final GitOp op) {
+        mod.execute(lock, log, () -> {
+            final Path worldSaveDir = mod.getWorldDirectory();
+            final RepoFactory rf = RepoFactory.get();
+            if (!rf.isGitRepo(worldSaveDir)) {
                 log.chat(localizedError("fastback.chat.not-enabled"));
                 return;
             }
-            try (final Git jgit = Git.open(worldSaveDir.toFile())) {
-                final GitConfig repoConfig = GitConfig.load(jgit);
+            try (final Repo repo = rf.load(worldSaveDir, mod, log)) {
+                final GitConfig repoConfig = repo.getConfig();
                 if (!repoConfig.getBoolean(IS_BACKUP_ENABLED)) {
                     log.chat(localizedError("fastback.chat.not-enabled"));
                 } else {
-                    op.execute(jgit);
+                    op.execute(repo);
                 }
             } catch (Exception e) {
                 log.internalError("Command execution failed.", e);

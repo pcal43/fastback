@@ -21,7 +21,8 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.ModContext;
+import net.pcal.fastback.logging.UserMessage;
+import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.Logger;
@@ -43,7 +44,6 @@ import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.getArgumentNicely;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.config.GitConfigKey.LOCAL_RETENTION_POLICY;
-import static net.pcal.fastback.logging.Message.localized;
 
 /**
  * Command to set the snapshot retention policy.
@@ -81,7 +81,7 @@ enum SetRetentionCommand implements Command {
                                             final BiFunction<CommandContext<ServerCommandSource>, RetentionPolicyType, Integer> setPolicyFn) {
         final LiteralArgumentBuilder<ServerCommandSource> retainCommand =
                 literal(commandName).requires(subcommandPermission(ctx, commandName));
-        for (final RetentionPolicyType rpt : ctx.getRetentionPolicyTypes()) {
+        for (final RetentionPolicyType rpt : RetentionPolicyType.getAvailable()) {
             final LiteralArgumentBuilder<ServerCommandSource> policyCommand = literal(rpt.getCommandName());
             policyCommand.executes(cc -> setPolicyFn.apply(cc, rpt));
             if (rpt.getParameters() != null) {
@@ -112,9 +112,9 @@ enum SetRetentionCommand implements Command {
                 if (val == null) return FAILURE;
                 config.put(p.name(), String.valueOf(val));
             }
-            final String encodedPolicy = RetentionPolicyCodec.INSTANCE.encodePolicy(ctx, rpt, config);
+            final String encodedPolicy = RetentionPolicyCodec.INSTANCE.encodePolicy(rpt, config);
             final RetentionPolicy rp =
-                    RetentionPolicyCodec.INSTANCE.decodePolicy(ctx, RetentionPolicyType.getAvailable(), encodedPolicy);
+                    RetentionPolicyCodec.INSTANCE.decodePolicy(RetentionPolicyType.getAvailable(), encodedPolicy);
             if (rp == null) {
                 logger.internalError("Failed to decode policy " + encodedPolicy, new Exception());
                 return FAILURE;
@@ -122,7 +122,7 @@ enum SetRetentionCommand implements Command {
             try (final Git jgit = Git.open(worldSaveDir.toFile())) {
                 final GitConfig conf = GitConfig.load(jgit);
                 conf.updater().set(confKey, encodedPolicy).save();
-                logger.chat(localized("fastback.chat.retention-policy-set"));
+                logger.chat(UserMessage.localized("fastback.chat.retention-policy-set"));
                 logger.chat(rp.getDescription());
             } catch (Exception e) {
                 logger.internalError("Command execution failed.", e);

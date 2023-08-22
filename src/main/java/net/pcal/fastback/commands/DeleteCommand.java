@@ -22,20 +22,21 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.ModContext;
-import net.pcal.fastback.config.RepoConfigUtils;
+import net.pcal.fastback.logging.UserMessage;
+import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.utils.SnapshotId;
+import net.pcal.fastback.repo.SnapshotId;
+
+import java.util.List;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.ModContext.ExecutionLock.WRITE;
+import static net.pcal.fastback.mod.ModContext.ExecutionLock.WRITE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.getArgumentNicely;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
-import static net.pcal.fastback.logging.Message.localized;
 
 enum DeleteCommand implements Command {
 
@@ -57,13 +58,13 @@ enum DeleteCommand implements Command {
 
     private static int delete(ModContext ctx, CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, WRITE, log, jgit -> {
+        gitOp(ctx, WRITE, log, repo -> {
             final String snapshotName = getArgumentNicely(ARGUMENT, String.class, cc.getLastChild(), log);
-            final String uuid = RepoConfigUtils.getWorldUuid(jgit);
+            final String uuid = repo.getWorldUuid();
             final SnapshotId sid = SnapshotId.fromUuidAndName(uuid, snapshotName);
             final String branchName = sid.getBranchName();
-            jgit.branchDelete().setForce(true).setBranchNames(branchName).call();
-            log.chat(localized("fastback.chat.delete-done", snapshotName));
+            repo.deleteLocalBranches(List.of(branchName));
+            log.chat(UserMessage.localized("fastback.chat.delete-done", snapshotName));
         });
         return SUCCESS;
     }

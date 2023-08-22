@@ -22,24 +22,20 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.ModContext;
-import net.pcal.fastback.config.GitConfig;
+import net.pcal.fastback.logging.UserMessage;
+import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.tasks.RestoreSnapshotTask;
-import net.pcal.fastback.utils.GitUtils;
-import net.pcal.fastback.utils.SnapshotId;
+import net.pcal.fastback.repo.SnapshotId;
 
 import java.nio.file.Path;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.ModContext.ExecutionLock.NONE;
+import static net.pcal.fastback.mod.ModContext.ExecutionLock.NONE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
-import static net.pcal.fastback.config.RepoConfigUtils.getWorldUuid;
-import static net.pcal.fastback.logging.Message.localized;
 
 enum RestoreCommand implements Command {
 
@@ -62,15 +58,13 @@ enum RestoreCommand implements Command {
 
     private static int restore(ModContext ctx, CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, NONE, log, jgit -> {
-            final GitConfig wc = GitConfig.load(jgit);
+        gitOp(ctx, NONE, log, repo -> {
             final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
-            final String uuid = getWorldUuid(jgit);
+            final String uuid = repo.getWorldUuid();
             final SnapshotId sid = SnapshotId.fromUuidAndName(uuid, snapshotName);
-            final String uri =  GitUtils.getFileUri(ctx.getWorldDirectory());
-            final Path restoreDir = new RestoreSnapshotTask(uri, ctx.getRestoresDir(),
-                    ctx.getWorldName(), sid, log).call();
-            log.chat(localized("fastback.chat.restore-done", restoreDir));
+            final String uri = "file://" + ctx.getWorldDirectory().toAbsolutePath();
+            final Path restoreDir = repo.doRestoreSnapshot(uri, ctx.getRestoresDir(), ctx.getWorldName(), sid);
+            log.chat(UserMessage.localized("fastback.chat.restore-done", restoreDir));
         });
         return SUCCESS;
     }

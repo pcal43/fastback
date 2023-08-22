@@ -18,11 +18,12 @@
 
 package net.pcal.fastback.logging;
 
-public interface Logger {
+@Deprecated // use SystemLogger or UserLogger
+public interface Logger extends UserLogger, SystemLogger {
 
-    void chat(Message message);
+    void chat(UserMessage message);
 
-    void hud(Message message);
+    void hud(UserMessage message);
 
     void internalError(String message, Throwable t);
 
@@ -35,4 +36,7 @@ public interface Logger {
     void debug(String message);
 
     void debug(String message, Throwable t);
+
+    default void debug(Throwable t) { this.debug(t.getMessage(), t); }
+
 }

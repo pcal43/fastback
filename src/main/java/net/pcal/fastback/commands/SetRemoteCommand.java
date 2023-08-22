@@ -22,20 +22,19 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.ModContext;
-import net.pcal.fastback.config.GitConfig;
+import net.pcal.fastback.logging.UserMessage;
+import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.Logger;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.ModContext.ExecutionLock.WRITE_CONFIG;
+import static net.pcal.fastback.mod.ModContext.ExecutionLock.WRITE_CONFIG;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.missingArgument;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
-import static net.pcal.fastback.logging.Message.localized;
 
 enum SetRemoteCommand implements Command {
 
@@ -59,10 +58,10 @@ enum SetRemoteCommand implements Command {
 
     private static int setRemoteUrl(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, WRITE_CONFIG, log, git -> {
+        gitOp(ctx, WRITE_CONFIG, log, repo -> {
             final String newUrl = cc.getArgument(URL_ARGUMENT, String.class);
-            GitConfig.load(git).updater().set(GitConfigKey.REMOTE_PUSH_URL, newUrl).save();
-            log.chat(localized("fastback.chat.remote-enabled", newUrl));
+            repo.getConfig().updater().set(GitConfigKey.REMOTE_PUSH_URL, newUrl).save();
+            log.chat(UserMessage.localized("fastback.chat.remote-enabled", newUrl));
         });
         return SUCCESS;
     }

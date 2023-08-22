@@ -19,9 +19,9 @@
 package net.pcal.fastback.retention;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
-import net.pcal.fastback.ModContext;
-import net.pcal.fastback.logging.Message;
-import net.pcal.fastback.utils.SnapshotId;
+import net.pcal.fastback.logging.ConsoleLogger;
+import net.pcal.fastback.logging.UserMessage;
+import net.pcal.fastback.repo.SnapshotId;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -30,8 +30,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
-
-import static net.pcal.fastback.logging.Message.localized;
+import java.util.TimeZone;
 
 /**
  * Policy that retains only the last snapshot of each day, along with all snapshots in
@@ -47,36 +46,34 @@ class DailyRetentionPolicy implements RetentionPolicy {
     private static final String L10N_KEY = "fastback.retain.daily.description";
 
     private final int gracePeriod;
-    private final ModContext ctx;
 
-    public DailyRetentionPolicy(int gracePeriod, ModContext ctx) {
+    public DailyRetentionPolicy(int gracePeriod) {
         this.gracePeriod = gracePeriod;
-        this.ctx = ctx;
     }
 
     @Override
-    public Message getDescription() {
-        return localized(L10N_KEY, gracePeriod);
+    public UserMessage getDescription() {
+        return UserMessage.localized(L10N_KEY, gracePeriod);
     }
 
     @Override
     public Collection<SnapshotId> getSnapshotsToPrune(NavigableSet<SnapshotId> snapshots) {
-        final LocalDate today = LocalDate.now(ctx.getTimeZone().toZoneId());
+        final LocalDate today = LocalDate.now(TimeZone.getDefault().toZoneId());
         final LocalDate gracePeriodStart = today.minus(Period.ofDays(gracePeriod));
         final List<SnapshotId> toPrune = new ArrayList<>();
         LocalDate previousDate = null;
         for (final SnapshotId sid : snapshots.descendingSet()) {
-            final LocalDate currentDate = sid.snapshotDate().toInstant().atZone(ctx.getTimeZone().toZoneId()).toLocalDate();
+            final LocalDate currentDate = sid.snapshotDate().toInstant().atZone(TimeZone.getDefault().toZoneId()).toLocalDate();
             if (previousDate != null) {
                 if (currentDate.isAfter(gracePeriodStart)) {
-                    ctx.getLogger().debug("Will retain " + sid + " because still in the grace period");
+                    ConsoleLogger.get().debug("Will retain " + sid + " because still in the grace period");
                     continue;
                 }
                 if (currentDate.equals(previousDate)) {
-                    ctx.getLogger().debug("Will prune " + sid + " same day as " + currentDate);
+                    ConsoleLogger.get().debug("Will prune " + sid + " same day as " + currentDate);
                     toPrune.add(sid);
                 } else {
-                    ctx.getLogger().debug("Will retain " + sid + " NOT same day as " + currentDate);
+                    ConsoleLogger.get().debug("Will retain " + sid + " NOT same day as " + currentDate);
                 }
             }
             previousDate = currentDate;
@@ -106,23 +103,23 @@ class DailyRetentionPolicy implements RetentionPolicy {
         }
 
         @Override
-        public RetentionPolicy createPolicy(final ModContext ctx, final Map<String, String> config) {
+        public RetentionPolicy createPolicy(final Map<String, String> config) {
             int gracePeriodTemp = DEFAULT_GRACE_PERIOD_DAYS;
             if (config != null && config.containsKey(GRACE_PERIOD_DAYS)) {
                 try {
                     gracePeriodTemp = Integer.parseInt(config.get(GRACE_PERIOD_DAYS));
                 } catch (NumberFormatException nfe) {
-                    ctx.getLogger().internalError("invalid grace period " + config.get(GRACE_PERIOD_DAYS), nfe);
+                    ConsoleLogger.get().debug("Ignoring invalid grace period " + config.get(GRACE_PERIOD_DAYS), nfe);
                 }
             }
             final int gracePeriod = gracePeriodTemp;
 
-            return new DailyRetentionPolicy(gracePeriod, ctx);
+            return new DailyRetentionPolicy(gracePeriod);
         }
 
         @Override
-        public Message getDescription() {
-            return localized(L10N_KEY, "<" + GRACE_PERIOD_DAYS + ">");
+        public UserMessage getDescription() {
+            return UserMessage.localized(L10N_KEY, "<" + GRACE_PERIOD_DAYS + ">");
         }
     }
 }

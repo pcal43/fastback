@@ -21,7 +21,9 @@ package net.pcal.fastback;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.Log4jLogger;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.logging.Message;
+import net.pcal.fastback.logging.UserMessage;
+import net.pcal.fastback.mod.FrameworkServiceProvider;
+import net.pcal.fastback.mod.ModContext;
 import org.apache.logging.log4j.LogManager;
 
 import java.nio.file.Path;
@@ -32,7 +34,7 @@ public class MockModContext {
         return ModContext.create(new MockFrameworkSpi());
     }
 
-    private static class MockFrameworkSpi implements ModContext.FrameworkServiceProvider {
+    private static class MockFrameworkSpi implements FrameworkServiceProvider {
 
         private final Log4jLogger logger;
 
@@ -41,7 +43,7 @@ public class MockModContext {
         }
 
         @Override
-        public Logger getLogger() {
+        public Logger getConsoleLogger() {
             return this.logger;
         }
 
@@ -76,12 +78,12 @@ public class MockModContext {
         }
 
         @Override
-        public void setClientSavingScreenText(Message message) {
+        public void setClientSavingScreenText(UserMessage message) {
 
         }
 
         @Override
-        public void sendClientChatMessage(Message message) {
+        public void sendClientChatMessage(UserMessage message) {
         }
 
         @Override
@@ -115,17 +117,17 @@ public class MockModContext {
         }
 
         @Override
-        public void setHudText(Message message) {
+        public void setHudText(UserMessage message) {
 
         }
 
         @Override
-        public void sendFeedback(Message message, ServerCommandSource scs) {
+        public void sendFeedback(UserMessage message, ServerCommandSource scs) {
 
         }
 
         @Override
-        public void sendError(Message message, ServerCommandSource scs) {
+        public void sendError(UserMessage message, ServerCommandSource scs) {
 
         }
 

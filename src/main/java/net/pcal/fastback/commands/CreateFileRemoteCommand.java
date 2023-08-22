@@ -22,10 +22,9 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.ModContext;
-import net.pcal.fastback.config.GitConfig;
+import net.pcal.fastback.logging.UserMessage;
+import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.utils.GitUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.StoredConfig;
 
@@ -33,15 +32,14 @@ import java.nio.file.Path;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.ModContext.ExecutionLock.NONE;
+import static net.pcal.fastback.mod.ModContext.ExecutionLock.NONE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.missingArgument;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_PUSH_URL;
-import static net.pcal.fastback.logging.Message.localized;
-import static net.pcal.fastback.logging.Message.localizedError;
+import static net.pcal.fastback.logging.UserMessage.localizedError;
 import static net.pcal.fastback.utils.FileUtils.mkdirs;
 
 enum CreateFileRemoteCommand implements Command {
@@ -65,7 +63,7 @@ enum CreateFileRemoteCommand implements Command {
 
     private static int setFileRemote(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, NONE, log, git -> {
+        gitOp(ctx, NONE, log, repo -> {
             final String targetPath = cc.getArgument(ARGUMENT, String.class);
             final Path fupHome = Path.of(targetPath);
             if (fupHome.toFile().exists()) {
@@ -79,11 +77,9 @@ enum CreateFileRemoteCommand implements Command {
                 targetGitc.setInt("core", null, "bigFileThreshold", 1);
                 targetGitc.save();
             }
-            final String targetUrl = GitUtils.getFileUri(fupHome);
-            final StoredConfig gitc = git.getRepository().getConfig();
-            GitConfig.load(git).updater().set(REMOTE_PUSH_URL, targetUrl).save();
-            gitc.save();
-            log.chat(localized("fastback.chat.create-file-remote-created", targetPath, targetUrl));
+            final String targetUrl = "file://" + fupHome.toAbsolutePath();
+            repo.getConfig().updater().set(REMOTE_PUSH_URL, targetUrl).save();
+            log.chat(UserMessage.localized("fastback.chat.create-file-remote-created", targetPath, targetUrl));
         });
         return SUCCESS;
     }

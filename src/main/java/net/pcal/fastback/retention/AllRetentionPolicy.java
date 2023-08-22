@@ -18,17 +18,14 @@
 
 package net.pcal.fastback.retention;
 
-import net.pcal.fastback.ModContext;
-import net.pcal.fastback.logging.Message;
-import net.pcal.fastback.utils.SnapshotId;
+import net.pcal.fastback.logging.UserMessage;
+import net.pcal.fastback.repo.SnapshotId;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
-
-import static net.pcal.fastback.logging.Message.localized;
 
 /**
  * Policy to retain all snapshots.
@@ -43,8 +40,8 @@ enum AllRetentionPolicy implements RetentionPolicy {
     private static final String L10N_KEY = "fastback.retain.all.description";
 
     @Override
-    public Message getDescription() {
-        return localized(L10N_KEY);
+    public UserMessage getDescription() {
+        return UserMessage.localized(L10N_KEY);
     }
 
     @Override
@@ -67,13 +64,13 @@ enum AllRetentionPolicy implements RetentionPolicy {
         }
 
         @Override
-        public RetentionPolicy createPolicy(final ModContext ctx, final Map<String, String> config) {
+        public RetentionPolicy createPolicy(final Map<String, String> config) {
             return AllRetentionPolicy.INSTANCE;
         }
 
         @Override
-        public Message getDescription() {
-            return localized(L10N_KEY);
+        public UserMessage getDescription() {
+            return UserMessage.localized(L10N_KEY);
         }
     }
 }

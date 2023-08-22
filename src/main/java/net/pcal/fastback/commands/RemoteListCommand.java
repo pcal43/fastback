@@ -22,26 +22,22 @@ import com.google.common.collect.ListMultimap;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.ModContext;
-import net.pcal.fastback.config.GitConfig;
+import net.pcal.fastback.logging.UserMessage;
+import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.tasks.ListSnapshotsTask;
-import net.pcal.fastback.utils.SnapshotId;
+import net.pcal.fastback.repo.SnapshotId;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.ModContext.ExecutionLock.NONE;
+import static net.pcal.fastback.mod.ModContext.ExecutionLock.NONE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
-import static net.pcal.fastback.config.RepoConfigUtils.getWorldUuid;
-import static net.pcal.fastback.logging.Message.localized;
-import static net.pcal.fastback.logging.Message.raw;
 
 enum RemoteListCommand implements Command {
 
@@ -60,16 +56,14 @@ enum RemoteListCommand implements Command {
 
     private static int remoteList(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, NONE, log, jgit -> {
-            final GitConfig conf = GitConfig.load(jgit);
-            final ListMultimap<String, SnapshotId> snapshotsPerWorld = ListSnapshotsTask.listRemoteSnapshots(jgit, log);
-            final String uuid = getWorldUuid(jgit);
-            final List<SnapshotId> snapshots = new ArrayList<>(snapshotsPerWorld.get(uuid));
+        gitOp(ctx, NONE, log, repo -> {
+            final ListMultimap<String, SnapshotId> snapshotsPerWorld = repo.listRemoteSnapshots();
+            final List<SnapshotId> snapshots = new ArrayList<>(snapshotsPerWorld.get(repo.getWorldUuid()));
             Collections.sort(snapshots);
-            snapshots.forEach(sid -> log.chat(raw(sid.getName())));
-            log.chat(localized("fastback.chat.remote-list-done", snapshots.size(), conf.getString(GitConfigKey.REMOTE_PUSH_URL)));
+            snapshots.forEach(sid -> log.chat(UserMessage.raw(sid.getName())));
+            log.chat(UserMessage.localized("fastback.chat.remote-list-done", snapshots.size(), repo.getConfig().getString(GitConfigKey.REMOTE_PUSH_URL)));
             if (snapshotsPerWorld.keySet().size() > 1) {
-                log.chat(localized("fastback.chat.remote-list-others",
+                log.chat(UserMessage.localized("fastback.chat.remote-list-others",
                         snapshotsPerWorld.size() - 1, snapshotsPerWorld.size() - snapshots.size()));
             }
         });

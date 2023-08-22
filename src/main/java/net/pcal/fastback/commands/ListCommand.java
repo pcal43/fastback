@@ -21,20 +21,18 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.ModContext;
+import net.pcal.fastback.logging.UserMessage;
+import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.utils.SnapshotId;
+import net.pcal.fastback.repo.SnapshotId;
 
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.ModContext.ExecutionLock.NONE;
+import static net.pcal.fastback.mod.ModContext.ExecutionLock.NONE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
-import static net.pcal.fastback.config.RepoConfigUtils.getWorldUuid;
-import static net.pcal.fastback.logging.Message.raw;
-import static net.pcal.fastback.tasks.ListSnapshotsTask.listSnapshots;
-import static net.pcal.fastback.utils.SnapshotId.sortWorldSnapshots;
+import static net.pcal.fastback.repo.SnapshotId.sortWorldSnapshots;
 
 enum ListCommand implements Command {
 
@@ -53,10 +51,10 @@ enum ListCommand implements Command {
 
     private int execute(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, NONE, log, jgit -> {
-            final String uuid = getWorldUuid(jgit);
-            for (final SnapshotId sid : sortWorldSnapshots(listSnapshots(jgit, ctx.getLogger()), uuid)) {
-                log.chat(raw(sid.getName()));
+        gitOp(ctx, NONE, log, repo -> {
+            final String uuid = repo.getWorldUuid();
+            for (final SnapshotId sid : sortWorldSnapshots(repo.listSnapshots(), uuid)) {
+                log.chat(UserMessage.raw(sid.getName()));
             }
         });
         return SUCCESS;
