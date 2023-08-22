@@ -38,7 +38,6 @@ import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.WARNING;
 import static net.pcal.fastback.logging.UserMessage.raw;
-import static net.pcal.fastback.logging.UserMessage.rawError;
 import static net.pcal.fastback.logging.UserMessage.styledRaw;
 import static net.pcal.fastback.repo.RepoImpl.WORLD_UUID_PATH;
 import static net.pcal.fastback.utils.FileUtils.writeResourceToFile;
@@ -91,11 +90,14 @@ public interface MaintenanceUtils {
     static void setNativeGitEnabled(boolean newSetting, final Repo repo, final UserLogger user) throws IOException {
         final GitConfig conf = repo.getConfig();
         boolean currentSetting = repo.getConfig().getBoolean(IS_NATIVE_GIT_ENABLED);
-        if (currentSetting == newSetting) return; // no-op
+        if (currentSetting == newSetting) {
+            user.chat(raw("Nothing changed."));
+            return;
+        }
         if (!repo.listSnapshots().isEmpty()) {
-            user.chat(rawError("Existing snapshots found.  You can't change the native-git setting after you've " +
+            user.chat(styledRaw("Existing snapshots found.  You can't change the native-git setting after you've " +
                     "done a backup.  Consider making a fresh copy of your world, deleting the .git directory " +
-                    "in the copy, and enabling native git there."));
+                    "in the copy, and enabling native git there.", ERROR));
             return;
         }
         if (newSetting) {
@@ -105,11 +107,11 @@ public interface MaintenanceUtils {
             } else {
             }
             conf.updater().set(IS_NATIVE_GIT_ENABLED, true).save();
-            user.chat(styledRaw("Native git enabled.", NATIVE_GIT));
-            user.chat(styledRaw("Warning!  This is an experimental feature.  Please don't use it on a world you love.", WARNING));
+            user.chat(styledRaw("native-git enabled.", NATIVE_GIT));
+            user.chat(styledRaw("WARNING!  This is an experimental feature.  Please don't use it on a world you love.", WARNING));
         } else {
             conf.updater().set(IS_NATIVE_GIT_ENABLED, false).save();
-            user.chat(raw("Native git disabled."));
+            user.chat(raw("native-git disabled."));
         }
     }
 

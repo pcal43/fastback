@@ -29,9 +29,15 @@ public interface SystemLogger {
         return ConsoleLogger.get();
     }
 
-    void internalError(String message, Throwable t);
+    void setForceDebugEnabled(boolean debug);
 
-    default void internalError(Throwable t) { this.internalError(t.getMessage(), t); }
+    default void error(String message) {
+        internalError(message, new Exception());
+    }
+
+    default void error(String message, Throwable t) {
+        internalError(message, t);
+    }
 
     void warn(String message);
 
@@ -42,5 +48,12 @@ public interface SystemLogger {
     void debug(String message, Throwable t);
 
     default void debug(Throwable t) { this.debug(t.getMessage(), t); }
+
+
+    @Deprecated // come on man this is stupid
+    void internalError(String message, Throwable t);
+
+    @Deprecated
+    default void internalError(Throwable t) { this.internalError(t.getMessage(), t); }
 
 }

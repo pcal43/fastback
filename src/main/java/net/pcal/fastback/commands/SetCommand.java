@@ -31,6 +31,7 @@ import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.missingArgument;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.mod.ModContext.ExecutionLock.WRITE_CONFIG;
 
 /**
@@ -54,6 +55,7 @@ enum SetCommand implements Command {
                 requires(subcommandPermission(ctx, COMMAND_NAME)).
                 executes(cc-> missingArgument("key", ctx, cc));
         registerNativeGit(setCommand, ctx);
+        registerDebug(setCommand, ctx);
         root.then(setCommand);
     }
 
@@ -73,6 +75,21 @@ enum SetCommand implements Command {
         gitOp(ctx, WRITE_CONFIG, log, repo -> {
             repo.setNativeGitEnabled(value, user);
         });
+        return SUCCESS;
+    }
+
+    // ======================================================================
+    // debug
+
+    private static void registerDebug(final LiteralArgumentBuilder<ServerCommandSource> setCommand, ModContext ctx) {
+        final LiteralArgumentBuilder<ServerCommandSource> debug = literal("debug");
+        debug.then(literal("enabled").executes(cc->setDebug(true)));
+        debug.then(literal("disabled").executes(cc->setDebug(false)));
+        setCommand.then(debug);
+    }
+
+    private static int setDebug(boolean value) {
+        syslog().setForceDebugEnabled(value);
         return SUCCESS;
     }
 }

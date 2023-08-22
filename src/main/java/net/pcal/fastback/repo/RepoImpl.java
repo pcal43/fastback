@@ -81,7 +81,7 @@ class RepoImpl implements Repo {
         if (!doNativeCheck()) return;
         final SnapshotId newSid = CommitUtils.doCommitSnapshot(this, ctx, log);
         PushUtils.doPush(newSid, this, log);
-        log.chat(UserMessage.localized("fastback.chat.backup-complete"));
+        log.chat(UserMessage.localized("fastback.chat.backup-complete"));//FIXME not if it failed
     }
 
     @Override

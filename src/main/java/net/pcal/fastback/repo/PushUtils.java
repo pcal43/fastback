@@ -23,7 +23,6 @@ import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.SystemLogger;
 import net.pcal.fastback.logging.UserLogger;
-import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.logging.UserMessage.UserMessageStyle;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -58,7 +57,6 @@ import static net.pcal.fastback.config.GitConfigKey.REMOTE_PUSH_URL;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.JGIT;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;
-import static net.pcal.fastback.logging.UserMessage.localizedError;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 import static net.pcal.fastback.utils.ProcessUtils.doExec;
@@ -76,7 +74,6 @@ class PushUtils {
     }
 
     static void doPush(SnapshotId sid, RepoImpl repo, Logger log) throws IOException {
-        final SystemLogger syslog = syslog();
         final UserLogger user = log;
         try {
             final GitConfig conf = repo.getConfig();
@@ -96,12 +93,13 @@ class PushUtils {
                 try {
                     uuidCheckResult = jgit_doUuidCheck(repo, snapshotsPerWorld.keySet());
                 } catch (final IOException e) {
-                    syslog.internalError("Failing remote backup due to failed uuid check", e);
+                    syslog().error("Unexpected exception thrown during uuid check", e);
                     uuidCheckResult = false;
                 }
                 if (!uuidCheckResult) {
                     final URIish remoteUri = jgit_getRemoteUri(repo.getJGit(), repo.getConfig().getString(REMOTE_NAME));
                     user.chat(styledLocalized("fastback.chat.push-uuid-mismatch", ERROR, remoteUri));
+                    syslog().error("Failing remote backup due to failed uuid check");
                     return;
                 }
             }
@@ -117,7 +115,7 @@ class PushUtils {
             } else {
                 jgit_doNaivePush(jgit, sid.getBranchName(), conf, log);
             }
-            syslog.info("Remote backup complete.");
+            syslog().info("Remote backup complete.");
         } catch (GitAPIException | InterruptedException e) {
             throw new IOException(e);
         }

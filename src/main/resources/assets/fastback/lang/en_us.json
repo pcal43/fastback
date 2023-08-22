@@ -38,7 +38,7 @@
   "fastback.chat.info-header"                    : "\nFastBack Info\n-------------",
   "fastback.chat.info-local-disabled"            : "Local backup: disabled",
   "fastback.chat.info-local-enabled"             : "Local backup: enabled",
-  "fastback.chat.info-native-git"                : "Native Git: %s",
+  "fastback.chat.info-native-git"                : "native-git: %s",
   "fastback.chat.info-native-git-version"        : "   git: %s",
   "fastback.chat.info-native-git-lfs-version"    : "   git-lfs: %s",
   "fastback.chat.info-remote-url"                : "Remote URL: %s",
