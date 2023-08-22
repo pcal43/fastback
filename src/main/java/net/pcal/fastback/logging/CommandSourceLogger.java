@@ -24,7 +24,7 @@ import net.pcal.fastback.mod.ModContext;
 
 import static java.util.Objects.requireNonNull;
 
-public class CommandSourceLogger implements Logger {
+public class CommandSourceLogger implements UserLogger {
 
     private final ServerCommandSource scs;
     private final ModContext ctx;
@@ -45,36 +45,7 @@ public class CommandSourceLogger implements Logger {
 
     @Override
     public void hud(UserMessage message) {
-    }
-
-    @Override
-    public void setForceDebugEnabled(boolean debug) {
-
-    }
-
-    @Override
-    public void error(String message) {
-        ctx.sendError(UserMessage.localized("fastback.chat.internal-error"), scs);
-    }
-
-    @Override
-    public void error(String message, Throwable t) {
-        ctx.sendError(UserMessage.localized("fastback.chat.internal-error"), scs);
-    }
-
-    @Override
-    public void warn(String message) {
-    }
-
-    @Override
-    public void info(String message) {
-    }
-
-    @Override
-    public void debug(String message) {
-    }
-
-    @Override
-    public void debug(String message, Throwable t) {
+        this.ctx.setSavingScreenText(message);
+        this.ctx.renderBackupIndicator(message);
     }
 }

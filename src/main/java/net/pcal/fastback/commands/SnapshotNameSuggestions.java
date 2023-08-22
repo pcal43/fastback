@@ -69,9 +69,9 @@ abstract class SnapshotNameSuggestions implements SuggestionProvider<ServerComma
     public CompletableFuture<Suggestions> getSuggestions(final CommandContext<ServerCommandSource> cc,
                                                          final SuggestionsBuilder builder) {
         CompletableFuture<Suggestions> completableFuture = new CompletableFuture<>();
-        final Logger log = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, NONE, log, repo -> {
-            for (final SnapshotId sid : this.getSnapshotIds(repo, log)) {
+        final UserLogger ulog = commandLogger(ctx, cc.getSource());
+        gitOp(ctx, NONE, ulog, repo -> {
+            for (final SnapshotId sid : this.getSnapshotIds(repo, ulog)) {
                 builder.suggest(sid.getName());
             }
             completableFuture.complete(builder.buildFuture().get());

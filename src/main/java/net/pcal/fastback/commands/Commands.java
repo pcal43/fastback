@@ -25,9 +25,6 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.CommandSourceLogger;
-import net.pcal.fastback.logging.CompositeLogger;
-import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.logging.SaveScreenLogger;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.mod.ModContext.ExecutionLock;
@@ -89,8 +86,8 @@ public class Commands {
         CommandRegistrationCallback.EVENT.register((dispatcher, regAccess, env) -> dispatcher.register(argb));
     }
 
-    public static Logger commandLogger(final ModContext ctx, final ServerCommandSource scs) {
-        return CompositeLogger.of(new CommandSourceLogger(ctx, scs), new SaveScreenLogger(ctx));
+    public static UserLogger commandLogger(final ModContext ctx, final ServerCommandSource scs) {
+        return new CommandSourceLogger(ctx, scs);
     }
 
     public static String subcommandPermName(String subcommandName) {
