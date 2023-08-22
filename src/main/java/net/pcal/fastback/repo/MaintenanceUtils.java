@@ -19,7 +19,6 @@
 package net.pcal.fastback.repo;
 
 import net.pcal.fastback.config.GitConfig;
-import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.logging.SystemLogger;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.utils.EnvironmentUtils;
@@ -35,6 +34,12 @@ import java.util.UUID;
 import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.UPDATE_GITATTRIBUTES_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.UPDATE_GITIGNORE_ENABLED;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.WARNING;
+import static net.pcal.fastback.logging.UserMessage.raw;
+import static net.pcal.fastback.logging.UserMessage.rawError;
+import static net.pcal.fastback.logging.UserMessage.styledRaw;
 import static net.pcal.fastback.repo.RepoImpl.WORLD_UUID_PATH;
 import static net.pcal.fastback.utils.FileUtils.writeResourceToFile;
 import static net.pcal.fastback.utils.ProcessUtils.doExec;
@@ -88,23 +93,23 @@ public interface MaintenanceUtils {
         boolean currentSetting = repo.getConfig().getBoolean(IS_NATIVE_GIT_ENABLED);
         if (currentSetting == newSetting) return; // no-op
         if (!repo.listSnapshots().isEmpty()) {
-            user.chat(UserMessage.
-                    rawError("Existing snapshots found.  You can't change the native-git setting after you've " +
-                            "done a backup.  Consider making a fresh copy of your world, deleting the .git directory " +
-                            "in the copy, and enabling native git there."));
+            user.chat(rawError("Existing snapshots found.  You can't change the native-git setting after you've " +
+                    "done a backup.  Consider making a fresh copy of your world, deleting the .git directory " +
+                    "in the copy, and enabling native git there."));
             return;
         }
         if (newSetting) {
             if (!EnvironmentUtils.isNativeGitInstalled()) {
-                user.chat(UserMessage.rawError("Please install git and git-lfs and try again."));
+                user.chat(styledRaw("Please install git and git-lfs and try again.", ERROR));
                 return;
             } else {
             }
             conf.updater().set(IS_NATIVE_GIT_ENABLED, true).save();
-            user.chat(UserMessage.raw("Native git enabled.  Warning: this is an experimental feature!!!"));
+            user.chat(styledRaw("Native git enabled.", NATIVE_GIT));
+            user.chat(styledRaw("Warning!  This is an experimental feature.  Please don't use it on a world you love.", WARNING));
         } else {
             conf.updater().set(IS_NATIVE_GIT_ENABLED, false).save();
-            user.chat(UserMessage.raw("Native git disabled."));
+            user.chat(raw("Native git disabled."));
         }
     }
 
