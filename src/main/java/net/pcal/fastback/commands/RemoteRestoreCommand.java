@@ -66,8 +66,7 @@ enum RemoteRestoreCommand implements Command {
             final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
             final SnapshotId sid = SnapshotId.fromUuidAndName(repo.getWorldUuid(), snapshotName);
             final String uri =  conf.getString(REMOTE_PUSH_URL);
-            final Path restoreDir = repo.restoreSnapshotTask(uri, ctx.getRestoresDir(),
-                    ctx.getWorldName(), sid, log).call();
+            final Path restoreDir = repo.doRestoreSnapshot(uri, ctx.getRestoresDir(), ctx.getWorldName(), sid);
             log.chat(localized("fastback.chat.restore-done", restoreDir));
         });
         return SUCCESS;

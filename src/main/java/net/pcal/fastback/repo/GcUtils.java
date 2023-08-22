@@ -21,6 +21,7 @@ package net.pcal.fastback.repo;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.FileUtils;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.internal.storage.file.GC;
 import org.eclipse.jgit.lib.ProgressMonitor;
@@ -28,13 +29,15 @@ import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.storage.pack.PackConfig;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.config.GitConfigKey.*;
+import static net.pcal.fastback.config.GitConfigKey.IS_BRANCH_CLEANUP_ENABLED;
+import static net.pcal.fastback.config.GitConfigKey.IS_REFLOG_DELETION_ENABLED;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.repo.PushUtils.isTempBranch;
 import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
@@ -48,37 +51,23 @@ import static org.eclipse.jgit.api.ListBranchCommand.ListMode.ALL;
  * @author pcal
  * @since 0.0.12
  */
-class JGitGcTask implements Callable<Void> {
+class GcUtils {
 
-    private final Logger log;
-    private final RepoImpl repo;
-    private long sizeBeforeBytes, sizeAfterBytes;
-
-    JGitGcTask(final RepoImpl repo,
-               final Logger log) {
-        this.repo = requireNonNull(repo);
-        this.log = requireNonNull(log);
-    }
-
-    @Deprecated
-    public static String getBranchName(Ref fromBranchRef) {
-        final String REFS_HEADS = "refs/heads/";
-        final String name = fromBranchRef.getName();
-        if (name.startsWith(REFS_HEADS)) {
-            return name.substring(REFS_HEADS.length());
-        } else {
-            return null;
+    static void doGc(RepoImpl repo, Logger log) throws IOException {
+        try {
+            jgit_doGc(repo, log);
+        } catch (GitAPIException | ParseException e) {
+            throw new IOException(e);
         }
     }
 
-    @Override
-    public Void call() throws Exception {
+    private static void jgit_doGc(RepoImpl repo, Logger log) throws IOException, GitAPIException, ParseException {
         final File gitDir = repo.getJGit().getRepository().getDirectory();
         final GitConfig config = repo.getConfig();
         log.hud(localized("fastback.hud.gc-percent", 0));
         log.info("Stats before gc:");
-        log.info("" + repo.getJGit().gc().getStatistics());
-        this.sizeBeforeBytes = sizeOfDirectory(gitDir);
+        log.info(String.valueOf(repo.getJGit().gc().getStatistics()));
+        final long sizeBeforeBytes = sizeOfDirectory(gitDir);
         log.info("Backup size before gc: " + byteCountToDisplaySize(sizeBeforeBytes));
         if (config.getBoolean(IS_REFLOG_DELETION_ENABLED)) {
             // reflogs aren't very useful in our case and cause old snapshots to get retained
@@ -90,7 +79,7 @@ class JGitGcTask implements Callable<Void> {
         if (config.getBoolean(IS_BRANCH_CLEANUP_ENABLED)) {
             final List<String> branchesToDelete = new ArrayList<>();
             for (final Ref ref : repo.getJGit().branchList().setListMode(ALL).call()) {
-                final String branchName = getBranchName(ref);
+                final String branchName = SnapshotId.getBranchName(ref);
                 if (branchName == null) {
                     log.warn("Non-branch ref returned by branchList: " + ref);
                 } else if (isTempBranch(branchName)) {
@@ -105,7 +94,7 @@ class JGitGcTask implements Callable<Void> {
                 log.info("No branches to clean up");
             } else {
                 log.info("Deleting branches: " + branchesToDelete);
-                repo.getJGit().branchDelete().setForce(true).setBranchNames(branchesToDelete.toArray(new String[0])).call();
+                repo.deleteBranches(branchesToDelete);
                 log.info("Branches deleted.");
             }
         }
@@ -116,20 +105,15 @@ class JGitGcTask implements Callable<Void> {
         final PackConfig pc = new PackConfig();
         pc.setDeltaCompress(false);
         gc.setPackConfig(pc);
-        final ProgressMonitor pm = new JGitIncrementalProgressMonitor(new GcProgressMonitor(this.log), 100);
+        final ProgressMonitor pm = new JGitIncrementalProgressMonitor(new GcProgressMonitor(log), 100);
         gc.setProgressMonitor(pm);
         log.info("Starting garbage collection");
         gc.gc(); // TODO progress monitor
         log.info("Garbage collection complete.");
         log.info("Stats after gc:");
         log.info("" + repo.getJGit().gc().getStatistics());
-        this.sizeAfterBytes = sizeOfDirectory(gitDir);
+        final long sizeAfterBytes = sizeOfDirectory(gitDir);
         log.info("Backup size after gc: " + byteCountToDisplaySize(sizeAfterBytes));
-        return null;
-    }
-
-    public long getBytesReclaimed() {
-        return this.sizeBeforeBytes - this.sizeAfterBytes;
     }
 
     private static class GcProgressMonitor extends JGitPercentageProgressMonitor {

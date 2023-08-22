@@ -64,7 +64,7 @@ public enum SchedulableAction {
                 repo.doCommitAndPush();
                 final Collection<SnapshotId> pruned = repo.doLocalPrune();
                 if (pruned.size() > 0) {
-                    repo.createGcTask().call();
+                    repo.doGc();
                 }
                 return null;
             };

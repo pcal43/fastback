@@ -19,10 +19,10 @@
 package net.pcal.fastback.repo;
 
 import com.google.common.collect.ListMultimap;
-import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.Message;
+import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.utils.FileUtils;
 import net.pcal.fastback.utils.NativeGitUtils;
 import org.eclipse.jgit.api.Git;
@@ -37,8 +37,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_ENABLED;
@@ -48,13 +48,25 @@ import static net.pcal.fastback.config.GitConfigKey.UPDATE_GITIGNORE_ENABLED;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.utils.FileUtils.writeResourceToFile;
 
+/**
+ * @author pcal
+ */
 class RepoImpl implements Repo {
 
+    // ======================================================================
+    // Constants
+
     static final Path WORLD_UUID_PATH = Path.of("fastback/world.uuid");
+
+    // ======================================================================
+    // Fields
 
     private final Git jgit;
     private final ModContext ctx;
     private final Logger log;
+
+    // ======================================================================
+    // Constructors
 
     RepoImpl(final Git git,
              final ModContext ctx,
@@ -63,6 +75,9 @@ class RepoImpl implements Repo {
         this.ctx = requireNonNull(ctx);
         this.log = requireNonNull(logger);
     }
+
+    // ======================================================================
+    // Repo implementation
 
     @Override
     public void doCommitAndPush() throws IOException {
@@ -90,13 +105,13 @@ class RepoImpl implements Repo {
     }
 
     @Override
-    public Callable<Void> createGcTask() {
-        return new JGitGcTask(this, log);
+    public void doGc() throws IOException {
+        GcUtils.doGc(this, log);
     }
 
     @Override
-    public Callable<Path> restoreSnapshotTask(String uri, Path restoresDir, String worldName, SnapshotId sid, Logger log) throws IOException {
-        return new JGitRestoreSnapshotTask(uri, restoresDir, worldName, sid, log);
+    public Path doRestoreSnapshot(String uri, Path restoresDir, String worldName, SnapshotId sid) throws IOException {
+        return RestoreUtils.restoreSnapshot(uri, restoresDir, worldName, sid, log);
     }
 
     @Override
@@ -166,8 +181,8 @@ class RepoImpl implements Repo {
     }
 
     @Override
-    public void deleteBranch(String branchName) throws GitAPIException {
-        this.jgit.branchDelete().setForce(true).setBranchNames(branchName).call();
+    public void deleteBranches(List<String> branchesToDelete) {
+        this.jgit.branchDelete().setForce(true).setBranchNames(branchesToDelete.toArray(new String[0]));
     }
 
     Git getJGit() {
@@ -180,7 +195,7 @@ class RepoImpl implements Repo {
     }
 
     @Override
-    public void doWorldMaintenance(final Logger logger) throws IOException, IOException {
+    public void doWorldMaintenance(final Logger logger) throws IOException {
         logger.info("Doing world maintenance");
         final Path worldSaveDir = jgit.getRepository().getWorkTree().toPath();
         ensureWorldHasUuid(worldSaveDir, logger);
@@ -198,6 +213,9 @@ class RepoImpl implements Repo {
             }
         }
     }
+
+    // ======================================================================
+    // Private
 
     private boolean doNativeCheck() {
         final GitConfig config = this.getConfig();

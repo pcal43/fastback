@@ -58,8 +58,7 @@ enum GcCommand implements Command {
     private static int gc(ModContext ctx, CommandContext<ServerCommandSource> cc) {
         final Logger log = commandLogger(ctx, cc.getSource());
         gitOp(ctx, WRITE, log, repo -> {
-            final Callable<Void> gc = repo.createGcTask();
-            gc.call();
+            repo.doGc();
             //log.chat(localized("fastback.chat.gc-done", byteCountToDisplaySize(gc.getBytesReclaimed())));
         });
         return SUCCESS;

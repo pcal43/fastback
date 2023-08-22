@@ -21,42 +21,45 @@ package net.pcal.fastback.repo;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.utils.FileUtils;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ProgressMonitor;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.repo.RepoImpl.WORLD_UUID_PATH;
 
-@SuppressWarnings("FieldCanBeLocal")
-class JGitRestoreSnapshotTask implements Callable<Path> {
+/**
+ * Utilities for restoring a snapshot
+ *
+ * @author pcal
+ */
+class RestoreUtils {
 
-    private final String repoUri;
-    private final SnapshotId sid;
-    private final Path restoreTargetDir;
-    private final String worldName;
-    private final Logger logger;
+    // ======================================================================
+    // Utility methods
 
-    JGitRestoreSnapshotTask(String repoUri, Path saveDir, String worldName, SnapshotId sid, Logger logger) {
-        this.repoUri = requireNonNull(repoUri);
-        this.restoreTargetDir = requireNonNull(saveDir);
-        this.sid = requireNonNull(sid);
-        this.worldName = requireNonNull(worldName);
-        this.logger = requireNonNull(logger);
+    static Path restoreSnapshot(final String repoUri, final Path restoreTargetDir, final String worldName, final SnapshotId sid, final Logger logger) throws IOException {
+        try {
+            return jgit_restoreSnapshot(repoUri, restoreTargetDir, worldName, sid, logger);
+        } catch (GitAPIException e) {
+            throw new IOException(e);
+        }
     }
 
+    // ======================================================================
+    // Private
 
-    @Override
-    public Path call() throws Exception {
-        final Path restoreDir = getTargetDir(this.restoreTargetDir, this.worldName, this.sid.getName());
+    private static Path jgit_restoreSnapshot(final String repoUri, final Path restoreTargetDir, final String worldName, final SnapshotId sid, final Logger logger) throws IOException, GitAPIException {
+        final Path restoreDir = getTargetDir(restoreTargetDir, worldName, sid.getName());
         final String branchName = sid.getBranchName();
-        this.logger.hud(localized("fastback.hud.restore-percent", 0));
-        final ProgressMonitor pm = new JGitIncrementalProgressMonitor(new RestoreProgressMonitor(logger), 100);
+        logger.hud(localized("fastback.hud.restore-percent", 0));
+        final ProgressMonitor pm = new JGitIncrementalProgressMonitor(new JGitRestoreProgressMonitor(logger), 100);
         try (Git git = Git.cloneRepository().setProgressMonitor(pm).setDirectory(restoreDir.toFile()).
-                setBranchesToClone(List.of("refs/heads/" + branchName)).setBranch(branchName).setURI(this.repoUri).call()) {
+                setBranchesToClone(List.of("refs/heads/" + branchName)).setBranch(branchName).setURI(repoUri).call()) {
         }
         FileUtils.rmdir(restoreDir.resolve(".git"));
         restoreDir.resolve(WORLD_UUID_PATH).toFile().delete();
@@ -78,11 +81,11 @@ class JGitRestoreSnapshotTask implements Callable<Path> {
         return candidate;
     }
 
-    private static class RestoreProgressMonitor extends JGitPercentageProgressMonitor {
+    private static class JGitRestoreProgressMonitor extends JGitPercentageProgressMonitor {
 
         private final Logger logger;
 
-        public RestoreProgressMonitor(Logger logger) {
+        public JGitRestoreProgressMonitor(Logger logger) {
             this.logger = requireNonNull(logger);
         }
 

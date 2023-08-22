@@ -63,8 +63,7 @@ enum RestoreCommand implements Command {
             final String uuid = repo.getWorldUuid();
             final SnapshotId sid = SnapshotId.fromUuidAndName(uuid, snapshotName);
             final String uri = "file://" + ctx.getWorldDirectory().toAbsolutePath();
-            final Path restoreDir = repo.restoreSnapshotTask(uri, ctx.getRestoresDir(),
-                    ctx.getWorldName(), sid, log).call();
+            final Path restoreDir = repo.doRestoreSnapshot(uri, ctx.getRestoresDir(), ctx.getWorldName(), sid);
             log.chat(localized("fastback.chat.restore-done", restoreDir));
         });
         return SUCCESS;

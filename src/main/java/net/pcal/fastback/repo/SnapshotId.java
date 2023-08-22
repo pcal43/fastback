@@ -44,6 +44,17 @@ public record SnapshotId(String worldUuid, Date snapshotDate) implements Compara
     private static final String SEP = "/";
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
 
+    @Deprecated
+    public static String getBranchName(Ref fromBranchRef) {
+        final String REFS_HEADS = "refs/heads/";
+        final String name = fromBranchRef.getName();
+        if (name.startsWith(REFS_HEADS)) {
+            return name.substring(REFS_HEADS.length());
+        } else {
+            return null;
+        }
+    }
+
     // ====================================================================
     // Accessors
 
@@ -72,7 +83,7 @@ public record SnapshotId(String worldUuid, Date snapshotDate) implements Compara
     static ListMultimap<String, SnapshotId> getSnapshotsPerWorld(Iterable<Ref> refs, Logger logger) {
         final ListMultimap<String, SnapshotId> out = ArrayListMultimap.create();
         for (final Ref ref : refs) {
-            final String branchName = JGitGcTask.getBranchName(ref);
+            final String branchName = getBranchName(ref);
             if (branchName == null) continue;
             try {
                 final SnapshotId sid = fromBranch(branchName);

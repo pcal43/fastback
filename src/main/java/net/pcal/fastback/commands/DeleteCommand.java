@@ -26,6 +26,8 @@ import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.repo.SnapshotId;
 
+import java.util.List;
+
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.mod.ModContext.ExecutionLock.WRITE;
@@ -61,7 +63,7 @@ enum DeleteCommand implements Command {
             final String uuid = repo.getWorldUuid();
             final SnapshotId sid = SnapshotId.fromUuidAndName(uuid, snapshotName);
             final String branchName = sid.getBranchName();
-            repo.deleteBranch(branchName);
+            repo.deleteBranches(List.of(branchName));
             log.chat(localized("fastback.chat.delete-done", snapshotName));
         });
         return SUCCESS;

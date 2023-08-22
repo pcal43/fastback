@@ -21,14 +21,13 @@ package net.pcal.fastback.repo;
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
-import java.util.concurrent.Callable;
+import java.util.List;
 
 /**
  * @author pcal
@@ -43,6 +42,10 @@ public interface Repo extends AutoCloseable {
 
     File getWorkTree() throws NoWorkTreeException;
 
+    ListMultimap<String, SnapshotId> listSnapshots() throws IOException;
+
+    ListMultimap<String, SnapshotId> listRemoteSnapshots() throws IOException;
+
     void doCommitAndPush() throws IOException;
 
     void doCommitSnapshot() throws IOException;
@@ -51,17 +54,15 @@ public interface Repo extends AutoCloseable {
 
     Collection<SnapshotId> doRemotePrune() throws IOException;
 
-    Callable<Void> createGcTask();
+    void doGc() throws IOException;
 
-    Callable<Path> restoreSnapshotTask(String uri, Path restoresDir, String worldName, SnapshotId sid, Logger log) throws IOException;
+    Path doRestoreSnapshot(String uri, Path restoresDir, String worldName, SnapshotId sid) throws IOException;
 
-    ListMultimap<String, SnapshotId> listSnapshots() throws IOException;
-
-    ListMultimap<String, SnapshotId> listRemoteSnapshots() throws IOException;
+    void deleteBranches(List<String> branchesToDelete);
 
     void deleteRemoteBranch(String remoteName, String remoteBranchName) throws IOException;
 
-    void deleteBranch(String branchName) throws GitAPIException;
 
     void doWorldMaintenance(Logger logger) throws IOException, IOException;
+
 }

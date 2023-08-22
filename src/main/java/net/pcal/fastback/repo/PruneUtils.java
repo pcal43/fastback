@@ -29,6 +29,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 import static net.pcal.fastback.config.GitConfigKey.LOCAL_RETENTION_POLICY;
 import static net.pcal.fastback.logging.Message.localized;
@@ -49,11 +50,7 @@ class PruneUtils {
                 repo::listSnapshots,
                 sid -> {
                     log.info("Pruning local snapshot " + sid.getName());
-                    try {
-                        repo.deleteBranch(sid.getBranchName());
-                    } catch (GitAPIException e) {
-                        throw new IOException(e);
-                    }
+                    repo.deleteBranches(List.of(sid.getBranchName()));
                 },
                 "fastback.chat.retention-policy-not-set"
         );
