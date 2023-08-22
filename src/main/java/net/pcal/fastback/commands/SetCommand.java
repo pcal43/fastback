@@ -23,6 +23,7 @@ import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.UserLogger;
+import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.ModContext;
 
 import static net.minecraft.server.command.CommandManager.literal;
@@ -32,6 +33,7 @@ import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.missingArgument;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
+import static net.pcal.fastback.logging.UserMessage.localized;
 import static net.pcal.fastback.mod.ModContext.ExecutionLock.WRITE_CONFIG;
 
 /**
@@ -55,7 +57,7 @@ enum SetCommand implements Command {
                 requires(subcommandPermission(ctx, COMMAND_NAME)).
                 executes(cc-> missingArgument("key", ctx, cc));
         registerNativeGit(setCommand, ctx);
-        registerDebug(setCommand, ctx);
+        registerForceDebug(setCommand, ctx);
         root.then(setCommand);
     }
 
@@ -71,25 +73,26 @@ enum SetCommand implements Command {
 
     private static int setNativeGit(final ModContext ctx, final CommandContext<ServerCommandSource> cc, boolean value) {
         final Logger log = commandLogger(ctx, cc.getSource());
-        final UserLogger user = log;
+        final UserLogger ulog = log;
         gitOp(ctx, WRITE_CONFIG, log, repo -> {
-            repo.setNativeGitEnabled(value, user);
+            repo.setNativeGitEnabled(value, ulog);
         });
         return SUCCESS;
     }
 
     // ======================================================================
-    // debug
+    // force-debug
 
-    private static void registerDebug(final LiteralArgumentBuilder<ServerCommandSource> setCommand, ModContext ctx) {
-        final LiteralArgumentBuilder<ServerCommandSource> debug = literal("debug");
-        debug.then(literal("enabled").executes(cc->setDebug(true)));
-        debug.then(literal("disabled").executes(cc->setDebug(false)));
+    private static void registerForceDebug(final LiteralArgumentBuilder<ServerCommandSource> setCommand, final ModContext ctx) {
+        final LiteralArgumentBuilder<ServerCommandSource> debug = literal("force-debug");
+        debug.then(literal("enabled").executes(cc-> setForceDebug(ctx, cc, true)));
+        debug.then(literal("disabled").executes(cc-> setForceDebug(ctx, cc, false)));
         setCommand.then(debug);
     }
 
-    private static int setDebug(boolean value) {
+    private static int setForceDebug(final ModContext ctx, final CommandContext<ServerCommandSource> cc, boolean value) {
         syslog().setForceDebugEnabled(value);
+        commandLogger(ctx, cc.getSource()).chat(localized("fastback.chat.ok"));
         return SUCCESS;
     }
 }

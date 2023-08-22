@@ -50,6 +50,10 @@ public class CompositeLogger implements Logger {
     }
 
     @Override
+    public void setForceDebugEnabled(boolean debug) {
+    }
+
+    @Override
     public void warn(String message) {
         this.delegates.forEach(d -> d.warn(message));
     }

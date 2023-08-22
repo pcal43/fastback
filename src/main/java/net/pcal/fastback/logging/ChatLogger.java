@@ -47,6 +47,11 @@ public class ChatLogger implements Logger {
     }
 
     @Override
+    public void setForceDebugEnabled(boolean debug) {
+
+    }
+
+    @Override
     public void warn(String message) {
     }
 

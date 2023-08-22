@@ -37,6 +37,7 @@ import static net.pcal.fastback.config.GitConfigKey.UPDATE_GITIGNORE_ENABLED;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.WARNING;
+import static net.pcal.fastback.logging.UserMessage.localized;
 import static net.pcal.fastback.logging.UserMessage.raw;
 import static net.pcal.fastback.logging.UserMessage.styledRaw;
 import static net.pcal.fastback.repo.RepoImpl.WORLD_UUID_PATH;
@@ -107,12 +108,14 @@ public interface MaintenanceUtils {
             } else {
             }
             conf.updater().set(IS_NATIVE_GIT_ENABLED, true).save();
+            user.chat(localized("fastback.chat.ok"));
             user.chat(styledRaw("native-git enabled.", NATIVE_GIT));
             user.chat(styledRaw("WARNING!  This is an experimental feature.  Please don't use it on a world you love.", WARNING));
         } else {
             conf.updater().set(IS_NATIVE_GIT_ENABLED, false).save();
-            user.chat(raw("native-git disabled."));
+            user.chat(localized("fastback.chat.ok"));
         }
+
     }
 
     // ======================================================================

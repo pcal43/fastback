@@ -20,10 +20,10 @@ package net.pcal.fastback.logging;
 
 import static java.util.Objects.requireNonNull;
 
-@Deprecated
 public class Log4jLogger implements Logger {
 
     private final org.apache.logging.log4j.Logger log4j;
+    private boolean forceDebugEnabled = false;
 
     public Log4jLogger(org.apache.logging.log4j.Logger log4j) {
         this.log4j = requireNonNull(log4j);
@@ -43,6 +43,11 @@ public class Log4jLogger implements Logger {
     }
 
     @Override
+    public void setForceDebugEnabled(boolean forceDebugEnabled) {
+        this.forceDebugEnabled = forceDebugEnabled;
+    }
+
+    @Override
     public void warn(String message) {
         this.log4j.warn(message);
     }
@@ -54,12 +59,20 @@ public class Log4jLogger implements Logger {
 
     @Override
     public void debug(String message) {
-        this.log4j.debug(message);
+        if (this.forceDebugEnabled) {
+            this.log4j.info("[DEBUG] "+ message);
+        } else {
+            this.log4j.debug(message);
+        }
     }
 
     @Override
     public void debug(String message, Throwable t) {
-        this.log4j.debug(message, t);
+        if (this.forceDebugEnabled) {
+            this.log4j.info("[DEBUG] "+ message, t);
+        } else {
+            this.log4j.debug(message, t);
+        }
     }
 
 }

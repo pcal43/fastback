@@ -50,6 +50,7 @@
   "fastback.chat.list-local-snapshots-header"    : "Local snapshots:",
   "fastback.chat.missing-argument"               : "Missing argument: %s",
   "fastback.chat.not-enabled"                    : "Backups are not enabled on this world.  Run '/backup enable'",
+  "fastback.chat.ok"                             : "ok",
   "fastback.chat.prune-done"                     : "Pruned %s snapshots.",
   "fastback.chat.prune-no-default"               : "No default pruning policy configured.  Please run /backup set-retention",
   "fastback.chat.prune-suggest-gc"               : "Run /backup gc to reclaim disk space.",
