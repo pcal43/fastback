@@ -18,24 +18,34 @@
 
 package net.pcal.fastback.repo;
 
-import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.UserLogger;
+import net.pcal.fastback.logging.UserMessage.UserMessageStyle;
 
 import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.logging.Message.raw;
+import static net.pcal.fastback.logging.UserMessage.styledRaw;
+import static net.pcal.fastback.logging.SystemLogger.syslog;
 
-class LogConsumer implements Consumer<String> {
+/**
+ * Consumes strings (as from process output) and relays them to both the user's hud and the debug log.
+ *
+ * @author pcal
+ * @since 0.13.0
+ */
+class HudConsumer implements Consumer<String> {
 
-    private final Logger log;
+    private final UserLogger log;
+    private final UserMessageStyle style;
 
-    public LogConsumer(Logger log) {
+    public HudConsumer(final UserLogger log, final UserMessageStyle style) {
         this.log = requireNonNull(log);
+        this.style = requireNonNull(style);
     }
 
     @Override
     public void accept(String s) {
-        log.debug(s);
-        log.hud(raw(s));
+        log.hud(styledRaw(s, style));
+        syslog().debug(s);
     }
 }

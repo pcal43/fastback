@@ -18,7 +18,7 @@
 
 package net.pcal.fastback.mod.fabric;
 
-import net.pcal.fastback.logging.Message;
+import net.pcal.fastback.logging.UserMessage;
 
 import java.nio.file.Path;
 
@@ -39,14 +39,14 @@ public class FabricServerProvider extends FabricProvider {
     }
 
     @Override
-    public void setClientSavingScreenText(Message message) {
+    public void setClientSavingScreenText(UserMessage message) {
     }
 
     @Override
-    public void sendClientChatMessage(Message message) {
+    public void sendClientChatMessage(UserMessage message) {
     }
 
     @Override
-    public void setHudText(Message message) {
+    public void setHudText(UserMessage message) {
     }
 }

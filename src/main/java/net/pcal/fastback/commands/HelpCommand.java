@@ -26,6 +26,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.CommandNode;
 import net.minecraft.server.command.ServerCommandSource;
+import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.logging.ConsoleLogger;
 import net.pcal.fastback.logging.Logger;
@@ -44,8 +45,7 @@ import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
-import static net.pcal.fastback.logging.Message.localized;
-import static net.pcal.fastback.logging.Message.localizedError;
+import static net.pcal.fastback.logging.UserMessage.localizedError;
 
 enum HelpCommand implements Command {
 
@@ -102,7 +102,7 @@ enum HelpCommand implements Command {
             }
             subcommands.append(available);
         }
-        log.chat(localized("fastback.help.subcommands", String.valueOf(subcommands)));
+        log.chat(UserMessage.localized("fastback.help.subcommands", String.valueOf(subcommands)));
         return SUCCESS;
     }
 
@@ -113,7 +113,7 @@ enum HelpCommand implements Command {
         for (String available : getSubcommandNames(cc)) {
             if (subcommand.equals(available)) {
                 final String prefix = "/backup " + subcommand + ": ";
-                log.chat(localized("fastback.help.command." + subcommand, prefix));
+                log.chat(UserMessage.localized("fastback.help.command." + subcommand, prefix));
                 return SUCCESS;
             }
         }

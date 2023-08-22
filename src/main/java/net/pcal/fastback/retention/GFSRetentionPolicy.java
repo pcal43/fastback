@@ -19,7 +19,7 @@
 package net.pcal.fastback.retention;
 
 import net.pcal.fastback.logging.ConsoleLogger;
-import net.pcal.fastback.logging.Message;
+import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.repo.SnapshotId;
 
 import java.time.LocalDate;
@@ -34,8 +34,6 @@ import java.util.Map;
 import java.util.NavigableSet;
 import java.util.TimeZone;
 import java.util.function.Supplier;
-
-import static net.pcal.fastback.logging.Message.localized;
 
 /**
  * Policy that implements a simple 'Grandfather-Father-Son' strategy.  It retains
@@ -57,8 +55,8 @@ class GFSRetentionPolicy implements RetentionPolicy {
     }
 
     @Override
-    public Message getDescription() {
-        return localized(L10N_KEY);
+    public UserMessage getDescription() {
+        return UserMessage.localized(L10N_KEY);
     }
 
     @Override
@@ -126,8 +124,8 @@ class GFSRetentionPolicy implements RetentionPolicy {
         }
 
         @Override
-        public Message getDescription() {
-            return localized(L10N_KEY);
+        public UserMessage getDescription() {
+            return UserMessage.localized(L10N_KEY);
         }
     }
 }

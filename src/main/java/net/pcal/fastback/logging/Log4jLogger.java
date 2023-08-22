@@ -20,6 +20,7 @@ package net.pcal.fastback.logging;
 
 import static java.util.Objects.requireNonNull;
 
+@Deprecated
 public class Log4jLogger implements Logger {
 
     private final org.apache.logging.log4j.Logger log4j;
@@ -29,11 +30,11 @@ public class Log4jLogger implements Logger {
     }
 
     @Override
-    public void chat(Message message) {
+    public void chat(UserMessage message) {
     }
 
     @Override
-    public void hud(Message message) {
+    public void hud(UserMessage message) {
     }
 
     @Override

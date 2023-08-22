@@ -24,6 +24,8 @@ import java.io.IOException;
 
 /**
  * Function with typed exceptions for typical JGit operations.
+ *
+ * @author pcal
  */
 @FunctionalInterface
 interface JGitFunction<T, R> {

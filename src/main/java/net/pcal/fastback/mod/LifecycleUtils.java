@@ -26,6 +26,7 @@ import net.pcal.fastback.logging.CompositeLogger;
 import net.pcal.fastback.logging.ConsoleLogger;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.SaveScreenLogger;
+import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.RepoFactory;
 
@@ -33,7 +34,7 @@ import java.nio.file.Path;
 
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
-import static net.pcal.fastback.logging.Message.localized;
+import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.utils.EnvironmentUtils.*;
 
 /**
@@ -49,24 +50,23 @@ public class LifecycleUtils {
      */
     public static void onInitialize(final ModContext ctx) {
         Commands.registerCommands(ctx, ctx.getCommandName());
-        final Logger log = ConsoleLogger.get();
         {
             final String gitVersion = getGitVersion();
             if (gitVersion == null) {
-                log.info("git is not installed.");
+                syslog().warn("git is not installed.");
             } else {
-                log.info("git is installed: " + gitVersion);
+                syslog().info("git is installed: " + gitVersion);
             }
         }
         {
             final String gitLfsVersion = getGitLfsVersion();
             if (gitLfsVersion == null) {
-                log.info("git-lfs is not installed.");
+                syslog().warn("git-lfs is not installed.");
             } else {
-                log.info("git-lfs is installed: " + gitLfsVersion);
+                syslog().info("git-lfs is installed: " + gitLfsVersion);
             }
         }
-        log.info("onInitialize complete");
+        syslog().debug("onInitialize complete");
 
     }
 
@@ -74,7 +74,7 @@ public class LifecycleUtils {
      * Must be called when either client or server is terminating.
      */
     public static void onTermination(ModContext ctx) {
-        ConsoleLogger.get().info("onTermination complete");
+        syslog().debug("onTermination complete");
     }
 
     /**
@@ -87,12 +87,12 @@ public class LifecycleUtils {
         final RepoFactory rf = RepoFactory.get();
         if (rf.isGitRepo(worldSaveDir)) {
             try (Repo repo = rf.load(worldSaveDir, ctx, logger)) {
-                repo.doWorldMaintenance(logger);
+                repo.doWorldMaintenance(logger); //FIXME I don't think we should be doing this here at all.  Just wait until they try to do something
             } catch (Exception e) {
                 logger.internalError("Unable to perform maintenance.  Backups will probably not work correctly", e);
             }
         }
-        ConsoleLogger.get().info("onWorldStart complete");
+        syslog().debug("onWorldStart complete");
     }
 
     /**
@@ -103,7 +103,7 @@ public class LifecycleUtils {
         final Logger logger = mod.isClient() ? CompositeLogger.of(consoleLogger, new SaveScreenLogger(mod))
                 : consoleLogger;
         final Path worldSaveDir = mod.getWorldDirectory();
-        logger.chat(localized("fastback.chat.thread-waiting"));
+        logger.chat(UserMessage.localized("fastback.chat.thread-waiting"));
         mod.stopExecutor();
         final RepoFactory rf = RepoFactory.get();
         if (rf.isGitRepo(worldSaveDir)) {
@@ -117,9 +117,9 @@ public class LifecycleUtils {
                     }
                 }
             } catch (Exception e) {
-                logger.internalError("Shutdown action failed.", e);
+                syslog().internalError("Shutdown action failed.", e);
             }
         }
-        consoleLogger.info("onWorldStop complete");
+        syslog().debug("onWorldStop complete");
     }
 }

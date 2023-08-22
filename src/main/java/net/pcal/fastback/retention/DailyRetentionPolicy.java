@@ -20,7 +20,7 @@ package net.pcal.fastback.retention;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.pcal.fastback.logging.ConsoleLogger;
-import net.pcal.fastback.logging.Message;
+import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.repo.SnapshotId;
 
 import java.time.LocalDate;
@@ -31,8 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
 import java.util.TimeZone;
-
-import static net.pcal.fastback.logging.Message.localized;
 
 /**
  * Policy that retains only the last snapshot of each day, along with all snapshots in
@@ -54,8 +52,8 @@ class DailyRetentionPolicy implements RetentionPolicy {
     }
 
     @Override
-    public Message getDescription() {
-        return localized(L10N_KEY, gracePeriod);
+    public UserMessage getDescription() {
+        return UserMessage.localized(L10N_KEY, gracePeriod);
     }
 
     @Override
@@ -120,8 +118,8 @@ class DailyRetentionPolicy implements RetentionPolicy {
         }
 
         @Override
-        public Message getDescription() {
-            return localized(L10N_KEY, "<" + GRACE_PERIOD_DAYS + ">");
+        public UserMessage getDescription() {
+            return UserMessage.localized(L10N_KEY, "<" + GRACE_PERIOD_DAYS + ">");
         }
     }
 }

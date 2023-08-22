@@ -21,6 +21,7 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
+import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.config.GitConfigKey;
@@ -43,7 +44,6 @@ import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.getArgumentNicely;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.config.GitConfigKey.LOCAL_RETENTION_POLICY;
-import static net.pcal.fastback.logging.Message.localized;
 
 /**
  * Command to set the snapshot retention policy.
@@ -122,7 +122,7 @@ enum SetRetentionCommand implements Command {
             try (final Git jgit = Git.open(worldSaveDir.toFile())) {
                 final GitConfig conf = GitConfig.load(jgit);
                 conf.updater().set(confKey, encodedPolicy).save();
-                logger.chat(localized("fastback.chat.retention-policy-set"));
+                logger.chat(UserMessage.localized("fastback.chat.retention-policy-set"));
                 logger.chat(rp.getDescription());
             } catch (Exception e) {
                 logger.internalError("Command execution failed.", e);

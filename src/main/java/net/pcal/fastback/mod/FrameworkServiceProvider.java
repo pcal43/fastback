@@ -20,7 +20,7 @@ package net.pcal.fastback.mod;
 
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.logging.Message;
+import net.pcal.fastback.logging.UserMessage;
 
 import java.nio.file.Path;
 
@@ -40,9 +40,9 @@ public interface FrameworkServiceProvider {
 
     String getWorldName();
 
-    void setClientSavingScreenText(Message message);
+    void setClientSavingScreenText(UserMessage message);
 
-    void sendClientChatMessage(Message message);
+    void sendClientChatMessage(UserMessage message);
 
     Path getSnapshotRestoreDir();
 
@@ -56,11 +56,11 @@ public interface FrameworkServiceProvider {
 
     boolean isServerStopping();
 
-    void setHudText(Message message);
+    void setHudText(UserMessage message);
 
-    void sendFeedback(Message message, ServerCommandSource scs);
+    void sendFeedback(UserMessage message, ServerCommandSource scs);
 
-    void sendError(Message message, ServerCommandSource scs);
+    void sendError(UserMessage message, ServerCommandSource scs);
 
     void setAutoSaveListener(Runnable runnable);
 }

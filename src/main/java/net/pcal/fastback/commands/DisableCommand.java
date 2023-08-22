@@ -21,6 +21,7 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
+import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.logging.Logger;
 
@@ -31,7 +32,6 @@ import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
-import static net.pcal.fastback.logging.Message.localized;
 
 enum DisableCommand implements Command {
 
@@ -52,7 +52,7 @@ enum DisableCommand implements Command {
         final Logger log = commandLogger(ctx, cc.getSource());
         gitOp(ctx, WRITE_CONFIG, log, repo -> {
             repo.getConfig().updater().set(IS_BACKUP_ENABLED, false).save();
-            log.chat(localized("fastback.chat.disable-done"));
+            log.chat(UserMessage.localized("fastback.chat.disable-done"));
         });
         return SUCCESS;
     }

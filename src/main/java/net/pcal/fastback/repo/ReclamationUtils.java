@@ -20,6 +20,10 @@ package net.pcal.fastback.repo;
 
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.SystemLogger;
+import net.pcal.fastback.logging.UserLogger;
+import net.pcal.fastback.logging.UserMessage;
+import net.pcal.fastback.logging.UserMessage.UserMessageStyle;
 import net.pcal.fastback.utils.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
@@ -33,40 +37,66 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.config.GitConfigKey.IS_BRANCH_CLEANUP_ENABLED;
+import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.IS_REFLOG_DELETION_ENABLED;
-import static net.pcal.fastback.logging.Message.localized;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.*;
+import static net.pcal.fastback.logging.UserMessage.localized;
+import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 import static net.pcal.fastback.repo.PushUtils.isTempBranch;
+import static net.pcal.fastback.utils.ProcessUtils.doExec;
 import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
 import static org.apache.commons.io.FileUtils.sizeOfDirectory;
 import static org.eclipse.jgit.api.ListBranchCommand.ListMode.ALL;
 
 /**
- * Runs git garbage collection.  Aggressively deletes reflogs, tracking branches and stray temporary branches
- * in an attempt to free up objects and reclaim disk space.
+ * Utilities for reclaiming disk space from pruned branches.
  *
  * @author pcal
- * @since 0.0.12
+ * @since 0.13.0
  */
-class GcUtils {
+class ReclamationUtils {
 
-    static void doGc(RepoImpl repo, Logger log) throws IOException {
-        try {
-            jgit_doGc(repo, log);
-        } catch (GitAPIException | ParseException e) {
-            throw new IOException(e);
+    static void doReclamation(RepoImpl repo, Logger log) throws IOException {
+        if (repo.getConfig().getBoolean(IS_NATIVE_GIT_ENABLED)) {
+            try {
+                native_doLfsPrune(repo, log);
+            } catch (InterruptedException e) {
+                throw new IOException(e);
+            }
+        } else {
+            try {
+                jgit_doGc(repo, log);
+            } catch (GitAPIException | ParseException e) {
+                throw new IOException(e);
+            }
         }
     }
 
+    private static void native_doLfsPrune(RepoImpl repo, UserLogger user) throws IOException, InterruptedException {
+        final File worktree = repo.getWorkTree();
+        final String[] push = { "git", "-C", worktree.getAbsolutePath(), "-c", "lfs.pruneoffsetdays=999999", "lfs", "prune", "--verbose", "--no-verify-remote", };
+        final Consumer<String> logConsumer = new HudConsumer(user, NATIVE_GIT);
+        doExec(push, Collections.emptyMap(), logConsumer, logConsumer);
+        SystemLogger.syslog().debug("native_doLfsPrune");
+    }
+
+    /**
+     *  Runs git garbage collection.  Aggressively deletes reflogs, tracking branches and stray temporary branches
+     *  in an attempt to free up objects and reclaim disk space.
+     */
     private static void jgit_doGc(RepoImpl repo, Logger log) throws IOException, GitAPIException, ParseException {
         final File gitDir = repo.getJGit().getRepository().getDirectory();
         final GitConfig config = repo.getConfig();
-        log.hud(localized("fastback.hud.gc-percent", 0));
-        log.info("Stats before gc:");
-        log.info(String.valueOf(repo.getJGit().gc().getStatistics()));
+        final UserLogger user = log;
+        user.hud(styledLocalized("fastback.hud.gc-percent", JGIT, 0));
+        log.debug("Stats before gc:");
+        log.debug(String.valueOf(repo.getJGit().gc().getStatistics()));
         final long sizeBeforeBytes = sizeOfDirectory(gitDir);
         log.info("Backup size before gc: " + byteCountToDisplaySize(sizeBeforeBytes));
         if (config.getBoolean(IS_REFLOG_DELETION_ENABLED)) {
@@ -141,11 +171,11 @@ class GcUtils {
             // Prune loose objects also found in pack files
             // Prune loose, unreferenced objects
             if (task.contains("Writing objects")) {
-                this.logger.hud(localized("fastback.hud.gc-percent", (int) (percentage * 9 / 10)));
+                this.logger.hud(styledLocalized("fastback.hud.gc-percent", JGIT, (int) (percentage * 9 / 10)));
             } else if (task.contains("Selecting commits")) {
-                this.logger.hud(localized("fastback.hud.gc-percent", 90 + (int) (percentage / 20)));
+                this.logger.hud(localized("fastback.hud.gc-percent", JGIT, 90 + (int) (percentage / 20)));
             } else if (task.contains("Prune loose objects")) {
-                this.logger.hud(localized("fastback.hud.gc-percent", 95 + (int) (percentage / 20)));
+                this.logger.hud(localized("fastback.hud.gc-percent", JGIT, 95 + (int) (percentage / 20)));
             }
         }
 

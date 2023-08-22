@@ -19,7 +19,7 @@
 package net.pcal.fastback.retention;
 
 import com.mojang.brigadier.arguments.ArgumentType;
-import net.pcal.fastback.logging.Message;
+import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.retention.GFSRetentionPolicy.GFSRetentionPolicyType;
 
 import java.util.List;
@@ -59,6 +59,6 @@ public interface RetentionPolicyType {
         return getName();
     }
 
-    Message getDescription();
+    UserMessage getDescription();
 
 }

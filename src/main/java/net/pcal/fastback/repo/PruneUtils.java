@@ -22,6 +22,7 @@ import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;
 import net.pcal.fastback.retention.RetentionPolicyType;
@@ -34,15 +35,14 @@ import java.util.List;
 
 import static net.pcal.fastback.config.GitConfigKey.LOCAL_RETENTION_POLICY;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_NAME;
-import static net.pcal.fastback.logging.Message.localized;
-import static net.pcal.fastback.logging.Message.localizedError;
+import static net.pcal.fastback.logging.UserMessage.localizedError;
 import static net.pcal.fastback.repo.SnapshotId.sortWorldSnapshots;
 
 /**
- * Delete local snapshot branches that should not be kept per the retention policy.
+ * Utils for pruning and deleting snapshot branches.
  *
  * @author pcal
- * @since 0.3.0
+ * @since 0.13.0
  */
 class PruneUtils {
 
@@ -104,7 +104,7 @@ class PruneUtils {
         }
         final Collection<SnapshotId> toPrune = policy.getSnapshotsToPrune(
                 sortWorldSnapshots(listSnapshotsFn.get(), repo.getWorldUuid()));
-        log.hud(localized("fastback.hud.prune-started"));
+        log.hud(UserMessage.localized("fastback.hud.prune-started"));
         for (final SnapshotId sid : toPrune) {
             deleteSnapshotsFn.accept(sid);
         }

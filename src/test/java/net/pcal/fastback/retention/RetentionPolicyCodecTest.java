@@ -18,7 +18,7 @@
 
 package net.pcal.fastback.retention;
 
-import net.pcal.fastback.logging.Message;
+import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.repo.SnapshotId;
 import org.junit.jupiter.api.Test;
 
@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
 
-import static net.pcal.fastback.logging.Message.raw;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -74,8 +73,8 @@ public class RetentionPolicyCodecTest {
         }
 
         @Override
-        public Message getDescription() {
-            return raw("mock policy");
+        public UserMessage getDescription() {
+            return UserMessage.raw("mock policy");
         }
 
         @Override
@@ -104,8 +103,8 @@ public class RetentionPolicyCodecTest {
         }
 
         @Override
-        public Message getDescription() {
-            return raw("mock retention policy");
+        public UserMessage getDescription() {
+            return UserMessage.raw("mock retention policy");
         }
     };
 }

@@ -22,6 +22,7 @@ import net.pcal.fastback.mod.ModContext;
 
 import static java.util.Objects.requireNonNull;
 
+// TODO can we just kill this and have a single UserLogger that is smart about context?
 public class SaveScreenLogger implements Logger {
 
     private final ModContext ctx;
@@ -31,13 +32,13 @@ public class SaveScreenLogger implements Logger {
     }
 
     @Override
-    public void hud(Message message) {
+    public void hud(UserMessage message) {
         this.ctx.setSavingScreenText(message);
         this.ctx.renderBackupIndicator(message);
     }
 
     @Override
-    public void chat(Message message) {
+    public void chat(UserMessage message) {
     }
 
     @Override

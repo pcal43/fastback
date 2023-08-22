@@ -29,7 +29,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
 import net.pcal.fastback.mod.fabric.mixins.ScreenAccessors;
-import net.pcal.fastback.logging.Message;
+import net.pcal.fastback.logging.UserMessage;
 
 import java.nio.file.Path;
 
@@ -62,7 +62,7 @@ final class FabricClientProvider extends FabricProvider implements HudRenderCall
     }
 
     @Override
-    public void setHudText(Message message) {
+    public void setHudText(UserMessage message) {
         if (message == null) {
             this.statusTextShown = false;
         } else {
@@ -72,7 +72,7 @@ final class FabricClientProvider extends FabricProvider implements HudRenderCall
     }
 
     @Override
-    public void setClientSavingScreenText(Message message) {
+    public void setClientSavingScreenText(UserMessage message) {
         final Screen screen = client.currentScreen;
         if (screen instanceof MessageScreen) {
             ((ScreenAccessors) screen).setTitle(messageToText(message));
@@ -80,7 +80,7 @@ final class FabricClientProvider extends FabricProvider implements HudRenderCall
     }
 
     @Override
-    public void sendClientChatMessage(Message message) {
+    public void sendClientChatMessage(UserMessage message) {
         if (this.client != null) {
             client.inGameHud.getChatHud().addMessage(messageToText(message));
         }

@@ -21,7 +21,8 @@ package net.pcal.fastback.repo;
 import java.io.IOException;
 
 /**
- * Consumer with typed exceptions for typical JGit operations.
+ *
+ * @author pcal
  */
 @FunctionalInterface
 interface JGitConsumer<T> {

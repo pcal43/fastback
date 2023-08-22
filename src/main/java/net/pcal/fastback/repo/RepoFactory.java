@@ -24,8 +24,15 @@ import net.pcal.fastback.logging.Logger;
 import java.io.IOException;
 import java.nio.file.Path;
 
+/**
+ * Creates Repo instances.
+ *
+ * @author pcal
+ * @since 0.13.0
+ */
 public interface RepoFactory {
 
+    // TODO this probably should move to ModContext
     static RepoFactory get() {
         return new RepoFactoryImpl();
     }

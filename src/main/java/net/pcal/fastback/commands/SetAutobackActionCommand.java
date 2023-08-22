@@ -20,6 +20,7 @@ package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.ServerCommandSource;
+import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.logging.Logger;
 
@@ -31,7 +32,6 @@ import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.missingArgument;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.config.GitConfigKey.AUTOBACK_ACTION;
-import static net.pcal.fastback.logging.Message.localized;
 
 enum SetAutobackActionCommand implements Command {
 
@@ -56,7 +56,7 @@ enum SetAutobackActionCommand implements Command {
         final Logger log = commandLogger(ctx, scs);
         gitOp(ctx, WRITE_CONFIG, log, repo -> {
             repo.getConfig().updater().set(AUTOBACK_ACTION, action.getConfigValue()).save();
-            log.chat(localized("fastback.chat.info-autoback-action", action.getArgumentName()));
+            log.chat(UserMessage.localized("fastback.chat.info-autoback-action", action.getArgumentName()));
         });
         return SUCCESS;
     }

@@ -23,6 +23,8 @@ import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.SystemLogger;
 import net.pcal.fastback.logging.UserLogger;
+import net.pcal.fastback.logging.UserMessage;
+import net.pcal.fastback.logging.UserMessage.UserMessageStyle;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
@@ -53,10 +55,20 @@ import static net.pcal.fastback.config.GitConfigKey.IS_TRACKING_BRANCH_CLEANUP_E
 import static net.pcal.fastback.config.GitConfigKey.IS_UUID_CHECK_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_NAME;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_PUSH_URL;
-import static net.pcal.fastback.logging.Message.localized;
-import static net.pcal.fastback.logging.Message.localizedError;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.JGIT;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;
+import static net.pcal.fastback.logging.UserMessage.localizedError;
+import static net.pcal.fastback.logging.SystemLogger.syslog;
+import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 import static net.pcal.fastback.utils.ProcessUtils.doExec;
 
+/**
+ * Utils for pushing changes to a remote.
+ *
+ * @author pcal
+ * @since 0.13.0
+ */
 class PushUtils {
 
     static boolean isTempBranch(String branchName) {
@@ -64,10 +76,9 @@ class PushUtils {
     }
 
     static void doPush(SnapshotId sid, RepoImpl repo, Logger log) throws IOException {
-        final SystemLogger syslog = SystemLogger.get();
+        final SystemLogger syslog = syslog();
         final UserLogger user = log;
         try {
-            log.hud(localized("fastback.chat.push-started"));
             final GitConfig conf = repo.getConfig();
             final String pushUrl = conf.getString(REMOTE_PUSH_URL);
             if (pushUrl == null) {
@@ -83,18 +94,21 @@ class PushUtils {
             if (conf.getBoolean(IS_UUID_CHECK_ENABLED)) {
                 boolean uuidCheckResult;
                 try {
-                    uuidCheckResult = jgit_doUuidCheck(repo, snapshotsPerWorld.keySet(), conf);
+                    uuidCheckResult = jgit_doUuidCheck(repo, snapshotsPerWorld.keySet());
                 } catch (final IOException e) {
                     syslog.internalError("Failing remote backup due to failed uuid check", e);
                     uuidCheckResult = false;
                 }
                 if (!uuidCheckResult) {
                     final URIish remoteUri = jgit_getRemoteUri(repo.getJGit(), repo.getConfig().getString(REMOTE_NAME));
-                    user.chat(localizedError("fastback.chat.push-uuid-mismatch", remoteUri));
+                    user.chat(styledLocalized("fastback.chat.push-uuid-mismatch", ERROR, remoteUri));
                     return;
                 }
             }
-            log.info("Pushing to " + pushUrl);
+            log.debug("Pushing to " + pushUrl);
+
+            MaintenanceUtils.doPreflight(repo);
+
             if (conf.getBoolean(IS_NATIVE_GIT_ENABLED)) {
                 native_doPush(repo, sid.getBranchName(), log);
             } else if (conf.getBoolean(IS_SMART_PUSH_ENABLED)) {
@@ -109,19 +123,21 @@ class PushUtils {
         }
     }
 
-    private static void native_doPush(final Repo repo, final String branchNameToPush, final Logger log) throws IOException, InterruptedException {
-        SystemLogger.get().debug("Start native_push");
+    private static void native_doPush(final Repo repo, final String branchNameToPush, final UserLogger log) throws IOException, InterruptedException {
+        syslog().debug("Start native_push");
+        log.hud(styledLocalized("fastback.chat.push-started", NATIVE_GIT));
         final File worktree = repo.getWorkTree();
         final GitConfig conf = repo.getConfig();
         String remoteName = conf.getString(REMOTE_NAME);
         final String[] push = { "git", "-C", worktree.getAbsolutePath(), "-c", "push.autosetupremote=false", "push", "--progress", "--set-upstream", remoteName, branchNameToPush };
         final Map<String,String> env = Map.of("GIT_LFS_FORCE_PROGRESS", "1");
-        final Consumer<String> logConsumer = new LogConsumer(log);
+        final Consumer<String> logConsumer = new HudConsumer(log, UserMessageStyle.NATIVE_GIT);
         doExec(push, env, logConsumer, logConsumer);
-        SystemLogger.get().debug("End native_push");
+        syslog().debug("End native_push");
     }
 
     private static void jgit_doSmartPush(final RepoImpl repo, List<SnapshotId> remoteSnapshots, final String branchNameToPush, final GitConfig conf, final Logger logger) throws IOException {
+        logger.hud(styledLocalized("fastback.chat.push-started", JGIT));
         try {
             final Git jgit = repo.getJGit();
             final String remoteName = conf.getString(REMOTE_NAME);
@@ -151,45 +167,45 @@ class PushUtils {
             }
             // ok, we have a common snapshot that we can use to create a fake merge history.
             final String tempBranchName = getTempBranchName(branchNameToPush);
-            logger.debug("Creating out temp branch " + tempBranchName);
+            syslog().debug("Creating out temp branch " + tempBranchName);
             jgit.checkout().setCreateBranch(true).setName(tempBranchName).call();
             final ObjectId branchId = jgit.getRepository().resolve(latestCommonSnapshot.getBranchName());
-            logger.debug("Merging " + latestCommonSnapshot.getBranchName());
+            syslog().debug("Merging " + latestCommonSnapshot.getBranchName());
             jgit.merge().setContentMergeStrategy(ContentMergeStrategy.OURS).
                     include(branchId).setMessage("Merge " + branchId + " into " + tempBranchName).call();
-            logger.debug("Checking out " + branchNameToPush);
+            syslog().debug("Checking out " + branchNameToPush);
             jgit.checkout().setName(branchNameToPush).call();
-            logger.debug("Pushing temp branch " + tempBranchName);
+            syslog().debug("Pushing temp branch " + tempBranchName);
             final ProgressMonitor pm = new JGitIncrementalProgressMonitor(new JGitPushProgressMonitor(logger), 100);
             final Iterable<PushResult> pushResult = jgit.push().setProgressMonitor(pm).setRemote(remoteName).
                     setRefSpecs(new RefSpec(tempBranchName + ":" + tempBranchName),
                             new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
-            logger.info("Cleaning up branches...");
+            syslog().debug("Cleaning up branches...");
             if (conf.getBoolean(IS_TRACKING_BRANCH_CLEANUP_ENABLED)) {
                 for (final PushResult pr : pushResult) {
                     for (final TrackingRefUpdate f : pr.getTrackingRefUpdates()) {
                         final String PREFIX = "refs/remotes/";
                         if (f.getLocalName().startsWith(PREFIX)) {
                             final String trackingBranchName = f.getLocalName().substring(PREFIX.length());
-                            logger.info("Cleaning up tracking branch " + trackingBranchName);
+                            syslog().debug("Cleaning up tracking branch " + trackingBranchName);
                             jgit.branchDelete().setForce(true).setBranchNames(trackingBranchName).call();
                         } else {
-                            logger.warn("Ignoring unrecognized TrackingRefUpdate " + f.getLocalName());
+                            syslog().warn("Ignoring unrecognized TrackingRefUpdate " + f.getLocalName());
                         }
                     }
                 }
             }
             if (conf.getBoolean(IS_TEMP_BRANCH_CLEANUP_ENABLED)) {
-                logger.info("Deleting local temp branch " + tempBranchName);
+                syslog().debug("Deleting local temp branch " + tempBranchName);
                 jgit.branchDelete().setForce(true).setBranchNames(tempBranchName).call();
             }
             if (conf.getBoolean(IS_REMOTE_TEMP_BRANCH_CLEANUP_ENABLED)) {
                 final String remoteTempBranch = "refs/heads/" + tempBranchName;
-                logger.info("Deleting remote temp branch " + remoteTempBranch);
+                syslog().debug("Deleting remote temp branch " + remoteTempBranch);
                 final RefSpec deleteRemoteBranchSpec = new RefSpec().setSource(null).setDestination(remoteTempBranch);
                 jgit.push().setProgressMonitor(pm).setRemote(remoteName).setRefSpecs(deleteRemoteBranchSpec).call();
             }
-            logger.info("Push complete");
+            syslog().info("Push complete");
         } catch (GitAPIException e) {
             throw new IOException(e);
         }
@@ -207,20 +223,20 @@ class PushUtils {
         }
     }
 
-    private static boolean jgit_doUuidCheck(RepoImpl repo, Set<String> remoteWorldUuids, GitConfig config) throws IOException {
+    private static boolean jgit_doUuidCheck(RepoImpl repo, Set<String> remoteWorldUuids) throws IOException {
         final String localUuid = repo.getWorldUuid();
         if (remoteWorldUuids.size() > 2) {
-            SystemLogger.get().warn("Remote has more than one world-uuid.  This is unusual. " + remoteWorldUuids);
+            syslog().warn("Remote has more than one world-uuid.  This is unusual. " + remoteWorldUuids);
         }
         if (remoteWorldUuids.isEmpty()) {
-            SystemLogger.get().debug("Remote does not have any previously-backed up worlds.");
+            syslog().debug("Remote does not have any previously-backed up worlds.");
         } else {
             if (!remoteWorldUuids.contains(localUuid)) {
-                SystemLogger.get().debug("local: " + localUuid + ", remote: " + remoteWorldUuids);
+                syslog().debug("local: " + localUuid + ", remote: " + remoteWorldUuids);
                 return false;
             }
         }
-        SystemLogger.get().debug("world-uuid check passed.");
+        syslog().debug("world-uuid check passed.");
         return true;
     }
 
@@ -238,7 +254,7 @@ class PushUtils {
             throw new IOException(e);
         }
         for (final RemoteConfig remote : remotes) {
-            SystemLogger.get().debug("getRemoteUri " + remote);
+            syslog().debug("getRemoteUri " + remote);
             if (remote.getName().equals(remoteName)) {
                 return remote.getPushURIs() != null && !remote.getURIs().isEmpty() ? remote.getURIs().get(0) : null;
             }
@@ -263,9 +279,9 @@ class PushUtils {
         public void progressUpdate(String task, int percentage) {
             this.logger.info(task + " " + percentage + "%");
             if (task.contains("Finding sources")) {
-                this.logger.hud(localized("fastback.hud.remote-preparing", percentage / 2));
+                this.logger.hud(styledLocalized("fastback.hud.remote-preparing",JGIT,percentage / 2));
             } else if (task.contains("Writing objects")) {
-                this.logger.hud(localized("fastback.hud.remote-uploading", 50 + (percentage / 2)));
+                this.logger.hud(styledLocalized("fastback.hud.remote-uploading", JGIT, 50 + (percentage / 2)));
             }
         }
 

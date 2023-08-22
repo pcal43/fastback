@@ -22,7 +22,7 @@ import net.pcal.fastback.commands.SchedulableAction;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.ConsoleLogger;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.logging.Message;
+import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.RepoFactory;
 
@@ -42,7 +42,7 @@ import static net.pcal.fastback.commands.SchedulableAction.forConfigValue;
 import static net.pcal.fastback.config.GitConfigKey.AUTOBACK_ACTION;
 import static net.pcal.fastback.config.GitConfigKey.AUTOBACK_WAIT_MINUTES;
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
-import static net.pcal.fastback.logging.Message.localizedError;
+import static net.pcal.fastback.logging.UserMessage.localizedError;
 
 public class ModContext {
 
@@ -169,23 +169,23 @@ public class ModContext {
         return spi.isServerStopping();
     }
 
-    public void setSavingScreenText(Message message) {
+    public void setSavingScreenText(UserMessage message) {
         this.spi.setClientSavingScreenText(message);
     }
 
-    public void sendClientChatMessage(Message message) {
+    public void sendClientChatMessage(UserMessage message) {
         this.spi.sendClientChatMessage(message);
     }
 
-    public void sendFeedback(Message message, ServerCommandSource scs) {
+    public void sendFeedback(UserMessage message, ServerCommandSource scs) {
         this.spi.sendFeedback(message, scs);
     }
 
-    public void sendError(Message message, ServerCommandSource scs) {
+    public void sendError(UserMessage message, ServerCommandSource scs) {
         this.spi.sendError(message, scs);
     }
 
-    public void renderBackupIndicator(Message message) {
+    public void renderBackupIndicator(UserMessage message) {
         this.spi.setHudText(message);
     }
 

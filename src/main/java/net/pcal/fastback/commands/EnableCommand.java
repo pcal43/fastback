@@ -21,6 +21,7 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
+import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.config.GitConfig.Updater;
 import net.pcal.fastback.logging.Logger;
@@ -37,7 +38,6 @@ import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.commands.SchedulableAction.DEFAULT_SHUTDOWN_ACTION;
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
-import static net.pcal.fastback.logging.Message.localized;
 
 enum EnableCommand implements Command {
 
@@ -67,7 +67,7 @@ enum EnableCommand implements Command {
                             updater.set(SHUTDOWN_ACTION, DEFAULT_SHUTDOWN_ACTION.getConfigValue());
                         }
                         updater.save();
-                        log.chat(localized("fastback.chat.enable-done"));
+                        log.chat(UserMessage.localized("fastback.chat.enable-done"));
                     } catch (Exception e) {
                         log.internalError("Error enabling backups", e);
                     }

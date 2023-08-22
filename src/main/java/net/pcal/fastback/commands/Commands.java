@@ -39,7 +39,7 @@ import java.util.function.Predicate;
 
 import static net.pcal.fastback.commands.HelpCommand.help;
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
-import static net.pcal.fastback.logging.Message.localizedError;
+import static net.pcal.fastback.logging.UserMessage.localizedError;
 
 public class Commands {
 

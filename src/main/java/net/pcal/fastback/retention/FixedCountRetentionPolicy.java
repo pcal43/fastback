@@ -20,7 +20,7 @@ package net.pcal.fastback.retention;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.pcal.fastback.logging.ConsoleLogger;
-import net.pcal.fastback.logging.Message;
+import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.repo.SnapshotId;
 
 import java.util.ArrayList;
@@ -29,8 +29,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
-
-import static net.pcal.fastback.logging.Message.localized;
 
 /**
  * Retention policy that keeps only the n most-recent snapshots.
@@ -63,8 +61,8 @@ class FixedCountRetentionPolicy implements RetentionPolicy {
     }
 
     @Override
-    public Message getDescription() {
-        return localized(L10N_KEY, this.count);
+    public UserMessage getDescription() {
+        return UserMessage.localized(L10N_KEY, this.count);
     }
 
     @Override
@@ -98,8 +96,8 @@ class FixedCountRetentionPolicy implements RetentionPolicy {
         }
 
         @Override
-        public Message getDescription() {
-            return localized(L10N_KEY, "<" + COUNT_PARAM + ">");
+        public UserMessage getDescription() {
+            return UserMessage.localized(L10N_KEY, "<" + COUNT_PARAM + ">");
         }
     }
 }

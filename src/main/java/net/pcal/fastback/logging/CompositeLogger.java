@@ -35,12 +35,12 @@ public class CompositeLogger implements Logger {
     }
 
     @Override
-    public void chat(Message message) {
+    public void chat(UserMessage message) {
         this.delegates.forEach(d -> d.chat(message));
     }
 
     @Override
-    public void hud(Message message) {
+    public void hud(UserMessage message) {
         this.delegates.forEach(d -> d.hud(message));
     }
 

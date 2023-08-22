@@ -29,12 +29,13 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.world.level.storage.LevelStorage;
+import net.pcal.fastback.logging.Log4jLogger;
+import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.UserMessage;
+import net.pcal.fastback.logging.UserMessage.UserMessageStyle;
 import net.pcal.fastback.mod.FrameworkServiceProvider;
 import net.pcal.fastback.mod.fabric.mixins.ServerAccessors;
 import net.pcal.fastback.mod.fabric.mixins.SessionAccessors;
-import net.pcal.fastback.logging.Log4jLogger;
-import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.logging.Message;
 import org.apache.logging.log4j.LogManager;
 
 import java.nio.file.Path;
@@ -123,13 +124,16 @@ public abstract class FabricProvider implements FrameworkServiceProvider {
         return this.minecraftServer.isStopped() || this.minecraftServer.isStopping();
     }
 
+    // TODO do we really need to use sendFeedback/error.  Can't we just sendMessage all the time?  I don't
+    // understand the difference
+
     @Override
-    public void sendFeedback(Message message, ServerCommandSource scs) {
-        scs.sendFeedback(()->messageToText(message), false);
+    public void sendFeedback(UserMessage message, ServerCommandSource scs) {
+        scs.sendFeedback(() -> messageToText(message), false);
     }
 
     @Override
-    public void sendError(Message message, ServerCommandSource scs) {
+    public void sendError(UserMessage message, ServerCommandSource scs) {
         scs.sendError(messageToText(message));
     }
 
@@ -161,16 +165,19 @@ public abstract class FabricProvider implements FrameworkServiceProvider {
         }
     }
 
-    static Text messageToText(final Message m) {
+    static Text messageToText(final UserMessage m) {
         final MutableText out;
-        if (m.localized() != null) {
-            out = Text.translatable(m.localized().key(), m.localized().params());
+        if (m.styledLocalized() != null) {
+            out = Text.translatable(m.styledLocalized().key(), m.styledLocalized().params());
         } else {
-            out = Text.literal(m.raw());
+            out = Text.literal(m.styledRaw());
         }
-        if (m.isError()) {
-            final TextColor red = TextColor.parse("red");
-            out.setStyle(Style.EMPTY.withColor(red));
+        if (m.style() == UserMessageStyle.ERROR) {
+            out.setStyle(Style.EMPTY.withColor(TextColor.parse("red")));
+        } else if (m.style() == UserMessageStyle.WARNING) {
+            out.setStyle(Style.EMPTY.withColor(TextColor.parse("yellow")));
+        } else if (m.style() == UserMessageStyle.NATIVE_GIT) {
+            out.setStyle(Style.EMPTY.withColor(TextColor.parse("green")));
         }
         return out;
     }

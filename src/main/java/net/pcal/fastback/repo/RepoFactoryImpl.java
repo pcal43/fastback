@@ -27,6 +27,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
+/**
+ * @author pcal
+ * @since 0.13.0
+ */
 class RepoFactoryImpl implements RepoFactory {
 
     @Override

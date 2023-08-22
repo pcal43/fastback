@@ -21,6 +21,7 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
+import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.repo.SnapshotId;
@@ -31,7 +32,6 @@ import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
-import static net.pcal.fastback.logging.Message.raw;
 import static net.pcal.fastback.repo.SnapshotId.sortWorldSnapshots;
 
 enum ListCommand implements Command {
@@ -54,7 +54,7 @@ enum ListCommand implements Command {
         gitOp(ctx, NONE, log, repo -> {
             final String uuid = repo.getWorldUuid();
             for (final SnapshotId sid : sortWorldSnapshots(repo.listSnapshots(), uuid)) {
-                log.chat(raw(sid.getName()));
+                log.chat(UserMessage.raw(sid.getName()));
             }
         });
         return SUCCESS;

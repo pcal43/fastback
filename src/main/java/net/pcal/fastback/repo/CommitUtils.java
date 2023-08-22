@@ -18,8 +18,9 @@
 
 package net.pcal.fastback.repo;
 
-import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.UserLogger;
+import net.pcal.fastback.mod.ModContext;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
@@ -35,20 +36,30 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_GIT_ENABLED;
-import static net.pcal.fastback.logging.Message.localized;
+import static net.pcal.fastback.logging.SystemLogger.syslog;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.JGIT;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;
+import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 import static net.pcal.fastback.utils.ProcessUtils.doExec;
 
-@SuppressWarnings("FieldCanBeLocal")
+/**
+ * Utilities for adding and committing snapshots.
+ *
+ * @author pcal
+ * @since 0.13.0
+ */
 class CommitUtils {
 
     static SnapshotId doCommitSnapshot(RepoImpl repo, ModContext ctx, Logger log) throws IOException {
-        log.hud(localized("fastback.hud.local-saving"));
         final String uuid = repo.getWorldUuid();
         final SnapshotId newSid = SnapshotId.create(uuid);
-        log.info("Preparing local backup " + newSid);
+        log.debug("Preparing local backup " + newSid);
         final String newBranchName = newSid.getBranchName();
 
+        MaintenanceUtils.doPreflight(repo);
+
         try {
+
             if (repo.getConfig().getBoolean(IS_NATIVE_GIT_ENABLED)) {
                 native_commit(newBranchName, repo, ctx, log);
             } else {
@@ -62,11 +73,12 @@ class CommitUtils {
         return newSid;
     }
 
-    private static void native_commit(String newBranchName, Repo repo, ModContext ctx, Logger log) throws IOException, InterruptedException {
-        log.debug("Start native_commit");
+    private static void native_commit(String newBranchName, Repo repo, ModContext ctx, UserLogger log) throws IOException, InterruptedException {
+        syslog().debug("Start native_commit");
+        log.hud(styledLocalized("fastback.hud.local-saving", NATIVE_GIT));
         final File worktree = repo.getWorkTree();
         final Map<String,String> env = Map.of("GIT_LFS_FORCE_PROGRESS", "1");
-        final Consumer<String> logConsumer = new LogConsumer(log);
+        final Consumer<String> logConsumer = new HudConsumer(log, NATIVE_GIT);
         String[] checkout = {"git", "-C", worktree.getAbsolutePath(), "checkout", "--orphan", newBranchName};
         doExec(checkout, env, logConsumer, logConsumer);
         ctx.setWorldSaveEnabled(false);
@@ -75,17 +87,18 @@ class CommitUtils {
             doExec(add, env, logConsumer, logConsumer);
         } finally {
             ctx.setWorldSaveEnabled(true);
-            log.debug("World save re-enabled.");
+            syslog().debug("World save re-enabled.");
         }
         {
             String[] commit = {"git", "-C", worktree.getAbsolutePath(), "commit", "-m", newBranchName};
             doExec(commit, env, logConsumer, logConsumer);
         }
-        log.debug("End native_commit");
+        syslog().debug("End native_commit");
     }
 
     private static void jgit_commit(String newBranchName, Git jgit, ModContext ctx, final Logger log) throws GitAPIException {
         log.debug("Starting jgit_commit");
+        log.hud(styledLocalized("fastback.hud.local-saving", JGIT));
         jgit.checkout().setOrphan(true).setName(newBranchName).call();
         jgit.reset().setMode(ResetCommand.ResetType.SOFT).call();
         log.debug("status");

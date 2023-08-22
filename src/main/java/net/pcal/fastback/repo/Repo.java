@@ -32,7 +32,10 @@ import java.util.Collection;
 import java.util.List;
 
 /**
+ * Encapsulates everything the mod needs to do to the git repo.
+ *
  * @author pcal
+ * @since 0.13.0
  */
 public interface Repo extends AutoCloseable {
 

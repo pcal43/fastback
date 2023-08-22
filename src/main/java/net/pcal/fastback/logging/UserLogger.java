@@ -20,7 +20,7 @@ package net.pcal.fastback.logging;
 
 public interface UserLogger {
 
-    void chat(Message message);
+    void chat(UserMessage message);
 
-    void hud(Message message);
+    void hud(UserMessage message);
 }

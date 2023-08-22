@@ -20,6 +20,7 @@ package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.ServerCommandSource;
+import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
@@ -32,7 +33,6 @@ import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.missingArgument;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
-import static net.pcal.fastback.logging.Message.localized;
 
 enum SetShutdownActionCommand implements Command {
 
@@ -58,7 +58,7 @@ enum SetShutdownActionCommand implements Command {
         gitOp(ctx, WRITE_CONFIG, log, repo -> {
             final GitConfig conf = repo.getConfig();
             conf.updater().set(SHUTDOWN_ACTION, action.getConfigValue()).save();
-            log.chat(localized("fastback.chat.info-shutdown-action", action.getArgumentName()));
+            log.chat(UserMessage.localized("fastback.chat.info-shutdown-action", action.getArgumentName()));
         });
         return SUCCESS;
     }

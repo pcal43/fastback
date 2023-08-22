@@ -20,6 +20,7 @@ package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.ServerCommandSource;
+import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.repo.SnapshotId;
@@ -32,7 +33,6 @@ import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
-import static net.pcal.fastback.logging.Message.localized;
 
 /**
  * Command to prune all snapshots that are not to be retained per the retention policy.
@@ -59,7 +59,7 @@ enum RemotePruneCommand implements Command {
         final Logger log = commandLogger(ctx, scs);
         gitOp(ctx, WRITE, log, repo -> {
             final Collection<SnapshotId> pruned = repo.doRemotePrune();
-            log.chat(localized("fastback.chat.prune-done", pruned.size()));
+            log.chat(UserMessage.localized("fastback.chat.prune-done", pruned.size()));
         });
         return SUCCESS;
     }

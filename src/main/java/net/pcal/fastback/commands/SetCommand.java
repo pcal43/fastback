@@ -34,9 +34,10 @@ import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.mod.ModContext.ExecutionLock.WRITE_CONFIG;
 
 /**
- * 'set' command for setting various git config values.
+ * Sets various configuration values.
  *
  * @author pcal
+ * @since 0.13.0
  */
 enum SetCommand implements Command {
 

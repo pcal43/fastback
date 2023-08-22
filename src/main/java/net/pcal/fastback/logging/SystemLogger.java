@@ -18,9 +18,14 @@
 
 package net.pcal.fastback.logging;
 
+/**
+ * Singleton logger instance that writes to the serverside console.
+ *
+ * @author pcal
+ */
 public interface SystemLogger {
 
-    static SystemLogger get() {
+    static SystemLogger syslog() {
         return ConsoleLogger.get();
     }
 

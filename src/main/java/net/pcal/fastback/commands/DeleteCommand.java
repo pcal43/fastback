@@ -22,6 +22,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
+import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.repo.SnapshotId;
@@ -36,7 +37,6 @@ import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.getArgumentNicely;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
-import static net.pcal.fastback.logging.Message.localized;
 
 enum DeleteCommand implements Command {
 
@@ -64,7 +64,7 @@ enum DeleteCommand implements Command {
             final SnapshotId sid = SnapshotId.fromUuidAndName(uuid, snapshotName);
             final String branchName = sid.getBranchName();
             repo.deleteLocalBranches(List.of(branchName));
-            log.chat(localized("fastback.chat.delete-done", snapshotName));
+            log.chat(UserMessage.localized("fastback.chat.delete-done", snapshotName));
         });
         return SUCCESS;
     }

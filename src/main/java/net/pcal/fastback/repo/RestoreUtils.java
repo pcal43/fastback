@@ -19,6 +19,7 @@
 package net.pcal.fastback.repo;
 
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.utils.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -29,13 +30,13 @@ import java.nio.file.Path;
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.repo.RepoImpl.WORLD_UUID_PATH;
 
 /**
  * Utilities for restoring a snapshot
  *
  * @author pcal
+ * @since 0.13.0
  */
 class RestoreUtils {
 
@@ -56,7 +57,7 @@ class RestoreUtils {
     private static Path jgit_restoreSnapshot(final String repoUri, final Path restoreTargetDir, final String worldName, final SnapshotId sid, final Logger logger) throws IOException, GitAPIException {
         final Path restoreDir = getTargetDir(restoreTargetDir, worldName, sid.getName());
         final String branchName = sid.getBranchName();
-        logger.hud(localized("fastback.hud.restore-percent", 0));
+        logger.hud(UserMessage.localized("fastback.hud.restore-percent", 0));
         final ProgressMonitor pm = new JGitIncrementalProgressMonitor(new JGitRestoreProgressMonitor(logger), 100);
         try (Git git = Git.cloneRepository().setProgressMonitor(pm).setDirectory(restoreDir.toFile()).
                 setBranchesToClone(List.of("refs/heads/" + branchName)).setBranch(branchName).setURI(repoUri).call()) {
@@ -107,7 +108,7 @@ class RestoreUtils {
             } else {
                 return;
             }
-            this.logger.hud(localized("fastback.hud.restore-percent", percentage));
+            this.logger.hud(UserMessage.localized("fastback.hud.restore-percent", percentage));
         }
 
         @Override
