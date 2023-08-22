@@ -36,12 +36,7 @@ class RepoFactoryImpl implements RepoFactory {
     @Override
     public Repo init(Path worldSaveDir, ModContext mod, Logger log) throws IOException {
         try (final Git jgit = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
-            final Repo repo = new RepoImpl(jgit, mod, log);
-            repo.doWorldMaintenance(log);
-            return repo;
-        } catch (IOException ioe) {
-            log.internalError("Error initializing repo", ioe);
-            throw ioe;
+            return new RepoImpl(jgit, mod, log);
         } catch (GitAPIException e) {
             log.internalError("Error initializing repo", e);
             throw new IOException(e);

@@ -31,6 +31,7 @@ import net.pcal.fastback.repo.RepoFactory;
 import java.nio.file.Path;
 
 import static net.minecraft.server.command.CommandManager.literal;
+import static net.pcal.fastback.logging.UserMessage.localized;
 import static net.pcal.fastback.mod.ModContext.ExecutionLock.NONE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
@@ -60,14 +61,14 @@ enum EnableCommand implements Command {
                     final Path worldSaveDir = ctx.getWorldDirectory();
                     final RepoFactory rf = RepoFactory.get();
                     try (final Repo repo = rf.init(worldSaveDir, ctx, log)) {
-                        repo.doWorldMaintenance(log);
+                        //repo.doWorldMaintenance(log);
                         final Updater updater = repo.getConfig().updater();
                         updater.set(IS_BACKUP_ENABLED, true).save();
                         if (repo.getConfig().getString(SHUTDOWN_ACTION) == null) {
                             updater.set(SHUTDOWN_ACTION, DEFAULT_SHUTDOWN_ACTION.getConfigValue());
                         }
                         updater.save();
-                        log.chat(UserMessage.localized("fastback.chat.enable-done"));
+                        log.chat(localized("fastback.chat.enable-done"));
                     } catch (Exception e) {
                         log.internalError("Error enabling backups", e);
                     }

@@ -21,7 +21,6 @@ package net.pcal.fastback.mod;
 import net.pcal.fastback.commands.Commands;
 import net.pcal.fastback.commands.SchedulableAction;
 import net.pcal.fastback.config.GitConfig;
-import net.pcal.fastback.logging.ChatLogger;
 import net.pcal.fastback.logging.CompositeLogger;
 import net.pcal.fastback.logging.ConsoleLogger;
 import net.pcal.fastback.logging.Logger;
@@ -35,7 +34,8 @@ import java.nio.file.Path;
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
-import static net.pcal.fastback.utils.EnvironmentUtils.*;
+import static net.pcal.fastback.utils.EnvironmentUtils.getGitLfsVersion;
+import static net.pcal.fastback.utils.EnvironmentUtils.getGitVersion;
 
 /**
  * Framework-agnostic lifecycle logic.
@@ -82,16 +82,6 @@ public class LifecycleUtils {
      */
     public static void onWorldStart(final ModContext ctx) {
         ctx.startExecutor();
-        final Logger logger = ctx.isClient() ? CompositeLogger.of(ConsoleLogger.get(), new ChatLogger(ctx)) : ConsoleLogger.get(); //FIXME CAN WE KILL THIS?
-        final Path worldSaveDir = ctx.getWorldDirectory();
-        final RepoFactory rf = RepoFactory.get();
-        if (rf.isGitRepo(worldSaveDir)) {
-            try (Repo repo = rf.load(worldSaveDir, ctx, logger)) {
-                repo.doWorldMaintenance(logger); //FIXME I don't think we should be doing this here at all.  Just wait until they try to do something
-            } catch (Exception e) {
-                logger.internalError("Unable to perform maintenance.  Backups will probably not work correctly", e);
-            }
-        }
         syslog().debug("onWorldStart complete");
     }
 
