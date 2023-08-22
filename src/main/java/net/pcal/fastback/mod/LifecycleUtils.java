@@ -90,11 +90,10 @@ public class LifecycleUtils {
      * Must be called when a world is stopping (in either a dedicated or client-embedded server).
      */
     public static void onWorldStop(final ModContext mod) {
-        final Logger consoleLogger = ConsoleLogger.get();
-        final Logger logger = consoleLogger;
         final Path worldSaveDir = mod.getWorldDirectory();
-        logger.chat(localized("fastback.chat.thread-waiting"));
+        mod.setHudText(localized("fastback.chat.thread-waiting"));
         mod.stopExecutor();
+        mod.setHudText(null);
         final RepoFactory rf = RepoFactory.get();
         if (rf.isGitRepo(worldSaveDir)) {
             try (final Repo repo = rf.load(worldSaveDir, mod)) {
