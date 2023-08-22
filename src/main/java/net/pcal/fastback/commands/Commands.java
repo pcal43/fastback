@@ -23,6 +23,7 @@ import com.mojang.brigadier.context.CommandContext;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.command.ServerCommandSource;
+import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.mod.ModContext.ExecutionLock;
 import net.pcal.fastback.config.GitConfig;
@@ -39,6 +40,7 @@ import java.util.function.Predicate;
 
 import static net.pcal.fastback.commands.HelpCommand.help;
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
+import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 
@@ -130,23 +132,25 @@ public class Commands {
 
     static void gitOp(final ModContext mod, final ExecutionLock lock, final Logger log, final GitOp op) {
         mod.execute(lock, log, () -> {
+            final UserLogger ulog = log;
             final Path worldSaveDir = mod.getWorldDirectory();
             final RepoFactory rf = RepoFactory.get();
             if (!rf.isGitRepo(worldSaveDir)) {
-                log.chat(styledLocalized("fastback.chat.not-enabled", ERROR));
+                ulog.chat(styledLocalized("fastback.chat.not-enabled", ERROR));
                 return;
             }
-            try (final Repo repo = rf.load(worldSaveDir, mod, log)) {
+            try (final Repo repo = rf.load(worldSaveDir, mod, ulog)) {
                 final GitConfig repoConfig = repo.getConfig();
                 if (!repoConfig.getBoolean(IS_BACKUP_ENABLED)) {
-                    log.chat(styledLocalized("fastback.chat.not-enabled", ERROR));
+                    ulog.chat(styledLocalized("fastback.chat.not-enabled", ERROR));
                 } else {
                     op.execute(repo);
                 }
             } catch (Exception e) {
-                log.error("Command execution failed.", e);
+                syslog().error("Command execution failed.", e);
+                ulog.chat(styledLocalized("fastback.chat.internal-error", ERROR));
             } finally {
-                log.hud(null); // ensure we always clear the hud text
+                ulog.hud(null); // ensure we always clear the hud text
             }
         });
     }

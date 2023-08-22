@@ -20,9 +20,8 @@ package net.pcal.fastback.repo;
 
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.config.GitConfig;
-import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.logging.UserLogger;
+import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.utils.EnvironmentUtils;
 import org.eclipse.jgit.api.Git;
@@ -60,14 +59,14 @@ class RepoImpl implements Repo {
     private GitConfig config;
 
     @Deprecated
-    private final Logger log;
+    private final UserLogger log;
 
     // ======================================================================
     // Constructors
 
     RepoImpl(final Git git,
              final ModContext ctx,
-             final Logger logger) {
+             final UserLogger logger) {
         this.jgit = requireNonNull(git);
         this.ctx = requireNonNull(ctx);
         this.log = requireNonNull(logger);
@@ -127,7 +126,7 @@ class RepoImpl implements Repo {
             }
         };
         try {
-            return new ListSnapshotsTask(refProvider, this.log).call();
+            return new ListSnapshotsTask(refProvider).call();
         } catch (GitAPIException e) {
             throw new IOException(e);
         }
@@ -145,7 +144,7 @@ class RepoImpl implements Repo {
             }
         };
         try {
-            return new ListSnapshotsTask(refProvider, log).call();
+            return new ListSnapshotsTask(refProvider).call();
         } catch (GitAPIException e) {
             throw new IOException(e);
         }

@@ -18,9 +18,16 @@
 
 package net.pcal.fastback.logging;
 
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
+import static net.pcal.fastback.logging.UserMessage.styledLocalized;
+
 public interface UserLogger {
 
     void chat(UserMessage message);
 
     void hud(UserMessage message);
+
+    default void internalError() {
+        this.chat(styledLocalized("fastback.chat.internal-error", ERROR));
+    }
 }

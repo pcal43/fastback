@@ -22,6 +22,7 @@ import net.pcal.fastback.commands.SchedulableAction;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.ConsoleLogger;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.logging.UserMessage.UserMessageStyle;
 import net.pcal.fastback.repo.Repo;
@@ -106,7 +107,7 @@ public class ModContext {
     private Future<?> exclusiveFuture = null;
 
     //FIXME break this out, probably into a singleton
-    public boolean execute(ExecutionLock lock, Logger log, Runnable runnable) {
+    public boolean execute(ExecutionLock lock, UserLogger ulog, Runnable runnable) {
         if (this.executor == null) throw new IllegalStateException("Executor not started");
         switch (lock) {
             case NONE:
@@ -115,10 +116,10 @@ public class ModContext {
                 return true;
             case WRITE:
                 if (this.exclusiveFuture != null && !this.exclusiveFuture.isDone()) {
-                    log.chat(styledLocalized("fastback.chat.thread-busy", ERROR));
+                    ulog.chat(styledLocalized("fastback.chat.thread-busy", ERROR));
                     return false;
                 } else {
-                    log.debug("executing " + runnable);
+                    syslog().debug("executing " + runnable);
                     this.exclusiveFuture = this.executor.submit(runnable);
                     return true;
                 }

@@ -18,6 +18,7 @@
 
 package net.pcal.fastback.repo;
 
+import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.logging.Logger;
 import org.eclipse.jgit.api.Git;
@@ -27,6 +28,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import static net.pcal.fastback.logging.SystemLogger.syslog;
+
 /**
  * @author pcal
  * @since 0.13.0
@@ -34,20 +37,21 @@ import java.nio.file.Path;
 class RepoFactoryImpl implements RepoFactory {
 
     @Override
-    public Repo init(Path worldSaveDir, ModContext mod, Logger log) throws IOException {
+    public Repo init(Path worldSaveDir, ModContext mod, UserLogger ulog) throws IOException {
         try (final Git jgit = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
-            return new RepoImpl(jgit, mod, log);
+            return new RepoImpl(jgit, mod, ulog);
         } catch (GitAPIException e) {
-            log.error("Error initializing repo", e);
+            syslog().error("Error initializing repo", e);
+            ulog.internalError();
             throw new IOException(e);
         }
     }
 
     @Override
-    public Repo load(Path worldSaveDir, ModContext mod, Logger log) throws IOException {
+    public Repo load(Path worldSaveDir, ModContext mod, UserLogger ulog) throws IOException {
         final Git jgit = Git.open(worldSaveDir.toFile());
         //final GitConfig conf = GitConfig.load(jgit);
-        return new RepoImpl(jgit, mod, log);
+        return new RepoImpl(jgit, mod, ulog);
     }
 
     @Override
