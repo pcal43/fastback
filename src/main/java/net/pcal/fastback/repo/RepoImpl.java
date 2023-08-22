@@ -220,7 +220,7 @@ class RepoImpl implements Repo {
     private boolean doNativeCheck() {
         final GitConfig config = this.getConfig();
         if (config.getBoolean(IS_NATIVE_ENABLED)) {
-            if (!NativeGitUtils.isNativeGitInstalled(this.log)) {
+            if (!NativeGitUtils.isNativeGitInstalled()) {
                 log.chat(Message.rawError("Unable to backup: native mode enabled but git is not installed."));
                 return false;
             }

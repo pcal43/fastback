@@ -68,18 +68,18 @@ class CommitUtils {
         final Map<String,String> env = Map.of("GIT_LFS_FORCE_PROGRESS", "1");
         final Consumer<String> logConsumer = new LogConsumer(log);
         String[] checkout = {"git", "-C", worktree.getAbsolutePath(), "checkout", "--orphan", newBranchName};
-        doExec(checkout, env, logConsumer, logConsumer, log);
+        doExec(checkout, env, logConsumer, logConsumer);
         ctx.setWorldSaveEnabled(false);
         try {
             String[] add = {"git", "-C", worktree.getAbsolutePath(), "add", "-v", "."};
-            doExec(add, env, logConsumer, logConsumer, log);
+            doExec(add, env, logConsumer, logConsumer);
         } finally {
             ctx.setWorldSaveEnabled(true);
             log.debug("World save re-enabled.");
         }
         {
             String[] commit = {"git", "-C", worktree.getAbsolutePath(), "commit", "-m", newBranchName};
-            doExec(commit, env, logConsumer, logConsumer, log);
+            doExec(commit, env, logConsumer, logConsumer);
         }
         log.debug("End native_commit");
     }

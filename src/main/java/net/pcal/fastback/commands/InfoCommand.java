@@ -20,15 +20,18 @@ package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.Text;
 import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;
 import net.pcal.fastback.retention.RetentionPolicyType;
+import net.pcal.fastback.utils.NativeGitUtils;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
+import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_ENABLED;
 import static net.pcal.fastback.mod.ModContext.ExecutionLock.NONE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
@@ -66,6 +69,7 @@ enum InfoCommand implements Command {
         final Logger log = commandLogger(ctx, scs);
         gitOp(ctx, NONE, log, repo -> {
             final GitConfig c = repo.getConfig();
+            log.chat(localized("fastback.chat.info-header"));
             log.chat(localized("fastback.chat.info-fastback-version", ctx.getModVersion()));
             log.chat(localized("fastback.chat.info-uuid", repo.getWorldUuid()));
             if (c.getBoolean(IS_BACKUP_ENABLED)) {
@@ -95,6 +99,14 @@ enum InfoCommand implements Command {
                     "fastback.chat.remote-retention-policy-set",
                     "fastback.chat.remote-retention-policy-none"
             );
+            final Text disabled = Text.translatable("fastback.values.disabled");
+            final Text enabled = Text.translatable("fastback.values.enabled");
+            if (c.getBoolean(IS_NATIVE_ENABLED)) {
+                log.chat(localized("fastback.chat.info-native-git", enabled));
+                log.chat(localized("fastback.chat.info-native-git-version", NativeGitUtils.getGitVersion()));
+
+            }
+
         });
         return SUCCESS;
     }

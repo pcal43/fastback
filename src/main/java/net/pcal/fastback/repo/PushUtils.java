@@ -112,7 +112,7 @@ class PushUtils {
         final String[] push = { "git", "-C", worktree.getAbsolutePath(), "push", "--progress", "--set-upstream", remoteName, branchNameToPush };
         final Map<String,String> env = Map.of("GIT_LFS_FORCE_PROGRESS", "1");
         final Consumer<String> logConsumer = new LogConsumer(log);
-        doExec(push, env, logConsumer, logConsumer, log);
+        doExec(push, env, logConsumer, logConsumer);
         log.debug("End native_push");
     }
 

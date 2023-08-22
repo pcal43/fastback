@@ -18,6 +18,7 @@
 
 package net.pcal.fastback.utils;
 
+import net.pcal.fastback.logging.ConsoleLogger;
 import net.pcal.fastback.logging.Logger;
 
 import java.io.IOException;
@@ -29,25 +30,25 @@ import static net.pcal.fastback.utils.ProcessUtils.doExec;
 
 public class NativeGitUtils {
 
-    public static boolean isNativeGitInstalled(final Logger log) {
-        return getGitVersion(log) != null && getGitLfsVersion(log) != null;
+    public static boolean isNativeGitInstalled() {
+        return getGitVersion() != null && getGitLfsVersion() != null;
     }
 
-    public static String getGitVersion(final Logger log) {
-        return execForVersion(new String[] {"git", "-v"}, log);
+    public static String getGitVersion() {
+        return execForVersion(new String[] {"git", "-v"});
     }
 
-    public static String getGitLfsVersion(final Logger log) {
-        return execForVersion(new String[] {"git-lfs", "-v"}, log);
+    public static String getGitLfsVersion() {
+        return execForVersion(new String[] {"git-lfs", "-v"});
     }
 
-    private static String execForVersion(String[] cmd, Logger log) {
+    private static String execForVersion(String[] cmd) {
         final List<String> stdout = new ArrayList<>();
         final int exit;
         try {
-            exit = doExec(cmd, Collections.emptyMap(), stdout::add, line -> {}, log);
+            exit = doExec(cmd, Collections.emptyMap(), stdout::add, line -> {});
         } catch (IOException | InterruptedException e) {
-            log.debug("Could not run "+ String.join(" ", cmd), e);
+            ConsoleLogger.get().debug("Could not run "+ String.join(" ", cmd), e);
             return null;
         }
         return exit == 0 ? stdout.get(0) : null;

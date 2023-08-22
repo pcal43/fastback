@@ -34,8 +34,12 @@
   "fastback.chat.info-autoback-wait"             : "Autoback wait: %s minutes",
   "fastback.chat.info-backup-size"               : "Local backup size: %s",
   "fastback.chat.info-fastback-version"          : "FastBack version: %s",
+  "fastback.chat.info-header"                    : "\nFastBack Info\n-------------",
   "fastback.chat.info-local-disabled"            : "Local backup: disabled",
   "fastback.chat.info-local-enabled"             : "Local backup: enabled",
+  "fastback.chat.info-native-git"                : "Native Git: %s",
+  "fastback.chat.info-native-git-version"        : "   git version: %s",
+  "fastback.chat.info-native-git-lfs-version"    : "   git-lfs version: %s",
   "fastback.chat.info-remote-url"                : "Remote URL: %s",
   "fastback.chat.info-shutdown-action"           : "Shutdown action: %s",
   "fastback.chat.info-uuid"                      : "Backup UUID: %s",
@@ -79,5 +83,7 @@
   "fastback.retain.all.description"              : "Retain all snapshots; never prune.",
   "fastback.retain.fixed.description"            : "Fixed: Keep only the %s most-recent snapshots.",
   "fastback.retain.daily.description"            : "Daily: Keep the last snapshot from each day, plus all snapshots from the last %s days",
-  "fastback.retain.gfs.description"              : "GFS: Keep every backup today + latest daily backup in the last week + latest weekly backup in the last month + latest backup of each month"
+  "fastback.retain.gfs.description"              : "GFS: Keep every backup today + latest daily backup in the last week + latest weekly backup in the last month + latest backup of each month",
+  "fastback.values.disabled"                     : "disabled",
+  "fastback.values.enabled"                      : "enabled"
 }

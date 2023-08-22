@@ -51,7 +51,7 @@ public class LifecycleUtils {
         Commands.registerCommands(ctx, ctx.getCommandName());
         final Logger log = ConsoleLogger.get();
         {
-            final String gitVersion = getGitVersion(log);
+            final String gitVersion = getGitVersion();
             if (gitVersion == null) {
                 log.info("git is not installed.");
             } else {
@@ -59,7 +59,7 @@ public class LifecycleUtils {
             }
         }
         {
-            final String gitLfsVersion = getGitLfsVersion(log);
+            final String gitLfsVersion = getGitLfsVersion();
             if (gitLfsVersion == null) {
                 log.info("git-lfs is not installed.");
             } else {
