@@ -52,7 +52,6 @@ public interface SystemLogger {
 
     static void register(Logger logger) {
         Holder.INSTANCE = logger;
-        ConsoleLogger.register(logger);
     }
 
 }

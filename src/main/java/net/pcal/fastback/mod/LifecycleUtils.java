@@ -21,8 +21,6 @@ package net.pcal.fastback.mod;
 import net.pcal.fastback.commands.Commands;
 import net.pcal.fastback.commands.SchedulableAction;
 import net.pcal.fastback.config.GitConfig;
-import net.pcal.fastback.logging.ConsoleLogger;
-import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.repo.Repo;
@@ -102,7 +100,7 @@ public class LifecycleUtils {
                     final SchedulableAction action = SchedulableAction.forConfigValue(config, SHUTDOWN_ACTION);
                     if (action != null) {
                         mod.setMessageScreenText(localized("fastback.message.backing-up"));
-                        action.getTask(repo, new SaveScreenLogger(mod)).call();
+                        action.getTask(repo, new HudLogger(mod)).call();
                     }
                 }
             } catch (Exception e) {
@@ -112,11 +110,11 @@ public class LifecycleUtils {
         syslog().debug("onWorldStop complete");
     }
 
-    private static class SaveScreenLogger implements UserLogger {
+    public static class HudLogger implements UserLogger {
 
         private final ModContext ctx;
 
-        SaveScreenLogger(ModContext ctx){
+        HudLogger(ModContext ctx){
             this.ctx = requireNonNull(ctx);
         }
 

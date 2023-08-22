@@ -24,10 +24,10 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.pcal.fastback.commands.SchedulableAction;
 import net.pcal.fastback.config.GitConfig;
-import net.pcal.fastback.logging.ConsoleLogger;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.logging.UserMessage.UserMessageStyle;
+import net.pcal.fastback.mod.LifecycleUtils.HudLogger;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.RepoFactory;
 
@@ -74,7 +74,7 @@ public class ModContext {
         public void run() {
             //TODO implement indicator
             // final Logger screenLogger = CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx));
-            execute(ExecutionLock.WRITE, ConsoleLogger.get(), () -> {
+            execute(ExecutionLock.WRITE, new HudLogger(ModContext.this), () -> {
                 RepoFactory rf = RepoFactory.get();
                 final Path worldSaveDir = getWorldDirectory();
                 if (!rf.isGitRepo(worldSaveDir)) return;
@@ -92,7 +92,7 @@ public class ModContext {
                         return;
                     }
                     syslog().info("Starting auto-backup");
-                    autobackAction.getTask(repo, ConsoleLogger.get() );
+                    autobackAction.getTask(repo, new HudLogger(ModContext.this));
                     lastBackupTime = System.currentTimeMillis();
                 } catch (Exception e) {
                     syslog().error("auto-backup failed.", e);
