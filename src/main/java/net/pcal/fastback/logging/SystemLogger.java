@@ -26,7 +26,7 @@ package net.pcal.fastback.logging;
 public interface SystemLogger {
 
     static SystemLogger syslog() {
-        return Holder.INSTANCE;
+        return Singleton.INSTANCE;
     }
 
     void setForceDebugEnabled(boolean debug);
@@ -46,12 +46,11 @@ public interface SystemLogger {
     default void debug(Throwable t) { this.debug(t.getMessage(), t); }
 
 
-    class Holder { // stupid, figure out sth better after we cleanup the other messes
-        static SystemLogger INSTANCE = null;
-    }
+    class Singleton {
+        private static SystemLogger INSTANCE = null;
 
-    static void register(Logger logger) {
-        Holder.INSTANCE = logger;
+        public static void register(SystemLogger logger) {
+            Singleton.INSTANCE = logger;
+        }
     }
-
 }

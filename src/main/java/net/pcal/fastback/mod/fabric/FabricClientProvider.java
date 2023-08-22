@@ -38,7 +38,7 @@ import java.nio.file.Path;
 final class FabricClientProvider extends BaseFabricProvider implements HudRenderCallback {
 
     private MinecraftClient client = null;
-    private Text overlayText;
+    private Text hudText;
 
     FabricClientProvider() {
     }
@@ -62,13 +62,13 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
     @Override
     public void setHudText(Text text) {
         if (text == null) {
-            this.overlayTextShown = false;
+            this.hudTextShown = false;
         } else {
-            this.overlayText = text; // so the hud renderer can find it
-            this.overlayTextShown = true;
+            this.hudText = text; // so the hud renderer can find it
+            this.hudTextShown = true;
             final Screen screen = client.currentScreen;
             if (screen instanceof MessageScreen) {
-                ((ScreenAccessors) screen).setTitle(overlayText);
+                ((ScreenAccessors) screen).setTitle(hudText);
             }
         }
     }
@@ -90,15 +90,17 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
     // HudRenderCallback implementation
 
     private float backupIndicatorAlpha;
-    private boolean overlayTextShown = false;
+    private boolean hudTextShown = false;
 
     @Override
     public void onHudRender(DrawContext drawContext, float tickDelta) {
-        if (this.overlayText == null) return;
+        if (this.hudText == null) return;
         float previousIndicatorAlpha = this.backupIndicatorAlpha;
-        this.backupIndicatorAlpha = MathHelper.lerp(0.2F, this.backupIndicatorAlpha, overlayTextShown ? 1.0F : 0.0F);
+        this.backupIndicatorAlpha = MathHelper.lerp(0.2F, this.backupIndicatorAlpha, hudTextShown ? 1.0F : 0.0F);
+
         if (this.client.options.getShowAutosaveIndicator().getValue() && (this.backupIndicatorAlpha > 0.0F || previousIndicatorAlpha > 0.0F)) {
             int i = MathHelper.floor(255.0F * MathHelper.clamp(MathHelper.lerp(this.client.getTickDelta(), previousIndicatorAlpha, this.backupIndicatorAlpha), 0.0F, 1.0F));
+
             if (i > 8) {
                 final TextRenderer textRenderer = this.client.textRenderer;
                 // int j = textRenderer.getWidth(this.hudText);
@@ -106,9 +108,9 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
                 // int scaledWidth = this.client.getWindow().getScaledWidth();
                 int x = 2; //scaledWidth - j - 5;
                 int y = 2;
-                drawContext.drawTextWithShadow(textRenderer, this.overlayText, x, y, k);
+                drawContext.drawTextWithShadow(textRenderer, this.hudText, x, y, k);
             } else {
-                overlayText = null;
+                hudText = null;
             }
         }
     }

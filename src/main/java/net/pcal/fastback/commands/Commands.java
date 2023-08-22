@@ -24,7 +24,6 @@ import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.config.GitConfig;
-import net.pcal.fastback.logging.CommandSourceLogger;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.mod.ModContext.ExecutionLock;

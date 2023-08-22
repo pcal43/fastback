@@ -180,7 +180,7 @@ public class ModContext {
     }
 
     public void setHudText(UserMessage message) {
-        this.spi.setHudText(messageToText(message));
+        this.spi.setHudText(message == null ? null : messageToText(message));
     }
 
     public Path getWorldDirectory() {

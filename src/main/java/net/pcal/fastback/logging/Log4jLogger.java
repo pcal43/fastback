@@ -20,21 +20,13 @@ package net.pcal.fastback.logging;
 
 import static java.util.Objects.requireNonNull;
 
-public class Log4jLogger implements Logger {
+public class Log4jLogger implements SystemLogger {
 
     private final org.apache.logging.log4j.Logger log4j;
     private boolean forceDebugEnabled = false;
 
     public Log4jLogger(org.apache.logging.log4j.Logger log4j) {
         this.log4j = requireNonNull(log4j);
-    }
-
-    @Override
-    public void chat(UserMessage message) {
-    }
-
-    @Override
-    public void hud(UserMessage message) {
     }
 
     @Override

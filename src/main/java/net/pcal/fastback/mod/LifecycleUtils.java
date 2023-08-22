@@ -70,13 +70,6 @@ public class LifecycleUtils {
     }
 
     /**
-     * Must be called when either client or server is terminating.
-     */
-    public static void onTermination(ModContext ctx) {
-        syslog().debug("onTermination complete");
-    }
-
-    /**
      * Must be called when a world is starting (in either a dedicated or client-embedded server).
      */
     public static void onWorldStart(final ModContext ctx) {

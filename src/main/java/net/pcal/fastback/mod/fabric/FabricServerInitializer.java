@@ -38,7 +38,7 @@ public class FabricServerInitializer implements DedicatedServerModInitializer {
 
     @Override
     public void onInitializeServer() {
-        SystemLogger.register(new Log4jLogger(LogManager.getLogger(MOD_ID)));
+        SystemLogger.Singleton.register(new Log4jLogger(LogManager.getLogger(MOD_ID)));
         final BaseFabricProvider fsp = new FabricServerProvider();
         final ModContext modContext = ModContext.create(fsp);
         ServerLifecycleEvents.SERVER_STARTING.register(
@@ -49,9 +49,11 @@ public class FabricServerInitializer implements DedicatedServerModInitializer {
         );
         ServerLifecycleEvents.SERVER_STOPPED.register(
                 minecraftServer -> {
-                    LifecycleUtils.onWorldStop(modContext);
-                    LifecycleUtils.onTermination(modContext); // dedicated server shutdown == VM termination
-                    fsp.setMinecraftServer(null);
+                    try {
+                        LifecycleUtils.onWorldStop(modContext);
+                    } finally {
+                        fsp.setMinecraftServer(null);
+                    }
                 }
         );
         LifecycleUtils.onInitialize(modContext);

@@ -41,7 +41,7 @@ public class FabricClientInitializer implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        SystemLogger.register(new Log4jLogger(LogManager.getLogger(MOD_ID)));
+        SystemLogger.Singleton.register(new Log4jLogger(LogManager.getLogger(MOD_ID)));
         final FabricClientProvider clientProvider = new FabricClientProvider();
         final ModContext modContext = ModContext.create(clientProvider);
         LifecycleUtils.onInitialize(modContext);
@@ -54,7 +54,6 @@ public class FabricClientInitializer implements ClientModInitializer {
         );
         ClientLifecycleEvents.CLIENT_STOPPING.register(
                 minecraftClient -> {
-                    LifecycleUtils.onTermination(modContext);
                     clientProvider.setMinecraftClient(null);
                 }
         );
@@ -66,8 +65,11 @@ public class FabricClientInitializer implements ClientModInitializer {
         );
         ServerLifecycleEvents.SERVER_STOPPED.register(
                 minecraftServer -> {
-                    LifecycleUtils.onWorldStop(modContext);
-                    clientProvider.setMinecraftServer(null);
+                    try {
+                        LifecycleUtils.onWorldStop(modContext);
+                    } finally {
+                        clientProvider.setMinecraftServer(null);
+                    }
                 }
         );
     }

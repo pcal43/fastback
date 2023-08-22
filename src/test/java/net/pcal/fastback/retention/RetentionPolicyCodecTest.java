@@ -38,7 +38,7 @@ public class RetentionPolicyCodecTest {
 
     @BeforeAll
     public static void setup() {
-        SystemLogger.register(new Log4jLogger(LogManager.getLogger("mocklogger")));
+        SystemLogger.Singleton.register(new Log4jLogger(LogManager.getLogger("mocklogger")));
     }
 
     @Test

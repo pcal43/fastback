@@ -16,19 +16,21 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.logging;
+package net.pcal.fastback.commands;
 
 import net.minecraft.server.command.ServerCommandSource;
+import net.pcal.fastback.logging.UserLogger;
+import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.ModContext;
 
 import static java.util.Objects.requireNonNull;
 
-public class CommandSourceLogger implements UserLogger {
+class CommandSourceLogger implements UserLogger {
 
     private final ServerCommandSource scs;
     private final ModContext ctx;
 
-    public CommandSourceLogger(ModContext ctx, ServerCommandSource scs) {
+    CommandSourceLogger(ModContext ctx, ServerCommandSource scs) {
         this.ctx = requireNonNull(ctx);
         this.scs = requireNonNull(scs);
     }
