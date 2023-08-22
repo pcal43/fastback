@@ -18,8 +18,7 @@
 
 package net.pcal.fastback.mod;
 
-import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.logging.UserMessage;
+import net.minecraft.text.Text;
 
 import java.nio.file.Path;
 
@@ -38,18 +37,27 @@ public interface FrameworkServiceProvider {
 
     String getModVersion();
 
-    Path getConfigDir();
+    /**
+     * @return path to the 'saves' directory on a minecraft client, or null if we're on a server.
+     */
+    Path getSavesDir();
 
-    String getMinecraftVersion();
-
+    /**
+     * @return path to the directory of the current world.
+     */
     Path getWorldDirectory();
+
 
     String getWorldName();
 
-    Path getSnapshotRestoreDir();
-
+    /**
+     * @return true if we're clientside.
+     */
     boolean isClient();
 
+    /**
+     * @return true if world saving is currently enabled (i.e. if we haven't disabled it).
+     */
     boolean isWorldSaveEnabled();
 
     void setWorldSaveEnabled(boolean enabled);
@@ -58,20 +66,11 @@ public interface FrameworkServiceProvider {
 
     boolean isServerStopping();
 
-    @Deprecated // just merge with setClientStatusText
-    void setClientSavingScreenText(UserMessage message);
-
-    void sendClientChatMessage(UserMessage message);
-
     /**
-     * Display ephemeral status text on the screen to the user, if we have a UI client.  This will either be in the
-     * HUD or on the saving screen.
+     * Display ephemeral status text on the screen to the user,.  This could be part of the in-game HUD
+     * or any other floating text, depending on what screen the user is on.  Has no effect if we're serverside.
      */
-    void setClientOverlayText(UserMessage message);
-
-    void sendFeedback(UserMessage message, ServerCommandSource scs);
-
-    void sendError(UserMessage message, ServerCommandSource scs);
+    void setHudText(Text text);
 
     void setAutoSaveListener(Runnable runnable);
 }

@@ -21,16 +21,8 @@ package net.pcal.fastback.mod.fabric;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModMetadata;
-import net.minecraft.SharedConstants;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.text.TextColor;
 import net.minecraft.world.level.storage.LevelStorage;
-import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.logging.UserMessage.UserMessageStyle;
 import net.pcal.fastback.mod.FrameworkServiceProvider;
 import net.pcal.fastback.mod.fabric.mixins.ServerAccessors;
 import net.pcal.fastback.mod.fabric.mixins.SessionAccessors;
@@ -68,16 +60,6 @@ public abstract class FabricProvider implements FrameworkServiceProvider {
     void setMinecraftServer(MinecraftServer serverOrNull) {
         if ((serverOrNull == null) == (this.minecraftServer == null)) throw new IllegalStateException();
         this.minecraftServer = serverOrNull;
-    }
-
-    @Override
-    public String getMinecraftVersion() {
-        return SharedConstants.getGameVersion().getName();
-    }
-
-    @Override
-    public Path getConfigDir() {
-        return FabricLoader.getInstance().getConfigDir();
     }
 
     @Override
@@ -121,16 +103,6 @@ public abstract class FabricProvider implements FrameworkServiceProvider {
     // understand the difference
 
     @Override
-    public void sendFeedback(UserMessage message, ServerCommandSource scs) {
-        scs.sendFeedback(() -> messageToText(message), false);
-    }
-
-    @Override
-    public void sendError(UserMessage message, ServerCommandSource scs) {
-        scs.sendError(messageToText(message));
-    }
-
-    @Override
     public void setAutoSaveListener(Runnable runnable) {
         if (this.autoSaveListener != null) throw new IllegalStateException();
         this.autoSaveListener = requireNonNull(runnable);
@@ -161,20 +133,4 @@ public abstract class FabricProvider implements FrameworkServiceProvider {
         }
     }
 
-    static Text messageToText(final UserMessage m) {
-        final MutableText out;
-        if (m.styledLocalized() != null) {
-            out = Text.translatable(m.styledLocalized().key(), m.styledLocalized().params());
-        } else {
-            out = Text.literal(m.styledRaw());
-        }
-        if (m.style() == UserMessageStyle.ERROR) {
-            out.setStyle(Style.EMPTY.withColor(TextColor.parse("red")));
-        } else if (m.style() == UserMessageStyle.WARNING) {
-            out.setStyle(Style.EMPTY.withColor(TextColor.parse("yellow")));
-        } else if (m.style() == UserMessageStyle.NATIVE_GIT) {
-            out.setStyle(Style.EMPTY.withColor(TextColor.parse("green")));
-        }
-        return out;
-    }
 }

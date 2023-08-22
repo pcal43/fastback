@@ -18,11 +18,16 @@
 package net.pcal.fastback.mod;
 
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
+import net.minecraft.text.TextColor;
 import net.pcal.fastback.commands.SchedulableAction;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.ConsoleLogger;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
+import net.pcal.fastback.logging.UserMessage.UserMessageStyle;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.RepoFactory;
 
@@ -140,7 +145,7 @@ public class ModContext {
     }
 
     public Path getRestoresDir() throws IOException {
-        Path restoreDir = this.spi.getSnapshotRestoreDir();
+        Path restoreDir = this.spi.getSavesDir();
         if (restoreDir != null) return restoreDir;
         if (tempRestoresDirectory == null) {
             tempRestoresDirectory = createTempDirectory(getModId() + "-restore");
@@ -170,24 +175,16 @@ public class ModContext {
         return spi.isServerStopping();
     }
 
-    public void setSavingScreenText(UserMessage message) {
-        this.spi.setClientSavingScreenText(message);
+    public void sendChat(UserMessage message, ServerCommandSource scs) {
+        if (message.style() == ERROR) {
+            scs.sendError(messageToText(message));
+        } else {
+            scs.sendFeedback(() -> messageToText(message), false);
+        }
     }
 
-    public void sendClientChatMessage(UserMessage message) {
-        this.spi.sendClientChatMessage(message);
-    }
-
-    public void sendFeedback(UserMessage message, ServerCommandSource scs) {
-        this.spi.sendFeedback(message, scs);
-    }
-
-    public void sendError(UserMessage message, ServerCommandSource scs) {
-        this.spi.sendError(message, scs);
-    }
-
-    public void renderBackupIndicator(UserMessage message) {
-        this.spi.setClientOverlayText(message);
+    public void setHudText(UserMessage message) {
+        this.spi.setHudText(messageToText(message));
     }
 
     public Path getWorldDirectory() {
@@ -223,7 +220,7 @@ public class ModContext {
      * Lifted straight from the docs:
      * https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html
      */
-    private static void shutdownExecutor(ExecutorService pool) {
+    private static void shutdownExecutor(final ExecutorService pool) {
         pool.shutdown(); // Disable new tasks from being submitted
         try {
             // Wait a while for existing tasks to terminate
@@ -239,5 +236,22 @@ public class ModContext {
             // Preserve interrupt status
             Thread.currentThread().interrupt();
         }
+    }
+
+    private static Text messageToText(final UserMessage m) {
+        final MutableText out;
+        if (m.styledLocalized() != null) {
+            out = Text.translatable(m.styledLocalized().key(), m.styledLocalized().params());
+        } else {
+            out = Text.literal(m.styledRaw());
+        }
+        if (m.style() == UserMessageStyle.ERROR) {
+            out.setStyle(Style.EMPTY.withColor(TextColor.parse("red")));
+        } else if (m.style() == UserMessageStyle.WARNING) {
+            out.setStyle(Style.EMPTY.withColor(TextColor.parse("yellow")));
+        } else if (m.style() == UserMessageStyle.NATIVE_GIT) {
+            out.setStyle(Style.EMPTY.withColor(TextColor.parse("green")));
+        }
+        return out;
     }
 }

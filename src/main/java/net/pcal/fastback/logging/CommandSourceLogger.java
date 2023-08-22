@@ -19,7 +19,6 @@
 package net.pcal.fastback.logging;
 
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.logging.UserMessage.UserMessageStyle;
 import net.pcal.fastback.mod.ModContext;
 
 import static java.util.Objects.requireNonNull;
@@ -36,16 +35,11 @@ public class CommandSourceLogger implements UserLogger {
 
     @Override
     public void chat(UserMessage message) {
-        if (message.style() == UserMessageStyle.ERROR) {
-            ctx.sendError(message, scs);
-        } else {
-            ctx.sendFeedback(message, scs);
-        }
+        ctx.sendChat(message, this.scs);
     }
 
     @Override
     public void hud(UserMessage message) {
-        this.ctx.setSavingScreenText(message);
-        this.ctx.renderBackupIndicator(message);
+        this.ctx.setHudText(message);
     }
 }

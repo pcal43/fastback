@@ -27,7 +27,6 @@ import net.minecraft.client.gui.screen.MessageScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
-import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.fabric.mixins.ScreenAccessors;
 
 import java.nio.file.Path;
@@ -61,11 +60,11 @@ final class FabricClientProvider extends FabricProvider implements HudRenderCall
     }
 
     @Override
-    public void setClientOverlayText(UserMessage message) {
-        if (message == null) {
+    public void setHudText(Text text) {
+        if (text == null) {
             this.overlayTextShown = false;
         } else {
-            this.overlayText = messageToText(message); // so the hud renderer can find it
+            this.overlayText = text; // so the hud renderer can find it
             this.overlayTextShown = true;
             final Screen screen = client.currentScreen;
             if (screen instanceof MessageScreen) {
@@ -75,22 +74,7 @@ final class FabricClientProvider extends FabricProvider implements HudRenderCall
     }
 
     @Override
-    public void setClientSavingScreenText(UserMessage message) {
-        final Screen screen = client.currentScreen;
-        if (screen instanceof MessageScreen) {
-            ((ScreenAccessors) screen).setTitle(messageToText(message));
-        }
-    }
-
-    @Override
-    public void sendClientChatMessage(UserMessage message) {
-        if (this.client != null) {
-            client.inGameHud.getChatHud().addMessage(messageToText(message));
-        }
-    }
-
-    @Override
-    public Path getSnapshotRestoreDir() {
+    public Path getSavesDir() {
         return FabricLoader.getInstance().getGameDir().resolve("saves");
     }
 

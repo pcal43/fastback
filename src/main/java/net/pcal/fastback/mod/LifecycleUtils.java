@@ -24,7 +24,6 @@ import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.CompositeLogger;
 import net.pcal.fastback.logging.ConsoleLogger;
 import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.logging.SaveScreenLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.RepoFactory;
@@ -90,8 +89,7 @@ public class LifecycleUtils {
      */
     public static void onWorldStop(final ModContext mod) {
         final Logger consoleLogger = ConsoleLogger.get();
-        final Logger logger = mod.isClient() ? CompositeLogger.of(consoleLogger, new SaveScreenLogger(mod))
-                : consoleLogger;
+        final Logger logger = mod.isClient() ? CompositeLogger.of(consoleLogger) : consoleLogger;
         final Path worldSaveDir = mod.getWorldDirectory();
         logger.chat(UserMessage.localized("fastback.chat.thread-waiting"));
         mod.stopExecutor();
@@ -102,7 +100,7 @@ public class LifecycleUtils {
                 if (config.getBoolean(IS_BACKUP_ENABLED)) {
                     final SchedulableAction action = SchedulableAction.forConfigValue(config, SHUTDOWN_ACTION);
                     if (action != null) {
-                        final Logger screenLogger = CompositeLogger.of(consoleLogger, new SaveScreenLogger(mod)); //FIXME figure out what to do with this
+                        final Logger screenLogger = CompositeLogger.of(consoleLogger); //FIXME figure out what to do with this
                         action.getTask(repo, logger).call();
                     }
                 }
