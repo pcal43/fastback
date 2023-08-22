@@ -86,7 +86,7 @@ enum SetRetentionCommand implements Command {
             final LiteralArgumentBuilder<ServerCommandSource> policyCommand = literal(rpt.getCommandName());
             policyCommand.executes(cc -> setPolicyFn.apply(cc, rpt));
             if (rpt.getParameters() != null) {
-                for (RetentionPolicyType.Parameter param : rpt.getParameters()) {
+                for (RetentionPolicyType.Parameter<?> param : rpt.getParameters()) {
                     policyCommand.then(argument(param.name(), param.type()).
                             executes(cc -> setPolicyFn.apply(cc, rpt)));
                 }
@@ -99,7 +99,7 @@ enum SetRetentionCommand implements Command {
     /**
      * Does the work to encode a policy configuration and set it in git configuration.
      * Broken out as a helper methods so this logic can be shared by set-retention and set-remote-retention.
-     *
+     * <p>
      * TODO this should probably move to Repo.
      */
     public static int setRetentionPolicy(final ModContext ctx,
