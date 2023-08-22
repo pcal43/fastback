@@ -22,6 +22,7 @@ import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.UserLogger;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
 
 import java.io.File;
@@ -59,12 +60,12 @@ public interface Repo extends AutoCloseable {
 
     Path doRestoreSnapshot(String uri, Path restoresDir, String worldName, SnapshotId sid) throws IOException;
 
-    void deleteBranches(List<String> branchesToDelete);
+    void deleteRemoteBranch(String remoteBranchName) throws IOException;
 
-    void deleteRemoteBranch(String remoteName, String remoteBranchName) throws IOException;
+    void deleteLocalBranches(List<String> branchesToDelete) throws GitAPIException, IOException;
 
-    void setNativeGitEnabled(boolean enabled, UserLogger userlog) throws IOException;
+    void setNativeGitEnabled(boolean enabled, UserLogger user) throws IOException;
 
     @Deprecated
-    void doWorldMaintenance(Logger logger) throws IOException, IOException;
+    void doWorldMaintenance(Logger logger) throws IOException;
 }

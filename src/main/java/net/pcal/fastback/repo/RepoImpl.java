@@ -29,7 +29,6 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.transport.RefSpec;
 
 import java.io.File;
 import java.io.IOException;
@@ -164,20 +163,13 @@ class RepoImpl implements Repo {
     }
 
     @Override
-    public void deleteRemoteBranch(String remoteName, String remoteBranchName) throws IOException {
-        RefSpec refSpec = new RefSpec()
-                .setSource(null)
-                .setDestination("refs/heads/" + remoteBranchName);
-        try {
-            this.jgit.push().setRefSpecs(refSpec).setRemote(remoteName).call();
-        } catch (GitAPIException e) {
-            throw new IOException(e);
-        }
+    public void deleteRemoteBranch(String remoteBranchName) throws IOException {
+        PruneUtils.deleteRemoteBranch(this, remoteBranchName);
     }
 
     @Override
-    public void deleteBranches(List<String> branchesToDelete) {
-        this.jgit.branchDelete().setForce(true).setBranchNames(branchesToDelete.toArray(new String[0]));
+    public void deleteLocalBranches(List<String> branchesToDelete) throws IOException {
+        PruneUtils.deleteLocalBranches(this, branchesToDelete);
     }
 
     Git getJGit() {

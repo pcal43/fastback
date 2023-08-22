@@ -26,12 +26,14 @@ import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;
 import net.pcal.fastback.retention.RetentionPolicyType;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.transport.RefSpec;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
 import static net.pcal.fastback.config.GitConfigKey.LOCAL_RETENTION_POLICY;
+import static net.pcal.fastback.config.GitConfigKey.REMOTE_NAME;
 import static net.pcal.fastback.logging.Message.localized;
 import static net.pcal.fastback.logging.Message.localizedError;
 import static net.pcal.fastback.repo.SnapshotId.sortWorldSnapshots;
@@ -44,26 +46,45 @@ import static net.pcal.fastback.repo.SnapshotId.sortWorldSnapshots;
  */
 class PruneUtils {
 
-    public static Collection<SnapshotId> doLocalPrune(final RepoImpl repo, final Logger log) throws IOException {
+    static void deleteRemoteBranch(final RepoImpl repo,String remoteBranchName) throws IOException {
+        RefSpec refSpec = new RefSpec()
+                .setSource(null)
+                .setDestination("refs/heads/" + remoteBranchName);
+        try {
+            repo.getJGit().push().setRefSpecs(refSpec).setRemote(repo.getConfig().getString(REMOTE_NAME)).call();
+        } catch (GitAPIException e) {
+            throw new IOException(e);
+        }
+    }
+
+    static void deleteLocalBranches(final RepoImpl repo, List<String> branchNames) throws IOException {
+        try {
+            repo.getJGit().branchDelete().setForce(true).setBranchNames(branchNames.toArray(new String[0])).call();
+        } catch (GitAPIException e) {
+            throw new IOException(e);
+        }
+    }
+
+    static Collection<SnapshotId> doLocalPrune(final RepoImpl repo, final Logger log) throws IOException {
         return doPrune(repo, log,
                 LOCAL_RETENTION_POLICY,
                 repo::listSnapshots,
                 sid -> {
                     log.info("Pruning local snapshot " + sid.getName());
-                    repo.deleteBranches(List.of(sid.getBranchName()));
+                    deleteLocalBranches(repo, List.of(sid.getBranchName()));
                 },
                 "fastback.chat.retention-policy-not-set"
         );
     }
 
-    public static Collection<SnapshotId> doRemotePrune(RepoImpl repo, Logger log) throws IOException {
+    static Collection<SnapshotId> doRemotePrune(RepoImpl repo, Logger log) throws IOException {
         return doPrune(repo, log,
                 GitConfigKey.REMOTE_RETENTION_POLICY,
                 repo::listRemoteSnapshots,
                 sid -> {
                     log.info("Pruning remote snapshot " + sid.getName());
                     GitConfig conf = repo.getConfig();
-                    repo.deleteRemoteBranch(conf.getString(GitConfigKey.REMOTE_NAME), sid.getBranchName());
+                    repo.deleteRemoteBranch(sid.getBranchName());
                 },
                 "fastback.chat.remote-retention-policy-not-set"
         );

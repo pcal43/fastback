@@ -21,6 +21,8 @@ package net.pcal.fastback.repo;
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.SystemLogger;
+import net.pcal.fastback.logging.UserLogger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
@@ -62,6 +64,8 @@ class PushUtils {
     }
 
     static void doPush(SnapshotId sid, RepoImpl repo, Logger log) throws IOException {
+        final SystemLogger syslog = SystemLogger.get();
+        final UserLogger user = log;
         try {
             log.hud(localized("fastback.chat.push-started"));
             final GitConfig conf = repo.getConfig();
@@ -77,15 +81,16 @@ class PushUtils {
             final ListMultimap<String, SnapshotId> snapshotsPerWorld =
                     SnapshotId.getSnapshotsPerWorld(remoteBranchRefs, log);
             if (conf.getBoolean(IS_UUID_CHECK_ENABLED)) {
-                final boolean uuidCheckResult;
+                boolean uuidCheckResult;
                 try {
-                    uuidCheckResult = jgit_doUuidCheck(repo, snapshotsPerWorld.keySet(), conf, log);
+                    uuidCheckResult = jgit_doUuidCheck(repo, snapshotsPerWorld.keySet(), conf);
                 } catch (final IOException e) {
-                    log.internalError("Skipping remote backup due to failed uuid check", e);
-                    return;
+                    syslog.internalError("Failing remote backup due to failed uuid check", e);
+                    uuidCheckResult = false;
                 }
                 if (!uuidCheckResult) {
-                    log.warn("Skipping remote backup due to world mismatch.");
+                    final URIish remoteUri = jgit_getRemoteUri(repo.getJGit(), repo.getConfig().getString(REMOTE_NAME));
+                    user.chat(localizedError("fastback.chat.push-uuid-mismatch", remoteUri));
                     return;
                 }
             }
@@ -98,14 +103,14 @@ class PushUtils {
             } else {
                 jgit_doNaivePush(jgit, sid.getBranchName(), conf, log);
             }
-            log.info("Remote backup complete.");
+            syslog.info("Remote backup complete.");
         } catch (GitAPIException | InterruptedException e) {
             throw new IOException(e);
         }
     }
 
     private static void native_doPush(final Repo repo, final String branchNameToPush, final Logger log) throws IOException, InterruptedException {
-        log.debug("Start native_push");
+        SystemLogger.get().debug("Start native_push");
         final File worktree = repo.getWorkTree();
         final GitConfig conf = repo.getConfig();
         String remoteName = conf.getString(REMOTE_NAME);
@@ -113,7 +118,7 @@ class PushUtils {
         final Map<String,String> env = Map.of("GIT_LFS_FORCE_PROGRESS", "1");
         final Consumer<String> logConsumer = new LogConsumer(log);
         doExec(push, env, logConsumer, logConsumer);
-        log.debug("End native_push");
+        SystemLogger.get().debug("End native_push");
     }
 
     private static void jgit_doSmartPush(final RepoImpl repo, List<SnapshotId> remoteSnapshots, final String branchNameToPush, final GitConfig conf, final Logger logger) throws IOException {
@@ -202,22 +207,20 @@ class PushUtils {
         }
     }
 
-    private static boolean jgit_doUuidCheck(RepoImpl repo, Set<String> remoteWorldUuids, GitConfig config, Logger logger) throws IOException {
+    private static boolean jgit_doUuidCheck(RepoImpl repo, Set<String> remoteWorldUuids, GitConfig config) throws IOException {
         final String localUuid = repo.getWorldUuid();
         if (remoteWorldUuids.size() > 2) {
-            logger.warn("Remote has more than one world-uuid.  This is unusual. " + remoteWorldUuids);
+            SystemLogger.get().warn("Remote has more than one world-uuid.  This is unusual. " + remoteWorldUuids);
         }
         if (remoteWorldUuids.isEmpty()) {
-            logger.debug("Remote does not have any previously-backed up worlds.");
+            SystemLogger.get().debug("Remote does not have any previously-backed up worlds.");
         } else {
             if (!remoteWorldUuids.contains(localUuid)) {
-                final URIish remoteUri = jgit_getRemoteUri(repo.getJGit(), config.getString(REMOTE_NAME), logger);
-                logger.chat(localizedError("fastback.chat.push-uuid-mismatch", remoteUri));
-                logger.info("local: " + localUuid + ", remote: " + remoteWorldUuids);
+                SystemLogger.get().debug("local: " + localUuid + ", remote: " + remoteWorldUuids);
                 return false;
             }
         }
-        logger.debug("world-uuid check passed.");
+        SystemLogger.get().debug("world-uuid check passed.");
         return true;
     }
 
@@ -225,7 +228,7 @@ class PushUtils {
         return "temp/" + uniqueName;
     }
 
-    private static URIish jgit_getRemoteUri(Git jgit, String remoteName, Logger logger) throws IOException {
+    private static URIish jgit_getRemoteUri(Git jgit, String remoteName) throws IOException {
         requireNonNull(jgit);
         requireNonNull(remoteName);
         final List<RemoteConfig> remotes;
@@ -235,7 +238,7 @@ class PushUtils {
             throw new IOException(e);
         }
         for (final RemoteConfig remote : remotes) {
-            logger.debug("getRemoteUri " + remote);
+            SystemLogger.get().debug("getRemoteUri " + remote);
             if (remote.getName().equals(remoteName)) {
                 return remote.getPushURIs() != null && !remote.getURIs().isEmpty() ? remote.getURIs().get(0) : null;
             }

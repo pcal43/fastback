@@ -70,25 +70,26 @@ public interface MaintenanceUtils {
         }
     }
 
+    /**
+     * FIXME i18n
+     */
     static void setNativeGitEnabled(boolean newSetting, final Repo repo, final UserLogger user) throws IOException {
         final GitConfig conf = repo.getConfig();
         boolean currentSetting = repo.getConfig().getBoolean(IS_NATIVE_GIT_ENABLED);
         if (currentSetting == newSetting) return; // no-op
+        if (!repo.listSnapshots().isEmpty()) {
+            user.chat(Message.rawError("Existing snapshots found.  You can't change the native-git setting after you've done a backup."));
+            user.chat(Message.rawError("Consider making a fresh copy of your world and changing the setting there."));
+            return;
+        }
         if (newSetting) {
             if (!EnvironmentUtils.isNativeGitInstalled()) {
-                user.chat(Message.rawError("git and/or git-lfs are not installed on your system."));
-                user.chat(Message.rawError("Please install them and then try again."));
-
-                user.chat(Message.rawError("Please install git and git-lfs and try again.")); //FIXME i18n
+                user.chat(Message.rawError("Please install git and git-lfs and try again."));
                 return;
             } else {
             }
-            if (!repo.listSnapshots().isEmpty()) {
-                user.chat(Message.rawError("Please install git and git-lfs and try again.")); //FIXME i18n
-                return;
-            }
             conf.updater().set(IS_NATIVE_GIT_ENABLED, true).save();
-            user.chat(Message.rawError("Native git enabled.  Warning!!! This is an experimental feature."));
+            user.chat(Message.raw("Native git enabled.  Warning: this is an experimental feature!!!"));
         } else {
             conf.updater().set(IS_NATIVE_GIT_ENABLED, false).save();
             user.chat(Message.raw("Native git disabled."));

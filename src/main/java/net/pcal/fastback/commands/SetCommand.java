@@ -60,8 +60,8 @@ enum SetCommand implements Command {
 
     private static void registerNativeGit(final LiteralArgumentBuilder<ServerCommandSource> setCommand, ModContext ctx) {
         final LiteralArgumentBuilder<ServerCommandSource> nativeGit = literal("native-git");
-        nativeGit.then(literal("enabled")).executes(cc->setNativeGit(ctx, cc, true));
-        nativeGit.then(literal("disabled")).executes(cc->setNativeGit(ctx, cc, false));
+        nativeGit.then(literal("enabled").executes(cc->setNativeGit(ctx, cc, true)));
+        nativeGit.then(literal("disabled").executes(cc->setNativeGit(ctx, cc, false)));
         setCommand.then(nativeGit);
     }
 

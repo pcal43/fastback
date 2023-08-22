@@ -52,7 +52,7 @@ class RepoFactoryImpl implements RepoFactory {
     }
 
     @Override
-    public boolean isGitRepo(Path worldSaveDir) {
+    public boolean isGitRepo(final Path worldSaveDir) {
         final File dotGit = worldSaveDir.resolve(".git").toFile();
         return dotGit.exists() && dotGit.isDirectory();
     }

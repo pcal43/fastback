@@ -94,7 +94,7 @@ class GcUtils {
                 log.info("No branches to clean up");
             } else {
                 log.info("Deleting branches: " + branchesToDelete);
-                repo.deleteBranches(branchesToDelete);
+                repo.deleteLocalBranches(branchesToDelete);
                 log.info("Branches deleted.");
             }
         }
