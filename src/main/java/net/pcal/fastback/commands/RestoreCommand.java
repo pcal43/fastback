@@ -18,24 +18,26 @@
 
 package net.pcal.fastback.commands;
 
+import com.mojang.authlib.yggdrasil.response.User;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
+import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.ModContext;
-import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.repo.SnapshotId;
 
 import java.nio.file.Path;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.mod.ModContext.ExecutionLock.NONE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.mod.ModContext.ExecutionLock.NONE;
 
 enum RestoreCommand implements Command {
 
@@ -57,14 +59,14 @@ enum RestoreCommand implements Command {
     }
 
     private static int restore(ModContext ctx, CommandContext<ServerCommandSource> cc) {
-        final Logger log = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, NONE, log, repo -> {
+        final UserLogger ulog = commandLogger(ctx, cc.getSource());
+        gitOp(ctx, NONE, ulog, repo -> {
             final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
             final String uuid = repo.getWorldUuid();
             final SnapshotId sid = SnapshotId.fromUuidAndName(uuid, snapshotName);
             final String uri = "file://" + ctx.getWorldDirectory().toAbsolutePath();
-            final Path restoreDir = repo.doRestoreSnapshot(uri, ctx.getRestoresDir(), ctx.getWorldName(), sid);
-            log.chat(UserMessage.localized("fastback.chat.restore-done", restoreDir));
+            final Path restoreDir = repo.doRestoreSnapshot(uri, ctx.getRestoresDir(), ctx.getWorldName(), sid, ulog);
+            ulog.chat(UserMessage.localized("fastback.chat.restore-done", restoreDir));
         });
         return SUCCESS;
     }

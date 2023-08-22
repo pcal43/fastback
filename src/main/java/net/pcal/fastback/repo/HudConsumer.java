@@ -24,8 +24,8 @@ import net.pcal.fastback.logging.UserMessage.UserMessageStyle;
 import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.logging.UserMessage.styledRaw;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
+import static net.pcal.fastback.logging.UserMessage.styledRaw;
 
 /**
  * Consumes strings (as from process output) and relays them to both the user's hud and the debug log.

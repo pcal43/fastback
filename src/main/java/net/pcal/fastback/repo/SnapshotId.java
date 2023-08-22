@@ -20,9 +20,7 @@ package net.pcal.fastback.repo;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
-import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.logging.UserLogger;
-import org.eclipse.jgit.lib.Ref; // TODO might want to trim this dep
+import org.eclipse.jgit.lib.Ref;
 
 import java.text.DateFormat;
 import java.text.ParseException;

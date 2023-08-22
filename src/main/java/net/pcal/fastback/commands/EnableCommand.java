@@ -21,24 +21,23 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.config.GitConfig.Updater;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.RepoFactory;
 
 import java.nio.file.Path;
 
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.logging.UserMessage.localized;
-import static net.pcal.fastback.mod.ModContext.ExecutionLock.NONE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.commands.SchedulableAction.DEFAULT_SHUTDOWN_ACTION;
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
+import static net.pcal.fastback.logging.UserMessage.localized;
+import static net.pcal.fastback.mod.ModContext.ExecutionLock.NONE;
 
 enum EnableCommand implements Command {
 
@@ -60,7 +59,7 @@ enum EnableCommand implements Command {
         ctx.execute(NONE, log, () -> {
                     final Path worldSaveDir = ctx.getWorldDirectory();
                     final RepoFactory rf = RepoFactory.get();
-                    try (final Repo repo = rf.init(worldSaveDir, ctx, log)) {
+                    try (final Repo repo = rf.init(worldSaveDir, ctx)) {
                         //repo.doWorldMaintenance(log);
                         final Updater updater = repo.getConfig().updater();
                         updater.set(IS_BACKUP_ENABLED, true).save();

@@ -23,15 +23,15 @@ import com.mojang.brigadier.context.CommandContext;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.logging.UserLogger;
-import net.pcal.fastback.mod.ModContext;
-import net.pcal.fastback.mod.ModContext.ExecutionLock;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.CommandSourceLogger;
 import net.pcal.fastback.logging.CompositeLogger;
 import net.pcal.fastback.logging.ConsoleLogger;
 import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.SaveScreenLogger;
+import net.pcal.fastback.logging.UserLogger;
+import net.pcal.fastback.mod.ModContext;
+import net.pcal.fastback.mod.ModContext.ExecutionLock;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.RepoFactory;
 
@@ -130,16 +130,15 @@ public class Commands {
         void execute(Repo repo) throws Exception;
     }
 
-    static void gitOp(final ModContext mod, final ExecutionLock lock, final Logger log, final GitOp op) {
-        mod.execute(lock, log, () -> {
-            final UserLogger ulog = log;
+    static void gitOp(final ModContext mod, final ExecutionLock lock, final UserLogger ulog, final GitOp op) {
+        mod.execute(lock, ulog, () -> {
             final Path worldSaveDir = mod.getWorldDirectory();
             final RepoFactory rf = RepoFactory.get();
             if (!rf.isGitRepo(worldSaveDir)) {
                 ulog.chat(styledLocalized("fastback.chat.not-enabled", ERROR));
                 return;
             }
-            try (final Repo repo = rf.load(worldSaveDir, mod, ulog)) {
+            try (final Repo repo = rf.load(worldSaveDir, mod)) {
                 final GitConfig repoConfig = repo.getConfig();
                 if (!repoConfig.getBoolean(IS_BACKUP_ENABLED)) {
                     ulog.chat(styledLocalized("fastback.chat.not-enabled", ERROR));

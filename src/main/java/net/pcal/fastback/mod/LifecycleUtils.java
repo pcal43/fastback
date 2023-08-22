@@ -97,13 +97,13 @@ public class LifecycleUtils {
         mod.stopExecutor();
         final RepoFactory rf = RepoFactory.get();
         if (rf.isGitRepo(worldSaveDir)) {
-            try (final Repo repo = rf.load(worldSaveDir, mod, logger)) {
+            try (final Repo repo = rf.load(worldSaveDir, mod)) {
                 final GitConfig config = repo.getConfig();
                 if (config.getBoolean(IS_BACKUP_ENABLED)) {
                     final SchedulableAction action = SchedulableAction.forConfigValue(config, SHUTDOWN_ACTION);
                     if (action != null) {
                         final Logger screenLogger = CompositeLogger.of(consoleLogger, new SaveScreenLogger(mod)); //FIXME figure out what to do with this
-                        action.getTask(repo).call();
+                        action.getTask(repo, logger).call();
                     }
                 }
             } catch (Exception e) {

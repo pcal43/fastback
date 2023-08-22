@@ -22,10 +22,11 @@ import com.google.common.collect.ListMultimap;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.UserLogger;
+import net.pcal.fastback.logging.UserMessage;
+import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.repo.SnapshotId;
 
 import java.util.ArrayList;
@@ -33,11 +34,11 @@ import java.util.Collections;
 import java.util.List;
 
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.mod.ModContext.ExecutionLock.NONE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.mod.ModContext.ExecutionLock.NONE;
 
 enum RemoteListCommand implements Command {
 
@@ -55,7 +56,7 @@ enum RemoteListCommand implements Command {
     }
 
     private static int remoteList(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
-        final Logger log = commandLogger(ctx, cc.getSource());
+        final UserLogger log = commandLogger(ctx, cc.getSource());
         gitOp(ctx, NONE, log, repo -> {
             final ListMultimap<String, SnapshotId> snapshotsPerWorld = repo.listRemoteSnapshots();
             final List<SnapshotId> snapshots = new ArrayList<>(snapshotsPerWorld.get(repo.getWorldUuid()));

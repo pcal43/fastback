@@ -21,10 +21,8 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.commands.SchedulableAction;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.ConsoleLogger;
-import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.logging.UserMessage.UserMessageStyle;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.RepoFactory;
 
@@ -75,7 +73,7 @@ public class ModContext {
                 RepoFactory rf = RepoFactory.get();
                 final Path worldSaveDir = getWorldDirectory();
                 if (!rf.isGitRepo(worldSaveDir)) return;
-                try (final Repo repo = rf.load(worldSaveDir, ModContext.this, ConsoleLogger.get())) {
+                try (final Repo repo = rf.load(worldSaveDir, ModContext.this)) {
                     final GitConfig config = repo.getConfig();
                     if (!config.getBoolean(IS_BACKUP_ENABLED)) return;
                     final SchedulableAction autobackAction = forConfigValue(config, AUTOBACK_ACTION);
@@ -89,7 +87,7 @@ public class ModContext {
                         return;
                     }
                     syslog().info("Starting auto-backup");
-                    autobackAction.getTask(repo);
+                    autobackAction.getTask(repo, ConsoleLogger.get() );
                     lastBackupTime = System.currentTimeMillis();
                 } catch (Exception e) {
                     syslog().error("auto-backup failed.", e);

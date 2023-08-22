@@ -20,18 +20,19 @@ package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.ServerCommandSource;
+import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.ModContext;
-import net.pcal.fastback.logging.Logger;
 
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.mod.ModContext.ExecutionLock.WRITE_CONFIG;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.missingArgument;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.config.GitConfigKey.AUTOBACK_ACTION;
+import static net.pcal.fastback.mod.ModContext.ExecutionLock.WRITE_CONFIG;
 
 enum SetAutobackActionCommand implements Command {
 
@@ -53,10 +54,10 @@ enum SetAutobackActionCommand implements Command {
     }
 
     private static int setAutobackAction(final ModContext ctx, final ServerCommandSource scs, SchedulableAction action) {
-        final Logger log = commandLogger(ctx, scs);
-        gitOp(ctx, WRITE_CONFIG, log, repo -> {
+        final UserLogger ulog = commandLogger(ctx, scs);
+        gitOp(ctx, WRITE_CONFIG, ulog, repo -> {
             repo.getConfig().updater().set(AUTOBACK_ACTION, action.getConfigValue()).save();
-            log.chat(UserMessage.localized("fastback.chat.info-autoback-action", action.getArgumentName()));
+            ulog.chat(UserMessage.localized("fastback.chat.info-autoback-action", action.getArgumentName()));
         });
         return SUCCESS;
     }

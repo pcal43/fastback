@@ -58,57 +58,52 @@ class RepoImpl implements Repo {
     private final ModContext ctx;
     private GitConfig config;
 
-    @Deprecated
-    private final UserLogger log;
-
     // ======================================================================
     // Constructors
 
     RepoImpl(final Git git,
-             final ModContext ctx,
-             final UserLogger logger) {
+             final ModContext ctx) {
         this.jgit = requireNonNull(git);
         this.ctx = requireNonNull(ctx);
-        this.log = requireNonNull(logger);
     }
 
     // ======================================================================
     // Repo implementation
 
     @Override
-    public void doCommitAndPush() throws IOException {
-        if (!doNativeCheck()) return;
-        final SnapshotId newSid = CommitUtils.doCommitSnapshot(this, ctx, log);
-        PushUtils.doPush(newSid, this, log);
-        log.chat(UserMessage.localized("fastback.chat.backup-complete"));//FIXME not if it failed
+    public void doCommitAndPush(final UserLogger ulog) throws IOException {
+        if (!doNativeCheck(ulog)) return;
+        final SnapshotId newSid = CommitUtils.doCommitSnapshot(this, ctx, ulog);
+        PushUtils.doPush(newSid, this, ulog);
+        ulog.chat(UserMessage.localized("fastback.chat.backup-complete"));//FIXME not if it failed
     }
 
     @Override
-    public void doCommitSnapshot() throws IOException {
-        if (!doNativeCheck()) return;
-        CommitUtils.doCommitSnapshot(this, ctx, log);
-        log.chat(UserMessage.localized("fastback.chat.backup-complete"));
+    public void doCommitSnapshot(final UserLogger ulog) throws IOException {
+        if (!doNativeCheck(ulog)) return;
+        CommitUtils.doCommitSnapshot(this, ctx, ulog);
+        ulog.chat(UserMessage.localized("fastback.chat.backup-complete")); //FIXME not necessarily
     }
 
     @Override
-    public Collection<SnapshotId> doLocalPrune() throws IOException {
-        return PruneUtils.doLocalPrune(this, log);
+    public Collection<SnapshotId> doLocalPrune(final UserLogger ulog) throws IOException {
+        return PruneUtils.doLocalPrune(this, ulog);
     }
 
     @Override
-    public Collection<SnapshotId> doRemotePrune() throws IOException {
-        return PruneUtils.doRemotePrune(this, log);
+    public Collection<SnapshotId> doRemotePrune(final UserLogger ulog) throws IOException {
+        return PruneUtils.doRemotePrune(this, ulog);
     }
 
     @Override
-    public void doGc() throws IOException {
-        doNativeCheck();
-        ReclamationUtils.doReclamation(this, log);
+    public void doGc(final UserLogger ulog) throws IOException {
+        if (!doNativeCheck(ulog)) return;
+        ReclamationUtils.doReclamation(this, ulog);
     }
 
     @Override
-    public Path doRestoreSnapshot(String uri, Path restoresDir, String worldName, SnapshotId sid) throws IOException {
-        return RestoreUtils.restoreSnapshot(uri, restoresDir, worldName, sid, log);
+    public Path doRestoreSnapshot(String uri, Path restoresDir, String worldName, SnapshotId sid, UserLogger ulog) throws IOException {
+        return RestoreUtils.restoreSnapshot(uri, restoresDir, worldName, sid, ulog);
     }
 
     @Override
@@ -195,11 +190,11 @@ class RepoImpl implements Repo {
     // ======================================================================
     // Private
 
-    private boolean doNativeCheck() {
+    private boolean doNativeCheck(UserLogger ulog) {
         final GitConfig config = this.getConfig();
         if (config.getBoolean(IS_NATIVE_GIT_ENABLED)) {
             if (!EnvironmentUtils.isNativeGitInstalled()) {
-                log.chat(UserMessage.rawError("Unable to backup: native mode enabled but git is not installed."));
+                ulog.chat(UserMessage.rawError("Unable to backup: native mode enabled but git is not installed."));
                 return false;
             }
         }

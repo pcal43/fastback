@@ -18,9 +18,7 @@
 
 package net.pcal.fastback.repo;
 
-import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.mod.ModContext;
-import net.pcal.fastback.logging.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
@@ -37,21 +35,19 @@ import static net.pcal.fastback.logging.SystemLogger.syslog;
 class RepoFactoryImpl implements RepoFactory {
 
     @Override
-    public Repo init(Path worldSaveDir, ModContext mod, UserLogger ulog) throws IOException {
+    public Repo init(Path worldSaveDir, ModContext mod) throws IOException {
         try (final Git jgit = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
-            return new RepoImpl(jgit, mod, ulog);
+            return new RepoImpl(jgit, mod);
         } catch (GitAPIException e) {
             syslog().error("Error initializing repo", e);
-            ulog.internalError();
             throw new IOException(e);
         }
     }
 
     @Override
-    public Repo load(Path worldSaveDir, ModContext mod, UserLogger ulog) throws IOException {
+    public Repo load(Path worldSaveDir, ModContext mod) throws IOException {
         final Git jgit = Git.open(worldSaveDir.toFile());
-        //final GitConfig conf = GitConfig.load(jgit);
-        return new RepoImpl(jgit, mod, ulog);
+        return new RepoImpl(jgit, mod);
     }
 
     @Override
