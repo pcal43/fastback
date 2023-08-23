@@ -22,6 +22,9 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.mod.Mod;
+import net.pcal.fastback.repo.RepoFactory;
+
+import java.io.IOException;
 
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
@@ -29,6 +32,7 @@ import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
+import static net.pcal.fastback.logging.UserMessage.raw;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.WRITE;
 
 /**
@@ -51,9 +55,28 @@ enum FullCommand implements Command {
         );
     }
 
-    public static int run(Mod ctx, ServerCommandSource scs) {
-        final UserLogger ulog = commandLogger(ctx, scs);
-        gitOp(ctx, WRITE, ulog, repo -> repo.doCommitAndPush(ulog));
+    public static int run(Mod mod, ServerCommandSource scs) {
+        final UserLogger ulog = commandLogger(mod, scs);
+        try {
+            saveWorldBeforeBackup(mod, ulog);
+        } catch (IOException e) {
+            ulog.internalError();
+            syslog().error(e);
+        }
+        gitOp(mod, WRITE, ulog, repo -> repo.doCommitAndPush(ulog));
         return SUCCESS;
+    }
+
+    /**
+     * NOTE: this MUST be called in the game thread; calling it from one of our executor threads causes things
+     * to seize up (at least on shutdown backup?)
+     *
+     * Workaround for https://github.com/pcal43/fastback/issues/112
+     */
+    static void saveWorldBeforeBackup(Mod mod, UserLogger ulog) throws IOException {
+        ulog.hud(raw("Saving world before backup...")); //FIXME i18n
+        syslog().info("Saving before backup");
+        mod.saveWorld();
+        syslog().info("Starting backup..."); //FIXME i18n
     }
 }

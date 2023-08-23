@@ -39,8 +39,6 @@ import java.util.List;
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_NAME;
-import static net.pcal.fastback.logging.SystemLogger.syslog;
-import static net.pcal.fastback.logging.UserMessage.raw;
 
 /**
  * @author pcal
@@ -75,7 +73,6 @@ class RepoImpl implements Repo {
     @Override
     public void doCommitAndPush(final UserLogger ulog) throws IOException {
         if (!doNativeCheck(ulog)) return;
-        saveWorldBeforeBackup(ulog);
         final SnapshotId newSid = CommitUtils.doCommitSnapshot(this, ctx, ulog);
         PushUtils.doPush(newSid, this, ulog);
         ulog.chat(UserMessage.localized("fastback.chat.backup-complete"));//FIXME not if it failed
@@ -84,7 +81,6 @@ class RepoImpl implements Repo {
     @Override
     public void doCommitSnapshot(final UserLogger ulog) throws IOException {
         if (!doNativeCheck(ulog)) return;
-        saveWorldBeforeBackup(ulog);
         CommitUtils.doCommitSnapshot(this, ctx, ulog);
         ulog.chat(UserMessage.localized("fastback.chat.backup-complete")); //FIXME not necessarily
     }
@@ -193,14 +189,6 @@ class RepoImpl implements Repo {
 
     // ======================================================================
     // Private
-
-    private void saveWorldBeforeBackup(UserLogger ulog) {
-        // workaround for https://github.com/pcal43/fastback/issues/112
-        ulog.hud(raw("Saving world before backup...")); //FIXME i18n
-        syslog().info("Saving before backup");
-        ctx.saveWorld();
-        syslog().info("Starting backup..."); //FIXME i18n
-    }
 
     private boolean doNativeCheck(UserLogger ulog) {
         final GitConfig config = this.getConfig();

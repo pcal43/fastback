@@ -18,6 +18,8 @@
 
 package net.pcal.fastback.logging;
 
+import java.io.IOException;
+
 /**
  * Singleton logger instance that writes to the serverside console.
  *
@@ -35,6 +37,8 @@ public interface SystemLogger {
 
     void error(String message, Throwable t);
 
+    default void error(IOException e) { this.error(e.getMessage(), e); }
+
     void warn(String message);
 
     void info(String message);
@@ -44,6 +48,7 @@ public interface SystemLogger {
     void debug(String message, Throwable t);
 
     default void debug(Throwable t) { this.debug(t.getMessage(), t); }
+
 
 
     class Singleton {
