@@ -52,12 +52,11 @@ import static net.pcal.fastback.utils.ProcessUtils.doExec;
 class CommitUtils {
 
     static SnapshotId doCommitSnapshot(RepoImpl repo, Mod mod, UserLogger log) throws IOException {
+        MaintenanceUtils.doPreflight(repo);
         final String uuid = repo.getWorldUuid();
         final SnapshotId newSid = SnapshotId.create(uuid);
         syslog().debug("Preparing local backup " + newSid);
         final String newBranchName = newSid.getBranchName();
-
-        MaintenanceUtils.doPreflight(repo);
 
         try {
 
