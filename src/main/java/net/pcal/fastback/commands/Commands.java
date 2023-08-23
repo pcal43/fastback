@@ -46,41 +46,41 @@ public class Commands {
     static int FAILURE = 0;
     static int SUCCESS = 1;
 
-    public static void registerCommands(final ModContext ctx, final String cmd) {
-        final LiteralArgumentBuilder<ServerCommandSource> argb = LiteralArgumentBuilder.<ServerCommandSource>literal(cmd).
+    public static void registerCommands(final ModContext ctx) {
+        final LiteralArgumentBuilder<ServerCommandSource> root = LiteralArgumentBuilder.<ServerCommandSource>literal("backup").
                 requires(Permissions.require(BACKUP_COMMAND_PERM, ctx.getDefaultPermLevel())).
                 executes(cc->help(ctx, cc));
-        EnableCommand.INSTANCE.register(argb, ctx);
-        DisableCommand.INSTANCE.register(argb, ctx);
-        LocalCommand.INSTANCE.register(argb, ctx);
-        FullCommand.INSTANCE.register(argb, ctx);
-        InfoCommand.INSTANCE.register(argb, ctx);
+        EnableCommand.INSTANCE.register(root, ctx);
+        DisableCommand.INSTANCE.register(root, ctx);
+        LocalCommand.INSTANCE.register(root, ctx);
+        FullCommand.INSTANCE.register(root, ctx);
+        InfoCommand.INSTANCE.register(root, ctx);
 
-        RestoreCommand.INSTANCE.register(argb, ctx);
-        CreateFileRemoteCommand.INSTANCE.register(argb, ctx);
-        SetRemoteCommand.INSTANCE.register(argb, ctx);
-        SetAutobackActionCommand.INSTANCE.register(argb, ctx);
-        SetAutobackWaitCommand.INSTANCE.register(argb, ctx);
-        SetShutdownActionCommand.INSTANCE.register(argb, ctx);
+        RestoreCommand.INSTANCE.register(root, ctx);
+        CreateFileRemoteCommand.INSTANCE.register(root, ctx);
+        SetRemoteCommand.INSTANCE.register(root, ctx);
+        SetAutobackActionCommand.INSTANCE.register(root, ctx);
+        SetAutobackWaitCommand.INSTANCE.register(root, ctx);
+        SetShutdownActionCommand.INSTANCE.register(root, ctx);
 
-        SetRetentionCommand.INSTANCE.register(argb, ctx);
-        SetRemoteRetentionCommand.INSTANCE.register(argb, ctx);
+        SetRetentionCommand.INSTANCE.register(root, ctx);
+        SetRemoteRetentionCommand.INSTANCE.register(root, ctx);
 
-        PruneCommand.INSTANCE.register(argb, ctx);
-        DeleteCommand.INSTANCE.register(argb, ctx);
-        GcCommand.INSTANCE.register(argb, ctx);
-        ListCommand.INSTANCE.register(argb, ctx);
+        PruneCommand.INSTANCE.register(root, ctx);
+        DeleteCommand.INSTANCE.register(root, ctx);
+        GcCommand.INSTANCE.register(root, ctx);
+        ListCommand.INSTANCE.register(root, ctx);
 
-        RemoteListCommand.INSTANCE.register(argb, ctx);
-        RemoteDeleteCommand.INSTANCE.register(argb, ctx);
-        RemotePruneCommand.INSTANCE.register(argb, ctx);
-        RemoteRestoreCommand.INSTANCE.register(argb, ctx);
+        RemoteListCommand.INSTANCE.register(root, ctx);
+        RemoteDeleteCommand.INSTANCE.register(root, ctx);
+        RemotePruneCommand.INSTANCE.register(root, ctx);
+        RemoteRestoreCommand.INSTANCE.register(root, ctx);
 
-        SetCommand.INSTANCE.register(argb, ctx);
+        SetCommand.INSTANCE.register(root, ctx);
 
-        HelpCommand.INSTANCE.register(argb, ctx);
+        HelpCommand.INSTANCE.register(root, ctx);
 
-        CommandRegistrationCallback.EVENT.register((dispatcher, regAccess, env) -> dispatcher.register(argb));
+        CommandRegistrationCallback.EVENT.register((dispatcher, regAccess, env) -> dispatcher.register(root));
     }
 
     public static UserLogger commandLogger(final ModContext ctx, final ServerCommandSource scs) {

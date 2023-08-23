@@ -33,14 +33,9 @@ import net.pcal.fastback.utils.Executor;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.time.Duration;
 
 import static java.nio.file.Files.createTempDirectory;
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.commands.SchedulableAction.NONE;
-import static net.pcal.fastback.commands.SchedulableAction.forConfigValue;
-import static net.pcal.fastback.config.GitConfigKey.AUTOBACK_ACTION;
-import static net.pcal.fastback.config.GitConfigKey.AUTOBACK_WAIT_MINUTES;
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
@@ -51,18 +46,80 @@ import static net.pcal.fastback.utils.EnvironmentUtils.getGitVersion;
 
 public class ModContext implements ModLifecycleListener {
 
-    private final FrameworkServiceProvider spi;
-    private Path tempRestoresDirectory = null;
+    private final FrameworkServiceProvider fsp;
     private final Executor executor;
+    private Path tempRestoresDirectory = null;
 
-    public static ModContext create(FrameworkServiceProvider spi) {
-        return new ModContext(spi);
+    // ======================================================================
+    // Construction
+
+    public static ModContext create(FrameworkServiceProvider fsp) {
+        return new ModContext(fsp);
     }
 
     private ModContext(FrameworkServiceProvider spi) {
-        this.spi = requireNonNull(spi);
-        spi.setAutoSaveListener(new AutosaveListener());
+        this.fsp = requireNonNull(spi);
+        spi.setAutoSaveListener(new AutosaveListener(this));
         this.executor = new Executor();
+    }
+
+    // ======================================================================
+    // Public methods
+
+    public Executor getExecutor() {
+        return this.executor;
+    }
+
+    public Path getRestoresDir() throws IOException {
+        Path restoreDir = this.fsp.getSavesDir();
+        if (restoreDir != null) return restoreDir;
+        if (tempRestoresDirectory == null) {
+            tempRestoresDirectory = createTempDirectory("fastback-restore");
+        }
+        return tempRestoresDirectory;
+    }
+
+    public void sendChat(UserMessage message, ServerCommandSource scs) {
+        if (message.style() == ERROR) {
+            scs.sendError(messageToText(message));
+        } else {
+            scs.sendFeedback(() -> messageToText(message), false);
+        }
+    }
+
+    // ======================================================================
+    // Passthroughs
+
+    public String getModVersion() {
+        return this.fsp.getModVersion();
+    }
+
+    public void setWorldSaveEnabled(boolean enabled) {
+        this.fsp.setWorldSaveEnabled(enabled);
+    }
+
+    public void setMessageScreenText(UserMessage message) {
+        this.fsp.setMessageScreenText(messageToText(message));
+    }
+
+    public void setHudText(UserMessage message) {
+        this.fsp.setHudText(message == null ? null : messageToText(message));
+    }
+
+    public Path getWorldDirectory() {
+        return this.fsp.getWorldDirectory();
+    }
+
+    public String getWorldName() {
+        return this.fsp.getWorldName();
+    }
+
+    public int getDefaultPermLevel() {
+        return fsp.isClient() ? 0 : 4;
+    }
+
+    public void saveWorld() {
+        this.fsp.saveWorld();
     }
 
 
@@ -74,7 +131,7 @@ public class ModContext implements ModLifecycleListener {
      */
     @Override
     public void onInitialize() {
-        Commands.registerCommands(this, this.getCommandName());
+        Commands.registerCommands(this);
         {
             final String gitVersion = getGitVersion();
             if (gitVersion == null) {
@@ -131,101 +188,9 @@ public class ModContext implements ModLifecycleListener {
         syslog().debug("onWorldStop complete");
     }
 
-    public Executor getExecutor() {
-        return this.executor;
-    }
 
-    class AutosaveListener implements Runnable {
-
-        private long lastBackupTime = System.currentTimeMillis();
-
-        @Override
-        public void run() {
-            //TODO implement indicator
-            // final Logger screenLogger = CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx));
-            executor.execute(Executor.ExecutionLock.WRITE, new HudLogger(ModContext.this), () -> {
-                RepoFactory rf = RepoFactory.get();
-                final Path worldSaveDir = getWorldDirectory();
-                if (!rf.isGitRepo(worldSaveDir)) return;
-                try (final Repo repo = rf.load(worldSaveDir, ModContext.this)) {
-                    final GitConfig config = repo.getConfig();
-                    if (!config.getBoolean(IS_BACKUP_ENABLED)) return;
-                    final SchedulableAction autobackAction = forConfigValue(config, AUTOBACK_ACTION);
-                    if (autobackAction == null || autobackAction == NONE) return;
-                    final Duration waitTime = Duration.ofMinutes(config.getInt(AUTOBACK_WAIT_MINUTES));
-                    final Duration timeRemaining = waitTime.
-                            minus(Duration.ofMillis(System.currentTimeMillis() - lastBackupTime));
-                    if (!timeRemaining.isZero() && !timeRemaining.isNegative()) {
-                        syslog().debug("Skipping auto-backup until at least " +
-                                (timeRemaining.toSeconds() / 60) + " more minutes have elapsed.");
-                        return;
-                    }
-                    syslog().info("Starting auto-backup");
-                    autobackAction.getTask(repo, new HudLogger(ModContext.this));
-                    lastBackupTime = System.currentTimeMillis();
-                } catch (Exception e) {
-                    syslog().error("auto-backup failed.", e);
-                }
-            });
-        }
-    }
-
-
-    public String getCommandName() {
-        return "backup"; // TODO i18n?
-    }
-
-    public Path getRestoresDir() throws IOException {
-        Path restoreDir = this.spi.getSavesDir();
-        if (restoreDir != null) return restoreDir;
-        if (tempRestoresDirectory == null) {
-            tempRestoresDirectory = createTempDirectory("fastback-restore");
-        }
-        return tempRestoresDirectory;
-    }
-
-    // PASSTHROUGH IMPLEMENTATIONS
-
-    public String getModVersion() {
-        return this.spi.getModVersion();
-    }
-
-    public void setWorldSaveEnabled(boolean enabled) {
-        this.spi.setWorldSaveEnabled(enabled);
-    }
-
-    public void setMessageScreenText(UserMessage message) {
-        this.spi.setMessageScreenText(messageToText(message));
-    }
-
-    public void sendChat(UserMessage message, ServerCommandSource scs) {
-        if (message.style() == ERROR) {
-            scs.sendError(messageToText(message));
-        } else {
-            scs.sendFeedback(() -> messageToText(message), false);
-        }
-    }
-
-    public void setHudText(UserMessage message) {
-        this.spi.setHudText(message == null ? null : messageToText(message));
-    }
-
-    public Path getWorldDirectory() {
-        return this.spi.getWorldDirectory();
-    }
-
-    public String getWorldName() {
-        return this.spi.getWorldName();
-    }
-
-    public int getDefaultPermLevel() {
-        return spi.isClient() ? 0 : 4;
-    }
-
-    public void saveWorld() {
-        this.spi.saveWorld();
-    }
-
+    // ======================================================================
+    // Private
 
     private static Text messageToText(final UserMessage m) {
         final MutableText out;
