@@ -23,6 +23,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.pcal.fastback.logging.Log4jLogger;
 import net.pcal.fastback.mod.FrameworkServiceProvider;
 import net.pcal.fastback.mod.LifecycleListener;
+import net.pcal.fastback.mod.fabric.mixins.MixinGateway;
 import org.apache.logging.log4j.LogManager;
 
 import static net.pcal.fastback.mod.fabric.BaseFabricProvider.MOD_ID;
@@ -38,24 +39,25 @@ public class FabricServerInitializer implements DedicatedServerModInitializer {
     @Override
     public void onInitializeServer() {
         final BaseFabricProvider serverProvider = new FabricServerProvider();
-        final LifecycleListener listener = FrameworkServiceProvider.register(serverProvider,
+        final LifecycleListener lifecycle = FrameworkServiceProvider.register(serverProvider,
                 new Log4jLogger(LogManager.getLogger(MOD_ID)));
-        listener.onInitialize();
+        MixinGateway.Singleton.register(serverProvider);
+        lifecycle.onInitialize();
         ServerLifecycleEvents.SERVER_STARTING.register(
                 minecraftServer -> {
                     serverProvider.setMinecraftServer(minecraftServer);
-                    listener.onWorldStart();
+                    lifecycle.onWorldStart();
                 }
         );
         ServerLifecycleEvents.SERVER_STOPPED.register(
                 minecraftServer -> {
                     try {
-                        listener.onWorldStop();
+                        lifecycle.onWorldStop();
                     } finally {
                         serverProvider.setMinecraftServer(null);
                     }
                 }
         );
-        listener.onInitialize();
+        lifecycle.onInitialize();
     }
 }

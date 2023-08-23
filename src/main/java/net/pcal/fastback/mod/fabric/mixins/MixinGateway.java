@@ -15,27 +15,34 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
+
 package net.pcal.fastback.mod.fabric.mixins;
 
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.MessageScreen;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
+ * Singleton 'gateway' that mixin code goes through to call back into the mod.
+ *
  * @author pcal
- * @since 0.0.1
+ * @since 0.13.1
  */
-@Mixin(MessageScreen.class)
-public class MessageScreenMixin {
+public interface MixinGateway {
 
-    /**
-     * Apply filtering behavior to free floating entities above the hopper.
-     */
-    @Inject(method = "render", at = @At("TAIL"))
-    public void __render(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
-        MixinGateway.get().renderMessageScreen(context, delta);
+    static MixinGateway get() {
+        return Singleton.INSTANCE;
+    }
+
+    boolean isWorldSaveEnabled();
+
+    void autoSaveCompleted();
+
+    void renderMessageScreen(DrawContext drawContext, float tickDelta);
+
+    class Singleton {
+        private static MixinGateway INSTANCE = null;
+
+        public static void register(MixinGateway gateway) {
+            Singleton.INSTANCE = gateway;
+        }
     }
 }
