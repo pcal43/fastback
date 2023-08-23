@@ -29,7 +29,7 @@ import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NORMAL;
  *
  * @author pcal
  */
-public record UserMessage(LocalizedUserMessage styledLocalized, String styledRaw, UserMessageStyle style) {
+public record UserMessage(LocalizedUserMessage localized, String raw, UserMessageStyle style) {
 
     public enum UserMessageStyle {
         NORMAL,
@@ -41,6 +41,11 @@ public record UserMessage(LocalizedUserMessage styledLocalized, String styledRaw
     }
 
     public record LocalizedUserMessage(String key, Object... params) {
+
+        @Override
+        public String toString() {
+            return this.key + " " + (this.params != null ? params : "[]");
+        }
     }
 
     public static UserMessage localized(String key, Object... params) {
@@ -57,6 +62,11 @@ public record UserMessage(LocalizedUserMessage styledLocalized, String styledRaw
 
     public static UserMessage styledRaw(String text, UserMessageStyle style) {
         return new UserMessage(null, requireNonNull(text), style);
+    }
+
+    @Override
+    public String toString() {
+        return this.raw != null ? raw : this.localized != null ? this.localized.toString() : null;
     }
 
     // ======================================================================
