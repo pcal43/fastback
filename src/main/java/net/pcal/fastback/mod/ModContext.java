@@ -230,10 +230,6 @@ public class ModContext implements ModLifecycleListener {
         this.spi.setWorldSaveEnabled(enabled);
     }
 
-    public boolean isClient() {
-        return spi.isClient();
-    }
-
     public void setMessageScreenText(UserMessage message) {
         this.spi.setMessageScreenText(messageToText(message));
     }
