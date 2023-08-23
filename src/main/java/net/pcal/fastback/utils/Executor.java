@@ -21,7 +21,7 @@ package net.pcal.fastback.utils;
 import net.pcal.fastback.logging.UserLogger;
 
 /**
- * Thin wrapper around an ExecutorService.  Use this to do things in separate threads.
+ * Thin, singleton wrapper around an ExecutorService.  Use this to do things in separate threads.
  *
  * @author pcal
  * @since 0.2.0

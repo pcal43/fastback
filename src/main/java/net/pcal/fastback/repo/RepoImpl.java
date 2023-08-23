@@ -34,6 +34,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
 
@@ -43,6 +45,8 @@ import static net.pcal.fastback.config.GitConfigKey.BROADCAST_NOTICE_MESSAGE;
 import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_NAME;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.BROADCAST;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
+import static net.pcal.fastback.logging.UserMessage.localized;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 import static net.pcal.fastback.logging.UserMessage.styledRaw;
 import static net.pcal.fastback.mod.Mod.mod;
@@ -75,20 +79,38 @@ class RepoImpl implements Repo {
     // Repo implementation
 
     @Override
-    public void doCommitAndPush(final UserLogger ulog) throws IOException {
+    public void doCommitAndPush(final UserLogger ulog) {
         if (!doNativeCheck(ulog)) return;
         broadcastBackupNotice();
-        final SnapshotId newSid = CommitUtils.doCommitSnapshot(this, ulog);
-        PushUtils.doPush(newSid, this, ulog);
-        ulog.message(UserMessage.localized("fastback.chat.backup-complete"));//FIXME not if it failed
+        final long start = System.currentTimeMillis();
+        final SnapshotId newSid;
+        try {
+            newSid = CommitUtils.doCommitSnapshot(this, ulog);
+        } catch(IOException ioe) {
+            ulog.message(styledLocalized("fastback.chat.commit-failed", ERROR));
+            return;
+        }
+        try {
+            PushUtils.doPush(newSid, this, ulog);
+        } catch(IOException ioe) {
+            ulog.message(styledLocalized("fastback.chat.push-failed", ERROR));
+            return;
+        }
+        ulog.message(localized("fastback.chat.backup-complete-elapsed", getDuration(start)));
     }
 
     @Override
-    public void doCommitSnapshot(final UserLogger ulog) throws IOException {
+    public void doCommitSnapshot(final UserLogger ulog) {
         if (!doNativeCheck(ulog)) return;
         broadcastBackupNotice();
-        CommitUtils.doCommitSnapshot(this, ulog);
-        ulog.message(UserMessage.localized("fastback.chat.backup-complete")); //FIXME not necessarily
+        final long start = System.currentTimeMillis();
+        try {
+            CommitUtils.doCommitSnapshot(this, ulog);
+        } catch(IOException ioe) {
+            ulog.message(styledLocalized("fastback.chat.backup-failed", ERROR));
+            return;
+        }
+        ulog.message(localized("fastback.chat.backup-complete-elapsed", getDuration(start)));
     }
 
     @Override
@@ -197,6 +219,10 @@ class RepoImpl implements Repo {
 
     // ======================================================================
     // Private
+
+    private static String getDuration(long since) {
+        return Duration.of(since - System.currentTimeMillis(), ChronoUnit.MILLIS).toString();
+    }
 
     private void broadcastBackupNotice() {
         if (!mod().isDecicatedServer()) return;
