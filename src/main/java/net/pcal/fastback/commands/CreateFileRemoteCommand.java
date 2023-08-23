@@ -39,7 +39,7 @@ import static net.pcal.fastback.commands.Commands.missingArgument;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_PUSH_URL;
 import static net.pcal.fastback.logging.UserMessage.localizedError;
-import static net.pcal.fastback.mod.ModContext.ExecutionLock.NONE;
+import static net.pcal.fastback.mod.Executor.ExecutionLock.NONE;
 import static net.pcal.fastback.utils.FileUtils.mkdirs;
 
 enum CreateFileRemoteCommand implements Command {

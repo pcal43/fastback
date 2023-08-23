@@ -31,7 +31,7 @@ import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
-import static net.pcal.fastback.mod.ModContext.ExecutionLock.NONE;
+import static net.pcal.fastback.mod.Executor.ExecutionLock.NONE;
 import static net.pcal.fastback.repo.SnapshotId.sortWorldSnapshots;
 
 enum ListCommand implements Command {

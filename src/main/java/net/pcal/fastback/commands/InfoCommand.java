@@ -43,7 +43,7 @@ import static net.pcal.fastback.config.GitConfigKey.LOCAL_RETENTION_POLICY;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_PUSH_URL;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_RETENTION_POLICY;
 import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
-import static net.pcal.fastback.mod.ModContext.ExecutionLock.NONE;
+import static net.pcal.fastback.mod.Executor.ExecutionLock.NONE;
 import static net.pcal.fastback.utils.EnvironmentUtils.getGitLfsVersion;
 import static net.pcal.fastback.utils.EnvironmentUtils.getGitVersion;
 import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;

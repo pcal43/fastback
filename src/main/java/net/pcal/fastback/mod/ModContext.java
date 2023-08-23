@@ -25,7 +25,6 @@ import net.minecraft.text.TextColor;
 import net.pcal.fastback.commands.Commands;
 import net.pcal.fastback.commands.SchedulableAction;
 import net.pcal.fastback.config.GitConfig;
-import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.logging.UserMessage.UserMessageStyle;
 import net.pcal.fastback.repo.Repo;
@@ -34,11 +33,6 @@ import net.pcal.fastback.repo.RepoFactory;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import static java.nio.file.Files.createTempDirectory;
 import static java.util.Objects.requireNonNull;
@@ -51,15 +45,14 @@ import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.logging.UserMessage.localized;
-import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 import static net.pcal.fastback.utils.EnvironmentUtils.getGitLfsVersion;
 import static net.pcal.fastback.utils.EnvironmentUtils.getGitVersion;
 
 public class ModContext implements ModLifecycleListener {
 
     private final FrameworkServiceProvider spi;
-    private ExecutorService executor = null;
     private Path tempRestoresDirectory = null;
+    private final Executor executor;
 
     public static ModContext create(FrameworkServiceProvider spi) {
         return new ModContext(spi);
@@ -68,8 +61,12 @@ public class ModContext implements ModLifecycleListener {
     private ModContext(FrameworkServiceProvider spi) {
         this.spi = requireNonNull(spi);
         spi.setAutoSaveListener(new AutosaveListener());
+        this.executor = new Executor();
     }
 
+
+    // ======================================================================
+    // ModLifecycleListener implementation
 
     /**
      * Must be called early in initialization of either a client or server.
@@ -102,7 +99,7 @@ public class ModContext implements ModLifecycleListener {
      */
     @Override
     public void onWorldStart() {
-        this.startExecutor();
+        executor.start();
         syslog().debug("onWorldStart complete");
     }
 
@@ -113,7 +110,7 @@ public class ModContext implements ModLifecycleListener {
     public void onWorldStop() {
         final Path worldSaveDir = this.getWorldDirectory();
         this.setHudText(localized("fastback.chat.thread-waiting"));
-        this.stopExecutor();
+        executor.stop();
         this.setHudText(null);
         final RepoFactory rf = RepoFactory.get();
         if (rf.isGitRepo(worldSaveDir)) {
@@ -133,6 +130,10 @@ public class ModContext implements ModLifecycleListener {
         syslog().debug("onWorldStop complete");
     }
 
+    public Executor getExecutor() {
+        return this.executor;
+    }
+
     class AutosaveListener implements Runnable {
 
         private long lastBackupTime = System.currentTimeMillis();
@@ -141,7 +142,7 @@ public class ModContext implements ModLifecycleListener {
         public void run() {
             //TODO implement indicator
             // final Logger screenLogger = CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx));
-            execute(ExecutionLock.WRITE, new HudLogger(ModContext.this), () -> {
+            executor.execute(Executor.ExecutionLock.WRITE, new HudLogger(ModContext.this), () -> {
                 RepoFactory rf = RepoFactory.get();
                 final Path worldSaveDir = getWorldDirectory();
                 if (!rf.isGitRepo(worldSaveDir)) return;
@@ -168,44 +169,6 @@ public class ModContext implements ModLifecycleListener {
         }
     }
 
-    public enum ExecutionLock {
-        NONE,
-        WRITE_CONFIG,
-        WRITE,
-    }
-
-    private Future<?> exclusiveFuture = null;
-
-    //FIXME break this out, probably into a singleton
-    public boolean execute(ExecutionLock lock, UserLogger ulog, Runnable runnable) {
-        if (this.executor == null) throw new IllegalStateException("Executor not started");
-        switch (lock) {
-            case NONE:
-            case WRITE_CONFIG: // revisit this
-                this.executor.submit(runnable);
-                return true;
-            case WRITE:
-                if (this.exclusiveFuture != null && !this.exclusiveFuture.isDone()) {
-                    ulog.chat(styledLocalized("fastback.chat.thread-busy", ERROR));
-                    return false;
-                } else {
-                    syslog().debug("executing " + runnable);
-                    this.exclusiveFuture = this.executor.submit(runnable);
-                    return true;
-                }
-            default:
-                throw new IllegalStateException();
-        }
-    }
-
-    public void startExecutor() {
-        this.executor = new ThreadPoolExecutor(0, 3, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
-    }
-
-    public void stopExecutor() {
-        shutdownExecutor(this.executor);
-        this.executor = null;
-    }
 
     public String getCommandName() {
         return "backup"; // TODO i18n?
@@ -274,28 +237,6 @@ public class ModContext implements ModLifecycleListener {
         this.spi.saveWorld();
     }
 
-
-    /**
-     * Lifted straight from the docs:
-     * https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html
-     */
-    private static void shutdownExecutor(final ExecutorService pool) {
-        pool.shutdown(); // Disable new tasks from being submitted
-        try {
-            // Wait a while for existing tasks to terminate
-            if (!pool.awaitTermination(5, TimeUnit.MINUTES)) {
-                pool.shutdownNow(); // Cancel currently executing tasks
-                // Wait a while for tasks to respond to being cancelled
-                if (!pool.awaitTermination(5, TimeUnit.MINUTES))
-                    System.err.println("Pool did not terminate");
-            }
-        } catch (InterruptedException ie) {
-            // (Re-)Cancel if current thread also interrupted
-            pool.shutdownNow();
-            // Preserve interrupt status
-            Thread.currentThread().interrupt();
-        }
-    }
 
     private static Text messageToText(final UserMessage m) {
         final MutableText out;

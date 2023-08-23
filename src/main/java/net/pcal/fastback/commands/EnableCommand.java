@@ -38,7 +38,7 @@ import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.localized;
-import static net.pcal.fastback.mod.ModContext.ExecutionLock.NONE;
+import static net.pcal.fastback.mod.Executor.ExecutionLock.NONE;
 
 enum EnableCommand implements Command {
 
@@ -55,12 +55,12 @@ enum EnableCommand implements Command {
         );
     }
 
-    private static int enable(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
-        final UserLogger ulog = commandLogger(ctx, cc.getSource());
-        ctx.execute(NONE, ulog, () -> {
-                    final Path worldSaveDir = ctx.getWorldDirectory();
+    private static int enable(final ModContext mod, final CommandContext<ServerCommandSource> cc) {
+        final UserLogger ulog = commandLogger(mod, cc.getSource());
+        mod.getExecutor().execute(NONE, ulog, () -> {
+                    final Path worldSaveDir = mod.getWorldDirectory();
                     final RepoFactory rf = RepoFactory.get();
-                    try (final Repo repo = rf.init(worldSaveDir, ctx)) {
+                    try (final Repo repo = rf.init(worldSaveDir, mod)) {
                         //repo.doWorldMaintenance(log);
                         final Updater updater = repo.getConfig().updater();
                         updater.set(IS_BACKUP_ENABLED, true).save();

@@ -32,7 +32,7 @@ import static net.pcal.fastback.commands.Commands.missingArgument;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.localized;
-import static net.pcal.fastback.mod.ModContext.ExecutionLock.WRITE_CONFIG;
+import static net.pcal.fastback.mod.Executor.ExecutionLock.WRITE_CONFIG;
 
 /**
  * Sets various configuration values.

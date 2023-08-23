@@ -26,7 +26,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.mod.ModContext;
-import net.pcal.fastback.mod.ModContext.ExecutionLock;
+import net.pcal.fastback.mod.Executor.ExecutionLock;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.RepoFactory;
 
@@ -126,7 +126,7 @@ public class Commands {
     }
 
     static void gitOp(final ModContext mod, final ExecutionLock lock, final UserLogger ulog, final GitOp op) {
-        mod.execute(lock, ulog, () -> {
+        mod.getExecutor().execute(lock, ulog, () -> {
             final Path worldSaveDir = mod.getWorldDirectory();
             final RepoFactory rf = RepoFactory.get();
             if (!rf.isGitRepo(worldSaveDir)) {
