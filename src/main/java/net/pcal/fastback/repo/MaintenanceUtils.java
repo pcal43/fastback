@@ -34,6 +34,7 @@ import java.util.UUID;
 import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.UPDATE_GITATTRIBUTES_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.UPDATE_GITIGNORE_ENABLED;
+import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.WARNING;
@@ -60,7 +61,7 @@ public interface MaintenanceUtils {
      * key files are all set correctly.
      */
     static void doPreflight(RepoImpl repo) throws IOException {
-        final SystemLogger syslog = SystemLogger.syslog();
+        final SystemLogger syslog = syslog();
         syslog.info("Doing world maintenance");
         final Git jgit = repo.getJGit();
         final Path worldSaveDir = jgit.getRepository().getWorkTree().toPath();
@@ -117,16 +118,23 @@ public interface MaintenanceUtils {
         }
     }
 
+    static void createWorldUuid(final Path worldSaveDir) throws IOException {
+        final Path worldUuidpath = worldSaveDir.resolve(WORLD_UUID_PATH);
+        FileUtils.mkdirs(worldUuidpath.getParent());
+        final String newUuid = UUID.randomUUID().toString();
+        try (final FileWriter fw = new FileWriter(worldUuidpath.toFile())) {
+            fw.append(newUuid);
+            fw.append('\n');
+        }
+        syslog().debug("Generated new world.uuid " + newUuid);
+    }
+
     static void ensureWorldHasUuid(final Path worldSaveDir) throws IOException {
         final Path worldUuidpath = worldSaveDir.resolve(WORLD_UUID_PATH);
         if (!worldUuidpath.toFile().exists()) {
-            FileUtils.mkdirs(worldUuidpath.getParent());
-            final String newUuid = UUID.randomUUID().toString();
-            try (final FileWriter fw = new FileWriter(worldUuidpath.toFile())) {
-                fw.append(newUuid);
-                fw.append('\n');
-            }
-            SystemLogger.syslog().debug("Generated new world.uuid " + newUuid);
+            syslog().warn("Did not find expected uuid file at "+worldSaveDir);
+            syslog().warn("We'll create a new one and carry on.  But this indicates something weird is going on.");
+            createWorldUuid(worldSaveDir);
         }
     }
 

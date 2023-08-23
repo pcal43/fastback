@@ -30,6 +30,7 @@ import java.nio.file.Path;
 import static net.pcal.fastback.config.GitConfigKey.BROADCAST_NOTICE_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.COMMIT_SIGNING_ENABLED;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
+import static net.pcal.fastback.repo.MaintenanceUtils.createWorldUuid;
 import static net.pcal.fastback.repo.MaintenanceUtils.ensureWorldHasUuid;
 
 /**
@@ -41,7 +42,7 @@ class RepoFactoryImpl implements RepoFactory {
     @Override
     public Repo init(Path worldSaveDir, Mod mod) throws IOException {
         try (final Git jgit = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
-            ensureWorldHasUuid(worldSaveDir);
+            createWorldUuid(worldSaveDir);
             final Repo repo = new RepoImpl(jgit, mod);
             final Updater updater = repo.getConfig().updater();
             updater.set(COMMIT_SIGNING_ENABLED, false);
@@ -58,7 +59,7 @@ class RepoFactoryImpl implements RepoFactory {
     public Repo load(Path worldSaveDir, Mod mod) throws IOException {
         final Git jgit = Git.open(worldSaveDir.toFile());
         // It should already be there.  But let's try to be extra sure this is there, because lots of stuff
-/        // will blow up if it's missing.
+        // will blow up if it's missing.
         ensureWorldHasUuid(worldSaveDir);
         return new RepoImpl(jgit, mod);
     }
