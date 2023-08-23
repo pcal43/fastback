@@ -19,7 +19,6 @@
 package net.pcal.fastback.repo;
 
 import net.pcal.fastback.logging.UserLogger;
-import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.logging.UserMessage.UserMessageStyle;
 import net.pcal.fastback.utils.FileUtils;
 import org.eclipse.jgit.api.Git;
@@ -32,7 +31,8 @@ import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
-import static net.pcal.fastback.logging.UserMessage.*;
+import static net.pcal.fastback.logging.UserMessage.localized;
+import static net.pcal.fastback.logging.UserMessage.styledRaw;
 import static net.pcal.fastback.repo.RepoImpl.WORLD_UUID_PATH;
 
 /**

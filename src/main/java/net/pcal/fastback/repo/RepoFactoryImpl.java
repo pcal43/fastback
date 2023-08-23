@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 import static net.pcal.fastback.config.GitConfigKey.BROADCAST_NOTICE_ENABLED;
-import static net.pcal.fastback.config.GitConfigKey.BROADCAST_NOTICE_MESSAGE;
 import static net.pcal.fastback.config.GitConfigKey.COMMIT_SIGNING_ENABLED;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 
