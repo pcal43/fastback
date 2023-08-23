@@ -79,6 +79,6 @@ You can configure this in `[worlddir]/.git/config`:
 ```
 [fastback]
 	broadcast-notice-enabled = true
-	broadcast-notice-message = My custom message giving folks a heads up.
+	broadcast-notice-message = My custom message.
 ```
 
