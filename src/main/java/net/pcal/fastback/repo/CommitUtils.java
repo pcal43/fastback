@@ -19,7 +19,6 @@
 package net.pcal.fastback.repo;
 
 import net.pcal.fastback.logging.UserLogger;
-import net.pcal.fastback.mod.Mod;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
@@ -79,20 +78,20 @@ class CommitUtils {
         log.update(styledLocalized("fastback.hud.local-saving", NATIVE_GIT));
         final File worktree = repo.getWorkTree();
         final Map<String, String> env = Map.of("GIT_LFS_FORCE_PROGRESS", "1");
-        final Consumer<String> logConsumer = new HudConsumer(log, NATIVE_GIT);
+        final Consumer<String> outputConsumer = line->log.update(styledRaw(line, NATIVE_GIT));
         String[] checkout = {"git", "-C", worktree.getAbsolutePath(), "checkout", "--orphan", newBranchName};
-        doExec(checkout, env, logConsumer, logConsumer);
+        doExec(checkout, env, outputConsumer, outputConsumer);
         mod().setWorldSaveEnabled(false);
         try {
             String[] add = {"git", "-C", worktree.getAbsolutePath(), "add", "-v", "."};
-            doExec(add, env, logConsumer, logConsumer);
+            doExec(add, env, outputConsumer, outputConsumer);
         } finally {
             mod().setWorldSaveEnabled(true);
             syslog().debug("World save re-enabled.");
         }
         {
             String[] commit = {"git", "-C", worktree.getAbsolutePath(), "commit", "-m", newBranchName};
-            doExec(commit, env, logConsumer, logConsumer);
+            doExec(commit, env, outputConsumer, outputConsumer);
         }
         syslog().debug("End native_commit");
     }

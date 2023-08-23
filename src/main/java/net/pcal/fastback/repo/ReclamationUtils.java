@@ -46,6 +46,7 @@ import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.JGIT;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;
 import static net.pcal.fastback.logging.UserMessage.raw;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
+import static net.pcal.fastback.logging.UserMessage.styledRaw;
 import static net.pcal.fastback.repo.PushUtils.isTempBranch;
 import static net.pcal.fastback.utils.ProcessUtils.doExec;
 import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
@@ -79,8 +80,8 @@ class ReclamationUtils {
     private static void native_doLfsPrune(RepoImpl repo, UserLogger ulog) throws IOException, InterruptedException {
         final File worktree = repo.getWorkTree();
         final String[] push = {"git", "-C", worktree.getAbsolutePath(), "-c", "lfs.pruneoffsetdays=999999", "lfs", "prune", "--verbose", "--no-verify-remote",};
-        final Consumer<String> logConsumer = new HudConsumer(ulog, NATIVE_GIT);
-        doExec(push, Collections.emptyMap(), logConsumer, logConsumer);
+        final Consumer<String> outputConsumer = line->ulog.update(styledRaw(line, NATIVE_GIT));
+        doExec(push, Collections.emptyMap(), outputConsumer, outputConsumer);
         syslog().debug("native_doLfsPrune");
     }
 
