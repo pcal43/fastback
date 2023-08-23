@@ -40,11 +40,6 @@ public interface Mod {
     }
 
     /**
-     * Use this for running stuff in other threads.
-     */
-    Executor getExecutor();
-
-    /**
      * @return path to where snapshots should be restored.
      */
     Path getRestoresDir() throws IOException;

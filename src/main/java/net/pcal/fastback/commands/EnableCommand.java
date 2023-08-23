@@ -39,6 +39,7 @@ import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.localized;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.NONE;
+import static net.pcal.fastback.utils.Executor.executor;
 
 enum EnableCommand implements Command {
 
@@ -57,7 +58,7 @@ enum EnableCommand implements Command {
 
     private static int enable(final Mod mod, final CommandContext<ServerCommandSource> cc) {
         final UserLogger ulog = commandLogger(mod, cc.getSource());
-        mod.getExecutor().execute(NONE, ulog, () -> {
+        executor().execute(NONE, ulog, () -> {
                     final Path worldSaveDir = mod.getWorldDirectory();
                     final RepoFactory rf = RepoFactory.get();
                     try (final Repo repo = rf.init(worldSaveDir, mod)) {

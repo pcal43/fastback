@@ -35,6 +35,7 @@ import static net.pcal.fastback.config.GitConfigKey.AUTOBACK_WAIT_MINUTES;
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.mod.Mod.mod;
+import static net.pcal.fastback.utils.Executor.executor;
 
 /**
  * @author pcal
@@ -47,7 +48,7 @@ class AutosaveListener implements Runnable {
     @Override
     public void run() {
         try (final UserLogger ulog = UserLogger.forAutosave()) {
-            mod().getExecutor().execute(Executor.ExecutionLock.WRITE, ulog, () -> {
+            executor().execute(Executor.ExecutionLock.WRITE, ulog, () -> {
                 try {
                     final RepoFactory rf = RepoFactory.get();
                     final Path worldSaveDir = mod().getWorldDirectory();

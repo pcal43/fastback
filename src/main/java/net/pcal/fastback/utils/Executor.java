@@ -20,88 +20,34 @@ package net.pcal.fastback.utils;
 
 import net.pcal.fastback.logging.UserLogger;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import static net.pcal.fastback.logging.SystemLogger.syslog;
-import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
-import static net.pcal.fastback.logging.UserMessage.styledLocalized;
-
 /**
- * Thin wrapper around an ExecutorService.  There really should only be one instance of this class -
- * use Mod.getExecutor().
+ * Thin wrapper around an ExecutorService.  Use this to do things in separate threads.
  *
  * @author pcal
  * @since 0.2.0
  */
-public class Executor {
+public interface Executor {
 
-    private ThreadPoolExecutor executor = null;
+    static Executor executor() {
+        return Singleton.INSTANCE;
+    }
 
-    public enum ExecutionLock {
+    // TODO kill UserLogger param
+    boolean execute(final ExecutionLock lock, final UserLogger ulog, final Runnable runnable);
+
+    int getActiveCount();
+
+    void start();
+
+    void stop();
+
+    enum ExecutionLock {
         NONE,
         WRITE_CONFIG,
         WRITE,
     }
 
-    private Future<?> exclusiveFuture = null;
-
-    public boolean execute(ExecutionLock lock, UserLogger ulog, Runnable runnable) {
-        if (this.executor == null) throw new IllegalStateException("Executor not started");
-        switch (lock) {
-            case NONE:
-            case WRITE_CONFIG: // revisit this
-                this.executor.submit(runnable);
-                return true;
-            case WRITE:
-                if (this.exclusiveFuture != null && !this.exclusiveFuture.isDone()) {
-                    ulog.message(styledLocalized("fastback.chat.thread-busy", ERROR));
-                    return false;
-                } else {
-                    syslog().debug("executing " + runnable);
-                    this.exclusiveFuture = this.executor.submit(runnable);
-                    return true;
-                }
-            default:
-                throw new IllegalStateException();
-        }
-    }
-
-    public int getActiveCount() {
-        return this.executor.getActiveCount();
-    }
-
-    public void start() {
-        this.executor = new ThreadPoolExecutor(0, 3, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
-    }
-
-    public void stop() {
-        shutdownExecutor(this.executor);
-        this.executor = null;
-    }
-
-    /**
-     * Lifted straight from the docs:
-     * https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html
-     */
-    private static void shutdownExecutor(final ExecutorService pool) {
-        pool.shutdown(); // Disable new tasks from being submitted
-        try {
-            // Wait a while for existing tasks to terminate
-            if (!pool.awaitTermination(5, TimeUnit.MINUTES)) {
-                pool.shutdownNow(); // Cancel currently executing tasks
-                // Wait a while for tasks to respond to being cancelled
-                if (!pool.awaitTermination(5, TimeUnit.MINUTES))
-                    System.err.println("Pool did not terminate");
-            }
-        } catch (InterruptedException ie) {
-            // (Re-)Cancel if current thread also interrupted
-            pool.shutdownNow();
-            // Preserve interrupt status
-            Thread.currentThread().interrupt();
-        }
+    class Singleton {
+        private static final Executor INSTANCE = new ExecutorImpl();
     }
 }

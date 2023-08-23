@@ -38,6 +38,7 @@ import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
+import static net.pcal.fastback.utils.Executor.executor;
 
 public class Commands {
 
@@ -124,7 +125,7 @@ public class Commands {
     }
 
     static void gitOp(final Mod mod, final ExecutionLock lock, final UserLogger ulog, final GitOp op) {
-        mod.getExecutor().execute(lock, ulog, () -> {
+        executor().execute(lock, ulog, () -> {
             final Path worldSaveDir = mod.getWorldDirectory();
             final RepoFactory rf = RepoFactory.get();
             if (!rf.isGitRepo(worldSaveDir)) {
