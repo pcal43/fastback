@@ -61,7 +61,7 @@ class ModImpl implements LifecycleListener, Mod {
 
     ModImpl(final FrameworkServiceProvider spi) {
         this.fsp = requireNonNull(spi);
-        spi.setAutoSaveListener(new AutosaveListener(this));
+        spi.setAutoSaveListener(new AutosaveListener());
         this.executor = new Executor();
     }
 
