@@ -24,8 +24,8 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.pcal.fastback.logging.Log4jLogger;
 import net.pcal.fastback.logging.SystemLogger;
-import net.pcal.fastback.mod.LifecycleUtils;
 import net.pcal.fastback.mod.ModContext;
+import net.pcal.fastback.mod.ModLifecycleListener;
 import org.apache.logging.log4j.LogManager;
 
 import static net.pcal.fastback.mod.fabric.BaseFabricProvider.MOD_ID;
@@ -43,8 +43,8 @@ public class FabricClientInitializer implements ClientModInitializer {
     public void onInitializeClient() {
         SystemLogger.Singleton.register(new Log4jLogger(LogManager.getLogger(MOD_ID)));
         final FabricClientProvider clientProvider = new FabricClientProvider();
-        final ModContext modContext = ModContext.create(clientProvider);
-        LifecycleUtils.onInitialize(modContext);
+        final ModLifecycleListener listener = ModContext.create(clientProvider);
+        listener.onInitialize();
 
         ClientLifecycleEvents.CLIENT_STARTED.register(
                 minecraftClient -> {
@@ -60,13 +60,13 @@ public class FabricClientInitializer implements ClientModInitializer {
         ServerLifecycleEvents.SERVER_STARTING.register(
                 minecraftServer -> {
                     clientProvider.setMinecraftServer(minecraftServer);
-                    LifecycleUtils.onWorldStart(modContext);
+                    listener.onWorldStart();
                 }
         );
         ServerLifecycleEvents.SERVER_STOPPED.register(
                 minecraftServer -> {
                     try {
-                        LifecycleUtils.onWorldStop(modContext);
+                        listener.onWorldStop();
                     } finally {
                         clientProvider.setMinecraftServer(null);
                     }

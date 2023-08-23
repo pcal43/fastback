@@ -22,12 +22,12 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
+import net.pcal.fastback.commands.Commands;
 import net.pcal.fastback.commands.SchedulableAction;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.logging.UserMessage.UserMessageStyle;
-import net.pcal.fastback.mod.LifecycleUtils.HudLogger;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.RepoFactory;
 
@@ -47,11 +47,15 @@ import static net.pcal.fastback.commands.SchedulableAction.forConfigValue;
 import static net.pcal.fastback.config.GitConfigKey.AUTOBACK_ACTION;
 import static net.pcal.fastback.config.GitConfigKey.AUTOBACK_WAIT_MINUTES;
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
+import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
+import static net.pcal.fastback.logging.UserMessage.localized;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
+import static net.pcal.fastback.utils.EnvironmentUtils.getGitLfsVersion;
+import static net.pcal.fastback.utils.EnvironmentUtils.getGitVersion;
 
-public class ModContext {
+public class ModContext implements ModLifecycleListener {
 
     private final FrameworkServiceProvider spi;
     private ExecutorService executor = null;
@@ -64,6 +68,69 @@ public class ModContext {
     private ModContext(FrameworkServiceProvider spi) {
         this.spi = requireNonNull(spi);
         spi.setAutoSaveListener(new AutosaveListener());
+    }
+
+
+    /**
+     * Must be called early in initialization of either a client or server.
+     */
+    @Override
+    public void onInitialize() {
+        Commands.registerCommands(this, this.getCommandName());
+        {
+            final String gitVersion = getGitVersion();
+            if (gitVersion == null) {
+                syslog().warn("git is not installed.");
+            } else {
+                syslog().info("git is installed: " + gitVersion);
+            }
+        }
+        {
+            final String gitLfsVersion = getGitLfsVersion();
+            if (gitLfsVersion == null) {
+                syslog().warn("git-lfs is not installed.");
+            } else {
+                syslog().info("git-lfs is installed: " + gitLfsVersion);
+            }
+        }
+        syslog().debug("onInitialize complete");
+    }
+
+
+    /**
+     * Must be called when a world is starting (in either a dedicated or client-embedded server).
+     */
+    @Override
+    public void onWorldStart() {
+        this.startExecutor();
+        syslog().debug("onWorldStart complete");
+    }
+
+    /**
+     * Must be called when a world is stopping (in either a dedicated or client-embedded server).
+     */
+    @Override
+    public void onWorldStop() {
+        final Path worldSaveDir = this.getWorldDirectory();
+        this.setHudText(localized("fastback.chat.thread-waiting"));
+        this.stopExecutor();
+        this.setHudText(null);
+        final RepoFactory rf = RepoFactory.get();
+        if (rf.isGitRepo(worldSaveDir)) {
+            try (final Repo repo = rf.load(worldSaveDir, this)) {
+                final GitConfig config = repo.getConfig();
+                if (config.getBoolean(IS_BACKUP_ENABLED)) {
+                    final SchedulableAction action = SchedulableAction.forConfigValue(config, SHUTDOWN_ACTION);
+                    if (action != null) {
+                        this.setMessageScreenText(localized("fastback.message.backing-up"));
+                        action.getTask(repo, new HudLogger(this)).call();
+                    }
+                }
+            } catch (Exception e) {
+                syslog().error("Shutdown action failed.", e);
+            }
+        }
+        syslog().debug("onWorldStop complete");
     }
 
     class AutosaveListener implements Runnable {
