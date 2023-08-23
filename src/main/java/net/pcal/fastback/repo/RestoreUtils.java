@@ -20,6 +20,7 @@ package net.pcal.fastback.repo;
 
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
+import net.pcal.fastback.logging.UserMessage.UserMessageStyle;
 import net.pcal.fastback.utils.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -31,6 +32,7 @@ import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
+import static net.pcal.fastback.logging.UserMessage.*;
 import static net.pcal.fastback.repo.RepoImpl.WORLD_UUID_PATH;
 
 /**
@@ -58,7 +60,7 @@ class RestoreUtils {
     private static Path jgit_restoreSnapshot(final String repoUri, final Path restoreTargetDir, final String worldName, final SnapshotId sid, final UserLogger ulog) throws IOException, GitAPIException {
         final Path restoreDir = getTargetDir(restoreTargetDir, worldName, sid.getName());
         final String branchName = sid.getBranchName();
-        ulog.hud(UserMessage.localized("fastback.hud.restore-percent", 0));
+        ulog.hud(localized("fastback.hud.restore-percent", 0));
         final ProgressMonitor pm = new JGitIncrementalProgressMonitor(new JGitRestoreProgressMonitor(ulog), 100);
         try (Git git = Git.cloneRepository().setProgressMonitor(pm).setDirectory(restoreDir.toFile()).
                 setBranchesToClone(List.of("refs/heads/" + branchName)).setBranch(branchName).setURI(repoUri).call()) {
@@ -101,15 +103,9 @@ class RestoreUtils {
 
         @Override
         public void progressUpdate(String task, int percentage) {
-            syslog().debug(task + " " + percentage);
-            if (task.contains("Receiving")) { // Receiving objects
-                percentage = percentage / 2;
-            } else if (task.contains("Checking")) { // Checking out files
-                percentage = 50 + (percentage / 2);
-            } else {
-                return;
-            }
-            this.ulog.hud(UserMessage.localized("fastback.hud.restore-percent", percentage));
+            final String message = task + " " + percentage + "%";
+            syslog().debug(message);
+            this.ulog.hud(styledRaw(message, UserMessageStyle.JGIT));
         }
 
         @Override
