@@ -34,43 +34,46 @@ import static net.pcal.fastback.config.GitConfigKey.AUTOBACK_ACTION;
 import static net.pcal.fastback.config.GitConfigKey.AUTOBACK_WAIT_MINUTES;
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
+import static net.pcal.fastback.mod.Mod.mod;
 
+/**
+ * @author pcal
+ * @since 0.2.0
+ */
 class AutosaveListener implements Runnable {
 
-    private final Mod mod;
     private long lastBackupTime = System.currentTimeMillis();
-
-    AutosaveListener(Mod mod) {
-        this.mod = mod;
-    }
 
     @Override
     public void run() {
-        mod.getExecutor().execute(Executor.ExecutionLock.WRITE, new HudLogger(mod), () -> {
-            try (final UserLogger ulog = UserLogger.forAutosave()) {
-                RepoFactory rf = RepoFactory.get();
-                final Path worldSaveDir = mod.getWorldDirectory();
-                if (!rf.isGitRepo(worldSaveDir)) return;
-                try (final Repo repo = rf.load(worldSaveDir, mod)) {
-                    final GitConfig config = repo.getConfig();
-                    if (!config.getBoolean(IS_BACKUP_ENABLED)) return;
-                    final SchedulableAction autobackAction = forConfigValue(config, AUTOBACK_ACTION);
-                    if (autobackAction == null || autobackAction == NONE) return;
-                    final Duration waitTime = Duration.ofMinutes(config.getInt(AUTOBACK_WAIT_MINUTES));
-                    final Duration timeRemaining = waitTime.
-                            minus(Duration.ofMillis(System.currentTimeMillis() - lastBackupTime));
-                    if (!timeRemaining.isZero() && !timeRemaining.isNegative()) {
-                        syslog().debug("Skipping auto-backup until at least " +
-                                (timeRemaining.toSeconds() / 60) + " more minutes have elapsed.");
-                        return;
+        try (final UserLogger ulog = UserLogger.forAutosave()) {
+            mod().getExecutor().execute(Executor.ExecutionLock.WRITE, ulog, () -> {
+                try {
+                    final RepoFactory rf = RepoFactory.get();
+                    final Path worldSaveDir = mod().getWorldDirectory();
+                    if (!rf.isGitRepo(worldSaveDir)) return;
+                    try (final Repo repo = rf.load(worldSaveDir, mod())) {
+                        final GitConfig config = repo.getConfig();
+                        if (!config.getBoolean(IS_BACKUP_ENABLED)) return;
+                        final SchedulableAction autobackAction = forConfigValue(config, AUTOBACK_ACTION);
+                        if (autobackAction == null || autobackAction == NONE) return;
+                        final Duration waitTime = Duration.ofMinutes(config.getInt(AUTOBACK_WAIT_MINUTES));
+                        final Duration timeRemaining = waitTime.
+                                minus(Duration.ofMillis(System.currentTimeMillis() - lastBackupTime));
+                        if (!timeRemaining.isZero() && !timeRemaining.isNegative()) {
+                            syslog().debug("Skipping auto-backup until at least " +
+                                    (timeRemaining.toSeconds() / 60) + " more minutes have elapsed.");
+                            return;
+                        }
+                        syslog().info("Starting auto-backup");
+                        autobackAction.getTask(repo, ulog).call();
                     }
-                    syslog().info("Starting auto-backup");
-                    autobackAction.getTask(repo, ulog).call();
+                    lastBackupTime = System.currentTimeMillis();
+                } catch (Exception e) {
+                    syslog().error("auto-backup failed.", e);
                 }
-                lastBackupTime = System.currentTimeMillis();
-            } catch (Exception e) {
-                syslog().error("auto-backup failed.", e);
-            }
-        });
+            });
+        }
     }
+
 }
