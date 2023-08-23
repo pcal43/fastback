@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_16",
   "mixins": [
     "MinecraftServerMixin",
+    "MessageScreenMixin",
     "ServerAccessors",
     "SessionAccessors"
   ],
