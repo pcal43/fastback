@@ -18,7 +18,7 @@
 
 package net.pcal.fastback.repo;
 
-import net.pcal.fastback.mod.ModContext;
+import net.pcal.fastback.mod.Mod;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
@@ -35,7 +35,7 @@ import static net.pcal.fastback.logging.SystemLogger.syslog;
 class RepoFactoryImpl implements RepoFactory {
 
     @Override
-    public Repo init(Path worldSaveDir, ModContext mod) throws IOException {
+    public Repo init(Path worldSaveDir, Mod mod) throws IOException {
         try (final Git jgit = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
             return new RepoImpl(jgit, mod);
         } catch (GitAPIException e) {
@@ -45,7 +45,7 @@ class RepoFactoryImpl implements RepoFactory {
     }
 
     @Override
-    public Repo load(Path worldSaveDir, ModContext mod) throws IOException {
+    public Repo load(Path worldSaveDir, Mod mod) throws IOException {
         final Git jgit = Git.open(worldSaveDir.toFile());
         return new RepoImpl(jgit, mod);
     }

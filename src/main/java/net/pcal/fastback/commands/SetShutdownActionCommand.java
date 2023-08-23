@@ -23,7 +23,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.mod.ModContext;
+import net.pcal.fastback.mod.Mod;
 
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
@@ -41,7 +41,7 @@ enum SetShutdownActionCommand implements Command {
     private static final String COMMAND_NAME = "set-shutdown-action";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
         final LiteralArgumentBuilder<ServerCommandSource> setCommand = literal(COMMAND_NAME).
                 requires(subcommandPermission(ctx, COMMAND_NAME)).
                 executes(cc-> missingArgument("actionName", ctx, cc));
@@ -53,7 +53,7 @@ enum SetShutdownActionCommand implements Command {
         argb.then(setCommand);
     }
 
-    private static int setShutdownAction(final ModContext ctx, final ServerCommandSource scs, SchedulableAction action) {
+    private static int setShutdownAction(final Mod ctx, final ServerCommandSource scs, SchedulableAction action) {
         final UserLogger ulog = commandLogger(ctx, scs);
         gitOp(ctx, WRITE_CONFIG, ulog, repo -> {
             final GitConfig conf = repo.getConfig();

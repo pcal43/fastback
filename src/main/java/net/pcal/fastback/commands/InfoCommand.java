@@ -24,7 +24,7 @@ import net.minecraft.text.Text;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.mod.ModContext;
+import net.pcal.fastback.mod.Mod;
 import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;
 import net.pcal.fastback.retention.RetentionPolicyType;
@@ -56,7 +56,7 @@ enum InfoCommand implements Command {
     private static final String COMMAND_NAME = "info";
 
     @Override
-    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, ModContext ctx) {
+    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, Mod ctx) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
@@ -64,7 +64,7 @@ enum InfoCommand implements Command {
         );
     }
 
-    private static int info(final ModContext ctx, final ServerCommandSource scs) {
+    private static int info(final Mod ctx, final ServerCommandSource scs) {
         requireNonNull(ctx);
         requireNonNull(scs);
         final UserLogger ulog = commandLogger(ctx, scs);

@@ -28,7 +28,7 @@ import com.mojang.brigadier.tree.CommandNode;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.mod.ModContext;
+import net.pcal.fastback.mod.Mod;
 
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -55,7 +55,7 @@ enum HelpCommand implements Command {
     private static final String ARGUMENT = "subcommand";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
@@ -88,7 +88,7 @@ enum HelpCommand implements Command {
         }
     }
 
-    static int help(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
+    static int help(final Mod ctx, final CommandContext<ServerCommandSource> cc) {
         final UserLogger log = commandLogger(ctx, cc.getSource());
         StringWriter subcommands = null;
         for (final String available : getSubcommandNames(cc)) {
@@ -103,7 +103,7 @@ enum HelpCommand implements Command {
         return SUCCESS;
     }
 
-    private int helpSubcommand(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
+    private int helpSubcommand(final Mod ctx, final CommandContext<ServerCommandSource> cc) {
         final UserLogger log = commandLogger(ctx, cc.getSource());
         final Collection<CommandNode<ServerCommandSource>> subcommands = cc.getNodes().get(0).getNode().getChildren();
         final String subcommand = cc.getLastChild().getArgument(ARGUMENT, String.class);

@@ -24,7 +24,7 @@ package net.pcal.fastback.mod;
  * @author pcal
  * @since 0.0.1
  */
-public interface ModLifecycleListener {
+public interface LifecycleListener {
 
     /**
      * Must be called early in initialization of either a client or server.

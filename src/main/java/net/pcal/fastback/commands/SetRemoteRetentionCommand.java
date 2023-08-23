@@ -21,7 +21,7 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.mod.ModContext;
+import net.pcal.fastback.mod.Mod;
 import net.pcal.fastback.retention.RetentionPolicyType;
 
 import static net.pcal.fastback.commands.SetRetentionCommand.registerSetRetentionCommand;
@@ -41,11 +41,11 @@ enum SetRemoteRetentionCommand implements Command {
     private static final String COMMAND_NAME = "set-remote-retention";
 
     @Override
-    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
+    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
         registerSetRetentionCommand(argb, ctx, COMMAND_NAME, (cc, rt) -> setRemotePolicy(ctx, cc, rt));
     }
 
-    private static int setRemotePolicy(ModContext ctx, CommandContext<ServerCommandSource> cc, RetentionPolicyType rpt) {
+    private static int setRemotePolicy(Mod ctx, CommandContext<ServerCommandSource> cc, RetentionPolicyType rpt) {
         return setRetentionPolicy(ctx, cc, rpt, REMOTE_RETENTION_POLICY);
     }
 

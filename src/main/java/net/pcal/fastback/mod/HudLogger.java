@@ -25,9 +25,9 @@ import static java.util.Objects.requireNonNull;
 
 public class HudLogger implements UserLogger {
 
-    private final ModContext ctx;
+    private final Mod ctx;
 
-    HudLogger(ModContext ctx) {
+    HudLogger(Mod ctx) {
         this.ctx = requireNonNull(ctx);
     }
 

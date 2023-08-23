@@ -21,7 +21,7 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.UserLogger;
-import net.pcal.fastback.mod.ModContext;
+import net.pcal.fastback.mod.Mod;
 
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
@@ -43,7 +43,7 @@ enum FullCommand implements Command {
 
     private static final String COMMAND_NAME = "full";
 
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
@@ -51,7 +51,7 @@ enum FullCommand implements Command {
         );
     }
 
-    public static int run(ModContext ctx, ServerCommandSource scs) {
+    public static int run(Mod ctx, ServerCommandSource scs) {
         final UserLogger ulog = commandLogger(ctx, scs);
         {
             // workaround for https://github.com/pcal43/fastback/issues/112

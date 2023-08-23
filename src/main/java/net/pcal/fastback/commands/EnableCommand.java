@@ -23,7 +23,7 @@ import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.config.GitConfig.Updater;
 import net.pcal.fastback.logging.UserLogger;
-import net.pcal.fastback.mod.ModContext;
+import net.pcal.fastback.mod.Mod;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.RepoFactory;
 
@@ -47,7 +47,7 @@ enum EnableCommand implements Command {
     private static final String COMMAND_NAME = "enable";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
@@ -55,7 +55,7 @@ enum EnableCommand implements Command {
         );
     }
 
-    private static int enable(final ModContext mod, final CommandContext<ServerCommandSource> cc) {
+    private static int enable(final Mod mod, final CommandContext<ServerCommandSource> cc) {
         final UserLogger ulog = commandLogger(mod, cc.getSource());
         mod.getExecutor().execute(NONE, ulog, () -> {
                     final Path worldSaveDir = mod.getWorldDirectory();

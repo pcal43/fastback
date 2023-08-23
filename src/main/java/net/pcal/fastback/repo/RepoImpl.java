@@ -22,7 +22,7 @@ import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.mod.ModContext;
+import net.pcal.fastback.mod.Mod;
 import net.pcal.fastback.utils.EnvironmentUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -55,14 +55,14 @@ class RepoImpl implements Repo {
     // Fields
 
     private final Git jgit;
-    private final ModContext ctx;
+    private final Mod ctx;
     private GitConfig config;
 
     // ======================================================================
     // Constructors
 
     RepoImpl(final Git git,
-             final ModContext ctx) {
+             final Mod ctx) {
         this.jgit = requireNonNull(git);
         this.ctx = requireNonNull(ctx);
     }

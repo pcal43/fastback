@@ -25,7 +25,7 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
-import net.pcal.fastback.mod.ModContext;
+import net.pcal.fastback.mod.Mod;
 import net.pcal.fastback.utils.Executor.ExecutionLock;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.RepoFactory;
@@ -46,7 +46,7 @@ public class Commands {
     static int FAILURE = 0;
     static int SUCCESS = 1;
 
-    public static void registerCommands(final ModContext ctx) {
+    public static void registerCommands(final Mod ctx) {
         final LiteralArgumentBuilder<ServerCommandSource> root = LiteralArgumentBuilder.<ServerCommandSource>literal("backup").
                 requires(Permissions.require(BACKUP_COMMAND_PERM, ctx.getDefaultPermLevel())).
                 executes(cc->help(ctx, cc));
@@ -83,7 +83,7 @@ public class Commands {
         CommandRegistrationCallback.EVENT.register((dispatcher, regAccess, env) -> dispatcher.register(root));
     }
 
-    public static UserLogger commandLogger(final ModContext ctx, final ServerCommandSource scs) {
+    public static UserLogger commandLogger(final Mod ctx, final ServerCommandSource scs) {
         return new CommandSourceLogger(ctx, scs);
     }
 
@@ -91,7 +91,7 @@ public class Commands {
         return "fastback.command." + subcommandName;
     }
 
-    public static Predicate<ServerCommandSource> subcommandPermission(ModContext ctx, String subcommandName) {
+    public static Predicate<ServerCommandSource> subcommandPermission(Mod ctx, String subcommandName) {
         return Permissions.require(subcommandPermName(subcommandName), ctx.getDefaultPermLevel());
     }
 
@@ -110,7 +110,7 @@ public class Commands {
         }
     }
 
-    public static int missingArgument(final String argName, final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
+    public static int missingArgument(final String argName, final Mod ctx, final CommandContext<ServerCommandSource> cc) {
         return missingArgument(argName, commandLogger(ctx, cc.getSource()));
     }
 
@@ -123,7 +123,7 @@ public class Commands {
         void execute(Repo repo) throws Exception;
     }
 
-    static void gitOp(final ModContext mod, final ExecutionLock lock, final UserLogger ulog, final GitOp op) {
+    static void gitOp(final Mod mod, final ExecutionLock lock, final UserLogger ulog, final GitOp op) {
         mod.getExecutor().execute(lock, ulog, () -> {
             final Path worldSaveDir = mod.getWorldDirectory();
             final RepoFactory rf = RepoFactory.get();

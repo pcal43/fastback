@@ -22,7 +22,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.UserLogger;
-import net.pcal.fastback.mod.ModContext;
+import net.pcal.fastback.mod.Mod;
 
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
@@ -50,7 +50,7 @@ enum SetCommand implements Command {
     private static final String COMMAND_NAME = "set";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> root, final ModContext ctx) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> root, final Mod ctx) {
         final LiteralArgumentBuilder<ServerCommandSource> setCommand = literal(COMMAND_NAME).
                 requires(subcommandPermission(ctx, COMMAND_NAME)).
                 executes(cc-> missingArgument("key", ctx, cc));
@@ -62,14 +62,14 @@ enum SetCommand implements Command {
     // ======================================================================
     // native-git
 
-    private static void registerNativeGit(final LiteralArgumentBuilder<ServerCommandSource> setCommand, ModContext ctx) {
+    private static void registerNativeGit(final LiteralArgumentBuilder<ServerCommandSource> setCommand, Mod ctx) {
         final LiteralArgumentBuilder<ServerCommandSource> nativeGit = literal("native-git");
         nativeGit.then(literal("enabled").executes(cc->setNativeGit(ctx, cc, true)));
         nativeGit.then(literal("disabled").executes(cc->setNativeGit(ctx, cc, false)));
         setCommand.then(nativeGit);
     }
 
-    private static int setNativeGit(final ModContext ctx, final CommandContext<ServerCommandSource> cc, boolean value) {
+    private static int setNativeGit(final Mod ctx, final CommandContext<ServerCommandSource> cc, boolean value) {
         final UserLogger ulog = commandLogger(ctx, cc.getSource());
         gitOp(ctx, WRITE_CONFIG, ulog, repo -> {
             repo.setNativeGitEnabled(value, ulog);
@@ -80,14 +80,14 @@ enum SetCommand implements Command {
     // ======================================================================
     // force-debug
 
-    private static void registerForceDebug(final LiteralArgumentBuilder<ServerCommandSource> setCommand, final ModContext ctx) {
+    private static void registerForceDebug(final LiteralArgumentBuilder<ServerCommandSource> setCommand, final Mod ctx) {
         final LiteralArgumentBuilder<ServerCommandSource> debug = literal("force-debug");
         debug.then(literal("enabled").executes(cc-> setForceDebug(ctx, cc, true)));
         debug.then(literal("disabled").executes(cc-> setForceDebug(ctx, cc, false)));
         setCommand.then(debug);
     }
 
-    private static int setForceDebug(final ModContext ctx, final CommandContext<ServerCommandSource> cc, boolean value) {
+    private static int setForceDebug(final Mod ctx, final CommandContext<ServerCommandSource> cc, boolean value) {
         syslog().setForceDebugEnabled(value);
         commandLogger(ctx, cc.getSource()).chat(localized("fastback.chat.ok"));
         return SUCCESS;

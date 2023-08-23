@@ -23,7 +23,7 @@ import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.mod.ModContext;
+import net.pcal.fastback.mod.Mod;
 
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
@@ -40,7 +40,7 @@ enum DisableCommand implements Command {
     private static final String COMMAND_NAME = "disable";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
@@ -48,7 +48,7 @@ enum DisableCommand implements Command {
         );
     }
 
-    private static int disable(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
+    private static int disable(final Mod ctx, final CommandContext<ServerCommandSource> cc) {
         final UserLogger ulog = commandLogger(ctx, cc.getSource());
         gitOp(ctx, WRITE_CONFIG, ulog, repo -> {
             repo.getConfig().updater().set(IS_BACKUP_ENABLED, false).save();

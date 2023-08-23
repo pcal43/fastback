@@ -16,32 +16,36 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.commands;
+package net.pcal.fastback.mod;
 
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.mod.Mod;
+import net.pcal.fastback.utils.Executor;
 
-import static java.util.Objects.requireNonNull;
+import java.io.IOException;
+import java.nio.file.Path;
 
-class CommandSourceLogger implements UserLogger {
+public interface Mod {
 
-    private final ServerCommandSource scs;
-    private final Mod ctx;
+    Executor getExecutor();
 
-    CommandSourceLogger(Mod ctx, ServerCommandSource scs) {
-        this.ctx = requireNonNull(ctx);
-        this.scs = requireNonNull(scs);
-    }
+    Path getRestoresDir() throws IOException;
 
-    @Override
-    public void chat(UserMessage message) {
-        ctx.sendChat(message, this.scs);
-    }
+    void sendChat(UserMessage message, ServerCommandSource scs);
 
-    @Override
-    public void hud(UserMessage message) {
-        this.ctx.setHudText(message);
-    }
+    String getModVersion();
+
+    void setWorldSaveEnabled(boolean enabled);
+
+    void setMessageScreenText(UserMessage message);
+
+    void setHudText(UserMessage message);
+
+    Path getWorldDirectory();
+
+    String getWorldName();
+
+    int getDefaultPermLevel();
+
+    void saveWorld();
 }

@@ -22,7 +22,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.mod.ModContext;
+import net.pcal.fastback.mod.Mod;
 import net.pcal.fastback.repo.SnapshotId;
 
 import java.util.Collection;
@@ -47,7 +47,7 @@ enum RemotePruneCommand implements Command {
     private static final String COMMAND_NAME = "remote-prune";
 
     @Override
-    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
+    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
@@ -55,7 +55,7 @@ enum RemotePruneCommand implements Command {
         );
     }
 
-    private static int remotePrune(final ModContext ctx, final ServerCommandSource scs) {
+    private static int remotePrune(final Mod ctx, final ServerCommandSource scs) {
         final UserLogger ulog = commandLogger(ctx, scs);
         gitOp(ctx, WRITE, ulog, repo -> {
             final Collection<SnapshotId> pruned = repo.doRemotePrune(ulog);

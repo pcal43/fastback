@@ -25,7 +25,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.mod.ModContext;
+import net.pcal.fastback.mod.Mod;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -44,7 +44,7 @@ enum SetAutobackWaitCommand implements Command {
     private static final String ARGUMENT = "wait";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
@@ -56,7 +56,7 @@ enum SetAutobackWaitCommand implements Command {
         );
     }
 
-    private static int setWait(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
+    private static int setWait(final Mod ctx, final CommandContext<ServerCommandSource> cc) {
         final UserLogger ulog = commandLogger(ctx, cc.getSource());
         gitOp(ctx, WRITE_CONFIG, ulog, repo -> {
             final int waitMinutes = cc.getArgument(ARGUMENT, int.class);

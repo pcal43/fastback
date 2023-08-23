@@ -36,22 +36,22 @@ import static net.pcal.fastback.logging.SystemLogger.syslog;
 
 class AutosaveListener implements Runnable {
 
-    private final ModContext modContext;
+    private final Mod mod;
     private long lastBackupTime = System.currentTimeMillis();
 
-    AutosaveListener(ModContext modContext) {
-        this.modContext = modContext;
+    AutosaveListener(Mod mod) {
+        this.mod = mod;
     }
 
     @Override
     public void run() {
         //TODO implement indicator
         // final Logger screenLogger = CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx));
-        modContext.getExecutor().execute(Executor.ExecutionLock.WRITE, new HudLogger(modContext), () -> {
+        mod.getExecutor().execute(Executor.ExecutionLock.WRITE, new HudLogger(mod), () -> {
             RepoFactory rf = RepoFactory.get();
-            final Path worldSaveDir = modContext.getWorldDirectory();
+            final Path worldSaveDir = mod.getWorldDirectory();
             if (!rf.isGitRepo(worldSaveDir)) return;
-            try (final Repo repo = rf.load(worldSaveDir, modContext)) {
+            try (final Repo repo = rf.load(worldSaveDir, mod)) {
                 final GitConfig config = repo.getConfig();
                 if (!config.getBoolean(IS_BACKUP_ENABLED)) return;
                 final SchedulableAction autobackAction = forConfigValue(config, AUTOBACK_ACTION);
@@ -65,7 +65,7 @@ class AutosaveListener implements Runnable {
                     return;
                 }
                 syslog().info("Starting auto-backup");
-                autobackAction.getTask(repo, new HudLogger(modContext));
+                autobackAction.getTask(repo, new HudLogger(mod));
                 lastBackupTime = System.currentTimeMillis();
             } catch (Exception e) {
                 syslog().error("auto-backup failed.", e);

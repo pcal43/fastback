@@ -25,7 +25,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.mod.ModContext;
+import net.pcal.fastback.mod.Mod;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.StoredConfig;
 
@@ -53,7 +53,7 @@ enum CreateFileRemoteCommand implements Command {
     private static final String ARGUMENT = "file-path";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
@@ -64,7 +64,7 @@ enum CreateFileRemoteCommand implements Command {
         );
     }
 
-    private static int setFileRemote(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
+    private static int setFileRemote(final Mod ctx, final CommandContext<ServerCommandSource> cc) {
         final UserLogger ulog = commandLogger(ctx, cc.getSource());
         gitOp(ctx, NONE, ulog, repo -> {
             final String targetPath = cc.getArgument(ARGUMENT, String.class);

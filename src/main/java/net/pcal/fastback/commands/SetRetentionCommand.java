@@ -25,7 +25,7 @@ import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.mod.ModContext;
+import net.pcal.fastback.mod.Mod;
 import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;
 import net.pcal.fastback.retention.RetentionPolicyType;
@@ -59,11 +59,11 @@ enum SetRetentionCommand implements Command {
     private static final String COMMAND_NAME = "set-retention";
 
     @Override
-    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
+    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
         registerSetRetentionCommand(argb, ctx, COMMAND_NAME, (cc, rt) -> setLocalPolicy(ctx, cc, rt));
     }
 
-    private static int setLocalPolicy(ModContext ctx, CommandContext<ServerCommandSource> cc, RetentionPolicyType rpt) {
+    private static int setLocalPolicy(Mod ctx, CommandContext<ServerCommandSource> cc, RetentionPolicyType rpt) {
         return setRetentionPolicy(ctx, cc, rpt, LOCAL_RETENTION_POLICY);
     }
 
@@ -77,7 +77,7 @@ enum SetRetentionCommand implements Command {
      * Just generally not sure how to beat brigadier into submission here.
      */
     static void registerSetRetentionCommand(final LiteralArgumentBuilder<ServerCommandSource> argb,
-                                            final ModContext ctx,
+                                            final Mod ctx,
                                             final String commandName,
                                             final BiFunction<CommandContext<ServerCommandSource>, RetentionPolicyType, Integer> setPolicyFn) {
         final LiteralArgumentBuilder<ServerCommandSource> retainCommand =
@@ -102,7 +102,7 @@ enum SetRetentionCommand implements Command {
      * <p>
      * TODO this should probably move to Repo.
      */
-    public static int setRetentionPolicy(final ModContext ctx,
+    public static int setRetentionPolicy(final Mod ctx,
                                          final CommandContext<ServerCommandSource> cc,
                                          final RetentionPolicyType rpt,
                                          final GitConfigKey confKey) {

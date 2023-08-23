@@ -23,7 +23,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.UserLogger;
-import net.pcal.fastback.mod.ModContext;
+import net.pcal.fastback.mod.Mod;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.SnapshotId;
 
@@ -38,7 +38,7 @@ import static net.pcal.fastback.repo.SnapshotId.sortWorldSnapshots;
 
 abstract class SnapshotNameSuggestions implements SuggestionProvider<ServerCommandSource> {
 
-    static SnapshotNameSuggestions local(final ModContext ctx) {
+    static SnapshotNameSuggestions local(final Mod ctx) {
         return new SnapshotNameSuggestions(ctx) {
 
             @Override
@@ -48,7 +48,7 @@ abstract class SnapshotNameSuggestions implements SuggestionProvider<ServerComma
         };
     }
 
-    static SnapshotNameSuggestions remote(final ModContext ctx) {
+    static SnapshotNameSuggestions remote(final Mod ctx) {
         return new SnapshotNameSuggestions(ctx) {
 
             @Override
@@ -58,9 +58,9 @@ abstract class SnapshotNameSuggestions implements SuggestionProvider<ServerComma
         };
     }
 
-    private final ModContext ctx;
+    private final Mod ctx;
 
-    private SnapshotNameSuggestions(ModContext ctx) {
+    private SnapshotNameSuggestions(Mod ctx) {
         this.ctx = requireNonNull(ctx);
     }
 

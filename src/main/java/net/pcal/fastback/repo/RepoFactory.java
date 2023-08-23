@@ -18,7 +18,7 @@
 
 package net.pcal.fastback.repo;
 
-import net.pcal.fastback.mod.ModContext;
+import net.pcal.fastback.mod.Mod;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -36,9 +36,9 @@ public interface RepoFactory {
         return new RepoFactoryImpl();
     }
 
-    Repo init(Path worldSaveDir, ModContext mod) throws IOException;
+    Repo init(Path worldSaveDir, Mod mod) throws IOException;
 
-    Repo load(Path worldSaveDir, ModContext mod) throws IOException;
+    Repo load(Path worldSaveDir, Mod mod) throws IOException;
 
     boolean isGitRepo(Path worldSaveDir);
 

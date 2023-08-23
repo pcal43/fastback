@@ -44,7 +44,7 @@ import static net.pcal.fastback.logging.UserMessage.localized;
 import static net.pcal.fastback.utils.EnvironmentUtils.getGitLfsVersion;
 import static net.pcal.fastback.utils.EnvironmentUtils.getGitVersion;
 
-public class ModContext implements ModLifecycleListener {
+class ModImpl implements LifecycleListener, Mod {
 
     private final FrameworkServiceProvider fsp;
     private final Executor executor;
@@ -53,23 +53,21 @@ public class ModContext implements ModLifecycleListener {
     // ======================================================================
     // Construction
 
-    public static ModContext create(FrameworkServiceProvider fsp) {
-        return new ModContext(fsp);
-    }
-
-    private ModContext(FrameworkServiceProvider spi) {
+    ModImpl(final FrameworkServiceProvider spi) {
         this.fsp = requireNonNull(spi);
         spi.setAutoSaveListener(new AutosaveListener(this));
         this.executor = new Executor();
     }
 
     // ======================================================================
-    // Public methods
+    // Mod implementation
 
+    @Override
     public Executor getExecutor() {
         return this.executor;
     }
 
+    @Override
     public Path getRestoresDir() throws IOException {
         Path restoreDir = this.fsp.getSavesDir();
         if (restoreDir != null) return restoreDir;
@@ -79,6 +77,7 @@ public class ModContext implements ModLifecycleListener {
         return tempRestoresDirectory;
     }
 
+    @Override
     public void sendChat(UserMessage message, ServerCommandSource scs) {
         if (message.style() == ERROR) {
             scs.sendError(messageToText(message));
@@ -88,36 +87,44 @@ public class ModContext implements ModLifecycleListener {
     }
 
     // ======================================================================
-    // Passthroughs
+    // Mod implementation passthroughs
 
+    @Override
     public String getModVersion() {
         return this.fsp.getModVersion();
     }
 
+    @Override
     public void setWorldSaveEnabled(boolean enabled) {
         this.fsp.setWorldSaveEnabled(enabled);
     }
 
+    @Override
     public void setMessageScreenText(UserMessage message) {
         this.fsp.setMessageScreenText(messageToText(message));
     }
 
+    @Override
     public void setHudText(UserMessage message) {
         this.fsp.setHudText(message == null ? null : messageToText(message));
     }
 
+    @Override
     public Path getWorldDirectory() {
         return this.fsp.getWorldDirectory();
     }
 
+    @Override
     public String getWorldName() {
         return this.fsp.getWorldName();
     }
 
+    @Override
     public int getDefaultPermLevel() {
         return fsp.isClient() ? 0 : 4;
     }
 
+    @Override
     public void saveWorld() {
         this.fsp.saveWorld();
     }

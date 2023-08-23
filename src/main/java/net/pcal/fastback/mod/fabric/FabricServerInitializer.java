@@ -21,10 +21,8 @@ package net.pcal.fastback.mod.fabric;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.pcal.fastback.logging.Log4jLogger;
-import net.pcal.fastback.logging.SystemLogger;
 import net.pcal.fastback.mod.FrameworkServiceProvider;
-import net.pcal.fastback.mod.ModLifecycleListener;
-import net.pcal.fastback.mod.ModContext;
+import net.pcal.fastback.mod.LifecycleListener;
 import org.apache.logging.log4j.LogManager;
 
 import static net.pcal.fastback.mod.fabric.BaseFabricProvider.MOD_ID;
@@ -40,7 +38,7 @@ public class FabricServerInitializer implements DedicatedServerModInitializer {
     @Override
     public void onInitializeServer() {
         final BaseFabricProvider serverProvider = new FabricServerProvider();
-        final ModLifecycleListener listener = FrameworkServiceProvider.register(serverProvider,
+        final LifecycleListener listener = FrameworkServiceProvider.register(serverProvider,
                 new Log4jLogger(LogManager.getLogger(MOD_ID)));
         listener.onInitialize();
         ServerLifecycleEvents.SERVER_STARTING.register(

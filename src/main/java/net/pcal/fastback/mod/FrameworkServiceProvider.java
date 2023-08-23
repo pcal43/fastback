@@ -35,9 +35,9 @@ import java.nio.file.Path;
  */
 public interface FrameworkServiceProvider {
 
-    static ModLifecycleListener register(final FrameworkServiceProvider sp, final SystemLogger syslog) {
+    static LifecycleListener register(final FrameworkServiceProvider sp, final SystemLogger syslog) {
         SystemLogger.Singleton.register(syslog);
-        return ModContext.create(sp);
+        return new ModImpl(sp);
     }
 
     /**

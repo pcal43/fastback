@@ -19,7 +19,7 @@
 package net.pcal.fastback.repo;
 
 import net.pcal.fastback.logging.UserLogger;
-import net.pcal.fastback.mod.ModContext;
+import net.pcal.fastback.mod.Mod;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
@@ -49,7 +49,7 @@ import static net.pcal.fastback.utils.ProcessUtils.doExec;
  */
 class CommitUtils {
 
-    static SnapshotId doCommitSnapshot(RepoImpl repo, ModContext ctx, UserLogger log) throws IOException {
+    static SnapshotId doCommitSnapshot(RepoImpl repo, Mod ctx, UserLogger log) throws IOException {
         final String uuid = repo.getWorldUuid();
         final SnapshotId newSid = SnapshotId.create(uuid);
         syslog().debug("Preparing local backup " + newSid);
@@ -72,7 +72,7 @@ class CommitUtils {
         return newSid;
     }
 
-    private static void native_commit(String newBranchName, Repo repo, ModContext ctx, UserLogger log) throws IOException, InterruptedException {
+    private static void native_commit(String newBranchName, Repo repo, Mod ctx, UserLogger log) throws IOException, InterruptedException {
         syslog().debug("Start native_commit");
         log.hud(styledLocalized("fastback.hud.local-saving", NATIVE_GIT));
         final File worktree = repo.getWorkTree();
@@ -95,7 +95,7 @@ class CommitUtils {
         syslog().debug("End native_commit");
     }
 
-    private static void jgit_commit(String newBranchName, Git jgit, ModContext ctx, final UserLogger log) throws GitAPIException {
+    private static void jgit_commit(String newBranchName, Git jgit, Mod ctx, final UserLogger log) throws GitAPIException {
         syslog().debug("Starting jgit_commit");
         log.hud(styledLocalized("fastback.hud.local-saving", JGIT));
         jgit.checkout().setOrphan(true).setName(newBranchName).call();
