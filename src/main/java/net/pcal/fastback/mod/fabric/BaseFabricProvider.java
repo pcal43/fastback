@@ -22,6 +22,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModMetadata;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.text.Text;
 import net.minecraft.world.level.storage.LevelStorage;
 import net.pcal.fastback.mod.FrameworkServiceProvider;
 import net.pcal.fastback.mod.fabric.mixins.ServerAccessors;
@@ -63,6 +64,13 @@ public abstract class BaseFabricProvider implements FrameworkServiceProvider, Mi
     }
 
     @Override
+    public void sendBroadcast(Text text) {
+        if (this.minecraftServer != null) {
+            minecraftServer.getPlayerManager().broadcast(text, false);
+        }
+    }
+
+    @Override
     public String getModVersion() {
         Optional<ModContainer> optionalModContainer = FabricLoader.getInstance().getModContainer(MOD_ID);
         if (optionalModContainer.isEmpty()) {
@@ -101,6 +109,11 @@ public abstract class BaseFabricProvider implements FrameworkServiceProvider, Mi
         if (this.minecraftServer == null) throw new IllegalStateException();
         final LevelStorage.Session session = ((ServerAccessors) this.minecraftServer).getSession();
         return session.getLevelSummary().getLevelInfo().getLevelName();
+    }
+
+    @Override
+    public boolean isDedicatedServer() {
+        return this.minecraftServer != null && this.minecraftServer.isDedicated();
     }
 
     // ======================================================================

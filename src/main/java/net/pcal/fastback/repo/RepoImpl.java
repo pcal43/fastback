@@ -37,8 +37,13 @@ import java.util.Collection;
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
+import static net.pcal.fastback.config.GitConfigKey.BROADCAST_NOTICE_ENABLED;
+import static net.pcal.fastback.config.GitConfigKey.BROADCAST_NOTICE_MESSAGE;
 import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_NAME;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.BROADCAST;
+import static net.pcal.fastback.logging.UserMessage.styledLocalized;
+import static net.pcal.fastback.logging.UserMessage.styledRaw;
 
 /**
  * @author pcal
@@ -55,7 +60,7 @@ class RepoImpl implements Repo {
     // Fields
 
     private final Git jgit;
-    private final Mod ctx;
+    private final Mod mod;
     private GitConfig config;
 
     // ======================================================================
@@ -64,7 +69,7 @@ class RepoImpl implements Repo {
     RepoImpl(final Git git,
              final Mod ctx) {
         this.jgit = requireNonNull(git);
-        this.ctx = requireNonNull(ctx);
+        this.mod = requireNonNull(ctx);
     }
 
     // ======================================================================
@@ -73,7 +78,8 @@ class RepoImpl implements Repo {
     @Override
     public void doCommitAndPush(final UserLogger ulog) throws IOException {
         if (!doNativeCheck(ulog)) return;
-        final SnapshotId newSid = CommitUtils.doCommitSnapshot(this, ctx, ulog);
+        broadcastBackupNotice();
+        final SnapshotId newSid = CommitUtils.doCommitSnapshot(this, mod, ulog);
         PushUtils.doPush(newSid, this, ulog);
         ulog.chat(UserMessage.localized("fastback.chat.backup-complete"));//FIXME not if it failed
     }
@@ -81,7 +87,8 @@ class RepoImpl implements Repo {
     @Override
     public void doCommitSnapshot(final UserLogger ulog) throws IOException {
         if (!doNativeCheck(ulog)) return;
-        CommitUtils.doCommitSnapshot(this, ctx, ulog);
+        broadcastBackupNotice();
+        CommitUtils.doCommitSnapshot(this, mod, ulog);
         ulog.chat(UserMessage.localized("fastback.chat.backup-complete")); //FIXME not necessarily
     }
 
@@ -189,6 +196,19 @@ class RepoImpl implements Repo {
 
     // ======================================================================
     // Private
+
+    private void broadcastBackupNotice() {
+        if (!this.mod.isDecicatedServer()) return;
+        if (!getConfig().getBoolean(BROADCAST_NOTICE_ENABLED)) return;
+        final UserMessage m;
+        final String configuredMessage = getConfig().getString(BROADCAST_NOTICE_MESSAGE);
+        if (configuredMessage != null) {
+            m = styledRaw(configuredMessage, BROADCAST);
+        } else {
+            m = styledLocalized("fastback.broadcast.message", BROADCAST);
+        }
+        mod.sendBroadcast(m);
+    }
 
     private boolean doNativeCheck(UserLogger ulog) {
         final GitConfig config = this.getConfig();

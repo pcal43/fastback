@@ -71,6 +71,11 @@ public interface Mod {
     void sendChat(UserMessage message, ServerCommandSource scs);
 
     /**
+     * If on a server, broadcast a message to the chat window of all connected users.
+     */
+    void sendBroadcast(UserMessage message);
+
+    /**
      * Set magical floating text.  You MUST call clearHudText
      */
     void setHudText(UserMessage message);
@@ -94,4 +99,9 @@ public interface Mod {
      * @return default permission level to use for commands.
      */
     int getDefaultPermLevel();
+
+    /**
+     * @return true if we're running on a dedicated server.
+     */
+    boolean isDecicatedServer();
 }

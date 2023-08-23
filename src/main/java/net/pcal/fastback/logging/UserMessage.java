@@ -37,6 +37,7 @@ public record UserMessage(LocalizedUserMessage styledLocalized, String styledRaw
         ERROR,
         JGIT,
         NATIVE_GIT,
+        BROADCAST,
     }
 
     public record LocalizedUserMessage(String key, Object... params) {

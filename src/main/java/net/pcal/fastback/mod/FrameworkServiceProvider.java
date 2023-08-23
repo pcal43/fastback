@@ -68,6 +68,11 @@ public interface FrameworkServiceProvider {
      */
     boolean isWorldSaveEnabled();
 
+    /**
+     * If on a server, broadcasts a message to all connected users.
+     */
+    void sendBroadcast(Text text);
+
     void setWorldSaveEnabled(boolean enabled);
 
     void saveWorld();
@@ -88,4 +93,5 @@ public interface FrameworkServiceProvider {
 
     void setAutoSaveListener(Runnable runnable);
 
+    boolean isDedicatedServer();
 }

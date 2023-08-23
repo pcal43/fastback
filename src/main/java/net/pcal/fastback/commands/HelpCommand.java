@@ -45,6 +45,7 @@ import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
+import static net.pcal.fastback.logging.UserMessage.raw;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 
 enum HelpCommand implements Command {
@@ -88,8 +89,9 @@ enum HelpCommand implements Command {
         }
     }
 
-    static int help(final Mod ctx, final CommandContext<ServerCommandSource> cc) {
-        final UserLogger log = commandLogger(ctx, cc.getSource());
+    static int help(final Mod mod, final CommandContext<ServerCommandSource> cc) {
+        final UserLogger log = commandLogger(mod, cc.getSource());
+        mod.sendBroadcast(raw("help me everybody!"));
         StringWriter subcommands = null;
         for (final String available : getSubcommandNames(cc)) {
             if (subcommands == null) {
