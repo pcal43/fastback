@@ -45,6 +45,7 @@ import static net.pcal.fastback.config.GitConfigKey.REMOTE_NAME;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.BROADCAST;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 import static net.pcal.fastback.logging.UserMessage.styledRaw;
+import static net.pcal.fastback.mod.Mod.mod;
 
 /**
  * @author pcal
@@ -61,15 +62,13 @@ class RepoImpl implements Repo {
     // Fields
 
     private final Git jgit;
-    private final Mod mod;
     private GitConfig config;
 
     // ======================================================================
     // Constructors
 
-    RepoImpl(final Git git, final Mod mod) {
-        this.jgit = requireNonNull(git);
-        this.mod = requireNonNull(mod);
+    RepoImpl(final Git jgit) {
+        this.jgit = requireNonNull(jgit);
     }
 
     // ======================================================================
@@ -79,7 +78,7 @@ class RepoImpl implements Repo {
     public void doCommitAndPush(final UserLogger ulog) throws IOException {
         if (!doNativeCheck(ulog)) return;
         broadcastBackupNotice();
-        final SnapshotId newSid = CommitUtils.doCommitSnapshot(this, mod, ulog);
+        final SnapshotId newSid = CommitUtils.doCommitSnapshot(this, ulog);
         PushUtils.doPush(newSid, this, ulog);
         ulog.message(UserMessage.localized("fastback.chat.backup-complete"));//FIXME not if it failed
     }
@@ -88,7 +87,7 @@ class RepoImpl implements Repo {
     public void doCommitSnapshot(final UserLogger ulog) throws IOException {
         if (!doNativeCheck(ulog)) return;
         broadcastBackupNotice();
-        CommitUtils.doCommitSnapshot(this, mod, ulog);
+        CommitUtils.doCommitSnapshot(this, ulog);
         ulog.message(UserMessage.localized("fastback.chat.backup-complete")); //FIXME not necessarily
     }
 
@@ -200,7 +199,7 @@ class RepoImpl implements Repo {
     // Private
 
     private void broadcastBackupNotice() {
-        if (!this.mod.isDecicatedServer()) return;
+        if (!mod().isDecicatedServer()) return;
         if (!getConfig().getBoolean(BROADCAST_NOTICE_ENABLED)) return;
         final UserMessage m;
         final String configuredMessage = getConfig().getString(BROADCAST_NOTICE_MESSAGE);
@@ -209,7 +208,7 @@ class RepoImpl implements Repo {
         } else {
             m = styledLocalized("fastback.broadcast.message", BROADCAST);
         }
-        mod.sendBroadcast(m);
+        mod().sendBroadcast(m);
     }
 
     private boolean doNativeCheck(UserLogger ulog) {
