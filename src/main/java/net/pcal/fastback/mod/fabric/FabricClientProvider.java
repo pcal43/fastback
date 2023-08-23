@@ -21,15 +21,15 @@ package net.pcal.fastback.mod.fabric;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.MessageScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
-import net.minecraft.util.math.MathHelper;
 import net.pcal.fastback.mod.fabric.mixins.ScreenAccessors;
 
 import java.nio.file.Path;
+
+import static net.pcal.fastback.logging.SystemLogger.syslog;
 
 /**
  * @author pcal
@@ -37,11 +37,10 @@ import java.nio.file.Path;
  */
 final class FabricClientProvider extends BaseFabricProvider implements HudRenderCallback {
 
-
     // ======================================================================
     // Constants
 
-    private static final long HUD_TEXT_DURATION = 1000 * 5;
+    private static final long TEXT_TIMEOUT = 10 * 1000;
 
     // ======================================================================
     // Fields
@@ -49,13 +48,6 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
     private MinecraftClient client = null;
     private Text hudText;
     private long hudTextTime;
-    private float backupIndicatorAlpha;
-    private boolean hudTextShown = false;
-
-
-    FabricClientProvider() {
-    }
-
 
     // ====================================================================
     // Public methods
@@ -84,11 +76,18 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
     @Override
     public void setHudText(Text text) {
         if (text == null) {
-            this.hudTextShown = false;
+            clearHudText();
         } else {
             this.hudText = text; // so the hud renderer can find it
-            this.hudTextShown = true;
+            this.hudTextTime = System.currentTimeMillis();
         }
+    }
+
+    @Override
+    public void clearHudText() {
+        this.hudText = null;
+        // TODO someday it might be nice to bring back the fading text effect.  But getting to it properly
+        // clean up 100% of the time is more than I want to deal with right now.
     }
 
     @Override
@@ -111,21 +110,12 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
     public void onHudRender(DrawContext drawContext, float tickDelta) {
         if (this.hudText == null) return;
         if (!this.client.options.getShowAutosaveIndicator().getValue()) return;
-
-        final long delta = System.currentTimeMillis() - this.hudTextTime;
-        final float alpha = MathHelper.lerp(delta, this.hudTextTime, this.hudTextTime + HUD_TEXT_DURATION);
-        if (alpha > 1) {
-            hudText = null;
+        if (System.currentTimeMillis() - this.hudTextTime > TEXT_TIMEOUT) {
+            // Don't leave it sitting up there forever if we fail to call clearHudText()
+            this.hudText = null;
+            syslog().debug("hud text timed out.  somebody forgot to clean up");
             return;
         }
-        final float clamped = MathHelper.clamp(alpha, 0.0F, 1.0F);
-        int i = Math.floor(255.0F * clamped);
-        final TextRenderer textRenderer = this.client.textRenderer;
-        // int j = textRenderer.getWidth(this.hudText);
-        int k = 16777215 | i << 24 & -16777216;
-        // int scaledWidth = this.client.getWindow().getScaledWidth();
-        int x = 2; //scaledWidth - j - 5;
-        int y = 2;
-        drawContext.drawTextWithShadow(textRenderer, this.hudText, x, y, k);
+        drawContext.drawTextWithShadow(this.client.textRenderer, this.hudText, 2, 2, 1);
     }
 }

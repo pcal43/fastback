@@ -70,9 +70,14 @@ public interface Mod {
     void sendChat(UserMessage message, ServerCommandSource scs);
 
     /**
-     * Set magical floating text.
+     * Set magical floating text.  You MUST call clearHudText
      */
     void setHudText(UserMessage message);
+
+    /**
+     * Remove the magical floating text.
+     */
+    void clearHudText();
 
     /**
      * @return path to the save directory of the currently-loaded world (aka the git worktree).

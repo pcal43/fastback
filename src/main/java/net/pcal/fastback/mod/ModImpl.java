@@ -106,7 +106,17 @@ class ModImpl implements LifecycleListener, Mod {
 
     @Override
     public void setHudText(UserMessage message) {
-        this.fsp.setHudText(message == null ? null : messageToText(message));
+        if (message == null) {
+            syslog().debug("null unexpectedly passed to setHudText, ignoring");
+            this.clearHudText();
+        } else {
+            this.fsp.setHudText(messageToText(message));
+        }
+    }
+
+    @Override
+    public void clearHudText() {
+        this.fsp.clearHudText();
     }
 
     @Override

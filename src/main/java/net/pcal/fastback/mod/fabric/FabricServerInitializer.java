@@ -23,7 +23,6 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.pcal.fastback.logging.Log4jLogger;
 import net.pcal.fastback.mod.FrameworkServiceProvider;
 import net.pcal.fastback.mod.LifecycleListener;
-import net.pcal.fastback.mod.fabric.mixins.MixinGateway;
 import org.apache.logging.log4j.LogManager;
 
 import static net.pcal.fastback.mod.fabric.BaseFabricProvider.MOD_ID;

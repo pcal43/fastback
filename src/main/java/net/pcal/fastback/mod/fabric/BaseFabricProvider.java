@@ -24,7 +24,6 @@ import net.fabricmc.loader.api.metadata.ModMetadata;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelStorage;
 import net.pcal.fastback.mod.FrameworkServiceProvider;
-import net.pcal.fastback.mod.fabric.mixins.MixinGateway;
 import net.pcal.fastback.mod.fabric.mixins.ServerAccessors;
 import net.pcal.fastback.mod.fabric.mixins.SessionAccessors;
 

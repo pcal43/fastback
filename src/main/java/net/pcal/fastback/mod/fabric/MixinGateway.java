@@ -16,7 +16,7 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.mod.fabric.mixins;
+package net.pcal.fastback.mod.fabric;
 
 import net.minecraft.client.gui.DrawContext;
 
