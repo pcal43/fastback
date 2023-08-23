@@ -59,12 +59,12 @@ enum SetRetentionCommand implements Command {
     private static final String COMMAND_NAME = "set-retention";
 
     @Override
-    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
-        registerSetRetentionCommand(argb, ctx, COMMAND_NAME, (cc, rt) -> setLocalPolicy(ctx, cc, rt));
+    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
+        registerSetRetentionCommand(argb, mod, COMMAND_NAME, (cc, rt) -> setLocalPolicy(mod, cc, rt));
     }
 
-    private static int setLocalPolicy(Mod ctx, CommandContext<ServerCommandSource> cc, RetentionPolicyType rpt) {
-        return setRetentionPolicy(ctx, cc, rpt, LOCAL_RETENTION_POLICY);
+    private static int setLocalPolicy(Mod mod, CommandContext<ServerCommandSource> cc, RetentionPolicyType rpt) {
+        return setRetentionPolicy(mod, cc, rpt, LOCAL_RETENTION_POLICY);
     }
 
 
@@ -77,11 +77,11 @@ enum SetRetentionCommand implements Command {
      * Just generally not sure how to beat brigadier into submission here.
      */
     static void registerSetRetentionCommand(final LiteralArgumentBuilder<ServerCommandSource> argb,
-                                            final Mod ctx,
+                                            final Mod mod,
                                             final String commandName,
                                             final BiFunction<CommandContext<ServerCommandSource>, RetentionPolicyType, Integer> setPolicyFn) {
         final LiteralArgumentBuilder<ServerCommandSource> retainCommand =
-                literal(commandName).requires(subcommandPermission(ctx, commandName));
+                literal(commandName).requires(subcommandPermission(mod, commandName));
         for (final RetentionPolicyType rpt : RetentionPolicyType.getAvailable()) {
             final LiteralArgumentBuilder<ServerCommandSource> policyCommand = literal(rpt.getCommandName());
             policyCommand.executes(cc -> setPolicyFn.apply(cc, rpt));
@@ -102,13 +102,13 @@ enum SetRetentionCommand implements Command {
      * <p>
      * TODO this should probably move to Repo.
      */
-    public static int setRetentionPolicy(final Mod ctx,
+    public static int setRetentionPolicy(final Mod mod,
                                          final CommandContext<ServerCommandSource> cc,
                                          final RetentionPolicyType rpt,
                                          final GitConfigKey confKey) {
-        final UserLogger ulog = commandLogger(ctx, cc.getSource());
+        final UserLogger ulog = commandLogger(mod, cc.getSource());
         try {
-            final Path worldSaveDir = ctx.getWorldDirectory();
+            final Path worldSaveDir = mod.getWorldDirectory();
             final Map<String, String> config = new HashMap<>();
             for (final RetentionPolicyType.Parameter<?> p : rpt.getParameters()) {
                 final Object val = getArgumentNicely(p.name(), p.clazz(), cc, ulog);

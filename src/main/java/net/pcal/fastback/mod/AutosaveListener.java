@@ -46,7 +46,7 @@ class AutosaveListener implements Runnable {
     @Override
     public void run() {
         //TODO implement indicator
-        // final Logger screenLogger = CompositeLogger.of(ctx.getLogger(), new SaveScreenLogger(ctx));
+        // final Logger screenLogger = CompositeLogger.of(mod.getLogger(), new SaveScreenLogger(mod));
         mod.getExecutor().execute(Executor.ExecutionLock.WRITE, new HudLogger(mod), () -> {
             RepoFactory rf = RepoFactory.get();
             final Path worldSaveDir = mod.getWorldDirectory();

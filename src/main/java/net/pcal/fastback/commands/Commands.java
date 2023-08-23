@@ -46,53 +46,53 @@ public class Commands {
     static int FAILURE = 0;
     static int SUCCESS = 1;
 
-    public static void registerCommands(final Mod ctx) {
+    public static void registerCommands(final Mod mod) {
         final LiteralArgumentBuilder<ServerCommandSource> root = LiteralArgumentBuilder.<ServerCommandSource>literal("backup").
-                requires(Permissions.require(BACKUP_COMMAND_PERM, ctx.getDefaultPermLevel())).
-                executes(cc -> help(ctx, cc));
-        EnableCommand.INSTANCE.register(root, ctx);
-        DisableCommand.INSTANCE.register(root, ctx);
-        LocalCommand.INSTANCE.register(root, ctx);
-        FullCommand.INSTANCE.register(root, ctx);
-        InfoCommand.INSTANCE.register(root, ctx);
+                requires(Permissions.require(BACKUP_COMMAND_PERM, mod.getDefaultPermLevel())).
+                executes(cc -> help(mod, cc));
+        EnableCommand.INSTANCE.register(root, mod);
+        DisableCommand.INSTANCE.register(root, mod);
+        LocalCommand.INSTANCE.register(root, mod);
+        FullCommand.INSTANCE.register(root, mod);
+        InfoCommand.INSTANCE.register(root, mod);
 
-        RestoreCommand.INSTANCE.register(root, ctx);
-        CreateFileRemoteCommand.INSTANCE.register(root, ctx);
-        SetRemoteCommand.INSTANCE.register(root, ctx);
-        SetAutobackActionCommand.INSTANCE.register(root, ctx);
-        SetAutobackWaitCommand.INSTANCE.register(root, ctx);
-        SetShutdownActionCommand.INSTANCE.register(root, ctx);
+        RestoreCommand.INSTANCE.register(root, mod);
+        CreateFileRemoteCommand.INSTANCE.register(root, mod);
+        SetRemoteCommand.INSTANCE.register(root, mod);
+        SetAutobackActionCommand.INSTANCE.register(root, mod);
+        SetAutobackWaitCommand.INSTANCE.register(root, mod);
+        SetShutdownActionCommand.INSTANCE.register(root, mod);
 
-        SetRetentionCommand.INSTANCE.register(root, ctx);
-        SetRemoteRetentionCommand.INSTANCE.register(root, ctx);
+        SetRetentionCommand.INSTANCE.register(root, mod);
+        SetRemoteRetentionCommand.INSTANCE.register(root, mod);
 
-        PruneCommand.INSTANCE.register(root, ctx);
-        DeleteCommand.INSTANCE.register(root, ctx);
-        GcCommand.INSTANCE.register(root, ctx);
-        ListCommand.INSTANCE.register(root, ctx);
+        PruneCommand.INSTANCE.register(root, mod);
+        DeleteCommand.INSTANCE.register(root, mod);
+        GcCommand.INSTANCE.register(root, mod);
+        ListCommand.INSTANCE.register(root, mod);
 
-        RemoteListCommand.INSTANCE.register(root, ctx);
-        RemoteDeleteCommand.INSTANCE.register(root, ctx);
-        RemotePruneCommand.INSTANCE.register(root, ctx);
-        RemoteRestoreCommand.INSTANCE.register(root, ctx);
+        RemoteListCommand.INSTANCE.register(root, mod);
+        RemoteDeleteCommand.INSTANCE.register(root, mod);
+        RemotePruneCommand.INSTANCE.register(root, mod);
+        RemoteRestoreCommand.INSTANCE.register(root, mod);
 
-        SetCommand.INSTANCE.register(root, ctx);
+        SetCommand.INSTANCE.register(root, mod);
 
-        HelpCommand.INSTANCE.register(root, ctx);
+        HelpCommand.INSTANCE.register(root, mod);
 
         CommandRegistrationCallback.EVENT.register((dispatcher, regAccess, env) -> dispatcher.register(root));
     }
 
-    public static UserLogger commandLogger(final Mod ctx, final ServerCommandSource scs) {
-        return new CommandSourceLogger(ctx, scs);
+    public static UserLogger commandLogger(final Mod mod, final ServerCommandSource scs) {
+        return new CommandSourceLogger(mod, scs);
     }
 
     public static String subcommandPermName(String subcommandName) {
         return "fastback.command." + subcommandName;
     }
 
-    public static Predicate<ServerCommandSource> subcommandPermission(Mod ctx, String subcommandName) {
-        return Permissions.require(subcommandPermName(subcommandName), ctx.getDefaultPermLevel());
+    public static Predicate<ServerCommandSource> subcommandPermission(Mod mod, String subcommandName) {
+        return Permissions.require(subcommandPermName(subcommandName), mod.getDefaultPermLevel());
     }
 
     /**
@@ -110,8 +110,8 @@ public class Commands {
         }
     }
 
-    public static int missingArgument(final String argName, final Mod ctx, final CommandContext<ServerCommandSource> cc) {
-        return missingArgument(argName, commandLogger(ctx, cc.getSource()));
+    public static int missingArgument(final String argName, final Mod mod, final CommandContext<ServerCommandSource> cc) {
+        return missingArgument(argName, commandLogger(mod, cc.getSource()));
     }
 
     public static int missingArgument(final String argName, final UserLogger log) {

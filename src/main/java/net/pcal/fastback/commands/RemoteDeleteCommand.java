@@ -43,19 +43,19 @@ enum RemoteDeleteCommand implements Command {
     private static final String ARGUMENT = "snapshot";
 
     @Override
-    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, Mod ctx) {
+    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, Mod mod) {
         argb.then(literal(COMMAND_NAME).
-                requires(subcommandPermission(ctx, COMMAND_NAME)).then(
+                requires(subcommandPermission(mod, COMMAND_NAME)).then(
                         argument(ARGUMENT, StringArgumentType.string()).
-                                suggests(SnapshotNameSuggestions.remote(ctx)).
-                                executes(cc -> delete(ctx, cc))
+                                suggests(SnapshotNameSuggestions.remote(mod)).
+                                executes(cc -> delete(mod, cc))
                 )
         );
     }
 
-    private static int delete(Mod ctx, CommandContext<ServerCommandSource> cc) {
-        final UserLogger log = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, WRITE, log, repo -> {
+    private static int delete(Mod mod, CommandContext<ServerCommandSource> cc) {
+        final UserLogger log = commandLogger(mod, cc.getSource());
+        gitOp(mod, WRITE, log, repo -> {
             final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
             final SnapshotId sid = SnapshotId.fromUuidAndName(repo.getWorldUuid(), snapshotName);
             repo.deleteRemoteBranch(sid.getBranchName());

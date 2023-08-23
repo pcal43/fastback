@@ -40,17 +40,17 @@ enum DisableCommand implements Command {
     private static final String COMMAND_NAME = "disable";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(cc -> disable(ctx, cc))
+                        requires(subcommandPermission(mod, COMMAND_NAME)).
+                        executes(cc -> disable(mod, cc))
         );
     }
 
-    private static int disable(final Mod ctx, final CommandContext<ServerCommandSource> cc) {
-        final UserLogger ulog = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, WRITE_CONFIG, ulog, repo -> {
+    private static int disable(final Mod mod, final CommandContext<ServerCommandSource> cc) {
+        final UserLogger ulog = commandLogger(mod, cc.getSource());
+        gitOp(mod, WRITE_CONFIG, ulog, repo -> {
             repo.getConfig().updater().set(IS_BACKUP_ENABLED, false).save();
             ulog.chat(UserMessage.localized("fastback.chat.disable-done"));
         });

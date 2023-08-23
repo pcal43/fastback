@@ -55,15 +55,15 @@ enum HelpCommand implements Command {
     private static final String ARGUMENT = "subcommand";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(cc -> help(ctx, cc)).
+                        requires(subcommandPermission(mod, COMMAND_NAME)).
+                        executes(cc -> help(mod, cc)).
                         then(
                                 argument(ARGUMENT, StringArgumentType.word()).
                                         suggests(new HelpTopicSuggestions()).
-                                        executes(cc -> helpSubcommand(ctx, cc))
+                                        executes(cc -> helpSubcommand(mod, cc))
                         )
         );
     }
@@ -104,8 +104,8 @@ enum HelpCommand implements Command {
         return SUCCESS;
     }
 
-    private int helpSubcommand(final Mod ctx, final CommandContext<ServerCommandSource> cc) {
-        final UserLogger log = commandLogger(ctx, cc.getSource());
+    private int helpSubcommand(final Mod mod, final CommandContext<ServerCommandSource> cc) {
+        final UserLogger log = commandLogger(mod, cc.getSource());
         final Collection<CommandNode<ServerCommandSource>> subcommands = cc.getNodes().get(0).getNode().getChildren();
         final String subcommand = cc.getLastChild().getArgument(ARGUMENT, String.class);
         for (String available : getSubcommandNames(cc)) {

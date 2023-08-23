@@ -28,20 +28,20 @@ import static java.util.Objects.requireNonNull;
 class CommandSourceLogger implements UserLogger {
 
     private final ServerCommandSource scs;
-    private final Mod ctx;
+    private final Mod mod;
 
-    CommandSourceLogger(Mod ctx, ServerCommandSource scs) {
-        this.ctx = requireNonNull(ctx);
+    CommandSourceLogger(Mod mod, ServerCommandSource scs) {
+        this.mod = requireNonNull(mod);
         this.scs = requireNonNull(scs);
     }
 
     @Override
     public void chat(UserMessage message) {
-        ctx.sendChat(message, this.scs);
+        mod.sendChat(message, this.scs);
     }
 
     @Override
     public void hud(UserMessage message) {
-        this.ctx.setHudText(message);
+        this.mod.setHudText(message);
     }
 }

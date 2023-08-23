@@ -38,8 +38,8 @@ import static net.pcal.fastback.utils.Executor.ExecutionLock.NONE;
 
 abstract class SnapshotNameSuggestions implements SuggestionProvider<ServerCommandSource> {
 
-    static SnapshotNameSuggestions local(final Mod ctx) {
-        return new SnapshotNameSuggestions(ctx) {
+    static SnapshotNameSuggestions local(final Mod mod) {
+        return new SnapshotNameSuggestions(mod) {
 
             @Override
             protected Collection<SnapshotId> getSnapshotIds(Repo repo, UserLogger ulog) throws Exception {
@@ -48,8 +48,8 @@ abstract class SnapshotNameSuggestions implements SuggestionProvider<ServerComma
         };
     }
 
-    static SnapshotNameSuggestions remote(final Mod ctx) {
-        return new SnapshotNameSuggestions(ctx) {
+    static SnapshotNameSuggestions remote(final Mod mod) {
+        return new SnapshotNameSuggestions(mod) {
 
             @Override
             protected Collection<SnapshotId> getSnapshotIds(Repo repo, UserLogger ulog) throws Exception {
@@ -58,18 +58,18 @@ abstract class SnapshotNameSuggestions implements SuggestionProvider<ServerComma
         };
     }
 
-    private final Mod ctx;
+    private final Mod mod;
 
-    private SnapshotNameSuggestions(Mod ctx) {
-        this.ctx = requireNonNull(ctx);
+    private SnapshotNameSuggestions(Mod mod) {
+        this.mod = requireNonNull(mod);
     }
 
     @Override
     public CompletableFuture<Suggestions> getSuggestions(final CommandContext<ServerCommandSource> cc,
                                                          final SuggestionsBuilder builder) {
         CompletableFuture<Suggestions> completableFuture = new CompletableFuture<>();
-        final UserLogger ulog = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, NONE, ulog, repo -> {
+        final UserLogger ulog = commandLogger(mod, cc.getSource());
+        gitOp(mod, NONE, ulog, repo -> {
             for (final SnapshotId sid : this.getSnapshotIds(repo, ulog)) {
                 builder.suggest(sid.getName());
             }
