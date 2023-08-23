@@ -62,7 +62,7 @@ public interface MaintenanceUtils {
      */
     static void doPreflight(RepoImpl repo) throws IOException {
         final SystemLogger syslog = syslog();
-        syslog.info("Doing world maintenance");
+        syslog.debug("Doing world maintenance");
         final Git jgit = repo.getJGit();
         final Path worldSaveDir = jgit.getRepository().getWorkTree().toPath();
         ensureWorldHasUuid(worldSaveDir);
@@ -119,7 +119,7 @@ public interface MaintenanceUtils {
     }
 
     static void createWorldUuid(final Path worldSaveDir) throws IOException {
-        final Path worldUuidpath = worldSaveDir.resolve(WORLD_UUID_PATH);
+        final Path worldUuidpath = worldSaveDir.resolve(WORLD_UUID_PATH).toAbsolutePath().normalize();
         FileUtils.mkdirs(worldUuidpath.getParent());
         final String newUuid = UUID.randomUUID().toString();
         try (final FileWriter fw = new FileWriter(worldUuidpath.toFile())) {
@@ -130,9 +130,9 @@ public interface MaintenanceUtils {
     }
 
     static void ensureWorldHasUuid(final Path worldSaveDir) throws IOException {
-        final Path worldUuidpath = worldSaveDir.resolve(WORLD_UUID_PATH);
+        final Path worldUuidpath = worldSaveDir.resolve(WORLD_UUID_PATH).toAbsolutePath().normalize();
         if (!worldUuidpath.toFile().exists()) {
-            syslog().warn("Did not find expected uuid file at "+worldSaveDir);
+            syslog().warn("Did not find expected uuid file at "+worldUuidpath);
             syslog().warn("We'll create a new one and carry on.  But this indicates something weird is going on.");
             createWorldUuid(worldSaveDir);
         }
