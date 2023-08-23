@@ -21,6 +21,7 @@ package net.pcal.fastback.mod.fabric;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModMetadata;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelStorage;
 import net.pcal.fastback.logging.Log4jLogger;
@@ -121,4 +122,6 @@ public abstract class BaseFabricProvider implements FrameworkServiceProvider {
             syslog().warn("Autosave just happened but, unexpectedly, no one is listening.");
         }
     }
+
+    public abstract void renderMessageScreen(DrawContext drawContext, float tickDelta);
 }

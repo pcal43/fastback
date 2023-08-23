@@ -19,6 +19,7 @@ package net.pcal.fastback.mod.fabric.mixins;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.MessageScreen;
+import net.pcal.fastback.mod.fabric.BaseFabricProvider;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -36,6 +37,6 @@ public class MessageScreenMixin {
      */
     @Inject(method = "render", at = @At("TAIL"))
     public void __render(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
-        System.out.println("render!");
+        BaseFabricProvider.getInstance().renderMessageScreen(context, delta);
     }
 }

@@ -43,6 +43,7 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
     FabricClientProvider() {
     }
 
+
     // ====================================================================
     // Public methods
 
@@ -50,6 +51,12 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
         if ((this.client == null) == (client == null)) throw new IllegalStateException();
         this.client = client;
     }
+
+    @Override
+    public void renderMessageScreen(DrawContext drawContext, float tickDelta) {
+        onHudRender(drawContext, tickDelta);
+    }
+
 
     // ====================================================================
     // FrameworkProvider implementation
@@ -66,10 +73,12 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
         } else {
             this.hudText = text; // so the hud renderer can find it
             this.hudTextShown = true;
+            /**
             final Screen screen = client.currentScreen;
             if (screen instanceof MessageScreen) {
                 ((ScreenAccessors) screen).setTitle(hudText);
             }
+             **/
         }
     }
 

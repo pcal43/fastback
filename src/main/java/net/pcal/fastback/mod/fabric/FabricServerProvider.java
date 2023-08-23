@@ -18,6 +18,7 @@
 
 package net.pcal.fastback.mod.fabric;
 
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Text;
 
 import java.nio.file.Path;
@@ -44,6 +45,11 @@ public class FabricServerProvider extends BaseFabricProvider {
 
     @Override
     public void setMessageScreenText(Text text) {
+
+    }
+
+    @Override
+    public void renderMessageScreen(DrawContext drawContext, float tickDelta) {
 
     }
 }
