@@ -33,7 +33,7 @@ import java.util.concurrent.CompletableFuture;
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
-import static net.pcal.fastback.mod.Executor.ExecutionLock.NONE;
+import static net.pcal.fastback.utils.Executor.ExecutionLock.NONE;
 import static net.pcal.fastback.repo.SnapshotId.sortWorldSnapshots;
 
 abstract class SnapshotNameSuggestions implements SuggestionProvider<ServerCommandSource> {

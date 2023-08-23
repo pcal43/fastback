@@ -31,7 +31,7 @@ import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
-import static net.pcal.fastback.mod.Executor.ExecutionLock.WRITE_CONFIG;
+import static net.pcal.fastback.utils.Executor.ExecutionLock.WRITE_CONFIG;
 
 enum DisableCommand implements Command {
 

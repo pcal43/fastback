@@ -29,7 +29,7 @@ import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
-import static net.pcal.fastback.mod.Executor.ExecutionLock.WRITE;
+import static net.pcal.fastback.utils.Executor.ExecutionLock.WRITE;
 
 /**
  * Perform a local backup.

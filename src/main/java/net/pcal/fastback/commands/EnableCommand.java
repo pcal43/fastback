@@ -38,7 +38,7 @@ import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.localized;
-import static net.pcal.fastback.mod.Executor.ExecutionLock.NONE;
+import static net.pcal.fastback.utils.Executor.ExecutionLock.NONE;
 
 enum EnableCommand implements Command {
 

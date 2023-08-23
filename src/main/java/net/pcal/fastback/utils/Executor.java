@@ -16,7 +16,7 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.mod;
+package net.pcal.fastback.utils;
 
 import net.pcal.fastback.logging.UserLogger;
 
@@ -30,6 +30,13 @@ import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 
+/**
+ * Thin wrapper around an ExecutorService.  There really should only be one instance of this class -
+ * use Mod.getExecutor().
+ *
+ * @author pcal
+ * @since 0.2.0
+ */
 public class Executor {
 
     private ExecutorService executor = null;
@@ -42,7 +49,6 @@ public class Executor {
 
     private Future<?> exclusiveFuture = null;
 
-    //FIXME break this out, probably into a singleton
     public boolean execute(ExecutionLock lock, UserLogger ulog, Runnable runnable) {
         if (this.executor == null) throw new IllegalStateException("Executor not started");
         switch (lock) {

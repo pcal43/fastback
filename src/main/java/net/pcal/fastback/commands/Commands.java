@@ -26,7 +26,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.mod.ModContext;
-import net.pcal.fastback.mod.Executor.ExecutionLock;
+import net.pcal.fastback.utils.Executor.ExecutionLock;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.RepoFactory;
 
