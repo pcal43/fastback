@@ -49,7 +49,10 @@ public enum GitConfigKey {
 
     REMOTE_NAME("origin"),
 
-
+    /**
+     * We disable commit signing on git init.  https://github.com/pcal43/fastback/issues/165
+     */
+    COMMIT_SIGNING_ENABLED("commit", null, "gpgsign", null),
 
     IS_UUID_CHECK_ENABLED(true),
 

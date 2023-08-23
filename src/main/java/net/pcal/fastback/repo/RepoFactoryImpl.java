@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import static net.pcal.fastback.config.GitConfigKey.COMMIT_SIGNING_ENABLED;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 
 /**
@@ -37,7 +38,9 @@ class RepoFactoryImpl implements RepoFactory {
     @Override
     public Repo init(Path worldSaveDir, Mod mod) throws IOException {
         try (final Git jgit = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
-            return new RepoImpl(jgit, mod);
+             final Repo repo = new RepoImpl(jgit, mod);
+             repo.getConfig().updater().set(COMMIT_SIGNING_ENABLED, false).save();
+             return repo;
         } catch (GitAPIException e) {
             syslog().error("Error initializing repo", e);
             throw new IOException(e);
