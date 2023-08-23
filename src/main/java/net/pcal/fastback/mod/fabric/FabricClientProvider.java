@@ -37,8 +37,21 @@ import java.nio.file.Path;
  */
 final class FabricClientProvider extends BaseFabricProvider implements HudRenderCallback {
 
+
+    // ======================================================================
+    // Constants
+
+    private static final long HUD_TEXT_DURATION = 1000 * 5;
+
+    // ======================================================================
+    // Fields
+
     private MinecraftClient client = null;
     private Text hudText;
+    private long hudTextTime;
+    private float backupIndicatorAlpha;
+    private boolean hudTextShown = false;
+
 
     FabricClientProvider() {
     }
@@ -52,11 +65,13 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
         this.client = client;
     }
 
+    // ======================================================================
+    // MixinGateway implementation
+
     @Override
     public void renderMessageScreen(DrawContext drawContext, float tickDelta) {
         onHudRender(drawContext, tickDelta);
     }
-
 
     // ====================================================================
     // FrameworkProvider implementation
@@ -73,12 +88,6 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
         } else {
             this.hudText = text; // so the hud renderer can find it
             this.hudTextShown = true;
-            /**
-            final Screen screen = client.currentScreen;
-            if (screen instanceof MessageScreen) {
-                ((ScreenAccessors) screen).setTitle(hudText);
-            }
-             **/
         }
     }
 
@@ -98,29 +107,25 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
     // ====================================================================
     // HudRenderCallback implementation
 
-    private float backupIndicatorAlpha;
-    private boolean hudTextShown = false;
-
     @Override
     public void onHudRender(DrawContext drawContext, float tickDelta) {
         if (this.hudText == null) return;
-        float previousIndicatorAlpha = this.backupIndicatorAlpha;
-        this.backupIndicatorAlpha = MathHelper.lerp(0.2F, this.backupIndicatorAlpha, hudTextShown ? 1.0F : 0.0F);
+        if (!this.client.options.getShowAutosaveIndicator().getValue()) return;
 
-        if (this.client.options.getShowAutosaveIndicator().getValue() && (this.backupIndicatorAlpha > 0.0F || previousIndicatorAlpha > 0.0F)) {
-            int i = MathHelper.floor(255.0F * MathHelper.clamp(MathHelper.lerp(this.client.getTickDelta(), previousIndicatorAlpha, this.backupIndicatorAlpha), 0.0F, 1.0F));
-
-            if (i > 8) {
-                final TextRenderer textRenderer = this.client.textRenderer;
-                // int j = textRenderer.getWidth(this.hudText);
-                int k = 16777215 | i << 24 & -16777216;
-                // int scaledWidth = this.client.getWindow().getScaledWidth();
-                int x = 2; //scaledWidth - j - 5;
-                int y = 2;
-                drawContext.drawTextWithShadow(textRenderer, this.hudText, x, y, k);
-            } else {
-                hudText = null;
-            }
+        final long delta = System.currentTimeMillis() - this.hudTextTime;
+        final float alpha = MathHelper.lerp(delta, this.hudTextTime, this.hudTextTime + HUD_TEXT_DURATION);
+        if (alpha > 1) {
+            hudText = null;
+            return;
         }
+        final float clamped = MathHelper.clamp(alpha, 0.0F, 1.0F);
+        int i = Math.floor(255.0F * clamped);
+        final TextRenderer textRenderer = this.client.textRenderer;
+        // int j = textRenderer.getWidth(this.hudText);
+        int k = 16777215 | i << 24 & -16777216;
+        // int scaledWidth = this.client.getWindow().getScaledWidth();
+        int x = 2; //scaledWidth - j - 5;
+        int y = 2;
+        drawContext.drawTextWithShadow(textRenderer, this.hudText, x, y, k);
     }
 }
