@@ -228,6 +228,8 @@ class ModImpl implements LifecycleListener, Mod {
             out.setStyle(Style.EMPTY.withColor(TextColor.parse("green")));
         } else if (m.style() == UserMessageStyle.JGIT) {
             out.setStyle(Style.EMPTY.withColor(TextColor.parse("gray")));
+        } else {
+            out.setStyle(Style.EMPTY.withColor(TextColor.parse("white")));
         }
         return out;
     }

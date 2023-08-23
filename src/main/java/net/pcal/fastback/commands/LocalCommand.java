@@ -28,7 +28,6 @@ import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
-import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.WRITE;
 
 /**
@@ -54,12 +53,6 @@ enum LocalCommand implements Command {
 
     public static int run(Mod ctx, ServerCommandSource scs) {
         final UserLogger ulog = commandLogger(ctx, scs);
-        {
-            // workaround for https://github.com/pcal43/fastback/issues/112
-            syslog().info("Saving before backup");
-            ctx.saveWorld();
-            syslog().info("Starting backup");
-        }
         gitOp(ctx, WRITE, ulog, repo -> repo.doCommitSnapshot(ulog));
         return SUCCESS;
     }

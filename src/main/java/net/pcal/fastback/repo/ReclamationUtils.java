@@ -166,7 +166,7 @@ class ReclamationUtils {
         @Override
         public void progressDone(String task) {
             final String message = "Done " + task;
-            syslog().info(message);
+            syslog().debug(message);
             this.ulog.hud(styledLocalized(message, JGIT)); // FIXME i18n?
         }
 

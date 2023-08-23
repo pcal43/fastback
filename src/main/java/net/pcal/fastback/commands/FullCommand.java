@@ -53,15 +53,7 @@ enum FullCommand implements Command {
 
     public static int run(Mod ctx, ServerCommandSource scs) {
         final UserLogger ulog = commandLogger(ctx, scs);
-        {
-            // workaround for https://github.com/pcal43/fastback/issues/112
-            syslog().info("Saving before backup");
-            ctx.saveWorld();
-            syslog().info("Starting backup");
-        }
-        gitOp(ctx, WRITE, ulog, repo -> {
-            repo.doCommitAndPush(ulog);
-        });
+        gitOp(ctx, WRITE, ulog, repo -> repo.doCommitAndPush(ulog));
         return SUCCESS;
     }
 }
