@@ -57,6 +57,7 @@ import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.JGIT;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
+import static net.pcal.fastback.logging.UserMessage.styledRaw;
 import static net.pcal.fastback.utils.ProcessUtils.doExec;
 
 /**
@@ -130,8 +131,8 @@ class PushUtils {
         syslog().debug("End native_push");
     }
 
-    private static void jgit_doSmartPush(final RepoImpl repo, List<SnapshotId> remoteSnapshots, final String branchNameToPush, final GitConfig conf, final UserLogger logger) throws IOException {
-        logger.hud(styledLocalized("fastback.chat.push-started", JGIT));
+    private static void jgit_doSmartPush(final RepoImpl repo, List<SnapshotId> remoteSnapshots, final String branchNameToPush, final GitConfig conf, final UserLogger ulog) throws IOException {
+        ulog.hud(styledLocalized("fastback.chat.push-started", JGIT));
         try {
             final Git jgit = repo.getJGit();
             final String remoteName = conf.getString(REMOTE_NAME);
@@ -140,7 +141,7 @@ class PushUtils {
             if (remoteSnapshots.isEmpty()) {
                 syslog().warn("** This appears to be the first time this world has been pushed.");
                 syslog().warn("** If the world is large, this may take some time.");
-                jgit_doNaivePush(jgit, branchNameToPush, conf, logger);
+                jgit_doNaivePush(jgit, branchNameToPush, conf, ulog);
                 return;
             } else {
                 final Collection<Ref> localBranchRefs = jgit.branchList().call();
@@ -151,7 +152,7 @@ class PushUtils {
                 if (remoteSnapshots.isEmpty()) {
                     syslog().warn("No common snapshots found between local and remote.");
                     syslog().warn("Doing a full push.  This may take some time.");
-                    jgit_doNaivePush(jgit, branchNameToPush, conf, logger);
+                    jgit_doNaivePush(jgit, branchNameToPush, conf, ulog);
                     return;
                 } else {
                     Collections.sort(remoteSnapshots);
@@ -170,7 +171,7 @@ class PushUtils {
             syslog().debug("Checking out " + branchNameToPush);
             jgit.checkout().setName(branchNameToPush).call();
             syslog().debug("Pushing temp branch " + tempBranchName);
-            final ProgressMonitor pm = new JGitIncrementalProgressMonitor(new JGitPushProgressMonitor(logger), 100);
+            final ProgressMonitor pm = new JGitIncrementalProgressMonitor(new JGitPushProgressMonitor(ulog), 100);
             final Iterable<PushResult> pushResult = jgit.push().setProgressMonitor(pm).setRemote(remoteName).
                     setRefSpecs(new RefSpec(tempBranchName + ":" + tempBranchName),
                             new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
@@ -271,17 +272,16 @@ class PushUtils {
 
         @Override
         public void progressUpdate(String task, int percentage) {
-            syslog().info(task + " " + percentage + "%");
-            if (task.contains("Finding sources")) {
-                this.ulog.hud(styledLocalized("fastback.hud.remote-preparing",JGIT,percentage / 2));
-            } else if (task.contains("Writing objects")) {
-                this.ulog.hud(styledLocalized("fastback.hud.remote-uploading", JGIT, 50 + (percentage / 2)));
-            }
+            final String msg = task + " " + percentage + "%";
+            syslog().debug(msg);
+            ulog.hud(styledRaw(msg, JGIT));
         }
 
         @Override
         public void progressDone(String task) {
-            syslog().debug("Done " + task);
+            final String msg = "Done " + task; // FIXME i18n
+            syslog().debug(msg);
+            ulog.hud(styledRaw(msg, JGIT));
         }
 
         @Override
