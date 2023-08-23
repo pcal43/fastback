@@ -22,6 +22,7 @@ import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.pcal.fastback.logging.Log4jLogger;
 import net.pcal.fastback.logging.SystemLogger;
+import net.pcal.fastback.mod.FrameworkServiceProvider;
 import net.pcal.fastback.mod.ModLifecycleListener;
 import net.pcal.fastback.mod.ModContext;
 import org.apache.logging.log4j.LogManager;
@@ -38,12 +39,13 @@ public class FabricServerInitializer implements DedicatedServerModInitializer {
 
     @Override
     public void onInitializeServer() {
-        SystemLogger.Singleton.register(new Log4jLogger(LogManager.getLogger(MOD_ID)));
-        final BaseFabricProvider fsp = new FabricServerProvider();
-        final ModLifecycleListener listener = ModContext.create(fsp);
+        final BaseFabricProvider serverProvider = new FabricServerProvider();
+        final ModLifecycleListener listener = FrameworkServiceProvider.register(serverProvider,
+                new Log4jLogger(LogManager.getLogger(MOD_ID)));
+        listener.onInitialize();
         ServerLifecycleEvents.SERVER_STARTING.register(
                 minecraftServer -> {
-                    fsp.setMinecraftServer(minecraftServer);
+                    serverProvider.setMinecraftServer(minecraftServer);
                     listener.onWorldStart();
                 }
         );
@@ -52,7 +54,7 @@ public class FabricServerInitializer implements DedicatedServerModInitializer {
                     try {
                         listener.onWorldStop();
                     } finally {
-                        fsp.setMinecraftServer(null);
+                        serverProvider.setMinecraftServer(null);
                     }
                 }
         );

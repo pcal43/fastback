@@ -19,6 +19,7 @@
 package net.pcal.fastback.mod;
 
 import net.minecraft.text.Text;
+import net.pcal.fastback.logging.SystemLogger;
 
 import java.nio.file.Path;
 
@@ -33,6 +34,11 @@ import java.nio.file.Path;
  * @since 0.1.0
  */
 public interface FrameworkServiceProvider {
+
+    static ModLifecycleListener register(final FrameworkServiceProvider sp, final SystemLogger syslog) {
+        SystemLogger.Singleton.register(syslog);
+        return ModContext.create(sp);
+    }
 
     /**
      * @return the version of the fastback mod.

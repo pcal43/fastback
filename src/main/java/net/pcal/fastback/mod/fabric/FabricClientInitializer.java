@@ -23,8 +23,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.pcal.fastback.logging.Log4jLogger;
-import net.pcal.fastback.logging.SystemLogger;
-import net.pcal.fastback.mod.ModContext;
+import net.pcal.fastback.mod.FrameworkServiceProvider;
 import net.pcal.fastback.mod.ModLifecycleListener;
 import org.apache.logging.log4j.LogManager;
 
@@ -41,9 +40,9 @@ public class FabricClientInitializer implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        SystemLogger.Singleton.register(new Log4jLogger(LogManager.getLogger(MOD_ID)));
         final FabricClientProvider clientProvider = new FabricClientProvider();
-        final ModLifecycleListener listener = ModContext.create(clientProvider);
+        final ModLifecycleListener listener = FrameworkServiceProvider.register(clientProvider,
+                new Log4jLogger(LogManager.getLogger(MOD_ID)));
         listener.onInitialize();
 
         ClientLifecycleEvents.CLIENT_STARTED.register(
