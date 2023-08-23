@@ -30,6 +30,7 @@ import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.lib.Ref;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -114,7 +115,9 @@ class RepoImpl implements Repo {
 
     @Override
     public String getWorldUuid() throws IOException {
-        return Files.readString(getWorkTree().toPath().toAbsolutePath().resolve(WORLD_UUID_PATH)).trim();
+        final Path uuidPath = getWorkTree().toPath().resolve(WORLD_UUID_PATH);
+        if (!uuidPath.toFile().exists()) throw new FileNotFoundException(uuidPath.toString());
+        return Files.readString(uuidPath).trim();
     }
 
     @Override

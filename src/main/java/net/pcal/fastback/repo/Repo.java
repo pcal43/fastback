@@ -40,6 +40,10 @@ public interface Repo extends AutoCloseable {
 
     GitConfig getConfig();
 
+    /**
+     * @return the UUID of the world.
+     * @throws FileNotFoundException if the world.uuid file is missing for some reason.
+     */
     String getWorldUuid() throws IOException;
 
     File getDirectory() throws NoWorkTreeException;

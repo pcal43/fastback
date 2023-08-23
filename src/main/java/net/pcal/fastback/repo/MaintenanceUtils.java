@@ -115,7 +115,19 @@ public interface MaintenanceUtils {
             conf.updater().set(IS_NATIVE_GIT_ENABLED, false).save();
             user.chat(localized("fastback.chat.ok"));
         }
+    }
 
+    static void ensureWorldHasUuid(final Path worldSaveDir) throws IOException {
+        final Path worldUuidpath = worldSaveDir.resolve(WORLD_UUID_PATH);
+        if (!worldUuidpath.toFile().exists()) {
+            FileUtils.mkdirs(worldUuidpath.getParent());
+            final String newUuid = UUID.randomUUID().toString();
+            try (final FileWriter fw = new FileWriter(worldUuidpath.toFile())) {
+                fw.append(newUuid);
+                fw.append('\n');
+            }
+            SystemLogger.syslog().debug("Generated new world.uuid " + newUuid);
+        }
     }
 
     // ======================================================================
@@ -133,19 +145,6 @@ public interface MaintenanceUtils {
             doExec(cmd, Collections.emptyMap(), s -> {
             }, s -> {
             });
-        }
-    }
-
-    private static void ensureWorldHasUuid(final Path worldSaveDir) throws IOException {
-        final Path worldUuidpath = worldSaveDir.resolve(WORLD_UUID_PATH);
-        if (!worldUuidpath.toFile().exists()) {
-            FileUtils.mkdirs(worldUuidpath.getParent());
-            final String newUuid = UUID.randomUUID().toString();
-            try (final FileWriter fw = new FileWriter(worldUuidpath.toFile())) {
-                fw.append(newUuid);
-                fw.append('\n');
-            }
-            SystemLogger.syslog().debug("Generated new world.uuid " + newUuid);
         }
     }
 }
