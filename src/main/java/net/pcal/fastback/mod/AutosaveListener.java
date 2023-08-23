@@ -53,7 +53,7 @@ class AutosaveListener implements Runnable {
                     final RepoFactory rf = RepoFactory.get();
                     final Path worldSaveDir = mod().getWorldDirectory();
                     if (!rf.isGitRepo(worldSaveDir)) return;
-                    try (final Repo repo = rf.load(worldSaveDir, mod())) {
+                    try (final Repo repo = rf.load(worldSaveDir)) {
                         final GitConfig config = repo.getConfig();
                         if (!config.getBoolean(IS_BACKUP_ENABLED)) return;
                         final SchedulableAction autobackAction = forConfigValue(config, AUTOBACK_ACTION);

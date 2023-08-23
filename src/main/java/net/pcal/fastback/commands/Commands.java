@@ -132,7 +132,7 @@ public class Commands {
                 ulog.message(styledLocalized("fastback.chat.not-enabled", ERROR));
                 return;
             }
-            try (final Repo repo = rf.load(worldSaveDir, mod)) {
+            try (final Repo repo = rf.load(worldSaveDir)) {
                 final GitConfig repoConfig = repo.getConfig();
                 if (!repoConfig.getBoolean(IS_BACKUP_ENABLED)) {
                     ulog.message(styledLocalized("fastback.chat.not-enabled", ERROR));

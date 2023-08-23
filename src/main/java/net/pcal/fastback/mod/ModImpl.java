@@ -201,7 +201,7 @@ class ModImpl implements LifecycleListener, Mod {
             this.clearHudText();
             final RepoFactory rf = RepoFactory.get();
             if (rf.isGitRepo(worldSaveDir)) {
-                try (final Repo repo = rf.load(worldSaveDir, this)) {
+                try (final Repo repo = rf.load(worldSaveDir)) {
                     final GitConfig config = repo.getConfig();
                     if (config.getBoolean(IS_BACKUP_ENABLED)) {
                         final SchedulableAction action = SchedulableAction.forConfigValue(config, SHUTDOWN_ACTION);
