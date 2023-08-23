@@ -128,10 +128,9 @@ class ModImpl implements LifecycleListener, Mod {
     public void saveWorld() {
         this.fsp.saveWorld();
     }
-
-
+    
     // ======================================================================
-    // ModLifecycleListener implementation
+    // LifecycleListener implementation
 
     /**
      * Must be called early in initialization of either a client or server.
