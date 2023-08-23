@@ -32,8 +32,8 @@ public interface Executor {
         return Singleton.INSTANCE;
     }
 
-    // TODO kill UserLogger param
-    boolean execute(final ExecutionLock lock, final UserLogger ulog, final Runnable runnable);
+    // TODO kill UserLogger param and throw Blocking exception instead
+    void execute(final ExecutionLock lock, final UserLogger ulog, final Runnable runnable);
 
     int getActiveCount();
 

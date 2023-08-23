@@ -41,21 +41,19 @@ class ExecutorImpl implements Executor {
     private Future<?> exclusiveFuture = null;
 
     @Override
-    public boolean execute(ExecutionLock lock, UserLogger ulog, Runnable runnable) {
+    public void execute(ExecutionLock lock, UserLogger ulog, Runnable runnable) {
         if (this.executor == null) throw new IllegalStateException("Executor not started");
         switch (lock) {
             case NONE:
             case WRITE_CONFIG: // revisit this
                 this.executor.submit(runnable);
-                return true;
+                break;
             case WRITE:
                 if (this.exclusiveFuture != null && !this.exclusiveFuture.isDone()) {
                     ulog.message(styledLocalized("fastback.chat.thread-busy", ERROR));
-                    return false;
                 } else {
                     syslog().debug("executing " + runnable);
                     this.exclusiveFuture = this.executor.submit(runnable);
-                    return true;
                 }
             default:
                 throw new IllegalStateException();
