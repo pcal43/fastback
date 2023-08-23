@@ -78,6 +78,8 @@ public interface FrameworkServiceProvider {
      */
     void setHudText(Text text);
 
+    void clearHudText();
+
     /**
      * If we're clientside and a minecraft MessageScreen is being displayed (e.g., the 'saving' screen), set
      * the title of the screen.  Otherwise does nothing.

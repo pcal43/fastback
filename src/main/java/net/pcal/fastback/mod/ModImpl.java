@@ -19,14 +19,12 @@ package net.pcal.fastback.mod;
 
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.pcal.fastback.commands.Commands;
 import net.pcal.fastback.commands.SchedulableAction;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.logging.UserMessage.UserMessageStyle;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.RepoFactory;
 import net.pcal.fastback.utils.Executor;
@@ -36,15 +34,22 @@ import java.nio.file.Path;
 
 import static java.nio.file.Files.createTempDirectory;
 import static java.util.Objects.requireNonNull;
+import static net.minecraft.text.Style.EMPTY;
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.JGIT;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.WARNING;
 import static net.pcal.fastback.logging.UserMessage.localized;
 import static net.pcal.fastback.utils.EnvironmentUtils.getGitLfsVersion;
 import static net.pcal.fastback.utils.EnvironmentUtils.getGitVersion;
 
 class ModImpl implements LifecycleListener, Mod {
+
+    // ======================================================================
+    // Fields
 
     private final FrameworkServiceProvider fsp;
     private final Executor executor;
@@ -106,7 +111,17 @@ class ModImpl implements LifecycleListener, Mod {
 
     @Override
     public void setHudText(UserMessage message) {
-        this.fsp.setHudText(message == null ? null : messageToText(message));
+        if (message == null) {
+            syslog().debug("null unexpectedly passed to setHudText, ignoring");
+            this.clearHudText();
+        } else {
+            this.fsp.setHudText(messageToText(message));
+        }
+    }
+
+    @Override
+    public void clearHudText() {
+        this.fsp.clearHudText();
     }
 
     @Override
@@ -172,26 +187,32 @@ class ModImpl implements LifecycleListener, Mod {
      */
     @Override
     public void onWorldStop() {
-        final Path worldSaveDir = this.getWorldDirectory();
-        this.setHudText(localized("fastback.chat.thread-waiting"));
-        executor.stop();
-        this.setHudText(null);
-        final RepoFactory rf = RepoFactory.get();
-        if (rf.isGitRepo(worldSaveDir)) {
-            try (final Repo repo = rf.load(worldSaveDir, this)) {
-                final GitConfig config = repo.getConfig();
-                if (config.getBoolean(IS_BACKUP_ENABLED)) {
-                    final SchedulableAction action = SchedulableAction.forConfigValue(config, SHUTDOWN_ACTION);
-                    if (action != null) {
-                        this.setMessageScreenText(localized("fastback.message.backing-up"));
-                        action.getTask(repo, new HudLogger(this)).call();
-                    }
-                }
-            } catch (Exception e) {
-                syslog().error("Shutdown action failed.", e);
+        try {
+            final Path worldSaveDir = this.getWorldDirectory();
+            if (executor.getActiveCount() > 0) {
+                this.setMessageScreenText(localized("fastback.chat.thread-waiting"));
             }
+            executor.stop();
+            this.clearHudText();
+            final RepoFactory rf = RepoFactory.get();
+            if (rf.isGitRepo(worldSaveDir)) {
+                try (final Repo repo = rf.load(worldSaveDir, this)) {
+                    final GitConfig config = repo.getConfig();
+                    if (config.getBoolean(IS_BACKUP_ENABLED)) {
+                        final SchedulableAction action = SchedulableAction.forConfigValue(config, SHUTDOWN_ACTION);
+                        if (action != null) {
+                            this.setMessageScreenText(localized("fastback.message.backing-up"));
+                            action.getTask(repo, new HudLogger(this)).call();
+                        }
+                    }
+                } catch (Exception e) {
+                    syslog().error("Shutdown action failed.", e);
+                }
+            }
+            syslog().debug("onWorldStop complete");
+        } finally {
+            this.clearHudText();
         }
-        syslog().debug("onWorldStop complete");
     }
 
 
@@ -205,12 +226,16 @@ class ModImpl implements LifecycleListener, Mod {
         } else {
             out = Text.literal(m.styledRaw());
         }
-        if (m.style() == UserMessageStyle.ERROR) {
-            out.setStyle(Style.EMPTY.withColor(TextColor.parse("red")));
-        } else if (m.style() == UserMessageStyle.WARNING) {
-            out.setStyle(Style.EMPTY.withColor(TextColor.parse("yellow")));
-        } else if (m.style() == UserMessageStyle.NATIVE_GIT) {
-            out.setStyle(Style.EMPTY.withColor(TextColor.parse("green")));
+        if (m.style() == ERROR) {
+            out.setStyle(EMPTY.withColor(TextColor.parse("red")));
+        } else if (m.style() == WARNING) {
+            out.setStyle(EMPTY.withColor(TextColor.parse("yellow")));
+        } else if (m.style() == NATIVE_GIT) {
+            out.setStyle(EMPTY.withColor(TextColor.parse("green")));
+        } else if (m.style() == JGIT) {
+            out.setStyle(EMPTY.withColor(TextColor.parse("gray")));
+        } else {
+            out.setStyle(EMPTY.withColor(TextColor.parse("white")));
         }
         return out;
     }

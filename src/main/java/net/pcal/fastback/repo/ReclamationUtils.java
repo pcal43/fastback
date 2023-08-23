@@ -44,7 +44,6 @@ import static net.pcal.fastback.config.GitConfigKey.IS_REFLOG_DELETION_ENABLED;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.JGIT;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;
-import static net.pcal.fastback.logging.UserMessage.localized;
 import static net.pcal.fastback.logging.UserMessage.raw;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 import static net.pcal.fastback.repo.PushUtils.isTempBranch;
@@ -101,7 +100,7 @@ class ReclamationUtils {
             // reflogs aren't very useful in our case and cause old snapshots to get retained
             // longer than people expect.
             final Path reflogsDir = gitDir.toPath().resolve("logs");
-            syslog().info("Deleting reflogs " + reflogsDir);
+            syslog().debug("Deleting reflogs " + reflogsDir);
             FileUtils.rmdir(reflogsDir);
         }
         if (config.getBoolean(IS_BRANCH_CLEANUP_ENABLED)) {
@@ -119,11 +118,11 @@ class ReclamationUtils {
                 }
             }
             if (branchesToDelete.isEmpty()) {
-                syslog().info("No branches to clean up");
+                syslog().debug("No branches to clean up");
             } else {
-                syslog().info("Deleting branches: " + branchesToDelete);
+                syslog().debug("Deleting branches: " + branchesToDelete);
                 repo.deleteLocalBranches(branchesToDelete);
-                syslog().info("Branches deleted.");
+                syslog().debug("Branches deleted.");
             }
         }
         final GC gc = new GC(((FileRepository) repo.getJGit().getRepository()));
@@ -135,11 +134,11 @@ class ReclamationUtils {
         gc.setPackConfig(pc);
         final ProgressMonitor pm = new JGitIncrementalProgressMonitor(new GcProgressMonitor(ulog), 100);
         gc.setProgressMonitor(pm);
-        syslog().info("Starting garbage collection");
+        syslog().debug("Starting garbage collection");
         gc.gc(); // TODO progress monitor
-        syslog().info("Garbage collection complete.");
-        syslog().info("Stats after gc:");
-        syslog().info("" + repo.getJGit().gc().getStatistics());
+        syslog().debug("Garbage collection complete.");
+        syslog().debug("Stats after gc:");
+        syslog().debug("" + repo.getJGit().gc().getStatistics());
         final long sizeAfterBytes = sizeOfDirectory(gitDir);
         syslog().info("Backup size after gc: " + byteCountToDisplaySize(sizeAfterBytes));
     }
@@ -159,27 +158,16 @@ class ReclamationUtils {
 
         @Override
         public void progressUpdate(String task, int percentage) {
-            syslog().info(task + " " + percentage + "%");
-            // Pack refs
-            // Finding sources
-            // Writing objects
-            // Selecting commits
-            // Building bitmaps
-            // Prune loose objects
-            // Prune loose objects also found in pack files
-            // Prune loose, unreferenced objects
-            if (task.contains("Writing objects")) {
-                this.ulog.hud(styledLocalized("fastback.hud.gc-percent", JGIT, (int) (percentage * 9 / 10)));
-            } else if (task.contains("Selecting commits")) {
-                this.ulog.hud(localized("fastback.hud.gc-percent", JGIT, 90 + (int) (percentage / 20)));
-            } else if (task.contains("Prune loose objects")) {
-                this.ulog.hud(localized("fastback.hud.gc-percent", JGIT, 95 + (int) (percentage / 20)));
-            }
+            final String message = task + " " + percentage + "%";
+            syslog().debug(message);
+            this.ulog.hud(styledLocalized(message, JGIT));
         }
 
         @Override
         public void progressDone(String task) {
-            syslog().info("Done " + task);
+            final String message = "Done " + task;
+            syslog().debug(message);
+            this.ulog.hud(styledLocalized(message, JGIT)); // FIXME i18n?
         }
 
         @Override

@@ -67,4 +67,5 @@ public interface Repo extends AutoCloseable {
     void deleteLocalBranches(List<String> branchesToDelete) throws GitAPIException, IOException;
 
     void setNativeGitEnabled(boolean enabled, UserLogger user) throws IOException;
+
 }

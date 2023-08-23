@@ -21,15 +21,15 @@ package net.pcal.fastback.mod.fabric;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.MessageScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
-import net.minecraft.util.math.MathHelper;
 import net.pcal.fastback.mod.fabric.mixins.ScreenAccessors;
 
 import java.nio.file.Path;
+
+import static net.pcal.fastback.logging.SystemLogger.syslog;
 
 /**
  * @author pcal
@@ -37,11 +37,17 @@ import java.nio.file.Path;
  */
 final class FabricClientProvider extends BaseFabricProvider implements HudRenderCallback {
 
+    // ======================================================================
+    // Constants
+
+    private static final long TEXT_TIMEOUT = 10 * 1000;
+
+    // ======================================================================
+    // Fields
+
     private MinecraftClient client = null;
     private Text hudText;
-
-    FabricClientProvider() {
-    }
+    private long hudTextTime;
 
     // ====================================================================
     // Public methods
@@ -49,6 +55,14 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
     public void setMinecraftClient(MinecraftClient client) {
         if ((this.client == null) == (client == null)) throw new IllegalStateException();
         this.client = client;
+    }
+
+    // ======================================================================
+    // MixinGateway implementation
+
+    @Override
+    public void renderMessageScreen(DrawContext drawContext, float tickDelta) {
+        onHudRender(drawContext, tickDelta);
     }
 
     // ====================================================================
@@ -62,15 +76,18 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
     @Override
     public void setHudText(Text text) {
         if (text == null) {
-            this.hudTextShown = false;
+            clearHudText();
         } else {
             this.hudText = text; // so the hud renderer can find it
-            this.hudTextShown = true;
-            final Screen screen = client.currentScreen;
-            if (screen instanceof MessageScreen) {
-                ((ScreenAccessors) screen).setTitle(hudText);
-            }
+            this.hudTextTime = System.currentTimeMillis();
         }
+    }
+
+    @Override
+    public void clearHudText() {
+        this.hudText = null;
+        // TODO someday it might be nice to bring back the fading text effect.  But getting to it properly
+        // clean up 100% of the time is more than I want to deal with right now.
     }
 
     @Override
@@ -89,29 +106,16 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
     // ====================================================================
     // HudRenderCallback implementation
 
-    private float backupIndicatorAlpha;
-    private boolean hudTextShown = false;
-
     @Override
     public void onHudRender(DrawContext drawContext, float tickDelta) {
         if (this.hudText == null) return;
-        float previousIndicatorAlpha = this.backupIndicatorAlpha;
-        this.backupIndicatorAlpha = MathHelper.lerp(0.2F, this.backupIndicatorAlpha, hudTextShown ? 1.0F : 0.0F);
-
-        if (this.client.options.getShowAutosaveIndicator().getValue() && (this.backupIndicatorAlpha > 0.0F || previousIndicatorAlpha > 0.0F)) {
-            int i = MathHelper.floor(255.0F * MathHelper.clamp(MathHelper.lerp(this.client.getTickDelta(), previousIndicatorAlpha, this.backupIndicatorAlpha), 0.0F, 1.0F));
-
-            if (i > 8) {
-                final TextRenderer textRenderer = this.client.textRenderer;
-                // int j = textRenderer.getWidth(this.hudText);
-                int k = 16777215 | i << 24 & -16777216;
-                // int scaledWidth = this.client.getWindow().getScaledWidth();
-                int x = 2; //scaledWidth - j - 5;
-                int y = 2;
-                drawContext.drawTextWithShadow(textRenderer, this.hudText, x, y, k);
-            } else {
-                hudText = null;
-            }
+        if (!this.client.options.getShowAutosaveIndicator().getValue()) return;
+        if (System.currentTimeMillis() - this.hudTextTime > TEXT_TIMEOUT) {
+            // Don't leave it sitting up there forever if we fail to call clearHudText()
+            this.hudText = null;
+            syslog().debug("hud text timed out.  somebody forgot to clean up");
+            return;
         }
+        drawContext.drawTextWithShadow(this.client.textRenderer, this.hudText, 2, 2, 1);
     }
 }

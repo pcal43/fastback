@@ -69,12 +69,8 @@
   "fastback.chat.suggest-enable": "备份被禁用。若要启用，请运行 '/backbackupen'",
   "fastback.chat.thread-busy": "另一个备份任务正在运行。请等待它完成，然后重试。",
   "fastback.chat.thread-waiting": "正在等待当前备份任务完成...",
-  "fastback.hud.gc-percent": "收集垃圾 %d%%",
   "fastback.hud.local-saving": "正在保存本地备份...",
   "fastback.hud.prune-started": "Pruning...",
-  "fastback.hud.remote-preparing": "正在准备远程备份 %d%%",
-  "fastback.hud.remote-uploading": "正在上传备份 %d%%",
-  "fastback.hud.restore-percent": "正在恢复备份 %d%%",
   "fastback.retain.all.description": "保留所有的快照，永远不会惊喜。",
   "fastback.retain.fixed.description": "计数：只保留 %s 最新快照。",
   "fastback.retain.daily.description": "每日：从一天起保持最后一次快照，加上过去 %s 天的所有快照"

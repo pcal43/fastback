@@ -23,12 +23,9 @@ import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModMetadata;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelStorage;
-import net.pcal.fastback.logging.Log4jLogger;
-import net.pcal.fastback.logging.SystemLogger;
 import net.pcal.fastback.mod.FrameworkServiceProvider;
 import net.pcal.fastback.mod.fabric.mixins.ServerAccessors;
 import net.pcal.fastback.mod.fabric.mixins.SessionAccessors;
-import org.apache.logging.log4j.LogManager;
 
 import java.nio.file.Path;
 import java.util.Optional;
@@ -40,7 +37,7 @@ import static net.pcal.fastback.logging.SystemLogger.syslog;
  * @author pcal
  * @since 0.1.0
  */
-public abstract class BaseFabricProvider implements FrameworkServiceProvider {
+public abstract class BaseFabricProvider implements FrameworkServiceProvider, MixinGateway {
 
     static final String MOD_ID = "fastback";
 
@@ -76,11 +73,6 @@ public abstract class BaseFabricProvider implements FrameworkServiceProvider {
     }
 
     @Override
-    public boolean isWorldSaveEnabled() {
-        return this.isWorldSaveEnabled;
-    }
-
-    @Override
     public void setWorldSaveEnabled(boolean enabled) {
         this.isWorldSaveEnabled = enabled;
     }
@@ -111,9 +103,15 @@ public abstract class BaseFabricProvider implements FrameworkServiceProvider {
         return session.getLevelSummary().getLevelInfo().getLevelName();
     }
 
-    /**
-     * Called by the mixins.
-     */
+    // ======================================================================
+    // MixinGateway implementation
+
+    @Override
+    public boolean isWorldSaveEnabled() {
+        return this.isWorldSaveEnabled;
+    }
+
+    @Override
     public void autoSaveCompleted() {
         if (this.autoSaveListener != null) {
             this.autoSaveListener.run();
@@ -121,4 +119,5 @@ public abstract class BaseFabricProvider implements FrameworkServiceProvider {
             syslog().warn("Autosave just happened but, unexpectedly, no one is listening.");
         }
     }
+
 }

@@ -20,6 +20,7 @@ package net.pcal.fastback.mod;
 
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.UserMessage;
+import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.utils.Executor;
 
 import java.io.IOException;
@@ -32,7 +33,7 @@ import java.nio.file.Path;
  * @since 0.1.0
  */
 public interface Mod {
-
+    
     /**
      * Use this for running stuff in other threads.
      */
@@ -70,9 +71,14 @@ public interface Mod {
     void sendChat(UserMessage message, ServerCommandSource scs);
 
     /**
-     * Set magical floating text.
+     * Set magical floating text.  You MUST call clearHudText
      */
     void setHudText(UserMessage message);
+
+    /**
+     * Remove the magical floating text.
+     */
+    void clearHudText();
 
     /**
      * @return path to the save directory of the currently-loaded world (aka the git worktree).

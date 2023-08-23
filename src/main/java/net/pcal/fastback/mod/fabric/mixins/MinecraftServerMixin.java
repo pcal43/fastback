@@ -18,7 +18,7 @@
 package net.pcal.fastback.mod.fabric.mixins;
 
 import net.minecraft.server.MinecraftServer;
-import net.pcal.fastback.mod.fabric.BaseFabricProvider;
+import net.pcal.fastback.mod.fabric.MixinGateway;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -42,7 +42,7 @@ public class MinecraftServerMixin {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;saveAll(ZZZ)Z"))
     public boolean fastback_saveAll(MinecraftServer instance, boolean suppressLogs, boolean flush, boolean force) {
         boolean result = instance.saveAll(suppressLogs, flush, force);
-        BaseFabricProvider.getInstance().autoSaveCompleted();
+        MixinGateway.get().autoSaveCompleted();
         return result;
     }
 
@@ -52,8 +52,7 @@ public class MinecraftServerMixin {
     @Inject(at = @At("HEAD"), method = "save(ZZZ)Z", cancellable = true)
     public void fastback_save(boolean suppressLogs, boolean flush, boolean force, CallbackInfoReturnable<Boolean> ci) {
         synchronized (this) {
-            final BaseFabricProvider ctx = BaseFabricProvider.getInstance();
-            if (ctx.isWorldSaveEnabled()) {
+            if (MixinGateway.get().isWorldSaveEnabled()) {
                 syslog().debug("world saves are enabled, doing requested save");
             } else {
                 syslog().warn("Skipping requested save because a backup is in progress.");
@@ -69,8 +68,7 @@ public class MinecraftServerMixin {
     @Inject(at = @At("HEAD"), method = "saveAll(ZZZ)Z", cancellable = true)
     public void fastback_saveAll(boolean suppressLogs, boolean flush, boolean force, CallbackInfoReturnable<Boolean> ci) {
         synchronized (this) {
-            final BaseFabricProvider ctx = BaseFabricProvider.getInstance();
-            if (ctx.isWorldSaveEnabled()) {
+            if (MixinGateway.get().isWorldSaveEnabled()) {
                 syslog().debug("world saves are enabled, doing requested saveAll");
                 //TODO should call save here to ensure all synced?
             } else {

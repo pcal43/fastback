@@ -142,7 +142,7 @@ public class Commands {
                 syslog().error("Command execution failed.", e);
                 ulog.chat(styledLocalized("fastback.chat.internal-error", ERROR));
             } finally {
-                ulog.hud(null); // ensure we always clear the hud text
+                mod.clearHudText();
             }
         });
     }

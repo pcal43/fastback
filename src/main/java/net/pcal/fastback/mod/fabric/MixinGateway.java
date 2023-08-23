@@ -16,46 +16,33 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.logging;
+package net.pcal.fastback.mod.fabric;
 
-import java.io.IOException;
+import net.minecraft.client.gui.DrawContext;
 
 /**
- * Singleton logger instance that writes to the serverside console.
+ * Singleton 'gateway' that mixin code goes through to call back into the mod.
  *
  * @author pcal
+ * @since 0.13.1
  */
-public interface SystemLogger {
+public interface MixinGateway {
 
-    static SystemLogger syslog() {
+    static MixinGateway get() {
         return Singleton.INSTANCE;
     }
 
-    void setForceDebugEnabled(boolean debug);
+    boolean isWorldSaveEnabled();
 
-    void error(String message);
+    void autoSaveCompleted();
 
-    void error(String message, Throwable t);
-
-    default void error(IOException e) { this.error(e.getMessage(), e); }
-
-    void warn(String message);
-
-    void info(String message);
-
-    void debug(String message);
-
-    void debug(String message, Throwable t);
-
-    default void debug(Throwable t) { this.debug(t.getMessage(), t); }
-
-
+    void renderMessageScreen(DrawContext drawContext, float tickDelta);
 
     class Singleton {
-        private static SystemLogger INSTANCE = null;
+        private static MixinGateway INSTANCE = null;
 
-        public static void register(SystemLogger logger) {
-            Singleton.INSTANCE = logger;
+        public static void register(MixinGateway gateway) {
+            Singleton.INSTANCE = gateway;
         }
     }
 }

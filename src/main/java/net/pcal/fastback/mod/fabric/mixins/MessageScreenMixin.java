@@ -15,46 +15,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
-
-package net.pcal.fastback.mod.fabric;
+package net.pcal.fastback.mod.fabric.mixins;
 
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.text.Text;
-
-import java.nio.file.Path;
+import net.minecraft.client.gui.screen.MessageScreen;
+import net.pcal.fastback.mod.fabric.MixinGateway;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * @author pcal
- * @since 0.1.0
+ * @since 0.0.1
  */
-public class FabricServerProvider extends BaseFabricProvider {
+@Mixin(MessageScreen.class)
+public class MessageScreenMixin {
 
-    @Override
-    public boolean isClient() {
-        return false;
-    }
-
-    @Override
-    public Path getSavesDir() {
-        return null;
-    }
-
-    @Override
-    public void setHudText(Text text) {
-    }
-
-    @Override
-    public void clearHudText() {
-
-    }
-
-    @Override
-    public void setMessageScreenText(Text text) {
-
-    }
-
-    @Override
-    public void renderMessageScreen(DrawContext drawContext, float tickDelta) {
-
+    /**
+     * Apply filtering behavior to free floating entities above the hopper.
+     */
+    @Inject(method = "render", at = @At("TAIL"))
+    public void __render(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+        MixinGateway.get().renderMessageScreen(context, delta);
     }
 }
