@@ -67,7 +67,12 @@ public enum GitConfigKey {
 
     IS_REFLOG_DELETION_ENABLED(true),
 
-    IS_BRANCH_CLEANUP_ENABLED(true);
+    IS_BRANCH_CLEANUP_ENABLED(true),
+
+    IS_EXPERIMENTAL_COMMANDS_ENABLED(true),
+
+    IS_FILE_REMOTE_BARE(true);
+
 
     private static final String NULL_STRING = "";
 

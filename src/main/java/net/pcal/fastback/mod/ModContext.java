@@ -217,18 +217,6 @@ public class ModContext implements ModLifecycleListener {
         return this.spi.getWorldName();
     }
 
-    // TODO make these configurable via properties
-
-    @Deprecated
-    public boolean isExperimentalCommandsEnabled() {
-        return false;
-    }
-
-    @Deprecated
-    public boolean isFileRemoteBare() {
-        return true;
-    }
-
     public int getDefaultPermLevel() {
         return spi.isClient() ? 0 : 4;
     }

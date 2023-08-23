@@ -22,6 +22,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
+import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.ModContext;
@@ -37,6 +38,7 @@ import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.missingArgument;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.config.GitConfigKey.IS_FILE_REMOTE_BARE;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_PUSH_URL;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
@@ -72,7 +74,8 @@ enum CreateFileRemoteCommand implements Command {
                 return;
             }
             mkdirs(fupHome);
-            try (Git targetGit = Git.init().setBare(ctx.isFileRemoteBare()).setDirectory(fupHome.toFile()).call()) {
+            GitConfig conf = repo.getConfig();
+            try (Git targetGit = Git.init().setBare(conf.getBoolean(IS_FILE_REMOTE_BARE)).setDirectory(fupHome.toFile()).call()) {
                 final StoredConfig targetGitc = targetGit.getRepository().getConfig();
                 targetGitc.setInt("pack", null, "window", 0);
                 targetGitc.setInt("core", null, "bigFileThreshold", 1);

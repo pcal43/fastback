@@ -79,9 +79,7 @@ public class Commands {
         SetCommand.INSTANCE.register(argb, ctx);
 
         HelpCommand.INSTANCE.register(argb, ctx);
-        if (ctx.isExperimentalCommandsEnabled()) {
-            SaveCommand.INSTANCE.register(argb, ctx);
-        }
+
         CommandRegistrationCallback.EVENT.register((dispatcher, regAccess, env) -> dispatcher.register(argb));
     }
 
