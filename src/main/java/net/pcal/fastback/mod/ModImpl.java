@@ -46,6 +46,9 @@ import static net.pcal.fastback.utils.EnvironmentUtils.getGitVersion;
 
 class ModImpl implements LifecycleListener, Mod {
 
+    // ======================================================================
+    // Fields
+
     private final FrameworkServiceProvider fsp;
     private final Executor executor;
     private Path tempRestoresDirectory = null;
@@ -183,9 +186,11 @@ class ModImpl implements LifecycleListener, Mod {
     @Override
     public void onWorldStop() {
         final Path worldSaveDir = this.getWorldDirectory();
-        this.setHudText(localized("fastback.chat.thread-waiting"));
+        if (executor.getActiveCount() > 0) {
+            this.setMessageScreenText(localized("fastback.chat.thread-waiting"));
+        }
         executor.stop();
-        this.setHudText(null);
+        this.clearHudText();
         final RepoFactory rf = RepoFactory.get();
         if (rf.isGitRepo(worldSaveDir)) {
             try (final Repo repo = rf.load(worldSaveDir, this)) {
@@ -221,6 +226,8 @@ class ModImpl implements LifecycleListener, Mod {
             out.setStyle(Style.EMPTY.withColor(TextColor.parse("yellow")));
         } else if (m.style() == UserMessageStyle.NATIVE_GIT) {
             out.setStyle(Style.EMPTY.withColor(TextColor.parse("green")));
+        } else if (m.style() == UserMessageStyle.JGIT) {
+            out.setStyle(Style.EMPTY.withColor(TextColor.parse("gray")));
         }
         return out;
     }

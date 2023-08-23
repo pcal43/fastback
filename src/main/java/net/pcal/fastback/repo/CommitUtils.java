@@ -30,7 +30,8 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -39,6 +40,7 @@ import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.JGIT;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
+import static net.pcal.fastback.logging.UserMessage.styledRaw;
 import static net.pcal.fastback.utils.ProcessUtils.doExec;
 
 /**
@@ -95,9 +97,9 @@ class CommitUtils {
         syslog().debug("End native_commit");
     }
 
-    private static void jgit_commit(String newBranchName, Git jgit, Mod ctx, final UserLogger log) throws GitAPIException {
+    private static void jgit_commit(String newBranchName, Git jgit, Mod ctx, final UserLogger ulog) throws GitAPIException {
         syslog().debug("Starting jgit_commit");
-        log.hud(styledLocalized("fastback.hud.local-saving", JGIT));
+        ulog.hud(styledLocalized("fastback.hud.local-saving", JGIT));
         jgit.checkout().setOrphan(true).setName(newBranchName).call();
         jgit.reset().setMode(ResetCommand.ResetType.SOFT).call();
         syslog().debug("status");
@@ -111,31 +113,36 @@ class CommitUtils {
             // https://bugs.eclipse.org/bugs/show_bug.cgi?id=494323
             //
             {
-                final Collection<String> toAdd = new ArrayList<>();
+                final List<String> toAdd = new ArrayList<>();
                 toAdd.addAll(status.getModified());
                 toAdd.addAll(status.getUntracked());
+                Collections.sort(toAdd);
                 if (!toAdd.isEmpty()) {
                     syslog().debug("Adding " + toAdd.size() + " new or modified files to index");
-                    final AddCommand gitAdd = jgit.add();
+
                     for (final String file : toAdd) {
+                        final AddCommand gitAdd = jgit.add();
                         syslog().debug("add  " + file);
+                        ulog.hud(styledRaw("Backing up "+file, JGIT)); //FIXME i18n
                         gitAdd.addFilepattern(file);
+                        gitAdd.call();
                     }
-                    gitAdd.call();
                 }
             }
             {
-                final Collection<String> toDelete = new ArrayList<>();
+                final List<String> toDelete = new ArrayList<>();
                 toDelete.addAll(status.getRemoved());
                 toDelete.addAll(status.getMissing());
+                Collections.sort(toDelete);
                 if (!toDelete.isEmpty()) {
                     syslog().debug("Removing " + toDelete.size() + " deleted files from index");
-                    final RmCommand gitRm = jgit.rm();
                     for (final String file : toDelete) {
+                        final RmCommand gitRm = jgit.rm();
                         syslog().debug("rm  " + file);
+                        ulog.hud(styledRaw("Removing "+file, JGIT)); //FIXME i18n
                         gitRm.addFilepattern(file);
+                        gitRm.call();
                     }
-                    gitRm.call();
                 }
             }
         } finally {
@@ -143,6 +150,7 @@ class CommitUtils {
             syslog().debug("World save re-enabled.");
         }
         syslog().debug("commit");
+        ulog.hud(styledRaw("Commit complete", JGIT)); //FIXME i18n
         jgit.commit().setMessage(newBranchName).call();
     }
 }

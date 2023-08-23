@@ -39,7 +39,7 @@ import static net.pcal.fastback.logging.UserMessage.styledLocalized;
  */
 public class Executor {
 
-    private ExecutorService executor = null;
+    private ThreadPoolExecutor executor = null;
 
     public enum ExecutionLock {
         NONE,
@@ -68,6 +68,10 @@ public class Executor {
             default:
                 throw new IllegalStateException();
         }
+    }
+
+    public int getActiveCount() {
+        return this.executor.getActiveCount();
     }
 
     public void start() {
