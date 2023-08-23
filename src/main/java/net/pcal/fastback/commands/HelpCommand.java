@@ -59,11 +59,11 @@ enum HelpCommand implements Command {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(cc->help(ctx, cc)).
+                        executes(cc -> help(ctx, cc)).
                         then(
                                 argument(ARGUMENT, StringArgumentType.word()).
                                         suggests(new HelpTopicSuggestions()).
-                                        executes(cc->helpSubcommand(ctx, cc))
+                                        executes(cc -> helpSubcommand(ctx, cc))
                         )
         );
     }
@@ -71,7 +71,8 @@ enum HelpCommand implements Command {
     private static class HelpTopicSuggestions implements SuggestionProvider<ServerCommandSource> {
 
 
-        HelpTopicSuggestions() {}
+        HelpTopicSuggestions() {
+        }
 
         @Override
         public CompletableFuture<Suggestions> getSuggestions(final CommandContext<ServerCommandSource> cc,

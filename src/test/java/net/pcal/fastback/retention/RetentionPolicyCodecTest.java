@@ -45,7 +45,7 @@ public class RetentionPolicyCodecTest {
     public void testEncodePolicy() {
         final String encodedPolicy = RetentionPolicyCodec.INSTANCE.encodePolicy(
                 MockRetentionPolicyType.INSTANCE,
-                Map.of("foo", "bar", "baz","bop", "bad key", "whatever"));
+                Map.of("foo", "bar", "baz", "bop", "bad key", "whatever"));
         assertEquals("mock-policy baz=bop foo=bar", encodedPolicy);
     }
 
@@ -56,13 +56,13 @@ public class RetentionPolicyCodecTest {
                 "mock-policy foo=bar baz=bop random junk should be ignored"
         );
         assertTrue(policy instanceof MockRetentionPolicy);
-        assertEquals(((MockRetentionPolicy)policy).config, Map.of("foo", "bar", "baz", "bop"));
+        assertEquals(((MockRetentionPolicy) policy).config, Map.of("foo", "bar", "baz", "bop"));
     }
 
     @Test
     public void testEncodeMap() {
         String encoded = RetentionPolicyCodec.encodeMap(
-                Map.of("foo", "bar", "baz","bop", "bad key", "whatever"));
+                Map.of("foo", "bar", "baz", "bop", "bad key", "whatever"));
         assertEquals("baz=bop foo=bar", encoded);
     }
 
@@ -115,5 +115,7 @@ public class RetentionPolicyCodecTest {
         public UserMessage getDescription() {
             return UserMessage.raw("mock retention policy");
         }
-    };
+    }
+
+    ;
 }

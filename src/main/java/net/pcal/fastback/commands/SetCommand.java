@@ -53,7 +53,7 @@ enum SetCommand implements Command {
     public void register(final LiteralArgumentBuilder<ServerCommandSource> root, final Mod ctx) {
         final LiteralArgumentBuilder<ServerCommandSource> setCommand = literal(COMMAND_NAME).
                 requires(subcommandPermission(ctx, COMMAND_NAME)).
-                executes(cc-> missingArgument("key", ctx, cc));
+                executes(cc -> missingArgument("key", ctx, cc));
         registerNativeGit(setCommand, ctx);
         registerForceDebug(setCommand, ctx);
         root.then(setCommand);
@@ -64,8 +64,8 @@ enum SetCommand implements Command {
 
     private static void registerNativeGit(final LiteralArgumentBuilder<ServerCommandSource> setCommand, Mod ctx) {
         final LiteralArgumentBuilder<ServerCommandSource> nativeGit = literal("native-git");
-        nativeGit.then(literal("enabled").executes(cc->setNativeGit(ctx, cc, true)));
-        nativeGit.then(literal("disabled").executes(cc->setNativeGit(ctx, cc, false)));
+        nativeGit.then(literal("enabled").executes(cc -> setNativeGit(ctx, cc, true)));
+        nativeGit.then(literal("disabled").executes(cc -> setNativeGit(ctx, cc, false)));
         setCommand.then(nativeGit);
     }
 
@@ -82,8 +82,8 @@ enum SetCommand implements Command {
 
     private static void registerForceDebug(final LiteralArgumentBuilder<ServerCommandSource> setCommand, final Mod ctx) {
         final LiteralArgumentBuilder<ServerCommandSource> debug = literal("force-debug");
-        debug.then(literal("enabled").executes(cc-> setForceDebug(ctx, cc, true)));
-        debug.then(literal("disabled").executes(cc-> setForceDebug(ctx, cc, false)));
+        debug.then(literal("enabled").executes(cc -> setForceDebug(ctx, cc, true)));
+        debug.then(literal("disabled").executes(cc -> setForceDebug(ctx, cc, false)));
         setCommand.then(debug);
     }
 

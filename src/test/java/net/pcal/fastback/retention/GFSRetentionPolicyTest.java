@@ -50,7 +50,7 @@ public class GFSRetentionPolicyTest {
 
         final LocalDate now = LocalDate.of(2023, 2, 23); // this is a wednesday
         final List<SnapshotId> expectPruned = new ArrayList<>();
-        Function<SnapshotId,SnapshotId> pruned = sid-> {
+        Function<SnapshotId, SnapshotId> pruned = sid -> {
             expectPruned.add(sid);
             return sid;
         };
@@ -59,7 +59,7 @@ public class GFSRetentionPolicyTest {
                 sid(2023, 2, 23, 9), sid(2023, 2, 23, 8), sid(2023, 2, 23, 7), // keep everything from today
                 sid(2023, 2, 22, 9), sid(2023, 2, 22, 8), sid(2023, 2, 22, 7), // and yesterday, too
                 // these are on unique days in the past week, should be kept
-                sid(2023, 2, 16, 9),  sid(2023, 2, 17, 9),  sid(2023, 2, 18, 9),
+                sid(2023, 2, 16, 9), sid(2023, 2, 17, 9), sid(2023, 2, 18, 9),
                 // this one is earlier in the day on the 18th, should be pruned
                 pruned.apply(sid(2023, 2, 18, 8)),
                 // keep only the newest one from the previous week
@@ -75,7 +75,7 @@ public class GFSRetentionPolicyTest {
 
         ));
         RetentionPolicy policy = GFSRetentionPolicy.GFSRetentionPolicyType.INSTANCE.createPolicy(Collections.emptyMap());
-        ((GFSRetentionPolicy)policy).nowSupplier = ()->now;
+        ((GFSRetentionPolicy) policy).nowSupplier = () -> now;
         Collection<SnapshotId> toPruneList = policy.getSnapshotsToPrune(snapshots);
         Assertions.assertEquals(expectPruned, toPruneList);
     }

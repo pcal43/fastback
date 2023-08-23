@@ -69,7 +69,7 @@ enum FullCommand implements Command {
     /**
      * NOTE: this MUST be called in the game thread; calling it from one of our executor threads causes things
      * to seize up (at least on shutdown backup?)
-     *
+     * <p>
      * Workaround for https://github.com/pcal43/fastback/issues/112
      */
     static void saveWorldBeforeBackup(Mod mod, UserLogger ulog) throws IOException {

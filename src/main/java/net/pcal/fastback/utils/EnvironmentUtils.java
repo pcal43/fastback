@@ -33,20 +33,21 @@ public class EnvironmentUtils {
     }
 
     public static String getGitVersion() {
-        return execForVersion(new String[] {"git", "-v"});
+        return execForVersion(new String[]{"git", "-v"});
     }
 
     public static String getGitLfsVersion() {
-        return execForVersion(new String[] {"git-lfs", "-v"});
+        return execForVersion(new String[]{"git-lfs", "-v"});
     }
 
     private static String execForVersion(String[] cmd) {
         final List<String> stdout = new ArrayList<>();
         final int exit;
         try {
-            exit = doExec(cmd, Collections.emptyMap(), stdout::add, line -> {});
+            exit = doExec(cmd, Collections.emptyMap(), stdout::add, line -> {
+            });
         } catch (IOException | InterruptedException e) {
-            syslog().debug("Could not run "+ String.join(" ", cmd), e);
+            syslog().debug("Could not run " + String.join(" ", cmd), e);
             return null;
         }
         return exit == 0 ? stdout.get(0) : null;

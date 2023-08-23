@@ -124,8 +124,8 @@ class PushUtils {
         final File worktree = repo.getWorkTree();
         final GitConfig conf = repo.getConfig();
         String remoteName = conf.getString(REMOTE_NAME);
-        final String[] push = { "git", "-C", worktree.getAbsolutePath(), "-c", "push.autosetupremote=false", "push", "--progress", "--set-upstream", remoteName, branchNameToPush };
-        final Map<String,String> env = Map.of("GIT_LFS_FORCE_PROGRESS", "1");
+        final String[] push = {"git", "-C", worktree.getAbsolutePath(), "-c", "push.autosetupremote=false", "push", "--progress", "--set-upstream", remoteName, branchNameToPush};
+        final Map<String, String> env = Map.of("GIT_LFS_FORCE_PROGRESS", "1");
         final Consumer<String> logConsumer = new HudConsumer(log, UserMessageStyle.NATIVE_GIT);
         doExec(push, env, logConsumer, logConsumer);
         syslog().debug("End native_push");

@@ -48,7 +48,7 @@ enum SetRemoteCommand implements Command {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(cc-> missingArgument(URL_ARGUMENT, ctx, cc)).
+                        executes(cc -> missingArgument(URL_ARGUMENT, ctx, cc)).
                         then(
                                 argument(URL_ARGUMENT, StringArgumentType.greedyString()).
                                         executes(cc -> setRemoteUrl(ctx, cc))

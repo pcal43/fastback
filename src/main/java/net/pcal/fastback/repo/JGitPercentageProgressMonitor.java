@@ -44,7 +44,7 @@ abstract class JGitPercentageProgressMonitor implements ProgressMonitor {
     @Override
     final public void update(int completed) {
         this.totalCompleted += completed;
-        int percent =  this.currentTotalWork == 0 ? 0 : (this.totalCompleted * 100) / this.currentTotalWork;
+        int percent = this.currentTotalWork == 0 ? 0 : (this.totalCompleted * 100) / this.currentTotalWork;
         this.progressUpdate(currentTask, percent);
     }
 
@@ -64,7 +64,6 @@ abstract class JGitPercentageProgressMonitor implements ProgressMonitor {
     protected abstract void progressUpdate(String taskName, int percentage);
 
     protected abstract void progressDone(String taskName);
-
 
 
 }

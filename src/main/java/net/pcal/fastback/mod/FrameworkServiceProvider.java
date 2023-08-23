@@ -25,7 +25,7 @@ import java.nio.file.Path;
 
 /**
  * Services that must be provided by the underlying mod framework.  Currently, that means fabric only.
- *
+ * <p>
  * But abstracting it away like this ensures that it would be relatively straightforward to support other
  * frameworks if there's ever a desire or need for that.  If you're interested in helping port Fastback
  * to (say) Forge, this is the place to start.

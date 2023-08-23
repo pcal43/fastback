@@ -40,12 +40,12 @@ class RepoFactoryImpl implements RepoFactory {
     @Override
     public Repo init(Path worldSaveDir, Mod mod) throws IOException {
         try (final Git jgit = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
-             final Repo repo = new RepoImpl(jgit, mod);
-             final Updater updater = repo.getConfig().updater();
-             updater.set(COMMIT_SIGNING_ENABLED, false);
-             updater.set(BROADCAST_NOTICE_ENABLED, true);
-             updater.save();
-             return repo;
+            final Repo repo = new RepoImpl(jgit, mod);
+            final Updater updater = repo.getConfig().updater();
+            updater.set(COMMIT_SIGNING_ENABLED, false);
+            updater.set(BROADCAST_NOTICE_ENABLED, true);
+            updater.save();
+            return repo;
         } catch (GitAPIException e) {
             syslog().error("Error initializing repo", e);
             throw new IOException(e);

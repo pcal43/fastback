@@ -44,7 +44,7 @@ enum SetShutdownActionCommand implements Command {
     public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
         final LiteralArgumentBuilder<ServerCommandSource> setCommand = literal(COMMAND_NAME).
                 requires(subcommandPermission(ctx, COMMAND_NAME)).
-                executes(cc-> missingArgument("actionName", ctx, cc));
+                executes(cc -> missingArgument("actionName", ctx, cc));
         for (final SchedulableAction action : SchedulableAction.values()) {
             final LiteralArgumentBuilder<ServerCommandSource> azz = literal(action.getArgumentName());
             azz.executes(cc -> setShutdownAction(ctx, cc.getSource(), action));

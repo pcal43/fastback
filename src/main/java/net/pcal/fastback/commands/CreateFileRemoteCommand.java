@@ -57,9 +57,9 @@ enum CreateFileRemoteCommand implements Command {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(cc-> missingArgument(ARGUMENT, ctx, cc)).
+                        executes(cc -> missingArgument(ARGUMENT, ctx, cc)).
                         then(argument(ARGUMENT, StringArgumentType.greedyString()).
-                                        executes(cc -> setFileRemote(ctx, cc))
+                                executes(cc -> setFileRemote(ctx, cc))
                         )
         );
     }

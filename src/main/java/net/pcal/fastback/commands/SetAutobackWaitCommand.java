@@ -48,7 +48,7 @@ enum SetAutobackWaitCommand implements Command {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(cc-> missingArgument(ARGUMENT, ctx, cc)).
+                        executes(cc -> missingArgument(ARGUMENT, ctx, cc)).
                         then(
                                 argument(ARGUMENT, IntegerArgumentType.integer(0)).
                                         executes(cc -> setWait(ctx, cc))

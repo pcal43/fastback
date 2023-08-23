@@ -49,7 +49,7 @@ public class Commands {
     public static void registerCommands(final Mod ctx) {
         final LiteralArgumentBuilder<ServerCommandSource> root = LiteralArgumentBuilder.<ServerCommandSource>literal("backup").
                 requires(Permissions.require(BACKUP_COMMAND_PERM, ctx.getDefaultPermLevel())).
-                executes(cc->help(ctx, cc));
+                executes(cc -> help(ctx, cc));
         EnableCommand.INSTANCE.register(root, ctx);
         DisableCommand.INSTANCE.register(root, ctx);
         LocalCommand.INSTANCE.register(root, ctx);
@@ -104,7 +104,7 @@ public class Commands {
     public static <V> V getArgumentNicely(final String argName, final Class<V> clazz, final CommandContext<?> cc, UserLogger log) {
         try {
             return cc.getArgument(argName, clazz);
-        } catch(IllegalArgumentException iae) {
+        } catch (IllegalArgumentException iae) {
             missingArgument(argName, log);
             return null;
         }

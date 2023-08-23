@@ -32,7 +32,7 @@ import java.nio.file.Path;
  * @since 0.1.0
  */
 public interface Mod {
-    
+
     /**
      * Use this for running stuff in other threads.
      */

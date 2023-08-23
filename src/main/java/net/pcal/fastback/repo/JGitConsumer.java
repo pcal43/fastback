@@ -21,7 +21,6 @@ package net.pcal.fastback.repo;
 import java.io.IOException;
 
 /**
- *
  * @author pcal
  */
 @FunctionalInterface

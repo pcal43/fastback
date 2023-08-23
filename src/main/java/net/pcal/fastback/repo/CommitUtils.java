@@ -78,7 +78,7 @@ class CommitUtils {
         syslog().debug("Start native_commit");
         log.hud(styledLocalized("fastback.hud.local-saving", NATIVE_GIT));
         final File worktree = repo.getWorkTree();
-        final Map<String,String> env = Map.of("GIT_LFS_FORCE_PROGRESS", "1");
+        final Map<String, String> env = Map.of("GIT_LFS_FORCE_PROGRESS", "1");
         final Consumer<String> logConsumer = new HudConsumer(log, NATIVE_GIT);
         String[] checkout = {"git", "-C", worktree.getAbsolutePath(), "checkout", "--orphan", newBranchName};
         doExec(checkout, env, logConsumer, logConsumer);
@@ -123,7 +123,7 @@ class CommitUtils {
                     for (final String file : toAdd) {
                         final AddCommand gitAdd = jgit.add();
                         syslog().debug("add  " + file);
-                        ulog.hud(styledRaw("Backing up "+file, JGIT)); //FIXME i18n
+                        ulog.hud(styledRaw("Backing up " + file, JGIT)); //FIXME i18n
                         gitAdd.addFilepattern(file);
                         gitAdd.call();
                     }
@@ -139,7 +139,7 @@ class CommitUtils {
                     for (final String file : toDelete) {
                         final RmCommand gitRm = jgit.rm();
                         syslog().debug("rm  " + file);
-                        ulog.hud(styledRaw("Removing "+file, JGIT)); //FIXME i18n
+                        ulog.hud(styledRaw("Removing " + file, JGIT)); //FIXME i18n
                         gitRm.addFilepattern(file);
                         gitRm.call();
                     }

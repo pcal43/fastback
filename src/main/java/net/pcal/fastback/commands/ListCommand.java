@@ -45,7 +45,7 @@ enum ListCommand implements Command {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(cc->execute(ctx, cc))
+                        executes(cc -> execute(ctx, cc))
         );
     }
 
