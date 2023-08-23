@@ -60,7 +60,7 @@ class RestoreUtils {
     private static Path jgit_restoreSnapshot(final String repoUri, final Path restoreTargetDir, final String worldName, final SnapshotId sid, final UserLogger ulog) throws IOException, GitAPIException {
         final Path restoreDir = getTargetDir(restoreTargetDir, worldName, sid.getName());
         final String branchName = sid.getBranchName();
-        ulog.hud(localized("fastback.hud.restore-percent", 0));
+        ulog.update(localized("fastback.hud.restore-percent", 0));
         final ProgressMonitor pm = new JGitIncrementalProgressMonitor(new JGitRestoreProgressMonitor(ulog), 100);
         try (Git git = Git.cloneRepository().setProgressMonitor(pm).setDirectory(restoreDir.toFile()).
                 setBranchesToClone(List.of("refs/heads/" + branchName)).setBranch(branchName).setURI(repoUri).call()) {
@@ -105,7 +105,7 @@ class RestoreUtils {
         public void progressUpdate(String task, int percentage) {
             final String message = task + " " + percentage + "%";
             syslog().debug(message);
-            this.ulog.hud(styledRaw(message, UserMessageStyle.JGIT));
+            this.ulog.update(styledRaw(message, UserMessageStyle.JGIT));
         }
 
         @Override

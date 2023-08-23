@@ -64,7 +64,7 @@ enum DeleteCommand implements Command {
             final SnapshotId sid = SnapshotId.fromUuidAndName(uuid, snapshotName);
             final String branchName = sid.getBranchName();
             repo.deleteLocalBranches(List.of(branchName));
-            log.chat(UserMessage.localized("fastback.chat.delete-done", snapshotName));
+            log.message(UserMessage.localized("fastback.chat.delete-done", snapshotName));
         });
         return SUCCESS;
     }

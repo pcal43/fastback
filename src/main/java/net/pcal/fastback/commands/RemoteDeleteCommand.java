@@ -59,7 +59,7 @@ enum RemoteDeleteCommand implements Command {
             final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
             final SnapshotId sid = SnapshotId.fromUuidAndName(repo.getWorldUuid(), snapshotName);
             repo.deleteRemoteBranch(sid.getBranchName());
-            log.chat(UserMessage.localized("fastback.chat.remote-delete-done", snapshotName));
+            log.message(UserMessage.localized("fastback.chat.remote-delete-done", snapshotName));
         });
         return SUCCESS;
     }

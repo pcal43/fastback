@@ -45,7 +45,7 @@ class HudConsumer implements Consumer<String> {
 
     @Override
     public void accept(String s) {
-        log.hud(styledRaw(s, style));
+        log.update(styledRaw(s, style));
         syslog().debug(s);
     }
 }

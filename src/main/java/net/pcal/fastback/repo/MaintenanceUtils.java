@@ -93,28 +93,28 @@ public interface MaintenanceUtils {
         final GitConfig conf = repo.getConfig();
         boolean currentSetting = repo.getConfig().getBoolean(IS_NATIVE_GIT_ENABLED);
         if (currentSetting == newSetting) {
-            user.chat(raw("Nothing changed."));
+            user.message(raw("Nothing changed."));
             return;
         }
         if (!repo.listSnapshots().isEmpty()) {
-            user.chat(styledRaw("Existing snapshots found.  You can't change the native-git setting after you've " +
+            user.message(styledRaw("Existing snapshots found.  You can't change the native-git setting after you've " +
                     "done a backup.  Consider making a fresh copy of your world, deleting the .git directory " +
                     "in the copy, and enabling native git there.", ERROR));
             return;
         }
         if (newSetting) {
             if (!EnvironmentUtils.isNativeGitInstalled()) {
-                user.chat(styledRaw("Please install git and git-lfs and try again.", ERROR));
+                user.message(styledRaw("Please install git and git-lfs and try again.", ERROR));
                 return;
             } else {
             }
             conf.updater().set(IS_NATIVE_GIT_ENABLED, true).save();
-            user.chat(localized("fastback.chat.ok"));
-            user.chat(styledRaw("native-git enabled.", NATIVE_GIT));
-            user.chat(styledRaw("WARNING!  This is an experimental feature.  Please don't use it on a world you love.", WARNING));
+            user.message(localized("fastback.chat.ok"));
+            user.message(styledRaw("native-git enabled.", NATIVE_GIT));
+            user.message(styledRaw("WARNING!  This is an experimental feature.  Please don't use it on a world you love.", WARNING));
         } else {
             conf.updater().set(IS_NATIVE_GIT_ENABLED, false).save();
-            user.chat(localized("fastback.chat.ok"));
+            user.message(localized("fastback.chat.ok"));
         }
     }
 

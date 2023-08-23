@@ -81,7 +81,7 @@ class RepoImpl implements Repo {
         broadcastBackupNotice();
         final SnapshotId newSid = CommitUtils.doCommitSnapshot(this, mod, ulog);
         PushUtils.doPush(newSid, this, ulog);
-        ulog.chat(UserMessage.localized("fastback.chat.backup-complete"));//FIXME not if it failed
+        ulog.message(UserMessage.localized("fastback.chat.backup-complete"));//FIXME not if it failed
     }
 
     @Override
@@ -89,7 +89,7 @@ class RepoImpl implements Repo {
         if (!doNativeCheck(ulog)) return;
         broadcastBackupNotice();
         CommitUtils.doCommitSnapshot(this, mod, ulog);
-        ulog.chat(UserMessage.localized("fastback.chat.backup-complete")); //FIXME not necessarily
+        ulog.message(UserMessage.localized("fastback.chat.backup-complete")); //FIXME not necessarily
     }
 
     @Override
@@ -216,7 +216,7 @@ class RepoImpl implements Repo {
         final GitConfig config = this.getConfig();
         if (config.getBoolean(IS_NATIVE_GIT_ENABLED)) {
             if (!EnvironmentUtils.isNativeGitInstalled()) {
-                ulog.chat(UserMessage.rawError("Unable to backup: native mode enabled but git is not installed."));
+                ulog.message(UserMessage.rawError("Unable to backup: native mode enabled but git is not installed."));
                 return false;
             }
         }

@@ -37,7 +37,9 @@ public interface FrameworkServiceProvider {
 
     static LifecycleListener register(final FrameworkServiceProvider sp, final SystemLogger syslog) {
         SystemLogger.Singleton.register(syslog);
-        return new ModImpl(sp);
+        final ModImpl mod = new ModImpl(sp);
+        Mod.Singleton.register(mod);
+        return mod;
     }
 
     /**

@@ -58,7 +58,7 @@ public class Executor {
                 return true;
             case WRITE:
                 if (this.exclusiveFuture != null && !this.exclusiveFuture.isDone()) {
-                    ulog.chat(styledLocalized("fastback.chat.thread-busy", ERROR));
+                    ulog.message(styledLocalized("fastback.chat.thread-busy", ERROR));
                     return false;
                 } else {
                     syslog().debug("executing " + runnable);

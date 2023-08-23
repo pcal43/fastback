@@ -24,6 +24,7 @@ import java.io.IOException;
  * Singleton logger instance that writes to the serverside console.
  *
  * @author pcal
+ * @since 0.12.0
  */
 public interface SystemLogger {
 
@@ -52,7 +53,6 @@ public interface SystemLogger {
     default void debug(Throwable t) {
         this.debug(t.getMessage(), t);
     }
-
 
     class Singleton {
         private static SystemLogger INSTANCE = null;

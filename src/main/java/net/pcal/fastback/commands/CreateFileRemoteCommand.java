@@ -70,7 +70,7 @@ enum CreateFileRemoteCommand implements Command {
             final String targetPath = cc.getArgument(ARGUMENT, String.class);
             final Path fupHome = Path.of(targetPath);
             if (fupHome.toFile().exists()) {
-                ulog.chat(styledLocalized("fastback.chat.create-file-remote-dir-exists", ERROR, fupHome.toString()));
+                ulog.message(styledLocalized("fastback.chat.create-file-remote-dir-exists", ERROR, fupHome.toString()));
                 return;
             }
             mkdirs(fupHome);
@@ -83,7 +83,7 @@ enum CreateFileRemoteCommand implements Command {
             }
             final String targetUrl = "file://" + fupHome.toAbsolutePath();
             repo.getConfig().updater().set(REMOTE_PUSH_URL, targetUrl).save();
-            ulog.chat(UserMessage.localized("fastback.chat.create-file-remote-created", targetPath, targetUrl));
+            ulog.message(UserMessage.localized("fastback.chat.create-file-remote-created", targetPath, targetUrl));
         });
         return SUCCESS;
     }

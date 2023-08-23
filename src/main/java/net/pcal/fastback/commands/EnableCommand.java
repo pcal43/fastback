@@ -68,7 +68,7 @@ enum EnableCommand implements Command {
                             updater.set(SHUTDOWN_ACTION, DEFAULT_SHUTDOWN_ACTION.getConfigValue());
                         }
                         updater.save();
-                        ulog.chat(localized("fastback.chat.enable-done"));
+                        ulog.message(localized("fastback.chat.enable-done"));
                     } catch (Exception e) {
                         syslog().error("Error enabling backups", e);
                     }

@@ -25,6 +25,8 @@ import net.pcal.fastback.utils.Executor;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * Singleton that provides various mod-wide services.
  *
@@ -32,6 +34,10 @@ import java.nio.file.Path;
  * @since 0.1.0
  */
 public interface Mod {
+
+    static Mod mod() {
+        return Singleton.INSTANCE;
+    }
 
     /**
      * Use this for running stuff in other threads.
@@ -103,4 +109,14 @@ public interface Mod {
      * @return true if we're running on a dedicated server.
      */
     boolean isDecicatedServer();
+
+    class Singleton {
+        private static Mod INSTANCE = null;
+
+        public static void register(Mod mod) {
+            requireNonNull(mod);
+            if (INSTANCE != null) throw new IllegalStateException();
+            Singleton.INSTANCE = mod;
+        }
+    }
 }

@@ -91,7 +91,7 @@ class ReclamationUtils {
     private static void jgit_doGc(RepoImpl repo, UserLogger ulog) throws IOException, GitAPIException, ParseException {
         final File gitDir = repo.getJGit().getRepository().getDirectory();
         final GitConfig config = repo.getConfig();
-        ulog.hud(styledLocalized("fastback.hud.gc-percent", JGIT, 0));
+        ulog.update(styledLocalized("fastback.hud.gc-percent", JGIT, 0));
         syslog().debug("Stats before gc:");
         syslog().debug(String.valueOf(repo.getJGit().gc().getStatistics()));
         final long sizeBeforeBytes = sizeOfDirectory(gitDir);
@@ -153,21 +153,21 @@ class ReclamationUtils {
 
         @Override
         public void progressStart(String task) {
-            this.ulog.hud(raw(task));
+            this.ulog.update(raw(task));
         }
 
         @Override
         public void progressUpdate(String task, int percentage) {
             final String message = task + " " + percentage + "%";
             syslog().debug(message);
-            this.ulog.hud(styledLocalized(message, JGIT));
+            this.ulog.update(styledLocalized(message, JGIT));
         }
 
         @Override
         public void progressDone(String task) {
             final String message = "Done " + task;
             syslog().debug(message);
-            this.ulog.hud(styledLocalized(message, JGIT)); // FIXME i18n?
+            this.ulog.update(styledLocalized(message, JGIT)); // FIXME i18n?
         }
 
         @Override

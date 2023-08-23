@@ -61,7 +61,7 @@ enum SetRemoteCommand implements Command {
         gitOp(mod, WRITE_CONFIG, ulog, repo -> {
             final String newUrl = cc.getArgument(URL_ARGUMENT, String.class);
             repo.getConfig().updater().set(GitConfigKey.REMOTE_PUSH_URL, newUrl).save();
-            ulog.chat(UserMessage.localized("fastback.chat.remote-enabled", newUrl));
+            ulog.message(UserMessage.localized("fastback.chat.remote-enabled", newUrl));
         });
         return SUCCESS;
     }

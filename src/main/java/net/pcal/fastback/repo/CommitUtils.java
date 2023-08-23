@@ -75,7 +75,7 @@ class CommitUtils {
 
     private static void native_commit(String newBranchName, Repo repo, Mod mod, UserLogger log) throws IOException, InterruptedException {
         syslog().debug("Start native_commit");
-        log.hud(styledLocalized("fastback.hud.local-saving", NATIVE_GIT));
+        log.update(styledLocalized("fastback.hud.local-saving", NATIVE_GIT));
         final File worktree = repo.getWorkTree();
         final Map<String, String> env = Map.of("GIT_LFS_FORCE_PROGRESS", "1");
         final Consumer<String> logConsumer = new HudConsumer(log, NATIVE_GIT);
@@ -98,7 +98,7 @@ class CommitUtils {
 
     private static void jgit_commit(String newBranchName, Git jgit, Mod mod, final UserLogger ulog) throws GitAPIException {
         syslog().debug("Starting jgit_commit");
-        ulog.hud(styledLocalized("fastback.hud.local-saving", JGIT));
+        ulog.update(styledLocalized("fastback.hud.local-saving", JGIT));
         jgit.checkout().setOrphan(true).setName(newBranchName).call();
         jgit.reset().setMode(ResetCommand.ResetType.SOFT).call();
         syslog().debug("status");
@@ -122,7 +122,7 @@ class CommitUtils {
                     for (final String file : toAdd) {
                         final AddCommand gitAdd = jgit.add();
                         syslog().debug("add  " + file);
-                        ulog.hud(styledRaw("Backing up " + file, JGIT)); //FIXME i18n
+                        ulog.update(styledRaw("Backing up " + file, JGIT)); //FIXME i18n
                         gitAdd.addFilepattern(file);
                         gitAdd.call();
                     }
@@ -138,7 +138,7 @@ class CommitUtils {
                     for (final String file : toDelete) {
                         final RmCommand gitRm = jgit.rm();
                         syslog().debug("rm  " + file);
-                        ulog.hud(styledRaw("Removing " + file, JGIT)); //FIXME i18n
+                        ulog.update(styledRaw("Removing " + file, JGIT)); //FIXME i18n
                         gitRm.addFilepattern(file);
                         gitRm.call();
                     }
@@ -149,7 +149,7 @@ class CommitUtils {
             syslog().debug("World save re-enabled.");
         }
         syslog().debug("commit");
-        ulog.hud(styledRaw("Commit complete", JGIT)); //FIXME i18n
+        ulog.update(styledRaw("Commit complete", JGIT)); //FIXME i18n
         jgit.commit().setMessage(newBranchName).call();
     }
 }

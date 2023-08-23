@@ -16,28 +16,27 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.mod;
+package net.pcal.fastback.logging;
 
-import net.pcal.fastback.logging.UserLogger;
-import net.pcal.fastback.logging.UserMessage;
+import static net.pcal.fastback.mod.Mod.mod;
 
-import static java.util.Objects.requireNonNull;
+/**
+ * Handles messages in the context of an autosave operation.
+ *
+ * @author pcal
+ * @since 0.15.0
+ */
+enum AutosaveLogger implements UserLogger {
 
-public class HudLogger implements UserLogger {
+    INSTANCE;
 
-    private final Mod mod;
-
-    HudLogger(Mod mod) {
-        this.mod = requireNonNull(mod);
+    @Override
+    public void message(final UserMessage message) {
     }
 
     @Override
-    public void message(UserMessage message) {
-
+    public void update(final UserMessage message) {
+        mod().setHudText(message);
     }
 
-    @Override
-    public void update(UserMessage message) {
-        mod.setHudText(message);
-    }
 }

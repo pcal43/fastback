@@ -52,7 +52,7 @@ enum DisableCommand implements Command {
         final UserLogger ulog = commandLogger(mod, cc.getSource());
         gitOp(mod, WRITE_CONFIG, ulog, repo -> {
             repo.getConfig().updater().set(IS_BACKUP_ENABLED, false).save();
-            ulog.chat(UserMessage.localized("fastback.chat.disable-done"));
+            ulog.message(UserMessage.localized("fastback.chat.disable-done"));
         });
         return SUCCESS;
     }

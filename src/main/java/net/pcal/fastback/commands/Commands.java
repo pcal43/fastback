@@ -84,7 +84,7 @@ public class Commands {
     }
 
     public static UserLogger commandLogger(final Mod mod, final ServerCommandSource scs) {
-        return new CommandSourceLogger(mod, scs);
+        return UserLogger.forCommand(scs);
     }
 
     public static String subcommandPermName(String subcommandName) {
@@ -115,7 +115,7 @@ public class Commands {
     }
 
     public static int missingArgument(final String argName, final UserLogger log) {
-        log.chat(styledLocalized("fastback.chat.missing-argument", ERROR, argName));
+        log.message(styledLocalized("fastback.chat.missing-argument", ERROR, argName));
         return FAILURE;
     }
 
@@ -128,19 +128,19 @@ public class Commands {
             final Path worldSaveDir = mod.getWorldDirectory();
             final RepoFactory rf = RepoFactory.get();
             if (!rf.isGitRepo(worldSaveDir)) {
-                ulog.chat(styledLocalized("fastback.chat.not-enabled", ERROR));
+                ulog.message(styledLocalized("fastback.chat.not-enabled", ERROR));
                 return;
             }
             try (final Repo repo = rf.load(worldSaveDir, mod)) {
                 final GitConfig repoConfig = repo.getConfig();
                 if (!repoConfig.getBoolean(IS_BACKUP_ENABLED)) {
-                    ulog.chat(styledLocalized("fastback.chat.not-enabled", ERROR));
+                    ulog.message(styledLocalized("fastback.chat.not-enabled", ERROR));
                 } else {
                     op.execute(repo);
                 }
             } catch (Exception e) {
                 syslog().error("Command execution failed.", e);
-                ulog.chat(styledLocalized("fastback.chat.internal-error", ERROR));
+                ulog.message(styledLocalized("fastback.chat.internal-error", ERROR));
             } finally {
                 mod.clearHudText();
             }

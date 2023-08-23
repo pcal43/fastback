@@ -58,7 +58,7 @@ enum SetShutdownActionCommand implements Command {
         gitOp(mod, WRITE_CONFIG, ulog, repo -> {
             final GitConfig conf = repo.getConfig();
             conf.updater().set(SHUTDOWN_ACTION, action.getConfigValue()).save();
-            ulog.chat(UserMessage.localized("fastback.chat.info-shutdown-action", action.getArgumentName()));
+            ulog.message(UserMessage.localized("fastback.chat.info-shutdown-action", action.getArgumentName()));
         });
         return SUCCESS;
     }

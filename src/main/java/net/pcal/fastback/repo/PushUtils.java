@@ -95,7 +95,7 @@ class PushUtils {
                 }
                 if (!uuidCheckResult) {
                     final URIish remoteUri = jgit_getRemoteUri(repo.getJGit(), repo.getConfig().getString(REMOTE_NAME));
-                    ulog.chat(styledLocalized("fastback.chat.push-uuid-mismatch", ERROR, remoteUri));
+                    ulog.message(styledLocalized("fastback.chat.push-uuid-mismatch", ERROR, remoteUri));
                     syslog().error("Failing remote backup due to failed uuid check");
                     return;
                 }
@@ -120,7 +120,7 @@ class PushUtils {
 
     private static void native_doPush(final Repo repo, final String branchNameToPush, final UserLogger log) throws IOException, InterruptedException {
         syslog().debug("Start native_push");
-        log.hud(styledLocalized("fastback.chat.push-started", NATIVE_GIT));
+        log.update(styledLocalized("fastback.chat.push-started", NATIVE_GIT));
         final File worktree = repo.getWorkTree();
         final GitConfig conf = repo.getConfig();
         String remoteName = conf.getString(REMOTE_NAME);
@@ -132,7 +132,7 @@ class PushUtils {
     }
 
     private static void jgit_doSmartPush(final RepoImpl repo, List<SnapshotId> remoteSnapshots, final String branchNameToPush, final GitConfig conf, final UserLogger ulog) throws IOException {
-        ulog.hud(styledLocalized("fastback.chat.push-started", JGIT));
+        ulog.update(styledLocalized("fastback.chat.push-started", JGIT));
         try {
             final Git jgit = repo.getJGit();
             final String remoteName = conf.getString(REMOTE_NAME);
@@ -274,14 +274,14 @@ class PushUtils {
         public void progressUpdate(String task, int percentage) {
             final String msg = task + " " + percentage + "%";
             syslog().debug(msg);
-            ulog.hud(styledRaw(msg, JGIT));
+            ulog.update(styledRaw(msg, JGIT));
         }
 
         @Override
         public void progressDone(String task) {
             final String msg = "Done " + task; // FIXME i18n
             syslog().debug(msg);
-            ulog.hud(styledRaw(msg, JGIT));
+            ulog.update(styledRaw(msg, JGIT));
         }
 
         @Override

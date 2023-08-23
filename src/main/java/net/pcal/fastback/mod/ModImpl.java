@@ -232,10 +232,10 @@ class ModImpl implements LifecycleListener, Mod {
 
     private static Text messageToText(final UserMessage m) {
         final MutableText out;
-        if (m.styledLocalized() != null) {
-            out = Text.translatable(m.styledLocalized().key(), m.styledLocalized().params());
+        if (m.localized() != null) {
+            out = Text.translatable(m.localized().key(), m.localized().params());
         } else {
-            out = Text.literal(m.styledRaw());
+            out = Text.literal(m.raw());
         }
         if (m.style() == ERROR) {
             out.setStyle(EMPTY.withColor(TextColor.parse("red")));

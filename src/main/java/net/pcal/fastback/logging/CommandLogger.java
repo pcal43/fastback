@@ -16,32 +16,34 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.commands;
+package net.pcal.fastback.logging;
 
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.logging.UserLogger;
-import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.mod.Mod;
 
 import static java.util.Objects.requireNonNull;
+import static net.pcal.fastback.mod.Mod.mod;
 
-class CommandSourceLogger implements UserLogger {
+/**
+ * Handles messages in the context of a command executed by the user in the console or chat box.
+ *
+ * @author pcal
+ * @since 0.15.0
+ */
+class CommandLogger implements UserLogger {
 
     private final ServerCommandSource scs;
-    private final Mod mod;
 
-    CommandSourceLogger(Mod mod, ServerCommandSource scs) {
-        this.mod = requireNonNull(mod);
+    CommandLogger(final ServerCommandSource scs) {
         this.scs = requireNonNull(scs);
     }
 
     @Override
-    public void chat(UserMessage message) {
-        mod.sendChat(message, this.scs);
+    public void message(final UserMessage message) {
+        mod().sendChat(message, this.scs);
     }
 
     @Override
-    public void hud(UserMessage message) {
-        this.mod.setHudText(message);
+    public void update(final UserMessage message) {
+        mod().setHudText(message);
     }
 }
