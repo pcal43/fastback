@@ -19,11 +19,7 @@
 package net.pcal.fastback.repo;
 
 import net.pcal.fastback.config.GitConfig;
-import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.logging.SystemLogger;
 import net.pcal.fastback.logging.UserLogger;
-import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.logging.UserMessage.UserMessageStyle;
 import net.pcal.fastback.utils.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
@@ -45,8 +41,11 @@ import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.config.GitConfigKey.IS_BRANCH_CLEANUP_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.IS_REFLOG_DELETION_ENABLED;
-import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.*;
+import static net.pcal.fastback.logging.SystemLogger.syslog;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.JGIT;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;
 import static net.pcal.fastback.logging.UserMessage.localized;
+import static net.pcal.fastback.logging.UserMessage.raw;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 import static net.pcal.fastback.repo.PushUtils.isTempBranch;
 import static net.pcal.fastback.utils.ProcessUtils.doExec;
@@ -62,48 +61,47 @@ import static org.eclipse.jgit.api.ListBranchCommand.ListMode.ALL;
  */
 class ReclamationUtils {
 
-    static void doReclamation(RepoImpl repo, Logger log) throws IOException {
+    static void doReclamation(RepoImpl repo, UserLogger ulog) throws IOException {
         if (repo.getConfig().getBoolean(IS_NATIVE_GIT_ENABLED)) {
             try {
-                native_doLfsPrune(repo, log);
+                native_doLfsPrune(repo, ulog);
             } catch (InterruptedException e) {
                 throw new IOException(e);
             }
         } else {
             try {
-                jgit_doGc(repo, log);
+                jgit_doGc(repo, ulog);
             } catch (GitAPIException | ParseException e) {
                 throw new IOException(e);
             }
         }
     }
 
-    private static void native_doLfsPrune(RepoImpl repo, UserLogger user) throws IOException, InterruptedException {
+    private static void native_doLfsPrune(RepoImpl repo, UserLogger ulog) throws IOException, InterruptedException {
         final File worktree = repo.getWorkTree();
         final String[] push = { "git", "-C", worktree.getAbsolutePath(), "-c", "lfs.pruneoffsetdays=999999", "lfs", "prune", "--verbose", "--no-verify-remote", };
-        final Consumer<String> logConsumer = new HudConsumer(user, NATIVE_GIT);
+        final Consumer<String> logConsumer = new HudConsumer(ulog, NATIVE_GIT);
         doExec(push, Collections.emptyMap(), logConsumer, logConsumer);
-        SystemLogger.syslog().debug("native_doLfsPrune");
+        syslog().debug("native_doLfsPrune");
     }
 
     /**
      *  Runs git garbage collection.  Aggressively deletes reflogs, tracking branches and stray temporary branches
      *  in an attempt to free up objects and reclaim disk space.
      */
-    private static void jgit_doGc(RepoImpl repo, Logger log) throws IOException, GitAPIException, ParseException {
+    private static void jgit_doGc(RepoImpl repo, UserLogger ulog) throws IOException, GitAPIException, ParseException {
         final File gitDir = repo.getJGit().getRepository().getDirectory();
         final GitConfig config = repo.getConfig();
-        final UserLogger user = log;
-        user.hud(styledLocalized("fastback.hud.gc-percent", JGIT, 0));
-        log.debug("Stats before gc:");
-        log.debug(String.valueOf(repo.getJGit().gc().getStatistics()));
+        ulog.hud(styledLocalized("fastback.hud.gc-percent", JGIT, 0));
+        syslog().debug("Stats before gc:");
+        syslog().debug(String.valueOf(repo.getJGit().gc().getStatistics()));
         final long sizeBeforeBytes = sizeOfDirectory(gitDir);
-        log.info("Backup size before gc: " + byteCountToDisplaySize(sizeBeforeBytes));
+        syslog().info("Backup size before gc: " + byteCountToDisplaySize(sizeBeforeBytes));
         if (config.getBoolean(IS_REFLOG_DELETION_ENABLED)) {
             // reflogs aren't very useful in our case and cause old snapshots to get retained
             // longer than people expect.
             final Path reflogsDir = gitDir.toPath().resolve("logs");
-            log.info("Deleting reflogs " + reflogsDir);
+            syslog().info("Deleting reflogs " + reflogsDir);
             FileUtils.rmdir(reflogsDir);
         }
         if (config.getBoolean(IS_BRANCH_CLEANUP_ENABLED)) {
@@ -111,21 +109,21 @@ class ReclamationUtils {
             for (final Ref ref : repo.getJGit().branchList().setListMode(ALL).call()) {
                 final String branchName = SnapshotId.getBranchName(ref);
                 if (branchName == null) {
-                    log.warn("Non-branch ref returned by branchList: " + ref);
+                    syslog().warn("Non-branch ref returned by branchList: " + ref);
                 } else if (isTempBranch(branchName)) {
                     branchesToDelete.add(branchName);
                 } else if (SnapshotId.isSnapshotBranchName(branchName)) {
                     // ok fine
                 } else {
-                    log.warn("Unidentified branch found " + branchName + " - consider removing it with 'git branch -D'");
+                    syslog().warn("Unidentified branch found " + branchName + " - consider removing it with 'git branch -D'");
                 }
             }
             if (branchesToDelete.isEmpty()) {
-                log.info("No branches to clean up");
+                syslog().info("No branches to clean up");
             } else {
-                log.info("Deleting branches: " + branchesToDelete);
+                syslog().info("Deleting branches: " + branchesToDelete);
                 repo.deleteLocalBranches(branchesToDelete);
-                log.info("Branches deleted.");
+                syslog().info("Branches deleted.");
             }
         }
         final GC gc = new GC(((FileRepository) repo.getJGit().getRepository()));
@@ -135,33 +133,33 @@ class ReclamationUtils {
         final PackConfig pc = new PackConfig();
         pc.setDeltaCompress(false);
         gc.setPackConfig(pc);
-        final ProgressMonitor pm = new JGitIncrementalProgressMonitor(new GcProgressMonitor(log), 100);
+        final ProgressMonitor pm = new JGitIncrementalProgressMonitor(new GcProgressMonitor(ulog), 100);
         gc.setProgressMonitor(pm);
-        log.info("Starting garbage collection");
+        syslog().info("Starting garbage collection");
         gc.gc(); // TODO progress monitor
-        log.info("Garbage collection complete.");
-        log.info("Stats after gc:");
-        log.info("" + repo.getJGit().gc().getStatistics());
+        syslog().info("Garbage collection complete.");
+        syslog().info("Stats after gc:");
+        syslog().info("" + repo.getJGit().gc().getStatistics());
         final long sizeAfterBytes = sizeOfDirectory(gitDir);
-        log.info("Backup size after gc: " + byteCountToDisplaySize(sizeAfterBytes));
+        syslog().info("Backup size after gc: " + byteCountToDisplaySize(sizeAfterBytes));
     }
 
     private static class GcProgressMonitor extends JGitPercentageProgressMonitor {
 
-        private final Logger logger;
+        private final UserLogger ulog;
 
-        public GcProgressMonitor(Logger logger) {
-            this.logger = requireNonNull(logger);
+        public GcProgressMonitor(UserLogger ulog) {
+            this.ulog = requireNonNull(ulog);
         }
 
         @Override
         public void progressStart(String task) {
-            this.logger.info(task);
+            this.ulog.hud(raw(task));
         }
 
         @Override
         public void progressUpdate(String task, int percentage) {
-            this.logger.info(task + " " + percentage + "%");
+            syslog().info(task + " " + percentage + "%");
             // Pack refs
             // Finding sources
             // Writing objects
@@ -171,17 +169,17 @@ class ReclamationUtils {
             // Prune loose objects also found in pack files
             // Prune loose, unreferenced objects
             if (task.contains("Writing objects")) {
-                this.logger.hud(styledLocalized("fastback.hud.gc-percent", JGIT, (int) (percentage * 9 / 10)));
+                this.ulog.hud(styledLocalized("fastback.hud.gc-percent", JGIT, (int) (percentage * 9 / 10)));
             } else if (task.contains("Selecting commits")) {
-                this.logger.hud(localized("fastback.hud.gc-percent", JGIT, 90 + (int) (percentage / 20)));
+                this.ulog.hud(localized("fastback.hud.gc-percent", JGIT, 90 + (int) (percentage / 20)));
             } else if (task.contains("Prune loose objects")) {
-                this.logger.hud(localized("fastback.hud.gc-percent", JGIT, 95 + (int) (percentage / 20)));
+                this.ulog.hud(localized("fastback.hud.gc-percent", JGIT, 95 + (int) (percentage / 20)));
             }
         }
 
         @Override
         public void progressDone(String task) {
-            logger.info("Done " + task);
+            syslog().info("Done " + task);
         }
 
         @Override

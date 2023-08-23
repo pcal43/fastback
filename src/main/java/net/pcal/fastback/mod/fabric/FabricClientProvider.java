@@ -25,11 +25,9 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.MessageScreen;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
 import net.pcal.fastback.mod.fabric.mixins.ScreenAccessors;
-import net.pcal.fastback.logging.UserMessage;
 
 import java.nio.file.Path;
 
@@ -37,7 +35,7 @@ import java.nio.file.Path;
  * @author pcal
  * @since 0.1.0
  */
-final class FabricClientProvider extends FabricProvider implements HudRenderCallback {
+final class FabricClientProvider extends BaseFabricProvider implements HudRenderCallback {
 
     private MinecraftClient client = null;
     private Text hudText;
@@ -62,57 +60,52 @@ final class FabricClientProvider extends FabricProvider implements HudRenderCall
     }
 
     @Override
-    public void setHudText(UserMessage message) {
-        if (message == null) {
-            this.statusTextShown = false;
+    public void setHudText(Text text) {
+        if (text == null) {
+            this.hudTextShown = false;
         } else {
-            this.hudText = messageToText(message);
-            this.statusTextShown = true;
+            this.hudText = text; // so the hud renderer can find it
+            this.hudTextShown = true;
+            final Screen screen = client.currentScreen;
+            if (screen instanceof MessageScreen) {
+                ((ScreenAccessors) screen).setTitle(hudText);
+            }
         }
     }
 
     @Override
-    public void setClientSavingScreenText(UserMessage message) {
+    public void setMessageScreenText(Text text) {
         final Screen screen = client.currentScreen;
         if (screen instanceof MessageScreen) {
-            ((ScreenAccessors) screen).setTitle(messageToText(message));
+            ((ScreenAccessors) screen).setTitle(text);
         }
     }
 
     @Override
-    public void sendClientChatMessage(UserMessage message) {
-        if (this.client != null) {
-            client.inGameHud.getChatHud().addMessage(messageToText(message));
-        }
-    }
-
-    @Override
-    public Path getSnapshotRestoreDir() {
+    public Path getSavesDir() {
         return FabricLoader.getInstance().getGameDir().resolve("saves");
     }
 
     // ====================================================================
-    // HudRender implementation
-
+    // HudRenderCallback implementation
 
     private float backupIndicatorAlpha;
-    private boolean statusTextShown = false;
+    private boolean hudTextShown = false;
 
     @Override
     public void onHudRender(DrawContext drawContext, float tickDelta) {
         if (this.hudText == null) return;
         float previousIndicatorAlpha = this.backupIndicatorAlpha;
-        this.backupIndicatorAlpha = MathHelper.lerp(0.2F, this.backupIndicatorAlpha, statusTextShown ? 1.0F : 0.0F);
+        this.backupIndicatorAlpha = MathHelper.lerp(0.2F, this.backupIndicatorAlpha, hudTextShown ? 1.0F : 0.0F);
 
         if (this.client.options.getShowAutosaveIndicator().getValue() && (this.backupIndicatorAlpha > 0.0F || previousIndicatorAlpha > 0.0F)) {
             int i = MathHelper.floor(255.0F * MathHelper.clamp(MathHelper.lerp(this.client.getTickDelta(), previousIndicatorAlpha, this.backupIndicatorAlpha), 0.0F, 1.0F));
 
             if (i > 8) {
-                MatrixStack matrices = new MatrixStack();
-                TextRenderer textRenderer = this.client.textRenderer;
-                int j = textRenderer.getWidth(this.hudText);
+                final TextRenderer textRenderer = this.client.textRenderer;
+                // int j = textRenderer.getWidth(this.hudText);
                 int k = 16777215 | i << 24 & -16777216;
-                int scaledWidth = this.client.getWindow().getScaledWidth();
+                // int scaledWidth = this.client.getWindow().getScaledWidth();
                 int x = 2; //scaledWidth - j - 5;
                 int y = 2;
                 drawContext.drawTextWithShadow(textRenderer, this.hudText, x, y, k);

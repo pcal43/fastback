@@ -18,7 +18,6 @@
 
 package net.pcal.fastback.retention;
 
-import net.pcal.fastback.logging.ConsoleLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.repo.SnapshotId;
 
@@ -34,6 +33,8 @@ import java.util.Map;
 import java.util.NavigableSet;
 import java.util.TimeZone;
 import java.util.function.Supplier;
+
+import static net.pcal.fastback.logging.SystemLogger.syslog;
 
 /**
  * Policy that implements a simple 'Grandfather-Father-Son' strategy.  It retains
@@ -70,7 +71,7 @@ class GFSRetentionPolicy implements RetentionPolicy {
         for (final SnapshotId sid : snapshots.descendingSet()) {
             final LocalDate snapshotDate = sid.snapshotDate().toInstant().atZone(TimeZone.getDefault().toZoneId()).toLocalDate();
             if (snapshotDate.isAfter(gracePeriodStart)) {
-                ConsoleLogger.get().debug("Will retain " + sid + " because still in the grace period");
+                syslog().debug("Will retain " + sid + " because still in the grace period");
             } else if (snapshotDate.isAfter(oneWeekAgo)) {
                 final int snapshotDay = snapshotDate.get(ChronoField.DAY_OF_MONTH);
                 if (currentDay == null || currentDay != snapshotDay) {

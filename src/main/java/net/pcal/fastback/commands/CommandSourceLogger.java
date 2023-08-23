@@ -16,54 +16,32 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.logging;
+package net.pcal.fastback.commands;
 
-import net.pcal.fastback.mod.ModContext;
+import net.minecraft.server.command.ServerCommandSource;
+import net.pcal.fastback.logging.UserLogger;
+import net.pcal.fastback.logging.UserMessage;
+import net.pcal.fastback.mod.Mod;
 
 import static java.util.Objects.requireNonNull;
 
-@Deprecated
-public class ChatLogger implements Logger {
+class CommandSourceLogger implements UserLogger {
 
-    private final ModContext ctx;
+    private final ServerCommandSource scs;
+    private final Mod ctx;
 
-    public ChatLogger(ModContext ctx) {
+    CommandSourceLogger(Mod ctx, ServerCommandSource scs) {
         this.ctx = requireNonNull(ctx);
+        this.scs = requireNonNull(scs);
     }
 
     @Override
     public void chat(UserMessage message) {
-        ctx.sendClientChatMessage(message);
-    }
-
-    @Override
-    public void internalError(String message, Throwable t) {
-        ctx.sendClientChatMessage(UserMessage.localized("fastback.chat.internal-error"));
+        ctx.sendChat(message, this.scs);
     }
 
     @Override
     public void hud(UserMessage message) {
-
-    }
-
-    @Override
-    public void setForceDebugEnabled(boolean debug) {
-
-    }
-
-    @Override
-    public void warn(String message) {
-    }
-
-    @Override
-    public void info(String message) {
-    }
-
-    @Override
-    public void debug(String message) {
-    }
-
-    @Override
-    public void debug(String message, Throwable t) {
+        this.ctx.setHudText(message);
     }
 }

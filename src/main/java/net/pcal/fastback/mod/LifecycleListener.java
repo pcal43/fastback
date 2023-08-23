@@ -16,21 +16,28 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.logging;
+package net.pcal.fastback.mod;
 
-@Deprecated
-public class ConsoleLogger {
+/**
+ * Framework-agnostic lifecycle logic.
+ *
+ * @author pcal
+ * @since 0.0.1
+ */
+public interface LifecycleListener {
 
-    private static Logger INSTANCE = null;
+    /**
+     * Must be called early in initialization of either a client or server.
+     */
+    void onInitialize();
 
-    @Deprecated
-    public static Logger get() {
-        if (INSTANCE == null) throw new IllegalStateException();
-        return INSTANCE;
-    }
+    /**
+     * Must be called when a world is starting (in either a dedicated or client-embedded server).
+     */
+    void onWorldStart();
 
-    public static void register(Logger logger) {
-        //if (INSTANCE != null) throw new IllegalStateException();
-        INSTANCE = logger;
-    }
+    /**
+     * Must be called when a world is stopping (in either a dedicated or client-embedded server).
+     */
+    void onWorldStop();
 }

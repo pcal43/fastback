@@ -20,7 +20,6 @@ package net.pcal.fastback.repo;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
-import net.pcal.fastback.logging.Logger;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
 
@@ -30,16 +29,15 @@ import java.util.Collection;
 import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
+import static net.pcal.fastback.logging.SystemLogger.syslog;
 
 @SuppressWarnings({"Convert2MethodRef", "FunctionalExpressionCanBeFolded"})
 class ListSnapshotsTask implements Callable<ListMultimap<String, SnapshotId>> {
 
 
     private final JGitSupplier<Collection<Ref>> refProvider;
-    private final Logger logger;
 
-    ListSnapshotsTask(JGitSupplier<Collection<Ref>> refProvider, Logger logger) {
-        this.logger = requireNonNull(logger);
+    ListSnapshotsTask(JGitSupplier<Collection<Ref>> refProvider) {
         this.refProvider = requireNonNull(refProvider);
     }
 
@@ -52,7 +50,7 @@ class ListSnapshotsTask implements Callable<ListMultimap<String, SnapshotId>> {
             try {
                 sid = requireNonNull(SnapshotId.fromBranchRef(ref));
             } catch (ParseException pe) {
-                logger.warn("Ignoring unrecognized branch " + ref.getName());
+                syslog().warn("Ignoring unrecognized branch " + ref.getName());
                 continue;
             }
             snapshotsPerWorld.put(sid.worldUuid(), sid);

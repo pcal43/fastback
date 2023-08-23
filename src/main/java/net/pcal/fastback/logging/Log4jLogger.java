@@ -20,7 +20,7 @@ package net.pcal.fastback.logging;
 
 import static java.util.Objects.requireNonNull;
 
-public class Log4jLogger implements Logger {
+public class Log4jLogger implements SystemLogger {
 
     private final org.apache.logging.log4j.Logger log4j;
     private boolean forceDebugEnabled = false;
@@ -30,21 +30,18 @@ public class Log4jLogger implements Logger {
     }
 
     @Override
-    public void chat(UserMessage message) {
-    }
-
-    @Override
-    public void hud(UserMessage message) {
-    }
-
-    @Override
-    public void internalError(String message, Throwable t) {
-        this.log4j.error(message, t);
-    }
-
-    @Override
     public void setForceDebugEnabled(boolean forceDebugEnabled) {
         this.forceDebugEnabled = forceDebugEnabled;
+    }
+
+    @Override
+    public void error(String message) {
+        this.log4j.error(message);
+    }
+
+    @Override
+    public void error(String message, Throwable t) {
+        this.log4j.error(message, t);
     }
 
     @Override
@@ -74,5 +71,4 @@ public class Log4jLogger implements Logger {
             this.log4j.debug(message, t);
         }
     }
-
 }

@@ -16,27 +16,28 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.logging;
+package net.pcal.fastback.mod;
 
-@Deprecated // use SystemLogger or UserLogger
-public interface Logger extends UserLogger, SystemLogger {
+import net.pcal.fastback.logging.UserLogger;
+import net.pcal.fastback.logging.UserMessage;
 
-    void chat(UserMessage message);
+import static java.util.Objects.requireNonNull;
 
-    void hud(UserMessage message);
+public class HudLogger implements UserLogger {
 
-    void internalError(String message, Throwable t);
+    private final Mod ctx;
 
-    default void internalError(Throwable t) { this.internalError(t.getMessage(), t); }
+    HudLogger(Mod ctx) {
+        this.ctx = requireNonNull(ctx);
+    }
 
-    void warn(String message);
+    @Override
+    public void chat(UserMessage message) {
 
-    void info(String message);
+    }
 
-    void debug(String message);
-
-    void debug(String message, Throwable t);
-
-    default void debug(Throwable t) { this.debug(t.getMessage(), t); }
-
+    @Override
+    public void hud(UserMessage message) {
+        ctx.setHudText(message);
+    }
 }

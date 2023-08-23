@@ -20,8 +20,6 @@ package net.pcal.fastback.repo;
 
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.config.GitConfig;
-import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.logging.SystemLogger;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage.UserMessageStyle;
 import org.eclipse.jgit.api.Git;
@@ -54,10 +52,10 @@ import static net.pcal.fastback.config.GitConfigKey.IS_TRACKING_BRANCH_CLEANUP_E
 import static net.pcal.fastback.config.GitConfigKey.IS_UUID_CHECK_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_NAME;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_PUSH_URL;
+import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.JGIT;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;
-import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 import static net.pcal.fastback.utils.ProcessUtils.doExec;
 
@@ -73,21 +71,19 @@ class PushUtils {
         return branchName.startsWith("temp/");
     }
 
-    static void doPush(SnapshotId sid, RepoImpl repo, Logger log) throws IOException {
-        final UserLogger user = log;
+    static void doPush(SnapshotId sid, RepoImpl repo, UserLogger ulog) throws IOException {
         try {
             final GitConfig conf = repo.getConfig();
             final String pushUrl = conf.getString(REMOTE_PUSH_URL);
             if (pushUrl == null) {
-                final String msg = "Skipping remote backup because no remote url has been configured.";
-                log.warn(msg);
+                syslog().warn("Skipping remote backup because no remote url has been configured.");
                 return;
             }
             final Git jgit = repo.getJGit();
             final Collection<Ref> remoteBranchRefs = jgit.lsRemote().setHeads(true).setTags(false).
                     setRemote(conf.getString(REMOTE_NAME)).call();
             final ListMultimap<String, SnapshotId> snapshotsPerWorld =
-                    SnapshotId.getSnapshotsPerWorld(remoteBranchRefs, log);
+                    SnapshotId.getSnapshotsPerWorld(remoteBranchRefs);
             if (conf.getBoolean(IS_UUID_CHECK_ENABLED)) {
                 boolean uuidCheckResult;
                 try {
@@ -98,22 +94,22 @@ class PushUtils {
                 }
                 if (!uuidCheckResult) {
                     final URIish remoteUri = jgit_getRemoteUri(repo.getJGit(), repo.getConfig().getString(REMOTE_NAME));
-                    user.chat(styledLocalized("fastback.chat.push-uuid-mismatch", ERROR, remoteUri));
+                    ulog.chat(styledLocalized("fastback.chat.push-uuid-mismatch", ERROR, remoteUri));
                     syslog().error("Failing remote backup due to failed uuid check");
                     return;
                 }
             }
-            log.debug("Pushing to " + pushUrl);
+            syslog().debug("Pushing to " + pushUrl);
 
             MaintenanceUtils.doPreflight(repo);
 
             if (conf.getBoolean(IS_NATIVE_GIT_ENABLED)) {
-                native_doPush(repo, sid.getBranchName(), log);
+                native_doPush(repo, sid.getBranchName(), ulog);
             } else if (conf.getBoolean(IS_SMART_PUSH_ENABLED)) {
                 final String uuid = repo.getWorldUuid();
-                jgit_doSmartPush(repo, snapshotsPerWorld.get(uuid), sid.getBranchName(), conf, log);
+                jgit_doSmartPush(repo, snapshotsPerWorld.get(uuid), sid.getBranchName(), conf, ulog);
             } else {
-                jgit_doNaivePush(jgit, sid.getBranchName(), conf, log);
+                jgit_doNaivePush(jgit, sid.getBranchName(), conf, ulog);
             }
             syslog().info("Remote backup complete.");
         } catch (GitAPIException | InterruptedException e) {
@@ -134,7 +130,7 @@ class PushUtils {
         syslog().debug("End native_push");
     }
 
-    private static void jgit_doSmartPush(final RepoImpl repo, List<SnapshotId> remoteSnapshots, final String branchNameToPush, final GitConfig conf, final Logger logger) throws IOException {
+    private static void jgit_doSmartPush(final RepoImpl repo, List<SnapshotId> remoteSnapshots, final String branchNameToPush, final GitConfig conf, final UserLogger logger) throws IOException {
         logger.hud(styledLocalized("fastback.chat.push-started", JGIT));
         try {
             final Git jgit = repo.getJGit();
@@ -142,25 +138,25 @@ class PushUtils {
             final String worldUuid = repo.getWorldUuid();
             final SnapshotId latestCommonSnapshot;
             if (remoteSnapshots.isEmpty()) {
-                logger.warn("** This appears to be the first time this world has been pushed.");
-                logger.warn("** If the world is large, this may take some time.");
+                syslog().warn("** This appears to be the first time this world has been pushed.");
+                syslog().warn("** If the world is large, this may take some time.");
                 jgit_doNaivePush(jgit, branchNameToPush, conf, logger);
                 return;
             } else {
                 final Collection<Ref> localBranchRefs = jgit.branchList().call();
                 final ListMultimap<String, SnapshotId> localSnapshotsPerWorld =
-                        SnapshotId.getSnapshotsPerWorld(localBranchRefs, logger);
+                        SnapshotId.getSnapshotsPerWorld(localBranchRefs);
                 final List<SnapshotId> localSnapshots = localSnapshotsPerWorld.get(worldUuid);
                 remoteSnapshots.retainAll(localSnapshots);
                 if (remoteSnapshots.isEmpty()) {
-                    logger.warn("No common snapshots found between local and remote.");
-                    logger.warn("Doing a full push.  This may take some time.");
+                    syslog().warn("No common snapshots found between local and remote.");
+                    syslog().warn("Doing a full push.  This may take some time.");
                     jgit_doNaivePush(jgit, branchNameToPush, conf, logger);
                     return;
                 } else {
                     Collections.sort(remoteSnapshots);
                     latestCommonSnapshot = remoteSnapshots.get(remoteSnapshots.size() - 1);
-                    logger.info("Using existing snapshot " + latestCommonSnapshot + " for common history");
+                    syslog().debug("Using existing snapshot " + latestCommonSnapshot + " for common history");
                 }
             }
             // ok, we have a common snapshot that we can use to create a fake merge history.
@@ -209,10 +205,10 @@ class PushUtils {
         }
     }
 
-    private static void jgit_doNaivePush(final Git jgit, final String branchNameToPush, final GitConfig conf, final Logger logger) throws IOException {
-        final ProgressMonitor pm = new JGitIncrementalProgressMonitor(new JGitPushProgressMonitor(logger), 100);
+    private static void jgit_doNaivePush(final Git jgit, final String branchNameToPush, final GitConfig conf, final UserLogger ulog) throws IOException {
+        final ProgressMonitor pm = new JGitIncrementalProgressMonitor(new JGitPushProgressMonitor(ulog), 100);
         final String remoteName = conf.getString(REMOTE_NAME);
-        logger.info("Doing naive push of " + branchNameToPush);
+        syslog().info("Doing naive push of " + branchNameToPush);
         try {
             jgit.push().setProgressMonitor(pm).setRemote(remoteName).
                     setRefSpecs(new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
@@ -262,30 +258,30 @@ class PushUtils {
 
     private static class JGitPushProgressMonitor extends JGitPercentageProgressMonitor {
 
-        private final Logger logger;
+        private final UserLogger ulog;
 
-        public JGitPushProgressMonitor(Logger logger) {
-            this.logger = requireNonNull(logger);
+        public JGitPushProgressMonitor(UserLogger ulog) {
+            this.ulog = requireNonNull(ulog);
         }
 
         @Override
         public void progressStart(String task) {
-            this.logger.info(task);
+            syslog().debug(task);
         }
 
         @Override
         public void progressUpdate(String task, int percentage) {
-            this.logger.info(task + " " + percentage + "%");
+            syslog().info(task + " " + percentage + "%");
             if (task.contains("Finding sources")) {
-                this.logger.hud(styledLocalized("fastback.hud.remote-preparing",JGIT,percentage / 2));
+                this.ulog.hud(styledLocalized("fastback.hud.remote-preparing",JGIT,percentage / 2));
             } else if (task.contains("Writing objects")) {
-                this.logger.hud(styledLocalized("fastback.hud.remote-uploading", JGIT, 50 + (percentage / 2)));
+                this.ulog.hud(styledLocalized("fastback.hud.remote-uploading", JGIT, 50 + (percentage / 2)));
             }
         }
 
         @Override
         public void progressDone(String task) {
-            logger.info("Done " + task);
+            syslog().debug("Done " + task);
         }
 
         @Override

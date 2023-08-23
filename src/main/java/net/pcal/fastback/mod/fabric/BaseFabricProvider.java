@@ -21,18 +21,10 @@ package net.pcal.fastback.mod.fabric;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModMetadata;
-import net.minecraft.SharedConstants;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.text.TextColor;
 import net.minecraft.world.level.storage.LevelStorage;
 import net.pcal.fastback.logging.Log4jLogger;
-import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.logging.UserMessage.UserMessageStyle;
+import net.pcal.fastback.logging.SystemLogger;
 import net.pcal.fastback.mod.FrameworkServiceProvider;
 import net.pcal.fastback.mod.fabric.mixins.ServerAccessors;
 import net.pcal.fastback.mod.fabric.mixins.SessionAccessors;
@@ -42,27 +34,28 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
+import static net.pcal.fastback.logging.SystemLogger.syslog;
 
 /**
  * @author pcal
  * @since 0.1.0
  */
-public abstract class FabricProvider implements FrameworkServiceProvider {
+public abstract class BaseFabricProvider implements FrameworkServiceProvider {
 
-    private static FabricProvider INSTANCE;
+    static final String MOD_ID = "fastback";
+
+    private static BaseFabricProvider INSTANCE;
     private MinecraftServer minecraftServer;
     private Runnable autoSaveListener;
 
-    public static FabricProvider getInstance() {
+    public static BaseFabricProvider getInstance() {
         if (INSTANCE == null) throw new IllegalStateException("not initialized");
         return INSTANCE;
     }
 
-    private static final String MOD_ID = "fastback";
     private boolean isWorldSaveEnabled = true;
-    private final Logger consoleLogger = new Log4jLogger(LogManager.getLogger(MOD_ID));
 
-    protected FabricProvider() {
+    protected BaseFabricProvider() {
         if (INSTANCE != null) throw new IllegalStateException();
         INSTANCE = this;
     }
@@ -70,26 +63,6 @@ public abstract class FabricProvider implements FrameworkServiceProvider {
     void setMinecraftServer(MinecraftServer serverOrNull) {
         if ((serverOrNull == null) == (this.minecraftServer == null)) throw new IllegalStateException();
         this.minecraftServer = serverOrNull;
-    }
-
-    @Override
-    public Logger getConsoleLogger() {
-        return this.consoleLogger;
-    }
-
-    @Override
-    public String getMinecraftVersion() {
-        return SharedConstants.getGameVersion().getName();
-    }
-
-    @Override
-    public Path getConfigDir() {
-        return FabricLoader.getInstance().getConfigDir();
-    }
-
-    @Override
-    public String getModId() {
-        return MOD_ID;
     }
 
     @Override
@@ -119,25 +92,6 @@ public abstract class FabricProvider implements FrameworkServiceProvider {
     }
 
     @Override
-    public boolean isServerStopping() {
-        if (this.minecraftServer == null) throw new IllegalStateException();
-        return this.minecraftServer.isStopped() || this.minecraftServer.isStopping();
-    }
-
-    // TODO do we really need to use sendFeedback/error.  Can't we just sendMessage all the time?  I don't
-    // understand the difference
-
-    @Override
-    public void sendFeedback(UserMessage message, ServerCommandSource scs) {
-        scs.sendFeedback(() -> messageToText(message), false);
-    }
-
-    @Override
-    public void sendError(UserMessage message, ServerCommandSource scs) {
-        scs.sendError(messageToText(message));
-    }
-
-    @Override
     public void setAutoSaveListener(Runnable runnable) {
         if (this.autoSaveListener != null) throw new IllegalStateException();
         this.autoSaveListener = requireNonNull(runnable);
@@ -157,28 +111,14 @@ public abstract class FabricProvider implements FrameworkServiceProvider {
         return session.getLevelSummary().getLevelInfo().getLevelName();
     }
 
+    /**
+     * Called by the mixins.
+     */
     public void autoSaveCompleted() {
         if (this.autoSaveListener != null) {
             this.autoSaveListener.run();
         } else {
-            this.getConsoleLogger().warn("Autosave just happened but, unexpectedly, no one is listening.");
+            syslog().warn("Autosave just happened but, unexpectedly, no one is listening.");
         }
-    }
-
-    static Text messageToText(final UserMessage m) {
-        final MutableText out;
-        if (m.styledLocalized() != null) {
-            out = Text.translatable(m.styledLocalized().key(), m.styledLocalized().params());
-        } else {
-            out = Text.literal(m.styledRaw());
-        }
-        if (m.style() == UserMessageStyle.ERROR) {
-            out.setStyle(Style.EMPTY.withColor(TextColor.parse("red")));
-        } else if (m.style() == UserMessageStyle.WARNING) {
-            out.setStyle(Style.EMPTY.withColor(TextColor.parse("yellow")));
-        } else if (m.style() == UserMessageStyle.NATIVE_GIT) {
-            out.setStyle(Style.EMPTY.withColor(TextColor.parse("green")));
-        }
-        return out;
     }
 }

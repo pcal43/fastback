@@ -1,0 +1,217 @@
+/*
+ * FastBack - Fast, incremental Minecraft backups powered by Git.
+ * Copyright (C) 2022 pcal.net
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; If not, see <http://www.gnu.org/licenses/>.
+ */
+package net.pcal.fastback.mod;
+
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
+import net.minecraft.text.TextColor;
+import net.pcal.fastback.commands.Commands;
+import net.pcal.fastback.commands.SchedulableAction;
+import net.pcal.fastback.config.GitConfig;
+import net.pcal.fastback.logging.UserMessage;
+import net.pcal.fastback.logging.UserMessage.UserMessageStyle;
+import net.pcal.fastback.repo.Repo;
+import net.pcal.fastback.repo.RepoFactory;
+import net.pcal.fastback.utils.Executor;
+
+import java.io.IOException;
+import java.nio.file.Path;
+
+import static java.nio.file.Files.createTempDirectory;
+import static java.util.Objects.requireNonNull;
+import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
+import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
+import static net.pcal.fastback.logging.SystemLogger.syslog;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
+import static net.pcal.fastback.logging.UserMessage.localized;
+import static net.pcal.fastback.utils.EnvironmentUtils.getGitLfsVersion;
+import static net.pcal.fastback.utils.EnvironmentUtils.getGitVersion;
+
+class ModImpl implements LifecycleListener, Mod {
+
+    private final FrameworkServiceProvider fsp;
+    private final Executor executor;
+    private Path tempRestoresDirectory = null;
+
+    // ======================================================================
+    // Construction
+
+    ModImpl(final FrameworkServiceProvider spi) {
+        this.fsp = requireNonNull(spi);
+        spi.setAutoSaveListener(new AutosaveListener(this));
+        this.executor = new Executor();
+    }
+
+    // ======================================================================
+    // Mod implementation
+
+    @Override
+    public Executor getExecutor() {
+        return this.executor;
+    }
+
+    @Override
+    public Path getRestoresDir() throws IOException {
+        Path restoreDir = this.fsp.getSavesDir();
+        if (restoreDir != null) return restoreDir;
+        if (tempRestoresDirectory == null) {
+            tempRestoresDirectory = createTempDirectory("fastback-restore");
+        }
+        return tempRestoresDirectory;
+    }
+
+    @Override
+    public void sendChat(UserMessage message, ServerCommandSource scs) {
+        if (message.style() == ERROR) {
+            scs.sendError(messageToText(message));
+        } else {
+            scs.sendFeedback(() -> messageToText(message), false);
+        }
+    }
+
+    // ======================================================================
+    // Mod implementation passthroughs
+
+    @Override
+    public String getModVersion() {
+        return this.fsp.getModVersion();
+    }
+
+    @Override
+    public void setWorldSaveEnabled(boolean enabled) {
+        this.fsp.setWorldSaveEnabled(enabled);
+    }
+
+    @Override
+    public void setMessageScreenText(UserMessage message) {
+        this.fsp.setMessageScreenText(messageToText(message));
+    }
+
+    @Override
+    public void setHudText(UserMessage message) {
+        this.fsp.setHudText(message == null ? null : messageToText(message));
+    }
+
+    @Override
+    public Path getWorldDirectory() {
+        return this.fsp.getWorldDirectory();
+    }
+
+    @Override
+    public String getWorldName() {
+        return this.fsp.getWorldName();
+    }
+
+    @Override
+    public int getDefaultPermLevel() {
+        return fsp.isClient() ? 0 : 4;
+    }
+
+    @Override
+    public void saveWorld() {
+        this.fsp.saveWorld();
+    }
+
+    // ======================================================================
+    // LifecycleListener implementation
+
+    /**
+     * Must be called early in initialization of either a client or server.
+     */
+    @Override
+    public void onInitialize() {
+        Commands.registerCommands(this);
+        {
+            final String gitVersion = getGitVersion();
+            if (gitVersion == null) {
+                syslog().warn("git is not installed.");
+            } else {
+                syslog().info("git is installed: " + gitVersion);
+            }
+        }
+        {
+            final String gitLfsVersion = getGitLfsVersion();
+            if (gitLfsVersion == null) {
+                syslog().warn("git-lfs is not installed.");
+            } else {
+                syslog().info("git-lfs is installed: " + gitLfsVersion);
+            }
+        }
+        syslog().debug("onInitialize complete");
+    }
+
+
+    /**
+     * Must be called when a world is starting (in either a dedicated or client-embedded server).
+     */
+    @Override
+    public void onWorldStart() {
+        executor.start();
+        syslog().debug("onWorldStart complete");
+    }
+
+    /**
+     * Must be called when a world is stopping (in either a dedicated or client-embedded server).
+     */
+    @Override
+    public void onWorldStop() {
+        final Path worldSaveDir = this.getWorldDirectory();
+        this.setHudText(localized("fastback.chat.thread-waiting"));
+        executor.stop();
+        this.setHudText(null);
+        final RepoFactory rf = RepoFactory.get();
+        if (rf.isGitRepo(worldSaveDir)) {
+            try (final Repo repo = rf.load(worldSaveDir, this)) {
+                final GitConfig config = repo.getConfig();
+                if (config.getBoolean(IS_BACKUP_ENABLED)) {
+                    final SchedulableAction action = SchedulableAction.forConfigValue(config, SHUTDOWN_ACTION);
+                    if (action != null) {
+                        this.setMessageScreenText(localized("fastback.message.backing-up"));
+                        action.getTask(repo, new HudLogger(this)).call();
+                    }
+                }
+            } catch (Exception e) {
+                syslog().error("Shutdown action failed.", e);
+            }
+        }
+        syslog().debug("onWorldStop complete");
+    }
+
+
+    // ======================================================================
+    // Private
+
+    private static Text messageToText(final UserMessage m) {
+        final MutableText out;
+        if (m.styledLocalized() != null) {
+            out = Text.translatable(m.styledLocalized().key(), m.styledLocalized().params());
+        } else {
+            out = Text.literal(m.styledRaw());
+        }
+        if (m.style() == UserMessageStyle.ERROR) {
+            out.setStyle(Style.EMPTY.withColor(TextColor.parse("red")));
+        } else if (m.style() == UserMessageStyle.WARNING) {
+            out.setStyle(Style.EMPTY.withColor(TextColor.parse("yellow")));
+        } else if (m.style() == UserMessageStyle.NATIVE_GIT) {
+            out.setStyle(Style.EMPTY.withColor(TextColor.parse("green")));
+        }
+        return out;
+    }
+}

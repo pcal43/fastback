@@ -18,49 +18,72 @@
 
 package net.pcal.fastback.mod;
 
-import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.logging.Logger;
-import net.pcal.fastback.logging.UserMessage;
+import net.minecraft.text.Text;
+import net.pcal.fastback.logging.SystemLogger;
 
 import java.nio.file.Path;
 
+/**
+ * Services that must be provided by the underlying mod framework.  Currently, that means fabric only.
+ *
+ * But abstracting it away like this ensures that it would be relatively straightforward to support other
+ * frameworks if there's ever a desire or need for that.  If you're interested in helping port Fastback
+ * to (say) Forge, this is the place to start.
+ *
+ * @author pcal
+ * @since 0.1.0
+ */
 public interface FrameworkServiceProvider {
 
-    Logger getConsoleLogger();
+    static LifecycleListener register(final FrameworkServiceProvider sp, final SystemLogger syslog) {
+        SystemLogger.Singleton.register(syslog);
+        return new ModImpl(sp);
+    }
 
-    String getModId();
-
+    /**
+     * @return the version of the fastback mod.
+     */
     String getModVersion();
 
-    Path getConfigDir();
+    /**
+     * @return path to the 'saves' directory on a minecraft client, or null if we're on a server.
+     */
+    Path getSavesDir();
 
-    String getMinecraftVersion();
-
+    /**
+     * @return path to the directory of the current world.
+     */
     Path getWorldDirectory();
+
 
     String getWorldName();
 
-    void setClientSavingScreenText(UserMessage message);
-
-    void sendClientChatMessage(UserMessage message);
-
-    Path getSnapshotRestoreDir();
-
+    /**
+     * @return true if we're clientside.
+     */
     boolean isClient();
 
+    /**
+     * @return true if world saving is currently enabled (i.e. if we haven't disabled it).
+     */
     boolean isWorldSaveEnabled();
 
     void setWorldSaveEnabled(boolean enabled);
 
     void saveWorld();
 
-    boolean isServerStopping();
+    /**
+     * Display ephemeral status text on the screen to the user,.  This could be part of the in-game HUD
+     * or any other floating text, depending on what screen the user is on.  Has no effect if we're serverside.
+     */
+    void setHudText(Text text);
 
-    void setHudText(UserMessage message);
-
-    void sendFeedback(UserMessage message, ServerCommandSource scs);
-
-    void sendError(UserMessage message, ServerCommandSource scs);
+    /**
+     * If we're clientside and a minecraft MessageScreen is being displayed (e.g., the 'saving' screen), set
+     * the title of the screen.  Otherwise does nothing.
+     */
+    void setMessageScreenText(Text text);
 
     void setAutoSaveListener(Runnable runnable);
+
 }

@@ -18,8 +18,12 @@
 
 package net.pcal.fastback.retention;
 
+import net.pcal.fastback.logging.Log4jLogger;
+import net.pcal.fastback.logging.SystemLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.repo.SnapshotId;
+import org.apache.logging.log4j.LogManager;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
@@ -31,6 +35,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RetentionPolicyCodecTest {
+
+    @BeforeAll
+    public static void setup() {
+        SystemLogger.Singleton.register(new Log4jLogger(LogManager.getLogger("mocklogger")));
+    }
 
     @Test
     public void testEncodePolicy() {

@@ -20,7 +20,6 @@ package net.pcal.fastback.repo;
 
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.config.GitConfig;
-import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.UserLogger;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
@@ -51,17 +50,17 @@ public interface Repo extends AutoCloseable {
 
     ListMultimap<String, SnapshotId> listRemoteSnapshots() throws IOException;
 
-    void doCommitAndPush() throws IOException;
+    void doCommitAndPush(UserLogger ulog) throws IOException;
 
-    void doCommitSnapshot() throws IOException;
+    void doCommitSnapshot(UserLogger ulog) throws IOException;
 
-    Collection<SnapshotId> doLocalPrune() throws IOException;
+    Collection<SnapshotId> doLocalPrune(UserLogger ulog) throws IOException;
 
-    Collection<SnapshotId> doRemotePrune() throws IOException;
+    Collection<SnapshotId> doRemotePrune(UserLogger ulog) throws IOException;
 
-    void doGc() throws IOException;
+    void doGc(UserLogger ulog) throws IOException;
 
-    Path doRestoreSnapshot(String uri, Path restoresDir, String worldName, SnapshotId sid) throws IOException;
+    Path doRestoreSnapshot(String uri, Path restoresDir, String worldName, SnapshotId sid, UserLogger ulog) throws IOException;
 
     void deleteRemoteBranch(String remoteBranchName) throws IOException;
 

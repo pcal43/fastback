@@ -18,9 +18,6 @@
 
 package net.pcal.fastback.utils;
 
-import net.pcal.fastback.logging.ConsoleLogger;
-import net.pcal.fastback.logging.Logger;
-
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -33,6 +30,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
+import static net.pcal.fastback.logging.SystemLogger.syslog;
 
 
 /**
@@ -41,7 +39,7 @@ import static java.util.Objects.requireNonNull;
 public class ProcessUtils {
 
     public static int doExec(String[] args, final Map<String, String> envOriginal, Consumer<String> stdoutSink, Consumer<String> stderrSink) throws IOException, InterruptedException {
-        ConsoleLogger.get().debug("Executing " + String.join(" ", args));
+        syslog().debug("Executing " + String.join(" ", args));
         final Map<String, String> env = new HashMap<>(envOriginal);
         env.putAll(System.getenv());
         final List<String> envlist = new ArrayList<>();

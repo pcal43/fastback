@@ -18,8 +18,6 @@
 
 package net.pcal.fastback.retention;
 
-import net.pcal.fastback.logging.ConsoleLogger;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.Objects.requireNonNull;
+import static net.pcal.fastback.logging.SystemLogger.syslog;
 
 /**
  * Singleton which can encode a RetentionPolicy into a single-line string that can easily be saved in git config.
@@ -59,7 +58,7 @@ public enum RetentionPolicyCodec {
                 return rtp.createPolicy(config);
             }
         }
-        ConsoleLogger.get().debug("Ignoring invalid retention policy " + encodedPolicy);
+        syslog().debug("Ignoring invalid retention policy " + encodedPolicy);
         return null;
     }
 
@@ -77,12 +76,12 @@ public enum RetentionPolicyCodec {
         boolean isFirst = true;
         for (final String key : keys) {
             if (!isValidForEncode(key)) {
-                ConsoleLogger.get().debug("Ignoring invalid key " + key);
+                syslog().debug("Ignoring invalid key " + key);
                 continue;
             }
             final String value = map.get(key);
             if (!isValidForEncode(value)) {
-                ConsoleLogger.get().debug("Ignoring invalid value " + value);
+                syslog().debug("Ignoring invalid value " + value);
                 continue;
             }
             if (!isFirst) {
@@ -98,13 +97,13 @@ public enum RetentionPolicyCodec {
         return out.toString();
     }
 
-    static final Map<String, String> decodeMap(String encodedMap) {
+    static Map<String, String> decodeMap(String encodedMap) {
         final Map<String, String> out = new HashMap<>();
         final String[] tokens = encodedMap.split(" ");
         for (final String token : tokens) {
             final String[] keyVal = token.split("=");
             if (keyVal.length != 2) {
-                ConsoleLogger.get().debug("Ignoring invalid token " + Arrays.toString(keyVal));
+                syslog().debug("Ignoring invalid token " + Arrays.toString(keyVal));
                 continue;
             }
             out.put(keyVal[0].trim(), keyVal[1].trim());

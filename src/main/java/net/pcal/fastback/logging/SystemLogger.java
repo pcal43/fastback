@@ -26,18 +26,14 @@ package net.pcal.fastback.logging;
 public interface SystemLogger {
 
     static SystemLogger syslog() {
-        return ConsoleLogger.get();
+        return Singleton.INSTANCE;
     }
 
     void setForceDebugEnabled(boolean debug);
 
-    default void error(String message) {
-        internalError(message, new Exception());
-    }
+    void error(String message);
 
-    default void error(String message, Throwable t) {
-        internalError(message, t);
-    }
+    void error(String message, Throwable t);
 
     void warn(String message);
 
@@ -50,10 +46,11 @@ public interface SystemLogger {
     default void debug(Throwable t) { this.debug(t.getMessage(), t); }
 
 
-    @Deprecated // come on man this is stupid
-    void internalError(String message, Throwable t);
+    class Singleton {
+        private static SystemLogger INSTANCE = null;
 
-    @Deprecated
-    default void internalError(Throwable t) { this.internalError(t.getMessage(), t); }
-
+        public static void register(SystemLogger logger) {
+            Singleton.INSTANCE = logger;
+        }
+    }
 }

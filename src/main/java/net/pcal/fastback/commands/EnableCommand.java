@@ -21,24 +21,24 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.config.GitConfig.Updater;
-import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.UserLogger;
+import net.pcal.fastback.mod.Mod;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.RepoFactory;
 
 import java.nio.file.Path;
 
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.logging.UserMessage.localized;
-import static net.pcal.fastback.mod.ModContext.ExecutionLock.NONE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.commands.SchedulableAction.DEFAULT_SHUTDOWN_ACTION;
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
+import static net.pcal.fastback.logging.SystemLogger.syslog;
+import static net.pcal.fastback.logging.UserMessage.localized;
+import static net.pcal.fastback.utils.Executor.ExecutionLock.NONE;
 
 enum EnableCommand implements Command {
 
@@ -47,7 +47,7 @@ enum EnableCommand implements Command {
     private static final String COMMAND_NAME = "enable";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
@@ -55,12 +55,12 @@ enum EnableCommand implements Command {
         );
     }
 
-    private static int enable(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
-        final Logger log = commandLogger(ctx, cc.getSource());
-        ctx.execute(NONE, log, () -> {
-                    final Path worldSaveDir = ctx.getWorldDirectory();
+    private static int enable(final Mod mod, final CommandContext<ServerCommandSource> cc) {
+        final UserLogger ulog = commandLogger(mod, cc.getSource());
+        mod.getExecutor().execute(NONE, ulog, () -> {
+                    final Path worldSaveDir = mod.getWorldDirectory();
                     final RepoFactory rf = RepoFactory.get();
-                    try (final Repo repo = rf.init(worldSaveDir, ctx, log)) {
+                    try (final Repo repo = rf.init(worldSaveDir, mod)) {
                         //repo.doWorldMaintenance(log);
                         final Updater updater = repo.getConfig().updater();
                         updater.set(IS_BACKUP_ENABLED, true).save();
@@ -68,9 +68,9 @@ enum EnableCommand implements Command {
                             updater.set(SHUTDOWN_ACTION, DEFAULT_SHUTDOWN_ACTION.getConfigValue());
                         }
                         updater.save();
-                        log.chat(localized("fastback.chat.enable-done"));
+                        ulog.chat(localized("fastback.chat.enable-done"));
                     } catch (Exception e) {
-                        log.internalError("Error enabling backups", e);
+                        syslog().error("Error enabling backups", e);
                     }
                 }
         );

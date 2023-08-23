@@ -22,8 +22,8 @@ import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.mod.ModContext;
-import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.UserLogger;
+import net.pcal.fastback.mod.Mod;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.SnapshotId;
 
@@ -31,36 +31,36 @@ import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.mod.ModContext.ExecutionLock.NONE;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
+import static net.pcal.fastback.utils.Executor.ExecutionLock.NONE;
 import static net.pcal.fastback.repo.SnapshotId.sortWorldSnapshots;
 
 abstract class SnapshotNameSuggestions implements SuggestionProvider<ServerCommandSource> {
 
-    static SnapshotNameSuggestions local(final ModContext ctx) {
+    static SnapshotNameSuggestions local(final Mod ctx) {
         return new SnapshotNameSuggestions(ctx) {
 
             @Override
-            protected Collection<SnapshotId> getSnapshotIds(Repo repo, Logger log) throws Exception {
+            protected Collection<SnapshotId> getSnapshotIds(Repo repo, UserLogger ulog) throws Exception {
                 return sortWorldSnapshots(repo.listSnapshots(), repo.getWorldUuid());
             }
         };
     }
 
-    static SnapshotNameSuggestions remote(final ModContext ctx) {
+    static SnapshotNameSuggestions remote(final Mod ctx) {
         return new SnapshotNameSuggestions(ctx) {
 
             @Override
-            protected Collection<SnapshotId> getSnapshotIds(Repo repo, Logger log) throws Exception {
+            protected Collection<SnapshotId> getSnapshotIds(Repo repo, UserLogger ulog) throws Exception {
                 return sortWorldSnapshots(repo.listRemoteSnapshots(), repo.getWorldUuid());
             }
         };
     }
 
-    private final ModContext ctx;
+    private final Mod ctx;
 
-    private SnapshotNameSuggestions(ModContext ctx) {
+    private SnapshotNameSuggestions(Mod ctx) {
         this.ctx = requireNonNull(ctx);
     }
 
@@ -68,9 +68,9 @@ abstract class SnapshotNameSuggestions implements SuggestionProvider<ServerComma
     public CompletableFuture<Suggestions> getSuggestions(final CommandContext<ServerCommandSource> cc,
                                                          final SuggestionsBuilder builder) {
         CompletableFuture<Suggestions> completableFuture = new CompletableFuture<>();
-        final Logger log = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, NONE, log, repo -> {
-            for (final SnapshotId sid : this.getSnapshotIds(repo, log)) {
+        final UserLogger ulog = commandLogger(ctx, cc.getSource());
+        gitOp(ctx, NONE, ulog, repo -> {
+            for (final SnapshotId sid : this.getSnapshotIds(repo, ulog)) {
                 builder.suggest(sid.getName());
             }
             completableFuture.complete(builder.buildFuture().get());
@@ -78,6 +78,6 @@ abstract class SnapshotNameSuggestions implements SuggestionProvider<ServerComma
         return completableFuture;
     }
 
-    abstract protected Collection<SnapshotId> getSnapshotIds(Repo repo, Logger log) throws Exception;
+    abstract protected Collection<SnapshotId> getSnapshotIds(Repo repo, UserLogger log) throws Exception;
 
 }

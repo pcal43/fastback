@@ -18,11 +18,12 @@
 
 package net.pcal.fastback.retention;
 
-import net.pcal.fastback.logging.ConsoleLogger;
 import net.pcal.fastback.logging.Log4jLogger;
+import net.pcal.fastback.logging.SystemLogger;
 import net.pcal.fastback.repo.SnapshotId;
 import org.apache.logging.log4j.LogManager;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -38,6 +39,11 @@ import java.util.TreeSet;
 import java.util.function.Function;
 
 public class GFSRetentionPolicyTest {
+
+    @BeforeAll
+    public static void setup() {
+        SystemLogger.Singleton.register(new Log4jLogger(LogManager.getLogger("mocklogger")));
+    }
 
     @Test
     public void testGFSRetention() {
@@ -68,7 +74,6 @@ public class GFSRetentionPolicyTest {
                 sid(2022, 11, 4), pruned.apply(sid(2022, 11, 3)), pruned.apply(sid(2022, 11, 2))
 
         ));
-        ConsoleLogger.register(new Log4jLogger(LogManager.getLogger("mocklogger")));
         RetentionPolicy policy = GFSRetentionPolicy.GFSRetentionPolicyType.INSTANCE.createPolicy(Collections.emptyMap());
         ((GFSRetentionPolicy)policy).nowSupplier = ()->now;
         Collection<SnapshotId> toPruneList = policy.getSnapshotsToPrune(snapshots);

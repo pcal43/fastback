@@ -21,18 +21,16 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
-import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.config.GitConfig;
-import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.UserLogger;
+import net.pcal.fastback.logging.UserMessage;
+import net.pcal.fastback.mod.Mod;
 import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;
 import net.pcal.fastback.retention.RetentionPolicyType;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_GIT_ENABLED;
-import static net.pcal.fastback.mod.ModContext.ExecutionLock.NONE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
@@ -40,11 +38,13 @@ import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.config.GitConfigKey.AUTOBACK_ACTION;
 import static net.pcal.fastback.config.GitConfigKey.AUTOBACK_WAIT_MINUTES;
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
+import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.LOCAL_RETENTION_POLICY;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_PUSH_URL;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_RETENTION_POLICY;
 import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
-import static net.pcal.fastback.utils.EnvironmentUtils.*;
+import static net.pcal.fastback.utils.Executor.ExecutionLock.NONE;
+import static net.pcal.fastback.utils.EnvironmentUtils.getGitLfsVersion;
 import static net.pcal.fastback.utils.EnvironmentUtils.getGitVersion;
 import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
 import static org.apache.commons.io.FileUtils.sizeOfDirectory;
@@ -56,7 +56,7 @@ enum InfoCommand implements Command {
     private static final String COMMAND_NAME = "info";
 
     @Override
-    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, ModContext ctx) {
+    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, Mod ctx) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
@@ -64,38 +64,38 @@ enum InfoCommand implements Command {
         );
     }
 
-    private static int info(final ModContext ctx, final ServerCommandSource scs) {
+    private static int info(final Mod ctx, final ServerCommandSource scs) {
         requireNonNull(ctx);
         requireNonNull(scs);
-        final Logger log = commandLogger(ctx, scs);
-        gitOp(ctx, NONE, log, repo -> {
+        final UserLogger ulog = commandLogger(ctx, scs);
+        gitOp(ctx, NONE, ulog, repo -> {
             final GitConfig c = repo.getConfig();
-            log.chat(UserMessage.localized("fastback.chat.info-header"));
-            log.chat(UserMessage.localized("fastback.chat.info-fastback-version", ctx.getModVersion()));
-            log.chat(UserMessage.localized("fastback.chat.info-uuid", repo.getWorldUuid()));
+            ulog.chat(UserMessage.localized("fastback.chat.info-header"));
+            ulog.chat(UserMessage.localized("fastback.chat.info-fastback-version", ctx.getModVersion()));
+            ulog.chat(UserMessage.localized("fastback.chat.info-uuid", repo.getWorldUuid()));
             if (c.getBoolean(IS_BACKUP_ENABLED)) {
-                log.chat(UserMessage.localized("fastback.chat.info-local-enabled"));
+                ulog.chat(UserMessage.localized("fastback.chat.info-local-enabled"));
             } else {
-                log.chat(UserMessage.localized("fastback.chat.info-local-disabled"));
+                ulog.chat(UserMessage.localized("fastback.chat.info-local-disabled"));
             }
-            log.chat(UserMessage.localized("fastback.chat.info-remote-url", c.getString(REMOTE_PUSH_URL)));
+            ulog.chat(UserMessage.localized("fastback.chat.info-remote-url", c.getString(REMOTE_PUSH_URL)));
             final SchedulableAction shutdownAction = SchedulableAction.forConfigValue(c.getString(SHUTDOWN_ACTION));
-            log.chat(UserMessage.localized("fastback.chat.info-shutdown-action", getActionDisplay(shutdownAction)));
+            ulog.chat(UserMessage.localized("fastback.chat.info-shutdown-action", getActionDisplay(shutdownAction)));
             final SchedulableAction autobackAction = SchedulableAction.forConfigValue(c.getString(AUTOBACK_ACTION));
-            log.chat(UserMessage.localized("fastback.chat.info-autoback-action", getActionDisplay(autobackAction)));
-            log.chat(UserMessage.localized("fastback.chat.info-autoback-wait", c.getInt(AUTOBACK_WAIT_MINUTES)));
+            ulog.chat(UserMessage.localized("fastback.chat.info-autoback-action", getActionDisplay(autobackAction)));
+            ulog.chat(UserMessage.localized("fastback.chat.info-autoback-wait", c.getInt(AUTOBACK_WAIT_MINUTES)));
 
             // FIXME? this could be implemented more efficiently
             final long backupSize = sizeOfDirectory(repo.getDirectory());
             final long worldSize = sizeOfDirectory(repo.getWorkTree()) - backupSize;
-            log.chat(UserMessage.localized("fastback.chat.info-world-size", byteCountToDisplaySize(worldSize)));
-            log.chat(UserMessage.localized("fastback.chat.info-backup-size", byteCountToDisplaySize(backupSize)));
-            showRetentionPolicy(ctx, log,
+            ulog.chat(UserMessage.localized("fastback.chat.info-world-size", byteCountToDisplaySize(worldSize)));
+            ulog.chat(UserMessage.localized("fastback.chat.info-backup-size", byteCountToDisplaySize(backupSize)));
+            showRetentionPolicy(ulog,
                     c.getString(LOCAL_RETENTION_POLICY),
                     "fastback.chat.retention-policy-set",
                     "fastback.chat.retention-policy-none"
             );
-            showRetentionPolicy(ctx, log,
+            showRetentionPolicy(ulog,
                     c.getString(REMOTE_RETENTION_POLICY),
                     "fastback.chat.remote-retention-policy-set",
                     "fastback.chat.remote-retention-policy-none"
@@ -104,11 +104,11 @@ enum InfoCommand implements Command {
             final Text enabled = Text.translatable("fastback.values.enabled");
             final Text notInstalled = Text.translatable("fastback.values.not-installed");
             if (c.getBoolean(IS_NATIVE_GIT_ENABLED)) { // TODO display this all the time
-                log.chat(UserMessage.localized("fastback.chat.info-native-git", enabled));
+                ulog.chat(UserMessage.localized("fastback.chat.info-native-git", enabled));
                 final String gitVersion = getGitVersion();
-                log.chat(UserMessage.localized("fastback.chat.info-native-git-version", gitVersion != null ? gitVersion : notInstalled));
+                ulog.chat(UserMessage.localized("fastback.chat.info-native-git-version", gitVersion != null ? gitVersion : notInstalled));
                 final String gitLfsVersion = getGitLfsVersion();
-                log.chat(UserMessage.localized("fastback.chat.info-native-git-lfs-version", gitLfsVersion != null ? gitLfsVersion : notInstalled));
+                ulog.chat(UserMessage.localized("fastback.chat.info-native-git-lfs-version", gitLfsVersion != null ? gitLfsVersion : notInstalled));
             }
 
         });
@@ -119,7 +119,7 @@ enum InfoCommand implements Command {
         return action == null ? SchedulableAction.NONE.getArgumentName() : action.getArgumentName();
     }
 
-    private static void showRetentionPolicy(ModContext ctx, Logger log, String encodedPolicy, String setKey, String noneKey) {
+    private static void showRetentionPolicy(UserLogger log, String encodedPolicy, String setKey, String noneKey) {
         if (encodedPolicy == null) {
             log.chat(UserMessage.localized(noneKey));
         } else {

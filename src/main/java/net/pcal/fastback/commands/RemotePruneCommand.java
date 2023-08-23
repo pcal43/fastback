@@ -20,19 +20,19 @@ package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.ServerCommandSource;
+import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.mod.ModContext;
-import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.mod.Mod;
 import net.pcal.fastback.repo.SnapshotId;
 
 import java.util.Collection;
 
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.mod.ModContext.ExecutionLock.WRITE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.utils.Executor.ExecutionLock.WRITE;
 
 /**
  * Command to prune all snapshots that are not to be retained per the retention policy.
@@ -47,7 +47,7 @@ enum RemotePruneCommand implements Command {
     private static final String COMMAND_NAME = "remote-prune";
 
     @Override
-    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
+    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
@@ -55,11 +55,11 @@ enum RemotePruneCommand implements Command {
         );
     }
 
-    private static int remotePrune(final ModContext ctx, final ServerCommandSource scs) {
-        final Logger log = commandLogger(ctx, scs);
-        gitOp(ctx, WRITE, log, repo -> {
-            final Collection<SnapshotId> pruned = repo.doRemotePrune();
-            log.chat(UserMessage.localized("fastback.chat.prune-done", pruned.size()));
+    private static int remotePrune(final Mod ctx, final ServerCommandSource scs) {
+        final UserLogger ulog = commandLogger(ctx, scs);
+        gitOp(ctx, WRITE, ulog, repo -> {
+            final Collection<SnapshotId> pruned = repo.doRemotePrune(ulog);
+            ulog.chat(UserMessage.localized("fastback.chat.prune-done", pruned.size()));
         });
         return SUCCESS;
     }

@@ -20,6 +20,7 @@ package net.pcal.fastback.commands;
 
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.config.GitConfigKey;
+import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.SnapshotId;
 
@@ -38,33 +39,33 @@ public enum SchedulableAction {
 
     NONE("none") {
         @Override
-        public Callable<Void> getTask(final Repo repo) {
+        public Callable<Void> getTask(final Repo repo, final UserLogger ulog) {
             return () -> null;
         }
     },
 
     LOCAL("local") {
         @Override
-        public Callable<Void> getTask(final Repo repo) {
-            return ()->{ repo.doCommitSnapshot(); return null; };
+        public Callable<Void> getTask(final Repo repo, final UserLogger ulog) {
+            return ()->{ repo.doCommitSnapshot(ulog); return null; };
         }
     },
 
     FULL("full") {
         @Override
-        public Callable<Void> getTask(final Repo repo) {
-            return ()->{ repo.doCommitAndPush(); return null; };
+        public Callable<Void> getTask(final Repo repo, final UserLogger ulog) {
+            return ()->{ repo.doCommitAndPush(ulog); return null; };
         }
     },
 
     FULL_GC("full-gc") {
         @Override
-        public Callable<Void> getTask(final Repo repo) {
+        public Callable<Void> getTask(final Repo repo, final UserLogger ulog) {
             return ()->{
-                repo.doCommitAndPush();
-                final Collection<SnapshotId> pruned = repo.doLocalPrune();
+                repo.doCommitAndPush(ulog);
+                final Collection<SnapshotId> pruned = repo.doLocalPrune(ulog);
                 if (pruned.size() > 0) {
-                    repo.doGc();
+                    repo.doGc(ulog);
                 }
                 return null;
             };
@@ -100,6 +101,6 @@ public enum SchedulableAction {
         return this.configValue;
     }
 
-    public abstract Callable<?> getTask(Repo repo);
+    public abstract Callable<?> getTask(Repo repo, UserLogger ulog);
 }
 

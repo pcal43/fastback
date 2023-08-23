@@ -21,17 +21,15 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.mod.ModContext;
-import net.pcal.fastback.logging.Logger;
-
-import java.util.concurrent.Callable;
+import net.pcal.fastback.logging.UserLogger;
+import net.pcal.fastback.mod.Mod;
 
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.mod.ModContext.ExecutionLock.WRITE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.utils.Executor.ExecutionLock.WRITE;
 
 
 /**
@@ -47,7 +45,7 @@ enum GcCommand implements Command {
     private static final String COMMAND_NAME = "gc";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).
@@ -55,10 +53,10 @@ enum GcCommand implements Command {
         );
     }
 
-    private static int gc(ModContext ctx, CommandContext<ServerCommandSource> cc) {
-        final Logger log = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, WRITE, log, repo -> {
-            repo.doGc();
+    private static int gc(Mod ctx, CommandContext<ServerCommandSource> cc) {
+        final UserLogger ulog = commandLogger(ctx, cc.getSource());
+        gitOp(ctx, WRITE, ulog, repo -> {
+            repo.doGc(ulog);
             //log.chat(localized("fastback.chat.gc-done", byteCountToDisplaySize(gc.getBytesReclaimed())));
         });
         return SUCCESS;

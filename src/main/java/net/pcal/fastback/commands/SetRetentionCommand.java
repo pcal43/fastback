@@ -21,11 +21,11 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.config.GitConfigKey;
-import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.UserLogger;
+import net.pcal.fastback.logging.UserMessage;
+import net.pcal.fastback.mod.Mod;
 import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;
 import net.pcal.fastback.retention.RetentionPolicyType;
@@ -44,6 +44,7 @@ import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.getArgumentNicely;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.config.GitConfigKey.LOCAL_RETENTION_POLICY;
+import static net.pcal.fastback.logging.SystemLogger.syslog;
 
 /**
  * Command to set the snapshot retention policy.
@@ -58,11 +59,11 @@ enum SetRetentionCommand implements Command {
     private static final String COMMAND_NAME = "set-retention";
 
     @Override
-    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
+    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
         registerSetRetentionCommand(argb, ctx, COMMAND_NAME, (cc, rt) -> setLocalPolicy(ctx, cc, rt));
     }
 
-    private static int setLocalPolicy(ModContext ctx, CommandContext<ServerCommandSource> cc, RetentionPolicyType rpt) {
+    private static int setLocalPolicy(Mod ctx, CommandContext<ServerCommandSource> cc, RetentionPolicyType rpt) {
         return setRetentionPolicy(ctx, cc, rpt, LOCAL_RETENTION_POLICY);
     }
 
@@ -76,7 +77,7 @@ enum SetRetentionCommand implements Command {
      * Just generally not sure how to beat brigadier into submission here.
      */
     static void registerSetRetentionCommand(final LiteralArgumentBuilder<ServerCommandSource> argb,
-                                            final ModContext ctx,
+                                            final Mod ctx,
                                             final String commandName,
                                             final BiFunction<CommandContext<ServerCommandSource>, RetentionPolicyType, Integer> setPolicyFn) {
         final LiteralArgumentBuilder<ServerCommandSource> retainCommand =
@@ -85,7 +86,7 @@ enum SetRetentionCommand implements Command {
             final LiteralArgumentBuilder<ServerCommandSource> policyCommand = literal(rpt.getCommandName());
             policyCommand.executes(cc -> setPolicyFn.apply(cc, rpt));
             if (rpt.getParameters() != null) {
-                for (RetentionPolicyType.Parameter param : rpt.getParameters()) {
+                for (RetentionPolicyType.Parameter<?> param : rpt.getParameters()) {
                     policyCommand.then(argument(param.name(), param.type()).
                             executes(cc -> setPolicyFn.apply(cc, rpt)));
                 }
@@ -98,17 +99,19 @@ enum SetRetentionCommand implements Command {
     /**
      * Does the work to encode a policy configuration and set it in git configuration.
      * Broken out as a helper methods so this logic can be shared by set-retention and set-remote-retention.
+     * <p>
+     * TODO this should probably move to Repo.
      */
-    public static int setRetentionPolicy(final ModContext ctx,
+    public static int setRetentionPolicy(final Mod ctx,
                                          final CommandContext<ServerCommandSource> cc,
                                          final RetentionPolicyType rpt,
                                          final GitConfigKey confKey) {
-        final Logger logger = commandLogger(ctx, cc.getSource());
+        final UserLogger ulog = commandLogger(ctx, cc.getSource());
         try {
             final Path worldSaveDir = ctx.getWorldDirectory();
             final Map<String, String> config = new HashMap<>();
             for (final RetentionPolicyType.Parameter<?> p : rpt.getParameters()) {
-                final Object val = getArgumentNicely(p.name(), p.clazz(), cc, logger);
+                final Object val = getArgumentNicely(p.name(), p.clazz(), cc, ulog);
                 if (val == null) return FAILURE;
                 config.put(p.name(), String.valueOf(val));
             }
@@ -116,21 +119,21 @@ enum SetRetentionCommand implements Command {
             final RetentionPolicy rp =
                     RetentionPolicyCodec.INSTANCE.decodePolicy(RetentionPolicyType.getAvailable(), encodedPolicy);
             if (rp == null) {
-                logger.internalError("Failed to decode policy " + encodedPolicy, new Exception());
+                syslog().error("Failed to decode policy " + encodedPolicy, new Exception());
                 return FAILURE;
             }
             try (final Git jgit = Git.open(worldSaveDir.toFile())) {
                 final GitConfig conf = GitConfig.load(jgit);
                 conf.updater().set(confKey, encodedPolicy).save();
-                logger.chat(UserMessage.localized("fastback.chat.retention-policy-set"));
-                logger.chat(rp.getDescription());
+                ulog.chat(UserMessage.localized("fastback.chat.retention-policy-set"));
+                ulog.chat(rp.getDescription());
             } catch (Exception e) {
-                logger.internalError("Command execution failed.", e);
+                syslog().error("Command execution failed.", e);
                 return FAILURE;
             }
             return SUCCESS;
         } catch (Exception e) {
-            logger.internalError("Failed to set retention policy", e);
+            syslog().error("Failed to set retention policy", e);
             return FAILURE;
         }
     }

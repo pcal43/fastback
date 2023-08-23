@@ -22,22 +22,22 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.config.GitConfig;
-import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.UserLogger;
+import net.pcal.fastback.logging.UserMessage;
+import net.pcal.fastback.mod.Mod;
 import net.pcal.fastback.repo.SnapshotId;
 
 import java.nio.file.Path;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.mod.ModContext.ExecutionLock.NONE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_PUSH_URL;
+import static net.pcal.fastback.utils.Executor.ExecutionLock.NONE;
 
 enum RemoteRestoreCommand implements Command {
 
@@ -48,7 +48,7 @@ enum RemoteRestoreCommand implements Command {
 
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(ctx, COMMAND_NAME)).then(
@@ -59,14 +59,14 @@ enum RemoteRestoreCommand implements Command {
         );
     }
 
-    private static int remoteRestore(final ModContext ctx, final CommandContext<ServerCommandSource> cc) {
-        final Logger log = commandLogger(ctx, cc.getSource());
+    private static int remoteRestore(final Mod ctx, final CommandContext<ServerCommandSource> cc) {
+        final UserLogger log = commandLogger(ctx, cc.getSource());
         gitOp(ctx, NONE, log, repo -> {
             final GitConfig conf = repo.getConfig();
             final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
             final SnapshotId sid = SnapshotId.fromUuidAndName(repo.getWorldUuid(), snapshotName);
             final String uri =  conf.getString(REMOTE_PUSH_URL);
-            final Path restoreDir = repo.doRestoreSnapshot(uri, ctx.getRestoresDir(), ctx.getWorldName(), sid);
+            final Path restoreDir = repo.doRestoreSnapshot(uri, ctx.getRestoresDir(), ctx.getWorldName(), sid, log);
             log.chat(UserMessage.localized("fastback.chat.restore-done", restoreDir));
         });
         return SUCCESS;

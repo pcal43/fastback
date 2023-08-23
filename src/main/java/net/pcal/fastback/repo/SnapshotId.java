@@ -20,8 +20,7 @@ package net.pcal.fastback.repo;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
-import net.pcal.fastback.logging.Logger;
-import org.eclipse.jgit.lib.Ref; // TODO might want to trim this dep
+import org.eclipse.jgit.lib.Ref;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -29,6 +28,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.NavigableSet;
 import java.util.TreeSet;
+
+import static net.pcal.fastback.logging.SystemLogger.syslog;
 
 /**
  * A globally-unique identifier for a single backup snapshot.
@@ -80,7 +81,7 @@ public record SnapshotId(String worldUuid, Date snapshotDate) implements Compara
     // ====================================================================
     // Factories and utils
 
-    static ListMultimap<String, SnapshotId> getSnapshotsPerWorld(Iterable<Ref> refs, Logger logger) {
+    static ListMultimap<String, SnapshotId> getSnapshotsPerWorld(Iterable<Ref> refs) {
         final ListMultimap<String, SnapshotId> out = ArrayListMultimap.create();
         for (final Ref ref : refs) {
             final String branchName = getBranchName(ref);
@@ -89,7 +90,7 @@ public record SnapshotId(String worldUuid, Date snapshotDate) implements Compara
                 final SnapshotId sid = fromBranch(branchName);
                 if (sid != null) out.put(sid.worldUuid(), sid);
             } catch (ParseException e) {
-                logger.warn("Ignoring unexpected branch name " + branchName);
+                syslog().warn("Ignoring unexpected branch name " + branchName);
             }
         }
         return out;

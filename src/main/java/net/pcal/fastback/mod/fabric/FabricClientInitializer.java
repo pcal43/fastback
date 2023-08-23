@@ -22,8 +22,13 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.pcal.fastback.mod.LifecycleUtils;
-import net.pcal.fastback.mod.ModContext;
+import net.pcal.fastback.logging.Log4jLogger;
+import net.pcal.fastback.mod.FrameworkServiceProvider;
+import net.pcal.fastback.mod.LifecycleListener;
+import org.apache.logging.log4j.LogManager;
+
+import static net.pcal.fastback.mod.fabric.BaseFabricProvider.MOD_ID;
+
 
 /**
  * Initializer that runs in a client.
@@ -36,8 +41,9 @@ public class FabricClientInitializer implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         final FabricClientProvider clientProvider = new FabricClientProvider();
-        final ModContext modContext = ModContext.create(clientProvider);
-        LifecycleUtils.onInitialize(modContext);
+        final LifecycleListener listener = FrameworkServiceProvider.register(clientProvider,
+                new Log4jLogger(LogManager.getLogger(MOD_ID)));
+        listener.onInitialize();
 
         ClientLifecycleEvents.CLIENT_STARTED.register(
                 minecraftClient -> {
@@ -47,20 +53,22 @@ public class FabricClientInitializer implements ClientModInitializer {
         );
         ClientLifecycleEvents.CLIENT_STOPPING.register(
                 minecraftClient -> {
-                    LifecycleUtils.onTermination(modContext);
                     clientProvider.setMinecraftClient(null);
                 }
         );
         ServerLifecycleEvents.SERVER_STARTING.register(
                 minecraftServer -> {
                     clientProvider.setMinecraftServer(minecraftServer);
-                    LifecycleUtils.onWorldStart(modContext);
+                    listener.onWorldStart();
                 }
         );
         ServerLifecycleEvents.SERVER_STOPPED.register(
                 minecraftServer -> {
-                    LifecycleUtils.onWorldStop(modContext);
-                    clientProvider.setMinecraftServer(null);
+                    try {
+                        listener.onWorldStop();
+                    } finally {
+                        clientProvider.setMinecraftServer(null);
+                    }
                 }
         );
     }

@@ -20,8 +20,12 @@ package net.pcal.fastback.mod.fabric;
 
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.pcal.fastback.mod.LifecycleUtils;
-import net.pcal.fastback.mod.ModContext;
+import net.pcal.fastback.logging.Log4jLogger;
+import net.pcal.fastback.mod.FrameworkServiceProvider;
+import net.pcal.fastback.mod.LifecycleListener;
+import org.apache.logging.log4j.LogManager;
+
+import static net.pcal.fastback.mod.fabric.BaseFabricProvider.MOD_ID;
 
 /**
  * Initializer that runs in a dedicated server.
@@ -33,21 +37,25 @@ public class FabricServerInitializer implements DedicatedServerModInitializer {
 
     @Override
     public void onInitializeServer() {
-        final FabricProvider fsp = new FabricServerProvider();
-        final ModContext modContext = ModContext.create(fsp);
+        final BaseFabricProvider serverProvider = new FabricServerProvider();
+        final LifecycleListener listener = FrameworkServiceProvider.register(serverProvider,
+                new Log4jLogger(LogManager.getLogger(MOD_ID)));
+        listener.onInitialize();
         ServerLifecycleEvents.SERVER_STARTING.register(
                 minecraftServer -> {
-                    fsp.setMinecraftServer(minecraftServer);
-                    LifecycleUtils.onWorldStart(modContext);
+                    serverProvider.setMinecraftServer(minecraftServer);
+                    listener.onWorldStart();
                 }
         );
         ServerLifecycleEvents.SERVER_STOPPED.register(
                 minecraftServer -> {
-                    LifecycleUtils.onWorldStop(modContext);
-                    LifecycleUtils.onTermination(modContext); // dedicated server shutdown == VM termination
-                    fsp.setMinecraftServer(null);
+                    try {
+                        listener.onWorldStop();
+                    } finally {
+                        serverProvider.setMinecraftServer(null);
+                    }
                 }
         );
-        LifecycleUtils.onInitialize(modContext);
+        listener.onInitialize();
     }
 }

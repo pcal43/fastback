@@ -18,9 +18,8 @@
 
 package net.pcal.fastback.repo;
 
-import net.pcal.fastback.logging.Logger;
 import net.pcal.fastback.logging.UserLogger;
-import net.pcal.fastback.mod.ModContext;
+import net.pcal.fastback.mod.Mod;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
@@ -50,10 +49,10 @@ import static net.pcal.fastback.utils.ProcessUtils.doExec;
  */
 class CommitUtils {
 
-    static SnapshotId doCommitSnapshot(RepoImpl repo, ModContext ctx, Logger log) throws IOException {
+    static SnapshotId doCommitSnapshot(RepoImpl repo, Mod ctx, UserLogger log) throws IOException {
         final String uuid = repo.getWorldUuid();
         final SnapshotId newSid = SnapshotId.create(uuid);
-        log.debug("Preparing local backup " + newSid);
+        syslog().debug("Preparing local backup " + newSid);
         final String newBranchName = newSid.getBranchName();
 
         MaintenanceUtils.doPreflight(repo);
@@ -69,11 +68,11 @@ class CommitUtils {
             throw new IOException(e);
         }
 
-        log.info("Local backup complete.");
+        syslog().info("Local backup complete.");
         return newSid;
     }
 
-    private static void native_commit(String newBranchName, Repo repo, ModContext ctx, UserLogger log) throws IOException, InterruptedException {
+    private static void native_commit(String newBranchName, Repo repo, Mod ctx, UserLogger log) throws IOException, InterruptedException {
         syslog().debug("Start native_commit");
         log.hud(styledLocalized("fastback.hud.local-saving", NATIVE_GIT));
         final File worktree = repo.getWorkTree();
@@ -96,16 +95,16 @@ class CommitUtils {
         syslog().debug("End native_commit");
     }
 
-    private static void jgit_commit(String newBranchName, Git jgit, ModContext ctx, final Logger log) throws GitAPIException {
-        log.debug("Starting jgit_commit");
+    private static void jgit_commit(String newBranchName, Git jgit, Mod ctx, final UserLogger log) throws GitAPIException {
+        syslog().debug("Starting jgit_commit");
         log.hud(styledLocalized("fastback.hud.local-saving", JGIT));
         jgit.checkout().setOrphan(true).setName(newBranchName).call();
         jgit.reset().setMode(ResetCommand.ResetType.SOFT).call();
-        log.debug("status");
+        syslog().debug("status");
         final Status status = jgit.status().call();
 
         try {
-            log.info("Disabling world save for 'git add'");
+            syslog().debug("Disabling world save for 'git add'");
             ctx.setWorldSaveEnabled(false);
             //
             // Figure out what files to add and remove.  We don't just 'git add .' because this:
@@ -116,10 +115,10 @@ class CommitUtils {
                 toAdd.addAll(status.getModified());
                 toAdd.addAll(status.getUntracked());
                 if (!toAdd.isEmpty()) {
-                    log.info("Adding " + toAdd.size() + " new or modified files to index");
+                    syslog().debug("Adding " + toAdd.size() + " new or modified files to index");
                     final AddCommand gitAdd = jgit.add();
                     for (final String file : toAdd) {
-                        log.debug("add  " + file);
+                        syslog().debug("add  " + file);
                         gitAdd.addFilepattern(file);
                     }
                     gitAdd.call();
@@ -130,10 +129,10 @@ class CommitUtils {
                 toDelete.addAll(status.getRemoved());
                 toDelete.addAll(status.getMissing());
                 if (!toDelete.isEmpty()) {
-                    log.info("Removing " + toDelete.size() + " deleted files from index");
+                    syslog().debug("Removing " + toDelete.size() + " deleted files from index");
                     final RmCommand gitRm = jgit.rm();
                     for (final String file : toDelete) {
-                        log.debug("rm  " + file);
+                        syslog().debug("rm  " + file);
                         gitRm.addFilepattern(file);
                     }
                     gitRm.call();
@@ -141,9 +140,9 @@ class CommitUtils {
             }
         } finally {
             ctx.setWorldSaveEnabled(true);
-            log.info("World save re-enabled.");
+            syslog().debug("World save re-enabled.");
         }
-        log.debug("commit");
+        syslog().debug("commit");
         jgit.commit().setMessage(newBranchName).call();
     }
 }

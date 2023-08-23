@@ -18,11 +18,12 @@
 
 package net.pcal.fastback.retention;
 
-import net.pcal.fastback.logging.ConsoleLogger;
 import net.pcal.fastback.logging.Log4jLogger;
+import net.pcal.fastback.logging.SystemLogger;
 import net.pcal.fastback.repo.SnapshotId;
 import org.apache.logging.log4j.LogManager;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
@@ -37,6 +38,11 @@ public class DailyRetentionPolicyTest {
 
     private static final long HOUR_MILLIS = 1000 * 60 * 60;
     private static final long DAY_MILLIS = HOUR_MILLIS * 24;
+
+    @BeforeAll
+    public static void setup() {
+        SystemLogger.Singleton.register(new Log4jLogger(LogManager.getLogger("mocklogger")));
+    }
 
     @Test
     public void testDailyRetention() {
@@ -73,7 +79,6 @@ public class DailyRetentionPolicyTest {
                 threeDaysAgoA, threeDaysAgoB, threeDaysAgoC, lastWeek,
                 lastYearA, lastYearB, lastYearC));
 
-        ConsoleLogger.register(new Log4jLogger(LogManager.getLogger("mocklogger")));
         RetentionPolicy policy = DailyRetentionPolicy.DailyRetentionPolicyType.INSTANCE.createPolicy(
                 Map.of("gracePeriodDays", String.valueOf(GRACE_PERIOD)));
         Collection<SnapshotId> toPruneList = policy.getSnapshotsToPrune(snapshots);

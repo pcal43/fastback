@@ -20,19 +20,19 @@ package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.mod.ModContext;
 import net.pcal.fastback.config.GitConfig;
-import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.UserLogger;
+import net.pcal.fastback.logging.UserMessage;
+import net.pcal.fastback.mod.Mod;
 
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.mod.ModContext.ExecutionLock.WRITE_CONFIG;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.missingArgument;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
+import static net.pcal.fastback.utils.Executor.ExecutionLock.WRITE_CONFIG;
 
 enum SetShutdownActionCommand implements Command {
 
@@ -41,7 +41,7 @@ enum SetShutdownActionCommand implements Command {
     private static final String COMMAND_NAME = "set-shutdown-action";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final ModContext ctx) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
         final LiteralArgumentBuilder<ServerCommandSource> setCommand = literal(COMMAND_NAME).
                 requires(subcommandPermission(ctx, COMMAND_NAME)).
                 executes(cc-> missingArgument("actionName", ctx, cc));
@@ -53,12 +53,12 @@ enum SetShutdownActionCommand implements Command {
         argb.then(setCommand);
     }
 
-    private static int setShutdownAction(final ModContext ctx, final ServerCommandSource scs, SchedulableAction action) {
-        final Logger log = commandLogger(ctx, scs);
-        gitOp(ctx, WRITE_CONFIG, log, repo -> {
+    private static int setShutdownAction(final Mod ctx, final ServerCommandSource scs, SchedulableAction action) {
+        final UserLogger ulog = commandLogger(ctx, scs);
+        gitOp(ctx, WRITE_CONFIG, ulog, repo -> {
             final GitConfig conf = repo.getConfig();
             conf.updater().set(SHUTDOWN_ACTION, action.getConfigValue()).save();
-            log.chat(UserMessage.localized("fastback.chat.info-shutdown-action", action.getArgumentName()));
+            ulog.chat(UserMessage.localized("fastback.chat.info-shutdown-action", action.getArgumentName()));
         });
         return SUCCESS;
     }

@@ -19,7 +19,6 @@
 package net.pcal.fastback.retention;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
-import net.pcal.fastback.logging.ConsoleLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.repo.SnapshotId;
 
@@ -29,6 +28,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
+
+import static net.pcal.fastback.logging.SystemLogger.syslog;
 
 /**
  * Retention policy that keeps only the n most-recent snapshots.
@@ -50,7 +51,7 @@ class FixedCountRetentionPolicy implements RetentionPolicy {
             try {
                 count = Integer.parseInt(config.get(COUNT_PARAM));
             } catch (NumberFormatException nfe) {
-                ConsoleLogger.get().debug("Ignoring invalided fixed count " + config.get(COUNT_PARAM), nfe);
+                syslog().debug("Ignoring invalided fixed count " + config.get(COUNT_PARAM), nfe);
             }
         }
         return new FixedCountRetentionPolicy(count);

@@ -18,7 +18,7 @@
 
 package net.pcal.fastback.repo;
 
-import net.pcal.fastback.logging.Logger;
+import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.utils.FileUtils;
 import org.eclipse.jgit.api.Git;
@@ -30,6 +30,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
+import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.repo.RepoImpl.WORLD_UUID_PATH;
 
 /**
@@ -43,7 +44,7 @@ class RestoreUtils {
     // ======================================================================
     // Utility methods
 
-    static Path restoreSnapshot(final String repoUri, final Path restoreTargetDir, final String worldName, final SnapshotId sid, final Logger logger) throws IOException {
+    static Path restoreSnapshot(final String repoUri, final Path restoreTargetDir, final String worldName, final SnapshotId sid, final UserLogger logger) throws IOException {
         try {
             return jgit_restoreSnapshot(repoUri, restoreTargetDir, worldName, sid, logger);
         } catch (GitAPIException e) {
@@ -54,11 +55,11 @@ class RestoreUtils {
     // ======================================================================
     // Private
 
-    private static Path jgit_restoreSnapshot(final String repoUri, final Path restoreTargetDir, final String worldName, final SnapshotId sid, final Logger logger) throws IOException, GitAPIException {
+    private static Path jgit_restoreSnapshot(final String repoUri, final Path restoreTargetDir, final String worldName, final SnapshotId sid, final UserLogger ulog) throws IOException, GitAPIException {
         final Path restoreDir = getTargetDir(restoreTargetDir, worldName, sid.getName());
         final String branchName = sid.getBranchName();
-        logger.hud(UserMessage.localized("fastback.hud.restore-percent", 0));
-        final ProgressMonitor pm = new JGitIncrementalProgressMonitor(new JGitRestoreProgressMonitor(logger), 100);
+        ulog.hud(UserMessage.localized("fastback.hud.restore-percent", 0));
+        final ProgressMonitor pm = new JGitIncrementalProgressMonitor(new JGitRestoreProgressMonitor(ulog), 100);
         try (Git git = Git.cloneRepository().setProgressMonitor(pm).setDirectory(restoreDir.toFile()).
                 setBranchesToClone(List.of("refs/heads/" + branchName)).setBranch(branchName).setURI(repoUri).call()) {
         }
@@ -84,10 +85,10 @@ class RestoreUtils {
 
     private static class JGitRestoreProgressMonitor extends JGitPercentageProgressMonitor {
 
-        private final Logger logger;
+        private final UserLogger ulog;
 
-        public JGitRestoreProgressMonitor(Logger logger) {
-            this.logger = requireNonNull(logger);
+        public JGitRestoreProgressMonitor(UserLogger ulog) {
+            this.ulog = requireNonNull(ulog);
         }
 
         @Override
@@ -100,7 +101,7 @@ class RestoreUtils {
 
         @Override
         public void progressUpdate(String task, int percentage) {
-            this.logger.info(task + " " + percentage);
+            syslog().debug(task + " " + percentage);
             if (task.contains("Receiving")) { // Receiving objects
                 percentage = percentage / 2;
             } else if (task.contains("Checking")) { // Checking out files
@@ -108,7 +109,7 @@ class RestoreUtils {
             } else {
                 return;
             }
-            this.logger.hud(UserMessage.localized("fastback.hud.restore-percent", percentage));
+            this.ulog.hud(UserMessage.localized("fastback.hud.restore-percent", percentage));
         }
 
         @Override
