@@ -41,7 +41,6 @@ public class FabricServerInitializer implements DedicatedServerModInitializer {
         final LifecycleListener lifecycle = FrameworkServiceProvider.register(serverProvider,
                 new Log4jLogger(LogManager.getLogger(MOD_ID)));
         MixinGateway.Singleton.register(serverProvider);
-        lifecycle.onInitialize();
         ServerLifecycleEvents.SERVER_STARTING.register(
                 minecraftServer -> {
                     serverProvider.setMinecraftServer(minecraftServer);

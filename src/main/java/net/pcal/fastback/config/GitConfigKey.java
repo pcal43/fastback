@@ -49,6 +49,10 @@ public enum GitConfigKey {
 
     REMOTE_NAME("origin"),
 
+    BROADCAST_NOTICE_MESSAGE("broadcast-notice-message", null),
+
+    BROADCAST_NOTICE_ENABLED("broadcast-notice-enabled", true),
+
     /**
      * We disable commit signing on git init.  https://github.com/pcal43/fastback/issues/165
      */

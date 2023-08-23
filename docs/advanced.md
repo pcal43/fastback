@@ -67,3 +67,18 @@ git checkout snapshots/12345678-1234-5678-1234-567812345678/2022-10-02_12_56_33
 ```
 
 Your world save files will appear in the directory.  You can then copy them into your minecraft installation.
+
+
+## Notes for Dedicated Servers:
+
+By default, Fastback will broadcast a message when a backup is about to start, so players know that things 
+might get choppy for a bit.
+
+You can configure this in `[worlddir]/.git/config`:
+
+```
+[fastback]
+	broadcast-notice-enabled = true
+	broadcast-notice-message = My custom message.
+```
+

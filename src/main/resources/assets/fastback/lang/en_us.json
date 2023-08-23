@@ -79,6 +79,7 @@
   "fastback.hud.local-saving"                    : "Saving local backup...",
   "fastback.hud.prune-started"                   : "Pruning...",
   "fastback.message.backing-up"                  : "Backing up...",
+  "fastback.broadcast.message"                   : "The server is starting a backup.",
   "fastback.retain.all.description"              : "Retain all snapshots; never prune.",
   "fastback.retain.fixed.description"            : "Fixed: Keep only the %s most-recent snapshots.",
   "fastback.retain.daily.description"            : "Daily: Keep the last snapshot from each day, plus all snapshots from the last %s days",

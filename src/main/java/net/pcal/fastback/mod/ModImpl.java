@@ -38,6 +38,7 @@ import static net.minecraft.text.Style.EMPTY;
 import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.BROADCAST;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.JGIT;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;
@@ -91,6 +92,11 @@ class ModImpl implements LifecycleListener, Mod {
         }
     }
 
+    @Override
+    public void sendBroadcast(UserMessage message) {
+        this.fsp.sendBroadcast(messageToText(message));
+    }
+
     // ======================================================================
     // Mod implementation passthroughs
 
@@ -137,6 +143,11 @@ class ModImpl implements LifecycleListener, Mod {
     @Override
     public int getDefaultPermLevel() {
         return fsp.isClient() ? 0 : 4;
+    }
+
+    @Override
+    public boolean isDecicatedServer() {
+        return fsp.isDedicatedServer();
     }
 
     @Override
@@ -234,6 +245,8 @@ class ModImpl implements LifecycleListener, Mod {
             out.setStyle(EMPTY.withColor(TextColor.parse("green")));
         } else if (m.style() == JGIT) {
             out.setStyle(EMPTY.withColor(TextColor.parse("gray")));
+        } else if (m.style() == BROADCAST) {
+            out.setStyle(EMPTY.withItalic(true));
         } else {
             out.setStyle(EMPTY.withColor(TextColor.parse("white")));
         }

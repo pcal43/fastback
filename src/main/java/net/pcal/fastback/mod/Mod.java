@@ -20,7 +20,6 @@ package net.pcal.fastback.mod;
 
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.utils.Executor;
 
 import java.io.IOException;
@@ -71,6 +70,11 @@ public interface Mod {
     void sendChat(UserMessage message, ServerCommandSource scs);
 
     /**
+     * If on a server, broadcast a message to the chat window of all connected users.
+     */
+    void sendBroadcast(UserMessage message);
+
+    /**
      * Set magical floating text.  You MUST call clearHudText
      */
     void setHudText(UserMessage message);
@@ -94,4 +98,9 @@ public interface Mod {
      * @return default permission level to use for commands.
      */
     int getDefaultPermLevel();
+
+    /**
+     * @return true if we're running on a dedicated server.
+     */
+    boolean isDecicatedServer();
 }

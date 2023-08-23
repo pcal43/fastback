@@ -4,8 +4,8 @@
   "package": "net.pcal.fastback.mod.fabric.mixins",
   "compatibilityLevel": "JAVA_16",
   "mixins": [
-    "MinecraftServerMixin",
     "MessageScreenMixin",
+    "MinecraftServerMixin",
     "ServerAccessors",
     "SessionAccessors"
   ],

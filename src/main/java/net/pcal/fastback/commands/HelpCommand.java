@@ -88,8 +88,8 @@ enum HelpCommand implements Command {
         }
     }
 
-    static int help(final Mod ctx, final CommandContext<ServerCommandSource> cc) {
-        final UserLogger log = commandLogger(ctx, cc.getSource());
+    static int help(final Mod mod, final CommandContext<ServerCommandSource> cc) {
+        final UserLogger log = commandLogger(mod, cc.getSource());
         StringWriter subcommands = null;
         for (final String available : getSubcommandNames(cc)) {
             if (subcommands == null) {
