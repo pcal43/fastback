@@ -50,28 +50,28 @@ enum SetCommand implements Command {
     private static final String COMMAND_NAME = "set";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> root, final Mod ctx) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> root, final Mod mod) {
         final LiteralArgumentBuilder<ServerCommandSource> setCommand = literal(COMMAND_NAME).
-                requires(subcommandPermission(ctx, COMMAND_NAME)).
-                executes(cc-> missingArgument("key", ctx, cc));
-        registerNativeGit(setCommand, ctx);
-        registerForceDebug(setCommand, ctx);
+                requires(subcommandPermission(mod, COMMAND_NAME)).
+                executes(cc -> missingArgument("key", mod, cc));
+        registerNativeGit(setCommand, mod);
+        registerForceDebug(setCommand, mod);
         root.then(setCommand);
     }
 
     // ======================================================================
     // native-git
 
-    private static void registerNativeGit(final LiteralArgumentBuilder<ServerCommandSource> setCommand, Mod ctx) {
+    private static void registerNativeGit(final LiteralArgumentBuilder<ServerCommandSource> setCommand, Mod mod) {
         final LiteralArgumentBuilder<ServerCommandSource> nativeGit = literal("native-git");
-        nativeGit.then(literal("enabled").executes(cc->setNativeGit(ctx, cc, true)));
-        nativeGit.then(literal("disabled").executes(cc->setNativeGit(ctx, cc, false)));
+        nativeGit.then(literal("enabled").executes(cc -> setNativeGit(mod, cc, true)));
+        nativeGit.then(literal("disabled").executes(cc -> setNativeGit(mod, cc, false)));
         setCommand.then(nativeGit);
     }
 
-    private static int setNativeGit(final Mod ctx, final CommandContext<ServerCommandSource> cc, boolean value) {
-        final UserLogger ulog = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, WRITE_CONFIG, ulog, repo -> {
+    private static int setNativeGit(final Mod mod, final CommandContext<ServerCommandSource> cc, boolean value) {
+        final UserLogger ulog = commandLogger(mod, cc.getSource());
+        gitOp(mod, WRITE_CONFIG, ulog, repo -> {
             repo.setNativeGitEnabled(value, ulog);
         });
         return SUCCESS;
@@ -80,16 +80,16 @@ enum SetCommand implements Command {
     // ======================================================================
     // force-debug
 
-    private static void registerForceDebug(final LiteralArgumentBuilder<ServerCommandSource> setCommand, final Mod ctx) {
+    private static void registerForceDebug(final LiteralArgumentBuilder<ServerCommandSource> setCommand, final Mod mod) {
         final LiteralArgumentBuilder<ServerCommandSource> debug = literal("force-debug");
-        debug.then(literal("enabled").executes(cc-> setForceDebug(ctx, cc, true)));
-        debug.then(literal("disabled").executes(cc-> setForceDebug(ctx, cc, false)));
+        debug.then(literal("enabled").executes(cc -> setForceDebug(mod, cc, true)));
+        debug.then(literal("disabled").executes(cc -> setForceDebug(mod, cc, false)));
         setCommand.then(debug);
     }
 
-    private static int setForceDebug(final Mod ctx, final CommandContext<ServerCommandSource> cc, boolean value) {
+    private static int setForceDebug(final Mod mod, final CommandContext<ServerCommandSource> cc, boolean value) {
         syslog().setForceDebugEnabled(value);
-        commandLogger(ctx, cc.getSource()).chat(localized("fastback.chat.ok"));
+        commandLogger(mod, cc.getSource()).chat(localized("fastback.chat.ok"));
         return SUCCESS;
     }
 }

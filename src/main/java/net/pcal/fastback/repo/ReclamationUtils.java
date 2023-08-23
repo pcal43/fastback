@@ -78,15 +78,15 @@ class ReclamationUtils {
 
     private static void native_doLfsPrune(RepoImpl repo, UserLogger ulog) throws IOException, InterruptedException {
         final File worktree = repo.getWorkTree();
-        final String[] push = { "git", "-C", worktree.getAbsolutePath(), "-c", "lfs.pruneoffsetdays=999999", "lfs", "prune", "--verbose", "--no-verify-remote", };
+        final String[] push = {"git", "-C", worktree.getAbsolutePath(), "-c", "lfs.pruneoffsetdays=999999", "lfs", "prune", "--verbose", "--no-verify-remote",};
         final Consumer<String> logConsumer = new HudConsumer(ulog, NATIVE_GIT);
         doExec(push, Collections.emptyMap(), logConsumer, logConsumer);
         syslog().debug("native_doLfsPrune");
     }
 
     /**
-     *  Runs git garbage collection.  Aggressively deletes reflogs, tracking branches and stray temporary branches
-     *  in an attempt to free up objects and reclaim disk space.
+     * Runs git garbage collection.  Aggressively deletes reflogs, tracking branches and stray temporary branches
+     * in an attempt to free up objects and reclaim disk space.
      */
     private static void jgit_doGc(RepoImpl repo, UserLogger ulog) throws IOException, GitAPIException, ParseException {
         final File gitDir = repo.getJGit().getRepository().getDirectory();

@@ -53,20 +53,20 @@ enum CreateFileRemoteCommand implements Command {
     private static final String ARGUMENT = "file-path";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(cc-> missingArgument(ARGUMENT, ctx, cc)).
+                        requires(subcommandPermission(mod, COMMAND_NAME)).
+                        executes(cc -> missingArgument(ARGUMENT, mod, cc)).
                         then(argument(ARGUMENT, StringArgumentType.greedyString()).
-                                        executes(cc -> setFileRemote(ctx, cc))
+                                executes(cc -> setFileRemote(mod, cc))
                         )
         );
     }
 
-    private static int setFileRemote(final Mod ctx, final CommandContext<ServerCommandSource> cc) {
-        final UserLogger ulog = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, NONE, ulog, repo -> {
+    private static int setFileRemote(final Mod mod, final CommandContext<ServerCommandSource> cc) {
+        final UserLogger ulog = commandLogger(mod, cc.getSource());
+        gitOp(mod, NONE, ulog, repo -> {
             final String targetPath = cc.getArgument(ARGUMENT, String.class);
             final Path fupHome = Path.of(targetPath);
             if (fupHome.toFile().exists()) {

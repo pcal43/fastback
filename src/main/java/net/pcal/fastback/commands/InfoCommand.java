@@ -56,22 +56,22 @@ enum InfoCommand implements Command {
     private static final String COMMAND_NAME = "info";
 
     @Override
-    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, Mod ctx) {
+    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, Mod mod) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(cc -> info(ctx, cc.getSource()))
+                        requires(subcommandPermission(mod, COMMAND_NAME)).
+                        executes(cc -> info(mod, cc.getSource()))
         );
     }
 
-    private static int info(final Mod ctx, final ServerCommandSource scs) {
-        requireNonNull(ctx);
+    private static int info(final Mod mod, final ServerCommandSource scs) {
+        requireNonNull(mod);
         requireNonNull(scs);
-        final UserLogger ulog = commandLogger(ctx, scs);
-        gitOp(ctx, NONE, ulog, repo -> {
+        final UserLogger ulog = commandLogger(mod, scs);
+        gitOp(mod, NONE, ulog, repo -> {
             final GitConfig c = repo.getConfig();
             ulog.chat(UserMessage.localized("fastback.chat.info-header"));
-            ulog.chat(UserMessage.localized("fastback.chat.info-fastback-version", ctx.getModVersion()));
+            ulog.chat(UserMessage.localized("fastback.chat.info-fastback-version", mod.getModVersion()));
             ulog.chat(UserMessage.localized("fastback.chat.info-uuid", repo.getWorldUuid()));
             if (c.getBoolean(IS_BACKUP_ENABLED)) {
                 ulog.chat(UserMessage.localized("fastback.chat.info-local-enabled"));

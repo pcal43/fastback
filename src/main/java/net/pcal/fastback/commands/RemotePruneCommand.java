@@ -47,17 +47,17 @@ enum RemotePruneCommand implements Command {
     private static final String COMMAND_NAME = "remote-prune";
 
     @Override
-    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
+    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(cc -> remotePrune(ctx, cc.getSource()))
+                        requires(subcommandPermission(mod, COMMAND_NAME)).
+                        executes(cc -> remotePrune(mod, cc.getSource()))
         );
     }
 
-    private static int remotePrune(final Mod ctx, final ServerCommandSource scs) {
-        final UserLogger ulog = commandLogger(ctx, scs);
-        gitOp(ctx, WRITE, ulog, repo -> {
+    private static int remotePrune(final Mod mod, final ServerCommandSource scs) {
+        final UserLogger ulog = commandLogger(mod, scs);
+        gitOp(mod, WRITE, ulog, repo -> {
             final Collection<SnapshotId> pruned = repo.doRemotePrune(ulog);
             ulog.chat(UserMessage.localized("fastback.chat.prune-done", pruned.size()));
         });

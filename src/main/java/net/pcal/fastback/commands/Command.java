@@ -24,6 +24,6 @@ import net.pcal.fastback.mod.Mod;
 
 public interface Command {
 
-    void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx);
+    void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod);
 
 }

@@ -44,21 +44,21 @@ enum SetAutobackWaitCommand implements Command {
     private static final String ARGUMENT = "wait";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(cc-> missingArgument(ARGUMENT, ctx, cc)).
+                        requires(subcommandPermission(mod, COMMAND_NAME)).
+                        executes(cc -> missingArgument(ARGUMENT, mod, cc)).
                         then(
                                 argument(ARGUMENT, IntegerArgumentType.integer(0)).
-                                        executes(cc -> setWait(ctx, cc))
+                                        executes(cc -> setWait(mod, cc))
                         )
         );
     }
 
-    private static int setWait(final Mod ctx, final CommandContext<ServerCommandSource> cc) {
-        final UserLogger ulog = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, WRITE_CONFIG, ulog, repo -> {
+    private static int setWait(final Mod mod, final CommandContext<ServerCommandSource> cc) {
+        final UserLogger ulog = commandLogger(mod, cc.getSource());
+        gitOp(mod, WRITE_CONFIG, ulog, repo -> {
             final int waitMinutes = cc.getArgument(ARGUMENT, int.class);
             repo.getConfig().updater().set(GitConfigKey.AUTOBACK_WAIT_MINUTES, waitMinutes).save();
             ulog.chat(UserMessage.localized("fastback.chat.info-autoback-wait", waitMinutes));

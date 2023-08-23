@@ -25,10 +25,10 @@ import static java.util.Objects.requireNonNull;
 
 public class HudLogger implements UserLogger {
 
-    private final Mod ctx;
+    private final Mod mod;
 
-    HudLogger(Mod ctx) {
-        this.ctx = requireNonNull(ctx);
+    HudLogger(Mod mod) {
+        this.mod = requireNonNull(mod);
     }
 
     @Override
@@ -38,6 +38,6 @@ public class HudLogger implements UserLogger {
 
     @Override
     public void hud(UserMessage message) {
-        ctx.setHudText(message);
+        mod.setHudText(message);
     }
 }

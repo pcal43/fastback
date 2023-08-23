@@ -46,17 +46,17 @@ enum RemoteListCommand implements Command {
     private static final String COMMAND_NAME = "remote-list";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(cc -> remoteList(ctx, cc))
+                        requires(subcommandPermission(mod, COMMAND_NAME)).
+                        executes(cc -> remoteList(mod, cc))
         );
     }
 
-    private static int remoteList(final Mod ctx, final CommandContext<ServerCommandSource> cc) {
-        final UserLogger log = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, NONE, log, repo -> {
+    private static int remoteList(final Mod mod, final CommandContext<ServerCommandSource> cc) {
+        final UserLogger log = commandLogger(mod, cc.getSource());
+        gitOp(mod, NONE, log, repo -> {
             final ListMultimap<String, SnapshotId> snapshotsPerWorld = repo.listRemoteSnapshots();
             final List<SnapshotId> snapshots = new ArrayList<>(snapshotsPerWorld.get(repo.getWorldUuid()));
             Collections.sort(snapshots);

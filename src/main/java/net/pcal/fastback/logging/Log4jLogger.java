@@ -57,7 +57,7 @@ public class Log4jLogger implements SystemLogger {
     @Override
     public void debug(String message) {
         if (this.forceDebugEnabled) {
-            this.log4j.info("[DEBUG] "+ message);
+            this.log4j.info("[DEBUG] " + message);
         } else {
             this.log4j.debug(message);
         }
@@ -66,7 +66,7 @@ public class Log4jLogger implements SystemLogger {
     @Override
     public void debug(String message, Throwable t) {
         if (this.forceDebugEnabled) {
-            this.log4j.info("[DEBUG] "+ message, t);
+            this.log4j.info("[DEBUG] " + message, t);
         } else {
             this.log4j.debug(message, t);
         }

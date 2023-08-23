@@ -41,17 +41,17 @@ enum ListCommand implements Command {
     private static final String COMMAND_NAME = "list";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(cc->execute(ctx, cc))
+                        requires(subcommandPermission(mod, COMMAND_NAME)).
+                        executes(cc -> execute(mod, cc))
         );
     }
 
-    private int execute(final Mod ctx, final CommandContext<ServerCommandSource> cc) {
-        final UserLogger ulog = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, NONE, ulog, repo -> {
+    private int execute(final Mod mod, final CommandContext<ServerCommandSource> cc) {
+        final UserLogger ulog = commandLogger(mod, cc.getSource());
+        gitOp(mod, NONE, ulog, repo -> {
             final String uuid = repo.getWorldUuid();
             for (final SnapshotId sid : sortWorldSnapshots(repo.listSnapshots(), uuid)) {
                 ulog.chat(UserMessage.raw(sid.getName()));

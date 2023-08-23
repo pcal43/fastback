@@ -45,17 +45,17 @@ enum GcCommand implements Command {
     private static final String COMMAND_NAME = "gc";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(cc -> gc(ctx, cc))
+                        requires(subcommandPermission(mod, COMMAND_NAME)).
+                        executes(cc -> gc(mod, cc))
         );
     }
 
-    private static int gc(Mod ctx, CommandContext<ServerCommandSource> cc) {
-        final UserLogger ulog = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, WRITE, ulog, repo -> {
+    private static int gc(Mod mod, CommandContext<ServerCommandSource> cc) {
+        final UserLogger ulog = commandLogger(mod, cc.getSource());
+        gitOp(mod, WRITE, ulog, repo -> {
             repo.doGc(ulog);
             //log.chat(localized("fastback.chat.gc-done", byteCountToDisplaySize(gc.getBytesReclaimed())));
         });

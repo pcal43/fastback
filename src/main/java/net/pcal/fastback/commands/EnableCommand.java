@@ -47,11 +47,11 @@ enum EnableCommand implements Command {
     private static final String COMMAND_NAME = "enable";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(cc -> enable(ctx, cc))
+                        requires(subcommandPermission(mod, COMMAND_NAME)).
+                        executes(cc -> enable(mod, cc))
         );
     }
 

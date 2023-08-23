@@ -44,21 +44,21 @@ enum SetRemoteCommand implements Command {
     private static final String URL_ARGUMENT = "remote-url";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(cc-> missingArgument(URL_ARGUMENT, ctx, cc)).
+                        requires(subcommandPermission(mod, COMMAND_NAME)).
+                        executes(cc -> missingArgument(URL_ARGUMENT, mod, cc)).
                         then(
                                 argument(URL_ARGUMENT, StringArgumentType.greedyString()).
-                                        executes(cc -> setRemoteUrl(ctx, cc))
+                                        executes(cc -> setRemoteUrl(mod, cc))
                         )
         );
     }
 
-    private static int setRemoteUrl(final Mod ctx, final CommandContext<ServerCommandSource> cc) {
-        final UserLogger ulog = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, WRITE_CONFIG, ulog, repo -> {
+    private static int setRemoteUrl(final Mod mod, final CommandContext<ServerCommandSource> cc) {
+        final UserLogger ulog = commandLogger(mod, cc.getSource());
+        gitOp(mod, WRITE_CONFIG, ulog, repo -> {
             final String newUrl = cc.getArgument(URL_ARGUMENT, String.class);
             repo.getConfig().updater().set(GitConfigKey.REMOTE_PUSH_URL, newUrl).save();
             ulog.chat(UserMessage.localized("fastback.chat.remote-enabled", newUrl));

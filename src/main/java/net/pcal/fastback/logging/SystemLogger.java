@@ -37,7 +37,9 @@ public interface SystemLogger {
 
     void error(String message, Throwable t);
 
-    default void error(IOException e) { this.error(e.getMessage(), e); }
+    default void error(IOException e) {
+        this.error(e.getMessage(), e);
+    }
 
     void warn(String message);
 
@@ -47,8 +49,9 @@ public interface SystemLogger {
 
     void debug(String message, Throwable t);
 
-    default void debug(Throwable t) { this.debug(t.getMessage(), t); }
-
+    default void debug(Throwable t) {
+        this.debug(t.getMessage(), t);
+    }
 
 
     class Singleton {

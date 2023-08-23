@@ -41,21 +41,21 @@ enum SetShutdownActionCommand implements Command {
     private static final String COMMAND_NAME = "set-shutdown-action";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
         final LiteralArgumentBuilder<ServerCommandSource> setCommand = literal(COMMAND_NAME).
-                requires(subcommandPermission(ctx, COMMAND_NAME)).
-                executes(cc-> missingArgument("actionName", ctx, cc));
+                requires(subcommandPermission(mod, COMMAND_NAME)).
+                executes(cc -> missingArgument("actionName", mod, cc));
         for (final SchedulableAction action : SchedulableAction.values()) {
             final LiteralArgumentBuilder<ServerCommandSource> azz = literal(action.getArgumentName());
-            azz.executes(cc -> setShutdownAction(ctx, cc.getSource(), action));
+            azz.executes(cc -> setShutdownAction(mod, cc.getSource(), action));
             setCommand.then(azz);
         }
         argb.then(setCommand);
     }
 
-    private static int setShutdownAction(final Mod ctx, final ServerCommandSource scs, SchedulableAction action) {
-        final UserLogger ulog = commandLogger(ctx, scs);
-        gitOp(ctx, WRITE_CONFIG, ulog, repo -> {
+    private static int setShutdownAction(final Mod mod, final ServerCommandSource scs, SchedulableAction action) {
+        final UserLogger ulog = commandLogger(mod, scs);
+        gitOp(mod, WRITE_CONFIG, ulog, repo -> {
             final GitConfig conf = repo.getConfig();
             conf.updater().set(SHUTDOWN_ACTION, action.getConfigValue()).save();
             ulog.chat(UserMessage.localized("fastback.chat.info-shutdown-action", action.getArgumentName()));

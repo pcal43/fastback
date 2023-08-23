@@ -45,25 +45,25 @@ enum RestoreCommand implements Command {
     private static final String ARGUMENT = "snapshot";
 
     @Override
-    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, Mod ctx) {
+    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, Mod mod) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(ctx, COMMAND_NAME)).then(
+                        requires(subcommandPermission(mod, COMMAND_NAME)).then(
                                 argument(ARGUMENT, StringArgumentType.string()).
-                                        suggests(SnapshotNameSuggestions.local(ctx)).
-                                        executes(cc -> restore(ctx, cc))
+                                        suggests(SnapshotNameSuggestions.local(mod)).
+                                        executes(cc -> restore(mod, cc))
                         )
         );
     }
 
-    private static int restore(Mod ctx, CommandContext<ServerCommandSource> cc) {
-        final UserLogger ulog = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, NONE, ulog, repo -> {
+    private static int restore(Mod mod, CommandContext<ServerCommandSource> cc) {
+        final UserLogger ulog = commandLogger(mod, cc.getSource());
+        gitOp(mod, NONE, ulog, repo -> {
             final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
             final String uuid = repo.getWorldUuid();
             final SnapshotId sid = SnapshotId.fromUuidAndName(uuid, snapshotName);
-            final String uri = "file://" + ctx.getWorldDirectory().toAbsolutePath();
-            final Path restoreDir = repo.doRestoreSnapshot(uri, ctx.getRestoresDir(), ctx.getWorldName(), sid, ulog);
+            final String uri = "file://" + mod.getWorldDirectory().toAbsolutePath();
+            final Path restoreDir = repo.doRestoreSnapshot(uri, mod.getRestoresDir(), mod.getWorldName(), sid, ulog);
             ulog.chat(UserMessage.localized("fastback.chat.restore-done", restoreDir));
         });
         return SUCCESS;

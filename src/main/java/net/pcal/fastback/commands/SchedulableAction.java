@@ -47,21 +47,27 @@ public enum SchedulableAction {
     LOCAL("local") {
         @Override
         public Callable<Void> getTask(final Repo repo, final UserLogger ulog) {
-            return ()->{ repo.doCommitSnapshot(ulog); return null; };
+            return () -> {
+                repo.doCommitSnapshot(ulog);
+                return null;
+            };
         }
     },
 
     FULL("full") {
         @Override
         public Callable<Void> getTask(final Repo repo, final UserLogger ulog) {
-            return ()->{ repo.doCommitAndPush(ulog); return null; };
+            return () -> {
+                repo.doCommitAndPush(ulog);
+                return null;
+            };
         }
     },
 
     FULL_GC("full-gc") {
         @Override
         public Callable<Void> getTask(final Repo repo, final UserLogger ulog) {
-            return ()->{
+            return () -> {
                 repo.doCommitAndPush(ulog);
                 final Collection<SnapshotId> pruned = repo.doLocalPrune(ulog);
                 if (pruned.size() > 0) {
@@ -79,6 +85,7 @@ public enum SchedulableAction {
         if (configValue == null) return null;
         return forConfigValue(configValue);
     }
+
     public static SchedulableAction forConfigValue(String configValue) {
         if (configValue == null) return null;
         for (SchedulableAction action : SchedulableAction.values()) {

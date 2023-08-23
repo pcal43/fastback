@@ -48,25 +48,25 @@ enum RemoteRestoreCommand implements Command {
 
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(ctx, COMMAND_NAME)).then(
+                        requires(subcommandPermission(mod, COMMAND_NAME)).then(
                                 argument(ARGUMENT, StringArgumentType.string()).
-                                        suggests(SnapshotNameSuggestions.remote(ctx)).
-                                        executes(cc -> remoteRestore(ctx, cc))
+                                        suggests(SnapshotNameSuggestions.remote(mod)).
+                                        executes(cc -> remoteRestore(mod, cc))
                         )
         );
     }
 
-    private static int remoteRestore(final Mod ctx, final CommandContext<ServerCommandSource> cc) {
-        final UserLogger log = commandLogger(ctx, cc.getSource());
-        gitOp(ctx, NONE, log, repo -> {
+    private static int remoteRestore(final Mod mod, final CommandContext<ServerCommandSource> cc) {
+        final UserLogger log = commandLogger(mod, cc.getSource());
+        gitOp(mod, NONE, log, repo -> {
             final GitConfig conf = repo.getConfig();
             final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
             final SnapshotId sid = SnapshotId.fromUuidAndName(repo.getWorldUuid(), snapshotName);
-            final String uri =  conf.getString(REMOTE_PUSH_URL);
-            final Path restoreDir = repo.doRestoreSnapshot(uri, ctx.getRestoresDir(), ctx.getWorldName(), sid, log);
+            final String uri = conf.getString(REMOTE_PUSH_URL);
+            final Path restoreDir = repo.doRestoreSnapshot(uri, mod.getRestoresDir(), mod.getWorldName(), sid, log);
             log.chat(UserMessage.localized("fastback.chat.restore-done", restoreDir));
         });
         return SUCCESS;

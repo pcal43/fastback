@@ -46,11 +46,11 @@ enum FullCommand implements Command {
 
     private static final String COMMAND_NAME = "full";
 
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(ctx, COMMAND_NAME)).
-                        executes(cc -> run(ctx, cc.getSource()))
+                        requires(subcommandPermission(mod, COMMAND_NAME)).
+                        executes(cc -> run(mod, cc.getSource()))
         );
     }
 
@@ -69,7 +69,7 @@ enum FullCommand implements Command {
     /**
      * NOTE: this MUST be called in the game thread; calling it from one of our executor threads causes things
      * to seize up (at least on shutdown backup?)
-     *
+     * <p>
      * Workaround for https://github.com/pcal43/fastback/issues/112
      */
     static void saveWorldBeforeBackup(Mod mod, UserLogger ulog) throws IOException {

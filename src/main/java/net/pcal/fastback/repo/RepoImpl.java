@@ -66,10 +66,9 @@ class RepoImpl implements Repo {
     // ======================================================================
     // Constructors
 
-    RepoImpl(final Git git,
-             final Mod ctx) {
+    RepoImpl(final Git git, final Mod mod) {
         this.jgit = requireNonNull(git);
-        this.mod = requireNonNull(ctx);
+        this.mod = requireNonNull(mod);
     }
 
     // ======================================================================

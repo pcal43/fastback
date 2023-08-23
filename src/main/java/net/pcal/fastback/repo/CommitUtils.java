@@ -51,7 +51,7 @@ import static net.pcal.fastback.utils.ProcessUtils.doExec;
  */
 class CommitUtils {
 
-    static SnapshotId doCommitSnapshot(RepoImpl repo, Mod ctx, UserLogger log) throws IOException {
+    static SnapshotId doCommitSnapshot(RepoImpl repo, Mod mod, UserLogger log) throws IOException {
         final String uuid = repo.getWorldUuid();
         final SnapshotId newSid = SnapshotId.create(uuid);
         syslog().debug("Preparing local backup " + newSid);
@@ -62,9 +62,9 @@ class CommitUtils {
         try {
 
             if (repo.getConfig().getBoolean(IS_NATIVE_GIT_ENABLED)) {
-                native_commit(newBranchName, repo, ctx, log);
+                native_commit(newBranchName, repo, mod, log);
             } else {
-                jgit_commit(newBranchName, repo.getJGit(), ctx, log);
+                jgit_commit(newBranchName, repo.getJGit(), mod, log);
             }
         } catch (GitAPIException | InterruptedException e) {
             throw new IOException(e);
@@ -74,20 +74,20 @@ class CommitUtils {
         return newSid;
     }
 
-    private static void native_commit(String newBranchName, Repo repo, Mod ctx, UserLogger log) throws IOException, InterruptedException {
+    private static void native_commit(String newBranchName, Repo repo, Mod mod, UserLogger log) throws IOException, InterruptedException {
         syslog().debug("Start native_commit");
         log.hud(styledLocalized("fastback.hud.local-saving", NATIVE_GIT));
         final File worktree = repo.getWorkTree();
-        final Map<String,String> env = Map.of("GIT_LFS_FORCE_PROGRESS", "1");
+        final Map<String, String> env = Map.of("GIT_LFS_FORCE_PROGRESS", "1");
         final Consumer<String> logConsumer = new HudConsumer(log, NATIVE_GIT);
         String[] checkout = {"git", "-C", worktree.getAbsolutePath(), "checkout", "--orphan", newBranchName};
         doExec(checkout, env, logConsumer, logConsumer);
-        ctx.setWorldSaveEnabled(false);
+        mod.setWorldSaveEnabled(false);
         try {
             String[] add = {"git", "-C", worktree.getAbsolutePath(), "add", "-v", "."};
             doExec(add, env, logConsumer, logConsumer);
         } finally {
-            ctx.setWorldSaveEnabled(true);
+            mod.setWorldSaveEnabled(true);
             syslog().debug("World save re-enabled.");
         }
         {
@@ -97,7 +97,7 @@ class CommitUtils {
         syslog().debug("End native_commit");
     }
 
-    private static void jgit_commit(String newBranchName, Git jgit, Mod ctx, final UserLogger ulog) throws GitAPIException {
+    private static void jgit_commit(String newBranchName, Git jgit, Mod mod, final UserLogger ulog) throws GitAPIException {
         syslog().debug("Starting jgit_commit");
         ulog.hud(styledLocalized("fastback.hud.local-saving", JGIT));
         jgit.checkout().setOrphan(true).setName(newBranchName).call();
@@ -107,7 +107,7 @@ class CommitUtils {
 
         try {
             syslog().debug("Disabling world save for 'git add'");
-            ctx.setWorldSaveEnabled(false);
+            mod.setWorldSaveEnabled(false);
             //
             // Figure out what files to add and remove.  We don't just 'git add .' because this:
             // https://bugs.eclipse.org/bugs/show_bug.cgi?id=494323
@@ -123,7 +123,7 @@ class CommitUtils {
                     for (final String file : toAdd) {
                         final AddCommand gitAdd = jgit.add();
                         syslog().debug("add  " + file);
-                        ulog.hud(styledRaw("Backing up "+file, JGIT)); //FIXME i18n
+                        ulog.hud(styledRaw("Backing up " + file, JGIT)); //FIXME i18n
                         gitAdd.addFilepattern(file);
                         gitAdd.call();
                     }
@@ -139,14 +139,14 @@ class CommitUtils {
                     for (final String file : toDelete) {
                         final RmCommand gitRm = jgit.rm();
                         syslog().debug("rm  " + file);
-                        ulog.hud(styledRaw("Removing "+file, JGIT)); //FIXME i18n
+                        ulog.hud(styledRaw("Removing " + file, JGIT)); //FIXME i18n
                         gitRm.addFilepattern(file);
                         gitRm.call();
                     }
                 }
             }
         } finally {
-            ctx.setWorldSaveEnabled(true);
+            mod.setWorldSaveEnabled(true);
             syslog().debug("World save re-enabled.");
         }
         syslog().debug("commit");

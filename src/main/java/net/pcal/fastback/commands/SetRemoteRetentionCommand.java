@@ -41,12 +41,12 @@ enum SetRemoteRetentionCommand implements Command {
     private static final String COMMAND_NAME = "set-remote-retention";
 
     @Override
-    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, final Mod ctx) {
-        registerSetRetentionCommand(argb, ctx, COMMAND_NAME, (cc, rt) -> setRemotePolicy(ctx, cc, rt));
+    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
+        registerSetRetentionCommand(argb, mod, COMMAND_NAME, (cc, rt) -> setRemotePolicy(mod, cc, rt));
     }
 
-    private static int setRemotePolicy(Mod ctx, CommandContext<ServerCommandSource> cc, RetentionPolicyType rpt) {
-        return setRetentionPolicy(ctx, cc, rpt, REMOTE_RETENTION_POLICY);
+    private static int setRemotePolicy(Mod mod, CommandContext<ServerCommandSource> cc, RetentionPolicyType rpt) {
+        return setRetentionPolicy(mod, cc, rpt, REMOTE_RETENTION_POLICY);
     }
 
 }

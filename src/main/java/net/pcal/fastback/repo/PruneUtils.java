@@ -48,7 +48,7 @@ import static net.pcal.fastback.repo.SnapshotId.sortWorldSnapshots;
  */
 class PruneUtils {
 
-    static void deleteRemoteBranch(final RepoImpl repo,String remoteBranchName) throws IOException {
+    static void deleteRemoteBranch(final RepoImpl repo, String remoteBranchName) throws IOException {
         RefSpec refSpec = new RefSpec()
                 .setSource(null)
                 .setDestination("refs/heads/" + remoteBranchName);
