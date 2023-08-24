@@ -61,7 +61,7 @@ enum SetCommand implements Command {
                 requires(subcommandPermission(mod, COMMAND_NAME)).
                 executes(cc -> missingArgument("key", mod, cc));
         registerNativeGit(setCommand);
-        registerForceDebug(setCommand, mod);
+        registerForceDebug(setCommand);
         registerLockCleanup(setCommand);
         root.then(setCommand);
     }
@@ -106,7 +106,7 @@ enum SetCommand implements Command {
     // ======================================================================
     // force-debug
 
-    private static void registerForceDebug(final LiteralArgumentBuilder<ServerCommandSource> setCommand, final Mod mod) {
+    private static void registerForceDebug(final LiteralArgumentBuilder<ServerCommandSource> setCommand) {
         final LiteralArgumentBuilder<ServerCommandSource> debug = literal("force-debug");
         debug.then(literal("enabled").executes(cc -> setForceDebug(cc, true)));
         debug.then(literal("disabled").executes(cc -> setForceDebug(cc, false)));
