@@ -21,7 +21,6 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.UserLogger;
@@ -43,7 +42,6 @@ import static net.pcal.fastback.config.FastbackConfigKey.IS_LOCK_CLEANUP_ENABLED
 import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.RESTORE_DIRECTORY;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
-import static net.pcal.fastback.logging.UserMessage.localized;
 import static net.pcal.fastback.logging.UserMessage.raw;
 import static net.pcal.fastback.mod.Mod.mod;
 
@@ -87,8 +85,8 @@ enum SetCommand implements Command {
         setCommand.then(builder);
     }
 
-    private static int setBooleanConfigValue(final CommandContext<ServerCommandSource> cc, GitConfigKey key, boolean value)  {
-        try(UserLogger ulog = UserLogger.forCommand(cc)) {
+    private static int setBooleanConfigValue(final CommandContext<ServerCommandSource> cc, GitConfigKey key, boolean value) {
+        try (UserLogger ulog = UserLogger.forCommand(cc)) {
             final Path worldSaveDir = mod().getWorldDirectory();
             final RepoFactory rf = RepoFactory.get();
             if (rf.isGitRepo(worldSaveDir)) {
@@ -116,8 +114,8 @@ enum SetCommand implements Command {
         setCommand.then(builder);
     }
 
-    private static int setStringConfigValue(final CommandContext<ServerCommandSource> cc, GitConfigKey key)  {
-        try(UserLogger ulog = UserLogger.forCommand(cc)) {
+    private static int setStringConfigValue(final CommandContext<ServerCommandSource> cc, GitConfigKey key) {
+        try (UserLogger ulog = UserLogger.forCommand(cc)) {
             final Path worldSaveDir = mod().getWorldDirectory();
             final RepoFactory rf = RepoFactory.get();
             if (rf.isGitRepo(worldSaveDir)) {
@@ -138,17 +136,19 @@ enum SetCommand implements Command {
     // ======================================================================
     // force-debug
 
+    private static final String FORCE_DEBUG_SETTING = "force-debug-enabled";
+
     private static void registerForceDebug(final LiteralArgumentBuilder<ServerCommandSource> setCommand) {
-        final LiteralArgumentBuilder<ServerCommandSource> debug = literal("force-debug");
-        debug.then(literal("enabled").executes(cc -> setForceDebug(cc, true)));
-        debug.then(literal("disabled").executes(cc -> setForceDebug(cc, false)));
+        final LiteralArgumentBuilder<ServerCommandSource> debug = literal(FORCE_DEBUG_SETTING);
+        debug.then(literal("true").executes(cc -> setForceDebug(cc, true)));
+        debug.then(literal("false").executes(cc -> setForceDebug(cc, false)));
         setCommand.then(debug);
     }
 
     private static int setForceDebug(final CommandContext<ServerCommandSource> cc, boolean value) {
         syslog().setForceDebugEnabled(value);
-        try(UserLogger ulog = UserLogger.forCommand(cc)) {
-            ulog.message(localized("fastback.chat.ok"));
+        try (UserLogger ulog = UserLogger.forCommand(cc)) {
+            ulog.message(raw("force-debug-enabled = " + value));
         }
         return SUCCESS;
     }
