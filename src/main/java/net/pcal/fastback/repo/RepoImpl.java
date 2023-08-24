@@ -42,8 +42,8 @@ import java.util.Collection;
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_NOTICE_ENABLED;
-import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_NOTICE_MESSAGE;
+import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_ENABLED;
+import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_MESSAGE;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_LOCK_CLEANUP_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.REMOTE_NAME;
@@ -291,9 +291,9 @@ class RepoImpl implements Repo {
 
     private void broadcastBackupNotice() {
         if (!mod().isDecicatedServer()) return;
-        if (!getConfig().getBoolean(BROADCAST_NOTICE_ENABLED)) return;
+        if (!getConfig().getBoolean(BROADCAST_ENABLED)) return;
         final UserMessage m;
-        final String configuredMessage = getConfig().getString(BROADCAST_NOTICE_MESSAGE);
+        final String configuredMessage = getConfig().getString(BROADCAST_MESSAGE);
         if (configuredMessage != null) {
             m = styledRaw(configuredMessage, BROADCAST);
         } else {

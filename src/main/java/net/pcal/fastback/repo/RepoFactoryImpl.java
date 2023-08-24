@@ -26,8 +26,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_NOTICE_ENABLED;
-import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_NOTICE_MESSAGE;
+import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_ENABLED;
+import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_MESSAGE;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_LOCK_CLEANUP_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.RESTORE_DIRECTORY;
 import static net.pcal.fastback.config.OtherConfigKey.COMMIT_SIGNING_ENABLED;
@@ -49,8 +49,8 @@ class RepoFactoryImpl implements RepoFactory {
             final Updater updater = repo.getConfig().updater();
             updater.set(COMMIT_SIGNING_ENABLED, false);
             updater.setCommented(IS_LOCK_CLEANUP_ENABLED, true);
-            updater.setCommented(BROADCAST_NOTICE_ENABLED, true);
-            updater.setCommented(BROADCAST_NOTICE_MESSAGE, "Attention: the server is starting a backup.");
+            updater.setCommented(BROADCAST_ENABLED, true);
+            updater.setCommented(BROADCAST_MESSAGE, "Attention: the server is starting a backup.");
             updater.setCommented(RESTORE_DIRECTORY, "/home/myuser/target/directory/for/restores");
             updater.save();
             return repo;
