@@ -22,7 +22,6 @@ import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.mod.Mod;
 import net.pcal.fastback.utils.EnvironmentUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -44,6 +43,7 @@ import static net.pcal.fastback.config.GitConfigKey.BROADCAST_NOTICE_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.BROADCAST_NOTICE_MESSAGE;
 import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_NAME;
+import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.BROADCAST;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.logging.UserMessage.localized;
@@ -94,6 +94,7 @@ class RepoImpl implements Repo {
             PushUtils.doPush(newSid, this, ulog);
         } catch(IOException ioe) {
             ulog.message(styledLocalized("fastback.chat.push-failed", ERROR));
+            syslog().error(ioe);
             return;
         }
         ulog.message(localized("fastback.chat.backup-complete-elapsed", getDuration(start)));
@@ -107,7 +108,8 @@ class RepoImpl implements Repo {
         try {
             CommitUtils.doCommitSnapshot(this, ulog);
         } catch(IOException ioe) {
-            ulog.message(styledLocalized("fastback.chat.backup-failed", ERROR));
+            ulog.message(styledLocalized("fastback.chat.commit-failed", ERROR));
+            syslog().error(ioe);
             return;
         }
         ulog.message(localized("fastback.chat.backup-complete-elapsed", getDuration(start)));
@@ -221,7 +223,13 @@ class RepoImpl implements Repo {
     // Private
 
     private static String getDuration(long since) {
-        return Duration.of(since - System.currentTimeMillis(), ChronoUnit.MILLIS).toString();
+        final Duration d = Duration.of(System.currentTimeMillis() - since, ChronoUnit.MILLIS);
+        long seconds = d.getSeconds();
+        if (seconds < 60) {
+            return String.format("%ds", seconds == 0 ? 1 : seconds);
+        } else {
+            return String.format("%dm %ds", seconds / 60, seconds % 60);
+        }
     }
 
     private void broadcastBackupNotice() {

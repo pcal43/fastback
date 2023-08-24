@@ -38,7 +38,7 @@ public interface SystemLogger {
 
     void error(String message, Throwable t);
 
-    default void error(IOException e) {
+    default void error(Throwable e) {
         this.error(e.getMessage(), e);
     }
 

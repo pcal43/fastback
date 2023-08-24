@@ -55,7 +55,7 @@ class CommitUtils {
         MaintenanceUtils.doPreflight(repo);
         final String uuid = repo.getWorldUuid();
         final SnapshotId newSid = SnapshotId.create(uuid);
-        syslog().debug("Preparing local backup " + newSid);
+        syslog().debug("start doCommitSnapshot for "+newSid);
         final String newBranchName = newSid.getBranchName();
         try {
             if (repo.getConfig().getBoolean(IS_NATIVE_GIT_ENABLED)) {
@@ -66,7 +66,7 @@ class CommitUtils {
         } catch (GitAPIException | InterruptedException e) {
             throw new IOException(e);
         }
-        syslog().info("Local backup complete.");
+        syslog().debug("Local backup complete.");
         return newSid;
     }
 

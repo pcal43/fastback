@@ -26,6 +26,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
@@ -42,6 +43,7 @@ class ExecutorImpl implements Executor {
 
     @Override
     public void execute(ExecutionLock lock, UserLogger ulog, Runnable runnable) {
+        requireNonNull(lock, "lock");
         if (this.executor == null) throw new IllegalStateException("Executor not started");
         switch (lock) {
             case NONE:
@@ -55,6 +57,7 @@ class ExecutorImpl implements Executor {
                     syslog().debug("executing " + runnable);
                     this.exclusiveFuture = this.executor.submit(runnable);
                 }
+                break;
             default:
                 throw new IllegalStateException();
         }

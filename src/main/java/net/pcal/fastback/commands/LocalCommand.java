@@ -23,8 +23,6 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.mod.Mod;
 
-import java.io.IOException;
-
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
@@ -56,14 +54,15 @@ enum LocalCommand implements Command {
     }
 
     public static int run(Mod mod, ServerCommandSource scs) {
-        final UserLogger ulog = commandLogger(mod, scs);
-        try {
-            saveWorldBeforeBackup(mod, ulog);
-        } catch (IOException e) {
-            ulog.internalError();
-            syslog().error(e);
+        try (final UserLogger ulog = commandLogger(mod, scs)) {
+            try {
+                saveWorldBeforeBackup(mod, ulog);
+            } catch (Exception e) {
+                ulog.internalError();
+                syslog().error(e);
+            }
+            gitOp(mod, WRITE, ulog, repo -> repo.doCommitSnapshot(ulog));
         }
-        gitOp(mod, WRITE, ulog, repo -> repo.doCommitSnapshot(ulog));
         return SUCCESS;
     }
 }

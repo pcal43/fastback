@@ -20,12 +20,17 @@ package net.pcal.fastback.mod;
 
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.utils.Executor;
 
 import java.io.IOException;
 import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
+
+//MORE TODO
+// add a main branch with a README.md on init
+// add a uuid/<their uuid branch> and get rid of the uui prefix in snapshot names
+// move fastback to .fastback
+// add command to delete the index.lock file.  or maybe just always delete it.
 
 /**
  * Singleton that provides various mod-wide services.

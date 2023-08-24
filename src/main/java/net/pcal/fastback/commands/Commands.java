@@ -125,27 +125,32 @@ public class Commands {
     }
 
     static void gitOp(final Mod mod, final ExecutionLock lock, final UserLogger ulog, final GitOp op) {
-        executor().execute(lock, ulog, () -> {
-            final Path worldSaveDir = mod.getWorldDirectory();
-            final RepoFactory rf = RepoFactory.get();
-            if (!rf.isGitRepo(worldSaveDir)) {
-                ulog.message(styledLocalized("fastback.chat.not-enabled", ERROR));
-                return;
-            }
-            try (final Repo repo = rf.load(worldSaveDir)) {
-                final GitConfig repoConfig = repo.getConfig();
-                if (!repoConfig.getBoolean(IS_BACKUP_ENABLED)) {
+        try {
+            executor().execute(lock, ulog, () -> {
+                final Path worldSaveDir = mod.getWorldDirectory();
+                final RepoFactory rf = RepoFactory.get();
+                if (!rf.isGitRepo(worldSaveDir)) { // FIXME this is not the right place for these checks
                     ulog.message(styledLocalized("fastback.chat.not-enabled", ERROR));
-                } else {
-                    op.execute(repo);
+                    return;
                 }
-            } catch (Exception e) {
-                syslog().error("Command execution failed.", e);
-                ulog.message(styledLocalized("fastback.chat.internal-error", ERROR));
-            } finally {
-                mod.clearHudText();
-            }
-        });
+                try (final Repo repo = rf.load(worldSaveDir)) {
+                    final GitConfig repoConfig = repo.getConfig();
+                    if (!repoConfig.getBoolean(IS_BACKUP_ENABLED)) {
+                        ulog.message(styledLocalized("fastback.chat.not-enabled", ERROR));
+                    } else {
+                        op.execute(repo);
+                    }
+                } catch (Exception e) {
+                    ulog.message(styledLocalized("fastback.chat.internal-error", ERROR));
+                    syslog().error(e);
+                } finally {
+                    mod.clearHudText();
+                }
+            });
+        } catch(Exception e) {
+            ulog.internalError();
+            syslog().error(e);
+        }
     }
 }
 
