@@ -31,6 +31,7 @@ import org.eclipse.jgit.transport.RefSpec;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import static net.pcal.fastback.config.GitConfigKey.LOCAL_RETENTION_POLICY;
@@ -98,8 +99,11 @@ class PruneUtils {
                                                   JGitConsumer<SnapshotId> deleteSnapshotsFn,
                                                   String notSetKey) throws IOException {
         final GitConfig conf = repo.getConfig();
+        RetentionPolicy policy = null;
         final String policyConfig = conf.getString(policyConfigKey);
-        final RetentionPolicy policy = RetentionPolicyCodec.INSTANCE.decodePolicy(RetentionPolicyType.getAvailable(), policyConfig);
+        if (policyConfig != null) {
+            policy = RetentionPolicyCodec.INSTANCE.decodePolicy(RetentionPolicyType.getAvailable(), policyConfig);
+        }
         if (policy == null) {
             log.message(styledLocalized(notSetKey, ERROR));
             return null;
@@ -112,5 +116,4 @@ class PruneUtils {
         }
         return toPrune;
     }
-
 }
