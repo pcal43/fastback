@@ -21,8 +21,8 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
+import net.pcal.fastback.config.FastbackConfigKey;
 import net.pcal.fastback.config.GitConfig;
-import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.Mod;
@@ -43,7 +43,7 @@ import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.getArgumentNicely;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
-import static net.pcal.fastback.config.GitConfigKey.LOCAL_RETENTION_POLICY;
+import static net.pcal.fastback.config.FastbackConfigKey.LOCAL_RETENTION_POLICY;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 
 /**
@@ -105,7 +105,7 @@ enum SetRetentionCommand implements Command {
     public static int setRetentionPolicy(final Mod mod,
                                          final CommandContext<ServerCommandSource> cc,
                                          final RetentionPolicyType rpt,
-                                         final GitConfigKey confKey) {
+                                         final FastbackConfigKey confKey) {
         final UserLogger ulog = commandLogger(mod, cc.getSource());
         try {
             final Path worldSaveDir = mod.getWorldDirectory();

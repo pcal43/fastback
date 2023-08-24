@@ -26,9 +26,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import static net.pcal.fastback.config.GitConfigKey.BROADCAST_NOTICE_ENABLED;
-import static net.pcal.fastback.config.GitConfigKey.COMMIT_SIGNING_ENABLED;
-import static net.pcal.fastback.config.GitConfigKey.IS_LOCK_CLEANUP_ENABLED;
+import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_NOTICE_ENABLED;
+import static net.pcal.fastback.config.FastbackConfigKey.IS_LOCK_CLEANUP_ENABLED;
+import static net.pcal.fastback.config.OtherConfigKey.COMMIT_SIGNING_ENABLED;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.repo.MaintenanceUtils.createWorldUuid;
 import static net.pcal.fastback.repo.MaintenanceUtils.ensureWorldHasUuid;

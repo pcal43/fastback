@@ -31,9 +31,9 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.UUID;
 
-import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_GIT_ENABLED;
-import static net.pcal.fastback.config.GitConfigKey.UPDATE_GITATTRIBUTES_ENABLED;
-import static net.pcal.fastback.config.GitConfigKey.UPDATE_GITIGNORE_ENABLED;
+import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
+import static net.pcal.fastback.config.FastbackConfigKey.UPDATE_GITATTRIBUTES_ENABLED;
+import static net.pcal.fastback.config.FastbackConfigKey.UPDATE_GITIGNORE_ENABLED;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;

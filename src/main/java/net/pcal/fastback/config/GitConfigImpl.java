@@ -49,20 +49,20 @@ class GitConfigImpl implements GitConfig {
 
     @Override
     public boolean getBoolean(GitConfigKey key) {
-        if (!key.isConfigurable()) return key.getBooleanDefault();
+        if (key.getSectionName() == null) return key.getBooleanDefault();
         return storedConfig.getBoolean(key.getSectionName(), key.getSubSectionName(), key.getSettingName(), key.getBooleanDefault());
     }
 
     @Override
     public String getString(GitConfigKey key) {
-        if (!key.isConfigurable()) return key.getStringDefault();
+        if (key.getSettingName() == null) return key.getStringDefault();
         final String out = storedConfig.getString(key.getSectionName(), key.getSubSectionName(), key.getSettingName());
         return out != null ? out : key.getStringDefault();
     }
 
     @Override
     public int getInt(GitConfigKey key) {
-        if (!key.isConfigurable()) return key.getIntDefault();
+        if (key.getSectionName() == null) return key.getIntDefault();
         return storedConfig.getInt(key.getSectionName(), key.getSubSectionName(), key.getSettingName(), key.getIntDefault());
     }
 
@@ -75,21 +75,18 @@ class GitConfigImpl implements GitConfig {
 
         @Override
         public Updater set(GitConfigKey key, boolean newValue) {
-            if (!key.isConfigurable()) throw new IllegalArgumentException(key.name() + " can't be set");
             storedConfig.setBoolean(key.getSectionName(), key.getSubSectionName(), key.getSettingName(), newValue);
             return this;
         }
 
         @Override
         public Updater set(GitConfigKey key, String newValue) {
-            if (!key.isConfigurable()) throw new IllegalArgumentException(key.name() + " can't be set");
             storedConfig.setString(key.getSectionName(), key.getSubSectionName(), key.getSettingName(), newValue);
             return this;
         }
 
         @Override
         public Updater set(GitConfigKey key, int newValue) {
-            if (!key.isConfigurable()) throw new IllegalArgumentException(key.name() + " can't be set");
             storedConfig.setInt(key.getSectionName(), key.getSubSectionName(), key.getSettingName(), newValue);
             return this;
         }

@@ -34,7 +34,7 @@ import java.nio.file.Path;
 import java.util.function.Predicate;
 
 import static net.pcal.fastback.commands.HelpCommand.help;
-import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
+import static net.pcal.fastback.config.FastbackConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;

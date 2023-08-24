@@ -19,8 +19,8 @@
 package net.pcal.fastback.repo;
 
 import com.google.common.collect.ListMultimap;
+import net.pcal.fastback.config.FastbackConfigKey;
 import net.pcal.fastback.config.GitConfig;
-import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.utils.EnvironmentUtils;
@@ -41,11 +41,11 @@ import java.util.Collection;
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.config.GitConfigKey.BROADCAST_NOTICE_ENABLED;
-import static net.pcal.fastback.config.GitConfigKey.BROADCAST_NOTICE_MESSAGE;
-import static net.pcal.fastback.config.GitConfigKey.IS_LOCK_CLEANUP_ENABLED;
-import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_GIT_ENABLED;
-import static net.pcal.fastback.config.GitConfigKey.REMOTE_NAME;
+import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_NOTICE_ENABLED;
+import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_NOTICE_MESSAGE;
+import static net.pcal.fastback.config.FastbackConfigKey.IS_LOCK_CLEANUP_ENABLED;
+import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
+import static net.pcal.fastback.config.FastbackConfigKey.REMOTE_NAME;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.BROADCAST;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
@@ -222,7 +222,7 @@ class RepoImpl implements Repo {
     }
 
     @Override
-    public void setConfigValue(GitConfigKey key, boolean value, UserLogger userlog) {
+    public void setConfigValue(FastbackConfigKey key, boolean value, UserLogger userlog) {
         requireNonNull(key);
         if (key == IS_NATIVE_GIT_ENABLED) {
             try {

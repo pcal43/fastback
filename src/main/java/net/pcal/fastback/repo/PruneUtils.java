@@ -19,8 +19,8 @@
 package net.pcal.fastback.repo;
 
 import com.google.common.collect.ListMultimap;
+import net.pcal.fastback.config.FastbackConfigKey;
 import net.pcal.fastback.config.GitConfig;
-import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.retention.RetentionPolicy;
@@ -31,11 +31,10 @@ import org.eclipse.jgit.transport.RefSpec;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
-import static net.pcal.fastback.config.GitConfigKey.LOCAL_RETENTION_POLICY;
-import static net.pcal.fastback.config.GitConfigKey.REMOTE_NAME;
+import static net.pcal.fastback.config.FastbackConfigKey.LOCAL_RETENTION_POLICY;
+import static net.pcal.fastback.config.FastbackConfigKey.REMOTE_NAME;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
@@ -82,7 +81,7 @@ class PruneUtils {
 
     static Collection<SnapshotId> doRemotePrune(RepoImpl repo, UserLogger ulog) throws IOException {
         return doPrune(repo, ulog,
-                GitConfigKey.REMOTE_RETENTION_POLICY,
+                FastbackConfigKey.REMOTE_RETENTION_POLICY,
                 repo::listRemoteSnapshots,
                 sid -> {
                     syslog().info("Pruning remote snapshot " + sid.getName());
@@ -94,7 +93,7 @@ class PruneUtils {
 
     private static Collection<SnapshotId> doPrune(Repo repo,
                                                   UserLogger log,
-                                                  GitConfigKey policyConfigKey,
+                                                  FastbackConfigKey policyConfigKey,
                                                   JGitSupplier<ListMultimap<String, SnapshotId>> listSnapshotsFn,
                                                   JGitConsumer<SnapshotId> deleteSnapshotsFn,
                                                   String notSetKey) throws IOException {

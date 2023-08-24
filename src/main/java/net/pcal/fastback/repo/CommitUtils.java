@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_GIT_ENABLED;
+import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.JGIT;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;

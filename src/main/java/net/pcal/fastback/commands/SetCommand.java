@@ -21,7 +21,7 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.config.GitConfigKey;
+import net.pcal.fastback.config.FastbackConfigKey;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.mod.Mod;
 import net.pcal.fastback.repo.Repo;
@@ -34,8 +34,8 @@ import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.missingArgument;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
-import static net.pcal.fastback.config.GitConfigKey.IS_LOCK_CLEANUP_ENABLED;
-import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_GIT_ENABLED;
+import static net.pcal.fastback.config.FastbackConfigKey.IS_LOCK_CLEANUP_ENABLED;
+import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.localized;
 import static net.pcal.fastback.mod.Mod.mod;
@@ -66,7 +66,7 @@ enum SetCommand implements Command {
         root.then(setCommand);
     }
 
-    private static int setConfigValue(final CommandContext<ServerCommandSource> cc, GitConfigKey key, boolean value)  {
+    private static int setConfigValue(final CommandContext<ServerCommandSource> cc, FastbackConfigKey key, boolean value)  {
         try(UserLogger ulog = UserLogger.forCommand(cc)) {
             final Path worldSaveDir = mod().getWorldDirectory();
             final RepoFactory rf = RepoFactory.get();

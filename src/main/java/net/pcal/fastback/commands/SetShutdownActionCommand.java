@@ -31,7 +31,7 @@ import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.missingArgument;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
-import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
+import static net.pcal.fastback.config.FastbackConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.WRITE_CONFIG;
 
 enum SetShutdownActionCommand implements Command {

@@ -18,8 +18,6 @@
 
 package net.pcal.fastback.logging;
 
-import java.io.IOException;
-
 /**
  * Singleton logger instance that writes to the serverside console.
  *

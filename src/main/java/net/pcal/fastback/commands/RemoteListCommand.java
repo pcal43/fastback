@@ -22,7 +22,6 @@ import com.google.common.collect.ListMultimap;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.Mod;
@@ -37,6 +36,7 @@ import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.config.OtherConfigKey.REMOTE_PUSH_URL;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.NONE;
 
 enum RemoteListCommand implements Command {
@@ -61,7 +61,7 @@ enum RemoteListCommand implements Command {
             final List<SnapshotId> snapshots = new ArrayList<>(snapshotsPerWorld.get(repo.getWorldUuid()));
             Collections.sort(snapshots);
             snapshots.forEach(sid -> log.message(UserMessage.raw(sid.getName())));
-            log.message(UserMessage.localized("fastback.chat.remote-list-done", snapshots.size(), repo.getConfig().getString(GitConfigKey.REMOTE_PUSH_URL)));
+            log.message(UserMessage.localized("fastback.chat.remote-list-done", snapshots.size(), repo.getConfig().getString(REMOTE_PUSH_URL)));
             if (snapshotsPerWorld.keySet().size() > 1) {
                 log.message(UserMessage.localized("fastback.chat.remote-list-others",
                         snapshotsPerWorld.size() - 1, snapshotsPerWorld.size() - snapshots.size()));

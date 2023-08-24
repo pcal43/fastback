@@ -22,7 +22,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.config.GitConfigKey;
+import net.pcal.fastback.config.FastbackConfigKey;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.Mod;
@@ -60,7 +60,7 @@ enum SetAutobackWaitCommand implements Command {
         final UserLogger ulog = commandLogger(mod, cc.getSource());
         gitOp(mod, WRITE_CONFIG, ulog, repo -> {
             final int waitMinutes = cc.getArgument(ARGUMENT, int.class);
-            repo.getConfig().updater().set(GitConfigKey.AUTOBACK_WAIT_MINUTES, waitMinutes).save();
+            repo.getConfig().updater().set(FastbackConfigKey.AUTOBACK_WAIT_MINUTES, waitMinutes).save();
             ulog.message(UserMessage.localized("fastback.chat.info-autoback-wait", waitMinutes));
         });
         return SUCCESS;
