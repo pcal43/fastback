@@ -75,7 +75,7 @@ class GitConfigImpl implements GitConfig {
 
         @Override
         public Updater set(GitConfigKey key, boolean newValue) {
-            storedConfig.setBoolean(key.getSectionName(), key.getSubSectionName(), "# " + key.getSettingName(), newValue);
+            storedConfig.setBoolean(key.getSectionName(), key.getSubSectionName(), key.getSettingName(), newValue);
             return this;
         }
 

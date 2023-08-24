@@ -34,7 +34,7 @@ public enum FastbackConfigKey implements GitConfigKey {
     IS_EXPERIMENTAL_COMMANDS_ENABLED(true),
     IS_FILE_REMOTE_BARE(true),
     IS_GIT_HUD_OUTPUT_ENABLED(true),
-    IS_LOCK_CLEANUP_ENABLED("lock-cleanup-enabled", false),
+    IS_LOCK_CLEANUP_ENABLED("lock-cleanup-enabled", true),
     IS_NATIVE_GIT_ENABLED("native-git-enabled", false),
     IS_POST_RESTORE_CLEANUP_ENABLED(true),
     IS_REFLOG_DELETION_ENABLED(true),

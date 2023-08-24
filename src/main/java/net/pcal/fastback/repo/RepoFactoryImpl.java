@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_NOTICE_ENABLED;
+import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_NOTICE_MESSAGE;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_LOCK_CLEANUP_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.RESTORE_DIRECTORY;
 import static net.pcal.fastback.config.OtherConfigKey.COMMIT_SIGNING_ENABLED;
@@ -47,10 +48,10 @@ class RepoFactoryImpl implements RepoFactory {
             final Repo repo = new RepoImpl(jgit);
             final Updater updater = repo.getConfig().updater();
             updater.set(COMMIT_SIGNING_ENABLED, false);
-            updater.set(BROADCAST_NOTICE_ENABLED, true);
-            updater.set(IS_LOCK_CLEANUP_ENABLED, true);
-            updater.setCommented(BROADCAST_NOTICE_ENABLED, "Custom message notifying players that a backup is starting.");
-            updater.setCommented(RESTORE_DIRECTORY, "Custom path to a directory that snapshots should be restored into.");
+            updater.setCommented(IS_LOCK_CLEANUP_ENABLED, true);
+            updater.setCommented(BROADCAST_NOTICE_ENABLED, true);
+            updater.setCommented(BROADCAST_NOTICE_MESSAGE, "Attention: the server is starting a backup.");
+            updater.setCommented(RESTORE_DIRECTORY, "/home/myuser/target/directory/for/restores");
             updater.save();
             return repo;
         } catch (GitAPIException e) {

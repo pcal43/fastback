@@ -225,7 +225,7 @@ class RepoImpl implements Repo {
     @Override
     public void setConfigValue(GitConfigKey key, boolean value, UserLogger userlog) {
         requireNonNull(key);
-        if (key == IS_NATIVE_GIT_ENABLED) { // FIXME this is gross.  find some other way
+        if (key == IS_NATIVE_GIT_ENABLED) { // FIXME this is gross.  find some other place
             try {
                 MaintenanceUtils.setNativeGitEnabled(value, this, userlog);
             } catch (IOException e) {
