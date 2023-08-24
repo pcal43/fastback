@@ -24,10 +24,10 @@ import net.minecraft.text.TextColor;
 import net.pcal.fastback.commands.Commands;
 import net.pcal.fastback.commands.SchedulableAction;
 import net.pcal.fastback.config.GitConfig;
+import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.RepoFactory;
-import net.pcal.fastback.utils.Executor;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -46,6 +46,7 @@ import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.WARNING;
 import static net.pcal.fastback.logging.UserMessage.localized;
 import static net.pcal.fastback.utils.EnvironmentUtils.getGitLfsVersion;
 import static net.pcal.fastback.utils.EnvironmentUtils.getGitVersion;
+import static net.pcal.fastback.utils.Executor.executor;
 
 class ModImpl implements LifecycleListener, Mod {
 
@@ -53,7 +54,6 @@ class ModImpl implements LifecycleListener, Mod {
     // Fields
 
     private final FrameworkServiceProvider fsp;
-    private final Executor executor;
     private Path tempRestoresDirectory = null;
 
     // ======================================================================
@@ -61,17 +61,11 @@ class ModImpl implements LifecycleListener, Mod {
 
     ModImpl(final FrameworkServiceProvider spi) {
         this.fsp = requireNonNull(spi);
-        spi.setAutoSaveListener(new AutosaveListener(this));
-        this.executor = new Executor();
+        spi.setAutoSaveListener(new AutosaveListener());
     }
 
     // ======================================================================
     // Mod implementation
-
-    @Override
-    public Executor getExecutor() {
-        return this.executor;
-    }
 
     @Override
     public Path getRestoresDir() throws IOException {
@@ -189,7 +183,7 @@ class ModImpl implements LifecycleListener, Mod {
      */
     @Override
     public void onWorldStart() {
-        executor.start();
+        executor().start();
         syslog().debug("onWorldStart complete");
     }
 
@@ -198,22 +192,22 @@ class ModImpl implements LifecycleListener, Mod {
      */
     @Override
     public void onWorldStop() {
-        try {
+        try (final UserLogger ulog = UserLogger.forShutdown()) {
             final Path worldSaveDir = this.getWorldDirectory();
-            if (executor.getActiveCount() > 0) {
+            if (executor().getActiveCount() > 0) {
                 this.setMessageScreenText(localized("fastback.chat.thread-waiting"));
             }
-            executor.stop();
+            executor().stop();
             this.clearHudText();
             final RepoFactory rf = RepoFactory.get();
             if (rf.isGitRepo(worldSaveDir)) {
-                try (final Repo repo = rf.load(worldSaveDir, this)) {
+                try (final Repo repo = rf.load(worldSaveDir)) {
                     final GitConfig config = repo.getConfig();
                     if (config.getBoolean(IS_BACKUP_ENABLED)) {
                         final SchedulableAction action = SchedulableAction.forConfigValue(config, SHUTDOWN_ACTION);
                         if (action != null) {
                             this.setMessageScreenText(localized("fastback.message.backing-up"));
-                            action.getTask(repo, new HudLogger(this)).call();
+                            action.getTask(repo, ulog).call();
                         }
                     }
                 } catch (Exception e) {
@@ -232,10 +226,10 @@ class ModImpl implements LifecycleListener, Mod {
 
     private static Text messageToText(final UserMessage m) {
         final MutableText out;
-        if (m.styledLocalized() != null) {
-            out = Text.translatable(m.styledLocalized().key(), m.styledLocalized().params());
+        if (m.localized() != null) {
+            out = Text.translatable(m.localized().key(), m.localized().params());
         } else {
-            out = Text.literal(m.styledRaw());
+            out = Text.literal(m.raw());
         }
         if (m.style() == ERROR) {
             out.setStyle(EMPTY.withColor(TextColor.parse("red")));

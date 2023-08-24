@@ -56,7 +56,7 @@ enum SetAutobackActionCommand implements Command {
         final UserLogger ulog = commandLogger(mod, scs);
         gitOp(mod, WRITE_CONFIG, ulog, repo -> {
             repo.getConfig().updater().set(AUTOBACK_ACTION, action.getConfigValue()).save();
-            ulog.chat(UserMessage.localized("fastback.chat.info-autoback-action", action.getArgumentName()));
+            ulog.message(UserMessage.localized("fastback.chat.info-autoback-action", action.getArgumentName()));
         });
         return SUCCESS;
     }

@@ -22,7 +22,6 @@ import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.mod.Mod;
 import net.pcal.fastback.utils.EnvironmentUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -34,6 +33,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
 
@@ -42,9 +43,13 @@ import static net.pcal.fastback.config.GitConfigKey.BROADCAST_NOTICE_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.BROADCAST_NOTICE_MESSAGE;
 import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_NAME;
+import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.BROADCAST;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
+import static net.pcal.fastback.logging.UserMessage.localized;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 import static net.pcal.fastback.logging.UserMessage.styledRaw;
+import static net.pcal.fastback.mod.Mod.mod;
 
 /**
  * @author pcal
@@ -61,35 +66,53 @@ class RepoImpl implements Repo {
     // Fields
 
     private final Git jgit;
-    private final Mod mod;
     private GitConfig config;
 
     // ======================================================================
     // Constructors
 
-    RepoImpl(final Git git, final Mod mod) {
-        this.jgit = requireNonNull(git);
-        this.mod = requireNonNull(mod);
+    RepoImpl(final Git jgit) {
+        this.jgit = requireNonNull(jgit);
     }
 
     // ======================================================================
     // Repo implementation
 
     @Override
-    public void doCommitAndPush(final UserLogger ulog) throws IOException {
+    public void doCommitAndPush(final UserLogger ulog) {
         if (!doNativeCheck(ulog)) return;
         broadcastBackupNotice();
-        final SnapshotId newSid = CommitUtils.doCommitSnapshot(this, mod, ulog);
-        PushUtils.doPush(newSid, this, ulog);
-        ulog.chat(UserMessage.localized("fastback.chat.backup-complete"));//FIXME not if it failed
+        final long start = System.currentTimeMillis();
+        final SnapshotId newSid;
+        try {
+            newSid = CommitUtils.doCommitSnapshot(this, ulog);
+        } catch(IOException ioe) {
+            ulog.message(styledLocalized("fastback.chat.commit-failed", ERROR));
+            return;
+        }
+        try {
+            PushUtils.doPush(newSid, this, ulog);
+        } catch(IOException ioe) {
+            ulog.message(styledLocalized("fastback.chat.push-failed", ERROR));
+            syslog().error(ioe);
+            return;
+        }
+        ulog.message(localized("fastback.chat.backup-complete-elapsed", getDuration(start)));
     }
 
     @Override
-    public void doCommitSnapshot(final UserLogger ulog) throws IOException {
+    public void doCommitSnapshot(final UserLogger ulog) {
         if (!doNativeCheck(ulog)) return;
         broadcastBackupNotice();
-        CommitUtils.doCommitSnapshot(this, mod, ulog);
-        ulog.chat(UserMessage.localized("fastback.chat.backup-complete")); //FIXME not necessarily
+        final long start = System.currentTimeMillis();
+        try {
+            CommitUtils.doCommitSnapshot(this, ulog);
+        } catch(IOException ioe) {
+            ulog.message(styledLocalized("fastback.chat.commit-failed", ERROR));
+            syslog().error(ioe);
+            return;
+        }
+        ulog.message(localized("fastback.chat.backup-complete-elapsed", getDuration(start)));
     }
 
     @Override
@@ -199,8 +222,18 @@ class RepoImpl implements Repo {
     // ======================================================================
     // Private
 
+    private static String getDuration(long since) {
+        final Duration d = Duration.of(System.currentTimeMillis() - since, ChronoUnit.MILLIS);
+        long seconds = d.getSeconds();
+        if (seconds < 60) {
+            return String.format("%ds", seconds == 0 ? 1 : seconds);
+        } else {
+            return String.format("%dm %ds", seconds / 60, seconds % 60);
+        }
+    }
+
     private void broadcastBackupNotice() {
-        if (!this.mod.isDecicatedServer()) return;
+        if (!mod().isDecicatedServer()) return;
         if (!getConfig().getBoolean(BROADCAST_NOTICE_ENABLED)) return;
         final UserMessage m;
         final String configuredMessage = getConfig().getString(BROADCAST_NOTICE_MESSAGE);
@@ -209,14 +242,14 @@ class RepoImpl implements Repo {
         } else {
             m = styledLocalized("fastback.broadcast.message", BROADCAST);
         }
-        mod.sendBroadcast(m);
+        mod().sendBroadcast(m);
     }
 
     private boolean doNativeCheck(UserLogger ulog) {
         final GitConfig config = this.getConfig();
         if (config.getBoolean(IS_NATIVE_GIT_ENABLED)) {
             if (!EnvironmentUtils.isNativeGitInstalled()) {
-                ulog.chat(UserMessage.rawError("Unable to backup: native mode enabled but git is not installed."));
+                ulog.message(UserMessage.rawError("Unable to backup: native mode enabled but git is not installed."));
                 return false;
             }
         }

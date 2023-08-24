@@ -95,7 +95,7 @@ class PushUtils {
                 }
                 if (!uuidCheckResult) {
                     final URIish remoteUri = jgit_getRemoteUri(repo.getJGit(), repo.getConfig().getString(REMOTE_NAME));
-                    ulog.chat(styledLocalized("fastback.chat.push-uuid-mismatch", ERROR, remoteUri));
+                    ulog.message(styledLocalized("fastback.chat.push-uuid-mismatch", ERROR, remoteUri));
                     syslog().error("Failing remote backup due to failed uuid check");
                     return;
                 }
@@ -120,19 +120,19 @@ class PushUtils {
 
     private static void native_doPush(final Repo repo, final String branchNameToPush, final UserLogger log) throws IOException, InterruptedException {
         syslog().debug("Start native_push");
-        log.hud(styledLocalized("fastback.chat.push-started", NATIVE_GIT));
+        log.update(styledLocalized("fastback.chat.push-started", NATIVE_GIT));
         final File worktree = repo.getWorkTree();
         final GitConfig conf = repo.getConfig();
         String remoteName = conf.getString(REMOTE_NAME);
         final String[] push = {"git", "-C", worktree.getAbsolutePath(), "-c", "push.autosetupremote=false", "push", "--progress", "--set-upstream", remoteName, branchNameToPush};
         final Map<String, String> env = Map.of("GIT_LFS_FORCE_PROGRESS", "1");
-        final Consumer<String> logConsumer = new HudConsumer(log, UserMessageStyle.NATIVE_GIT);
-        doExec(push, env, logConsumer, logConsumer);
+        final Consumer<String> outputConsumer = line->log.update(styledRaw(line, NATIVE_GIT));
+        doExec(push, env, outputConsumer, outputConsumer);
         syslog().debug("End native_push");
     }
 
     private static void jgit_doSmartPush(final RepoImpl repo, List<SnapshotId> remoteSnapshots, final String branchNameToPush, final GitConfig conf, final UserLogger ulog) throws IOException {
-        ulog.hud(styledLocalized("fastback.chat.push-started", JGIT));
+        ulog.update(styledLocalized("fastback.chat.push-started", JGIT));
         try {
             final Git jgit = repo.getJGit();
             final String remoteName = conf.getString(REMOTE_NAME);
@@ -274,14 +274,14 @@ class PushUtils {
         public void progressUpdate(String task, int percentage) {
             final String msg = task + " " + percentage + "%";
             syslog().debug(msg);
-            ulog.hud(styledRaw(msg, JGIT));
+            ulog.update(styledRaw(msg, JGIT));
         }
 
         @Override
         public void progressDone(String task) {
             final String msg = "Done " + task; // FIXME i18n
             syslog().debug(msg);
-            ulog.hud(styledRaw(msg, JGIT));
+            ulog.update(styledRaw(msg, JGIT));
         }
 
         @Override

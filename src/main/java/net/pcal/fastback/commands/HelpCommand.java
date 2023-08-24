@@ -100,7 +100,7 @@ enum HelpCommand implements Command {
             }
             subcommands.append(available);
         }
-        log.chat(UserMessage.localized("fastback.help.subcommands", String.valueOf(subcommands)));
+        log.message(UserMessage.localized("fastback.help.subcommands", String.valueOf(subcommands)));
         return SUCCESS;
     }
 
@@ -111,11 +111,11 @@ enum HelpCommand implements Command {
         for (String available : getSubcommandNames(cc)) {
             if (subcommand.equals(available)) {
                 final String prefix = "/backup " + subcommand + ": ";
-                log.chat(UserMessage.localized("fastback.help.command." + subcommand, prefix));
+                log.message(UserMessage.localized("fastback.help.command." + subcommand, prefix));
                 return SUCCESS;
             }
         }
-        log.chat(styledLocalized("fastback.chat.invalid-input", ERROR, subcommand));
+        log.message(styledLocalized("fastback.chat.invalid-input", ERROR, subcommand));
         return FAILURE;
     }
 

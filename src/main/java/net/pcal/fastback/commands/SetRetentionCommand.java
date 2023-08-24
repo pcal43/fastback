@@ -125,8 +125,8 @@ enum SetRetentionCommand implements Command {
             try (final Git jgit = Git.open(worldSaveDir.toFile())) {
                 final GitConfig conf = GitConfig.load(jgit);
                 conf.updater().set(confKey, encodedPolicy).save();
-                ulog.chat(UserMessage.localized("fastback.chat.retention-policy-set"));
-                ulog.chat(rp.getDescription());
+                ulog.message(UserMessage.localized("fastback.chat.retention-policy-set"));
+                ulog.message(rp.getDescription());
             } catch (Exception e) {
                 syslog().error("Command execution failed.", e);
                 return FAILURE;

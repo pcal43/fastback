@@ -16,38 +16,27 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.utils;
+package net.pcal.fastback.logging;
 
-import net.pcal.fastback.logging.UserLogger;
+import static net.pcal.fastback.mod.Mod.mod;
 
 /**
- * Thin, singleton wrapper around an ExecutorService.  Use this to do things in separate threads.
+ * Handles messages in the context of an autosave operation.
  *
  * @author pcal
- * @since 0.2.0
+ * @since 0.15.0
  */
-public interface Executor {
+enum AutosaveLogger implements UserLogger {
 
-    static Executor executor() {
-        return Singleton.INSTANCE;
+    INSTANCE;
+
+    @Override
+    public void message(final UserMessage message) {
     }
 
-    // TODO kill UserLogger param and throw Blocking exception instead
-    void execute(final ExecutionLock lock, final UserLogger ulog, final Runnable runnable);
-
-    int getActiveCount();
-
-    void start();
-
-    void stop();
-
-    enum ExecutionLock {
-        NONE,
-        WRITE_CONFIG,
-        WRITE,
+    @Override
+    public void update(final UserMessage message) {
+        mod().setHudText(message);
     }
 
-    class Singleton {
-        private static final Executor INSTANCE = new ExecutorImpl();
-    }
 }

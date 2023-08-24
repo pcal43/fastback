@@ -38,7 +38,9 @@ import static net.pcal.fastback.config.GitConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.localized;
+import static net.pcal.fastback.mod.Mod.mod;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.NONE;
+import static net.pcal.fastback.utils.Executor.executor;
 
 enum EnableCommand implements Command {
 
@@ -51,24 +53,23 @@ enum EnableCommand implements Command {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(mod, COMMAND_NAME)).
-                        executes(cc -> enable(mod, cc))
+                        executes(cc -> enable(cc))
         );
     }
 
-    private static int enable(final Mod mod, final CommandContext<ServerCommandSource> cc) {
-        final UserLogger ulog = commandLogger(mod, cc.getSource());
-        mod.getExecutor().execute(NONE, ulog, () -> {
-                    final Path worldSaveDir = mod.getWorldDirectory();
+    private static int enable(final CommandContext<ServerCommandSource> cc) {
+        final UserLogger ulog = commandLogger(mod(), cc.getSource());
+        executor().execute(NONE, ulog, () -> {
+                    final Path worldSaveDir = mod().getWorldDirectory();
                     final RepoFactory rf = RepoFactory.get();
-                    try (final Repo repo = rf.init(worldSaveDir, mod)) {
-                        //repo.doWorldMaintenance(log);
+                    try (final Repo repo = rf.init(worldSaveDir)) {
                         final Updater updater = repo.getConfig().updater();
                         updater.set(IS_BACKUP_ENABLED, true).save();
                         if (repo.getConfig().getString(SHUTDOWN_ACTION) == null) {
                             updater.set(SHUTDOWN_ACTION, DEFAULT_SHUTDOWN_ACTION.getConfigValue());
                         }
                         updater.save();
-                        ulog.chat(localized("fastback.chat.enable-done"));
+                        ulog.message(localized("fastback.chat.enable-done"));
                     } catch (Exception e) {
                         syslog().error("Error enabling backups", e);
                     }

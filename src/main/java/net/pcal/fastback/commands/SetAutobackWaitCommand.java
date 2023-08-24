@@ -61,7 +61,7 @@ enum SetAutobackWaitCommand implements Command {
         gitOp(mod, WRITE_CONFIG, ulog, repo -> {
             final int waitMinutes = cc.getArgument(ARGUMENT, int.class);
             repo.getConfig().updater().set(GitConfigKey.AUTOBACK_WAIT_MINUTES, waitMinutes).save();
-            ulog.chat(UserMessage.localized("fastback.chat.info-autoback-wait", waitMinutes));
+            ulog.message(UserMessage.localized("fastback.chat.info-autoback-wait", waitMinutes));
         });
         return SUCCESS;
     }

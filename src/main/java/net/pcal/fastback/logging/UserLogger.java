@@ -18,17 +18,51 @@
 
 package net.pcal.fastback.logging;
 
+import net.minecraft.server.command.ServerCommandSource;
+
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
+import static net.pcal.fastback.mod.Mod.mod;
 
-//TODO this could be further split into chatlogger and hudlogger or sth
-public interface UserLogger {
+/**
+ * Logging interface for messages which *might* be displayed in the UI.
+ *
+ * @author pcal
+ * @since 0.13.0
+ */
+public interface UserLogger extends AutoCloseable {
 
-    void chat(UserMessage message);
+    /**
+     * Send a fairly important message that should be displayed in the UI a relatively prominent and durable manner.
+     * Typically, this means in the chat dialog.
+     */
+    void message(UserMessage message);
 
-    void hud(UserMessage message);
+    /**
+     * Send a bit of low-level detail that is useful for indicating progress or activity but isn't of critical
+     * importance.  This will typically be displayed in the HUD area.
+     */
+    void update(UserMessage message);
+
+    @Override
+    default void close() {
+        mod().clearHudText();
+    }
 
     default void internalError() {
-        this.chat(styledLocalized("fastback.chat.internal-error", ERROR));
+        this.message(styledLocalized("fastback.chat.internal-error", ERROR));
     }
+
+    static UserLogger forCommand(final ServerCommandSource scs) {
+        return new CommandLogger(scs);
+    }
+
+    static UserLogger forShutdown() {
+        return ShutdownLogger.INSTANCE;
+    }
+
+    static UserLogger forAutosave() {
+        return ShutdownLogger.INSTANCE;
+    }
+
 }

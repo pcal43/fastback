@@ -40,10 +40,10 @@ import static net.pcal.fastback.repo.MaintenanceUtils.ensureWorldHasUuid;
 class RepoFactoryImpl implements RepoFactory {
 
     @Override
-    public Repo init(Path worldSaveDir, Mod mod) throws IOException {
+    public Repo init(final Path worldSaveDir) throws IOException {
         try (final Git jgit = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
             createWorldUuid(worldSaveDir);
-            final Repo repo = new RepoImpl(jgit, mod);
+            final Repo repo = new RepoImpl(jgit);
             final Updater updater = repo.getConfig().updater();
             updater.set(COMMIT_SIGNING_ENABLED, false);
             updater.set(BROADCAST_NOTICE_ENABLED, true);
@@ -56,12 +56,12 @@ class RepoFactoryImpl implements RepoFactory {
     }
 
     @Override
-    public Repo load(Path worldSaveDir, Mod mod) throws IOException {
+    public Repo load(final Path worldSaveDir) throws IOException {
         final Git jgit = Git.open(worldSaveDir.toFile());
         // It should already be there.  But let's try to be extra sure this is there, because lots of stuff
         // will blow up if it's missing.
         ensureWorldHasUuid(worldSaveDir);
-        return new RepoImpl(jgit, mod);
+        return new RepoImpl(jgit);
     }
 
     @Override

@@ -59,7 +59,7 @@ enum RemotePruneCommand implements Command {
         final UserLogger ulog = commandLogger(mod, scs);
         gitOp(mod, WRITE, ulog, repo -> {
             final Collection<SnapshotId> pruned = repo.doRemotePrune(ulog);
-            ulog.chat(UserMessage.localized("fastback.chat.prune-done", pruned.size()));
+            ulog.message(UserMessage.localized("fastback.chat.prune-done", pruned.size()));
         });
         return SUCCESS;
     }

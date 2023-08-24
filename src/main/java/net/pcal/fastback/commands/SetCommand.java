@@ -89,7 +89,7 @@ enum SetCommand implements Command {
 
     private static int setForceDebug(final Mod mod, final CommandContext<ServerCommandSource> cc, boolean value) {
         syslog().setForceDebugEnabled(value);
-        commandLogger(mod, cc.getSource()).chat(localized("fastback.chat.ok"));
+        commandLogger(mod, cc.getSource()).message(localized("fastback.chat.ok"));
         return SUCCESS;
     }
 }

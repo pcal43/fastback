@@ -101,12 +101,12 @@ class PruneUtils {
         final String policyConfig = conf.getString(policyConfigKey);
         final RetentionPolicy policy = RetentionPolicyCodec.INSTANCE.decodePolicy(RetentionPolicyType.getAvailable(), policyConfig);
         if (policy == null) {
-            log.chat(styledLocalized(notSetKey, ERROR));
+            log.message(styledLocalized(notSetKey, ERROR));
             return null;
         }
         final Collection<SnapshotId> toPrune = policy.getSnapshotsToPrune(
                 sortWorldSnapshots(listSnapshotsFn.get(), repo.getWorldUuid()));
-        log.hud(UserMessage.localized("fastback.hud.prune-started"));
+        log.update(UserMessage.localized("fastback.hud.prune-started"));
         for (final SnapshotId sid : toPrune) {
             deleteSnapshotsFn.accept(sid);
         }

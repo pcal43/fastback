@@ -70,26 +70,26 @@ enum InfoCommand implements Command {
         final UserLogger ulog = commandLogger(mod, scs);
         gitOp(mod, NONE, ulog, repo -> {
             final GitConfig c = repo.getConfig();
-            ulog.chat(UserMessage.localized("fastback.chat.info-header"));
-            ulog.chat(UserMessage.localized("fastback.chat.info-fastback-version", mod.getModVersion()));
-            ulog.chat(UserMessage.localized("fastback.chat.info-uuid", repo.getWorldUuid()));
+            ulog.message(UserMessage.localized("fastback.chat.info-header"));
+            ulog.message(UserMessage.localized("fastback.chat.info-fastback-version", mod.getModVersion()));
+            ulog.message(UserMessage.localized("fastback.chat.info-uuid", repo.getWorldUuid()));
             if (c.getBoolean(IS_BACKUP_ENABLED)) {
-                ulog.chat(UserMessage.localized("fastback.chat.info-local-enabled"));
+                ulog.message(UserMessage.localized("fastback.chat.info-local-enabled"));
             } else {
-                ulog.chat(UserMessage.localized("fastback.chat.info-local-disabled"));
+                ulog.message(UserMessage.localized("fastback.chat.info-local-disabled"));
             }
-            ulog.chat(UserMessage.localized("fastback.chat.info-remote-url", c.getString(REMOTE_PUSH_URL)));
+            ulog.message(UserMessage.localized("fastback.chat.info-remote-url", c.getString(REMOTE_PUSH_URL)));
             final SchedulableAction shutdownAction = SchedulableAction.forConfigValue(c.getString(SHUTDOWN_ACTION));
-            ulog.chat(UserMessage.localized("fastback.chat.info-shutdown-action", getActionDisplay(shutdownAction)));
+            ulog.message(UserMessage.localized("fastback.chat.info-shutdown-action", getActionDisplay(shutdownAction)));
             final SchedulableAction autobackAction = SchedulableAction.forConfigValue(c.getString(AUTOBACK_ACTION));
-            ulog.chat(UserMessage.localized("fastback.chat.info-autoback-action", getActionDisplay(autobackAction)));
-            ulog.chat(UserMessage.localized("fastback.chat.info-autoback-wait", c.getInt(AUTOBACK_WAIT_MINUTES)));
+            ulog.message(UserMessage.localized("fastback.chat.info-autoback-action", getActionDisplay(autobackAction)));
+            ulog.message(UserMessage.localized("fastback.chat.info-autoback-wait", c.getInt(AUTOBACK_WAIT_MINUTES)));
 
             // FIXME? this could be implemented more efficiently
             final long backupSize = sizeOfDirectory(repo.getDirectory());
             final long worldSize = sizeOfDirectory(repo.getWorkTree()) - backupSize;
-            ulog.chat(UserMessage.localized("fastback.chat.info-world-size", byteCountToDisplaySize(worldSize)));
-            ulog.chat(UserMessage.localized("fastback.chat.info-backup-size", byteCountToDisplaySize(backupSize)));
+            ulog.message(UserMessage.localized("fastback.chat.info-world-size", byteCountToDisplaySize(worldSize)));
+            ulog.message(UserMessage.localized("fastback.chat.info-backup-size", byteCountToDisplaySize(backupSize)));
             showRetentionPolicy(ulog,
                     c.getString(LOCAL_RETENTION_POLICY),
                     "fastback.chat.retention-policy-set",
@@ -104,11 +104,11 @@ enum InfoCommand implements Command {
             final Text enabled = Text.translatable("fastback.values.enabled");
             final Text notInstalled = Text.translatable("fastback.values.not-installed");
             if (c.getBoolean(IS_NATIVE_GIT_ENABLED)) { // TODO display this all the time
-                ulog.chat(UserMessage.localized("fastback.chat.info-native-git", enabled));
+                ulog.message(UserMessage.localized("fastback.chat.info-native-git", enabled));
                 final String gitVersion = getGitVersion();
-                ulog.chat(UserMessage.localized("fastback.chat.info-native-git-version", gitVersion != null ? gitVersion : notInstalled));
+                ulog.message(UserMessage.localized("fastback.chat.info-native-git-version", gitVersion != null ? gitVersion : notInstalled));
                 final String gitLfsVersion = getGitLfsVersion();
-                ulog.chat(UserMessage.localized("fastback.chat.info-native-git-lfs-version", gitLfsVersion != null ? gitLfsVersion : notInstalled));
+                ulog.message(UserMessage.localized("fastback.chat.info-native-git-lfs-version", gitLfsVersion != null ? gitLfsVersion : notInstalled));
             }
 
         });
@@ -121,15 +121,15 @@ enum InfoCommand implements Command {
 
     private static void showRetentionPolicy(UserLogger log, String encodedPolicy, String setKey, String noneKey) {
         if (encodedPolicy == null) {
-            log.chat(UserMessage.localized(noneKey));
+            log.message(UserMessage.localized(noneKey));
         } else {
             final RetentionPolicy policy = RetentionPolicyCodec.INSTANCE.
                     decodePolicy(RetentionPolicyType.getAvailable(), encodedPolicy);
             if (policy == null) {
-                log.chat(UserMessage.localized(noneKey));
+                log.message(UserMessage.localized(noneKey));
             } else {
-                log.chat(UserMessage.localized(setKey));
-                log.chat(policy.getDescription());
+                log.message(UserMessage.localized(setKey));
+                log.message(policy.getDescription());
             }
         }
     }

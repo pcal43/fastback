@@ -73,7 +73,7 @@ enum FullCommand implements Command {
      * Workaround for https://github.com/pcal43/fastback/issues/112
      */
     static void saveWorldBeforeBackup(Mod mod, UserLogger ulog) throws IOException {
-        ulog.hud(raw("Saving world before backup...")); //FIXME i18n
+        ulog.update(raw("Saving world before backup...")); //FIXME i18n
         syslog().info("Saving before backup");
         mod.saveWorld();
         syslog().info("Starting backup..."); //FIXME i18n

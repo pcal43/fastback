@@ -54,7 +54,7 @@ enum ListCommand implements Command {
         gitOp(mod, NONE, ulog, repo -> {
             final String uuid = repo.getWorldUuid();
             for (final SnapshotId sid : sortWorldSnapshots(repo.listSnapshots(), uuid)) {
-                ulog.chat(UserMessage.raw(sid.getName()));
+                ulog.message(UserMessage.raw(sid.getName()));
             }
         });
         return SUCCESS;
