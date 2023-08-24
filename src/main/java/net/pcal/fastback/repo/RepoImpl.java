@@ -21,6 +21,7 @@ package net.pcal.fastback.repo;
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.config.FastbackConfigKey;
 import net.pcal.fastback.config.GitConfig;
+import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.utils.EnvironmentUtils;
@@ -222,9 +223,9 @@ class RepoImpl implements Repo {
     }
 
     @Override
-    public void setConfigValue(FastbackConfigKey key, boolean value, UserLogger userlog) {
+    public void setConfigValue(GitConfigKey key, boolean value, UserLogger userlog) {
         requireNonNull(key);
-        if (key == IS_NATIVE_GIT_ENABLED) {
+        if (key == IS_NATIVE_GIT_ENABLED) { // FIXME this is gross.  find some other way
             try {
                 MaintenanceUtils.setNativeGitEnabled(value, this, userlog);
             } catch (IOException e) {

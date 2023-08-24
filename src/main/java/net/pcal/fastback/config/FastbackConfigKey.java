@@ -25,53 +25,31 @@ package net.pcal.fastback.config;
  */
 public enum FastbackConfigKey implements GitConfigKey {
 
-    IS_BACKUP_ENABLED("backup-enabled", false),
-
-    IS_NATIVE_GIT_ENABLED("native-git-enabled", false),
-
-    IS_LOCK_CLEANUP_ENABLED("lock-cleanup-enabled", false),
-
     AUTOBACK_ACTION("autoback-action", null),
-
-    SHUTDOWN_ACTION("shutdown-action", null),
-
     AUTOBACK_WAIT_MINUTES("autoback-wait", 0),
-
-    LOCAL_RETENTION_POLICY("retention-policy", null),
-
-    REMOTE_RETENTION_POLICY("remote-retention-policy", null),
-
-    UPDATE_GITIGNORE_ENABLED("update-gitignore-enabled", true),
-
-    UPDATE_GITATTRIBUTES_ENABLED("update-gitattributes-enabled", true),
-
-    REMOTE_NAME("remote-name", "origin"),
-
-    BROADCAST_NOTICE_MESSAGE("broadcast-notice-message", null),
-
     BROADCAST_NOTICE_ENABLED("broadcast-notice-enabled", true),
-
-    IS_UUID_CHECK_ENABLED(true),
-
-    IS_TEMP_BRANCH_CLEANUP_ENABLED(true),
-
-    IS_TRACKING_BRANCH_CLEANUP_ENABLED(true),
-
-    IS_REMOTE_TEMP_BRANCH_CLEANUP_ENABLED(true),
-
-    IS_SMART_PUSH_ENABLED(true),
-
-    IS_GIT_HUD_OUTPUT_ENABLED(true),
-
-    IS_POST_RESTORE_CLEANUP_ENABLED(true),
-
-    IS_REFLOG_DELETION_ENABLED(true),
-
+    BROADCAST_NOTICE_MESSAGE("broadcast-notice-message", null),
+    IS_BACKUP_ENABLED("backup-enabled", false),
     IS_BRANCH_CLEANUP_ENABLED(true),
-
     IS_EXPERIMENTAL_COMMANDS_ENABLED(true),
-
-    IS_FILE_REMOTE_BARE(true);
+    IS_FILE_REMOTE_BARE(true),
+    IS_GIT_HUD_OUTPUT_ENABLED(true),
+    IS_LOCK_CLEANUP_ENABLED("lock-cleanup-enabled", false),
+    IS_NATIVE_GIT_ENABLED("native-git-enabled", false),
+    IS_POST_RESTORE_CLEANUP_ENABLED(true),
+    IS_REFLOG_DELETION_ENABLED(true),
+    IS_REMOTE_TEMP_BRANCH_CLEANUP_ENABLED(true),
+    IS_SMART_PUSH_ENABLED(true),
+    IS_TEMP_BRANCH_CLEANUP_ENABLED(true),
+    IS_TRACKING_BRANCH_CLEANUP_ENABLED(true),
+    IS_UUID_CHECK_ENABLED(true),
+    LOCAL_RETENTION_POLICY("retention-policy", null),
+    REMOTE_NAME("remote-name", "origin"),
+    REMOTE_RETENTION_POLICY("remote-retention-policy", null),
+    RESTORE_DIRECTORY("restore-directory", null),
+    SHUTDOWN_ACTION("shutdown-action", null),
+    UPDATE_GITATTRIBUTES_ENABLED("update-gitattributes-enabled", true),
+    UPDATE_GITIGNORE_ENABLED("update-gitignore-enabled", true);
 
 
     private static final String NULL_STRING = "";
