@@ -47,7 +47,7 @@ enum RemoteDeleteCommand implements Command {
         argb.then(literal(COMMAND_NAME).
                 requires(subcommandPermission(mod, COMMAND_NAME)).then(
                         argument(ARGUMENT, StringArgumentType.string()).
-                                suggests(SnapshotNameSuggestions.remote(mod)).
+                                suggests(SnapshotNameSuggestions.remote()).
                                 executes(cc -> delete(mod, cc))
                 )
         );

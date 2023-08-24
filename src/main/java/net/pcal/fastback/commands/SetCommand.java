@@ -18,10 +18,12 @@
 
 package net.pcal.fastback.commands;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.config.FastbackConfigKey;
+import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.mod.Mod;
 import net.pcal.fastback.repo.Repo;
@@ -29,6 +31,7 @@ import net.pcal.fastback.repo.RepoFactory;
 
 import java.nio.file.Path;
 
+import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
@@ -36,8 +39,10 @@ import static net.pcal.fastback.commands.Commands.missingArgument;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_LOCK_CLEANUP_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
+import static net.pcal.fastback.config.FastbackConfigKey.RESTORE_DIRECTORY;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.localized;
+import static net.pcal.fastback.logging.UserMessage.raw;
 import static net.pcal.fastback.mod.Mod.mod;
 
 /**
@@ -60,48 +65,71 @@ enum SetCommand implements Command {
         final LiteralArgumentBuilder<ServerCommandSource> setCommand = literal(COMMAND_NAME).
                 requires(subcommandPermission(mod, COMMAND_NAME)).
                 executes(cc -> missingArgument("key", mod, cc));
-        registerNativeGit(setCommand);
+        registerBooleanConfigValue(IS_NATIVE_GIT_ENABLED, setCommand);
+        registerBooleanConfigValue(IS_LOCK_CLEANUP_ENABLED, setCommand);
+        registerStringConfigValue(RESTORE_DIRECTORY, setCommand);
         registerForceDebug(setCommand);
-        registerLockCleanup(setCommand);
         root.then(setCommand);
     }
 
-    private static int setConfigValue(final CommandContext<ServerCommandSource> cc, FastbackConfigKey key, boolean value)  {
+
+    // ======================================================================
+    // Boolean config values
+
+    private static void registerBooleanConfigValue(GitConfigKey key, final LiteralArgumentBuilder<ServerCommandSource> setCommand) {
+        final LiteralArgumentBuilder<ServerCommandSource> builder = literal(key.getSettingDisplayName());
+        builder.then(literal("true").executes(cc -> setBooleanConfigValue(cc, key, true)));
+        builder.then(literal("false").executes(cc -> setBooleanConfigValue(cc, key, false)));
+        setCommand.then(builder);
+    }
+
+    private static int setBooleanConfigValue(final CommandContext<ServerCommandSource> cc, GitConfigKey key, boolean value)  {
         try(UserLogger ulog = UserLogger.forCommand(cc)) {
             final Path worldSaveDir = mod().getWorldDirectory();
             final RepoFactory rf = RepoFactory.get();
             if (rf.isGitRepo(worldSaveDir)) {
                 try (Repo repo = rf.load(worldSaveDir)) {
                     repo.setConfigValue(key, value, UserLogger.forCommand(cc));
+                    ulog.message(raw(key.getSettingDisplayName() + " = " + value));
                 } catch (Exception e) {
                     ulog.internalError(e);
                     return FAILURE;
                 }
             }
-            ulog.message(localized("fastback.chat.ok"));
         }
         return SUCCESS;
     }
 
     // ======================================================================
-    // native-git
+    // String config values
 
-    private static void registerNativeGit(final LiteralArgumentBuilder<ServerCommandSource> setCommand) {
-        final LiteralArgumentBuilder<ServerCommandSource> builder = literal("native-git");
-        builder.then(literal("enabled").executes(cc -> setConfigValue(cc, IS_NATIVE_GIT_ENABLED, true)));
-        builder.then(literal("disabled").executes(cc -> setConfigValue(cc, IS_NATIVE_GIT_ENABLED, false)));
+    private static final String STRING_VALUE = "value";
+
+    private static void registerStringConfigValue(GitConfigKey key, final LiteralArgumentBuilder<ServerCommandSource> setCommand) {
+        final LiteralArgumentBuilder<ServerCommandSource> builder = literal(key.getSettingDisplayName());
+        builder.then(argument(STRING_VALUE, StringArgumentType.greedyString()).
+                executes(cc -> setStringConfigValue(cc, key)));
         setCommand.then(builder);
     }
 
-    // ======================================================================
-    // lock-cleanup-enabled
-
-    private static void registerLockCleanup(final LiteralArgumentBuilder<ServerCommandSource> setCommand) {
-        final LiteralArgumentBuilder<ServerCommandSource> builder = literal("lock-cleanup");
-        builder.then(literal("enabled").executes(cc -> setConfigValue(cc, IS_LOCK_CLEANUP_ENABLED, true)));
-        builder.then(literal("disabled").executes(cc -> setConfigValue(cc, IS_LOCK_CLEANUP_ENABLED, false)));
-        setCommand.then(builder);
+    private static int setStringConfigValue(final CommandContext<ServerCommandSource> cc, GitConfigKey key)  {
+        try(UserLogger ulog = UserLogger.forCommand(cc)) {
+            final Path worldSaveDir = mod().getWorldDirectory();
+            final RepoFactory rf = RepoFactory.get();
+            if (rf.isGitRepo(worldSaveDir)) {
+                try (Repo repo = rf.load(worldSaveDir)) {
+                    final String newValue = cc.getArgument(STRING_VALUE, String.class);
+                    repo.getConfig().updater().set(key, newValue).save();
+                    ulog.message(raw(key.getSettingDisplayName() + " = " + newValue));
+                } catch (Exception e) {
+                    ulog.internalError(e);
+                    return FAILURE;
+                }
+            }
+        }
+        return SUCCESS;
     }
+
 
     // ======================================================================
     // force-debug

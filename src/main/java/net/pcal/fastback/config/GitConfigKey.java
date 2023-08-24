@@ -18,6 +18,10 @@
 
 package net.pcal.fastback.config;
 
+/**
+ * @author pcal
+ * @since 0.14.0
+ */
 public interface GitConfigKey {
 
     String getSectionName();
@@ -31,5 +35,7 @@ public interface GitConfigKey {
     String getStringDefault();
 
     int getIntDefault();
+
+    default String getSettingDisplayName() { return this.getSettingName(); }
 
 }

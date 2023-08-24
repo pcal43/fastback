@@ -41,7 +41,7 @@ public interface Mod {
     /**
      * @return path to where snapshots should be restored.
      */
-    Path getRestoresDir() throws IOException;
+    Path getDefaultRestoresDir() throws IOException;
 
 
     /**

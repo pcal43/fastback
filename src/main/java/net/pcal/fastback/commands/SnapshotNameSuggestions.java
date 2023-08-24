@@ -30,16 +30,16 @@ import net.pcal.fastback.repo.SnapshotId;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
-import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
+import static net.pcal.fastback.mod.Mod.mod;
 import static net.pcal.fastback.repo.SnapshotId.sortWorldSnapshots;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.NONE;
 
 abstract class SnapshotNameSuggestions implements SuggestionProvider<ServerCommandSource> {
 
-    static SnapshotNameSuggestions local(final Mod mod) {
-        return new SnapshotNameSuggestions(mod) {
+    static SnapshotNameSuggestions local() {
+        return new SnapshotNameSuggestions() {
 
             @Override
             protected Collection<SnapshotId> getSnapshotIds(Repo repo, UserLogger ulog) throws Exception {
@@ -48,8 +48,8 @@ abstract class SnapshotNameSuggestions implements SuggestionProvider<ServerComma
         };
     }
 
-    static SnapshotNameSuggestions remote(final Mod mod) {
-        return new SnapshotNameSuggestions(mod) {
+    static SnapshotNameSuggestions remote() {
+        return new SnapshotNameSuggestions() {
 
             @Override
             protected Collection<SnapshotId> getSnapshotIds(Repo repo, UserLogger ulog) throws Exception {
@@ -58,18 +58,12 @@ abstract class SnapshotNameSuggestions implements SuggestionProvider<ServerComma
         };
     }
 
-    private final Mod mod;
-
-    private SnapshotNameSuggestions(Mod mod) {
-        this.mod = requireNonNull(mod);
-    }
-
     @Override
     public CompletableFuture<Suggestions> getSuggestions(final CommandContext<ServerCommandSource> cc,
                                                          final SuggestionsBuilder builder) {
         CompletableFuture<Suggestions> completableFuture = new CompletableFuture<>();
-        final UserLogger ulog = commandLogger(mod, cc.getSource());
-        gitOp(mod, NONE, ulog, repo -> {
+        final UserLogger ulog = commandLogger(mod(), cc.getSource());
+        gitOp(mod(), NONE, ulog, repo -> {
             for (final SnapshotId sid : this.getSnapshotIds(repo, ulog)) {
                 builder.suggest(sid.getName());
             }

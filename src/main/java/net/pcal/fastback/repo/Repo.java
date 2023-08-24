@@ -21,6 +21,7 @@ package net.pcal.fastback.repo;
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.config.FastbackConfigKey;
 import net.pcal.fastback.config.GitConfig;
+import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.UserLogger;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
@@ -71,5 +72,7 @@ public interface Repo extends AutoCloseable {
 
     void deleteLocalBranches(List<String> branchesToDelete) throws GitAPIException, IOException;
 
-    void setConfigValue(FastbackConfigKey key, boolean value, UserLogger userlog);
+    void setConfigValue(GitConfigKey key, boolean value, UserLogger userlog);
+
+    Path getRestoresDir() throws IOException;
 }

@@ -68,7 +68,7 @@ class ModImpl implements LifecycleListener, Mod {
     // Mod implementation
 
     @Override
-    public Path getRestoresDir() throws IOException {
+    public Path getDefaultRestoresDir() throws IOException {
         Path restoreDir = this.fsp.getSavesDir();
         if (restoreDir != null) return restoreDir;
         if (tempRestoresDirectory == null) {

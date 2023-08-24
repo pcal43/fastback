@@ -91,6 +91,29 @@ class GitConfigImpl implements GitConfig {
             return this;
         }
 
+        // ======================================================================
+        // Methods for adding commented-out settings.  Useful for making the
+        // initial git config a little more self-documenting.  jgit evidently
+        // doesn't know the difference.
+
+        @Override
+        public Updater setCommented(GitConfigKey key, boolean newValue) {
+            storedConfig.setBoolean(key.getSectionName(), key.getSubSectionName(), "# " + key.getSettingName(), newValue);
+            return this;
+        }
+
+        @Override
+        public Updater setCommented(GitConfigKey key, String newValue) {
+            storedConfig.setString(key.getSectionName(), key.getSubSectionName(), "# " + key.getSettingName(), newValue);
+            return this;
+        }
+
+        @Override
+        public Updater setCommented(GitConfigKey key, int newValue) {
+            storedConfig.setInt(key.getSectionName(), key.getSubSectionName(), "# " + key.getSettingName(), newValue);
+            return this;
+        }
+
         @Override
         public void save() throws IOException {
             storedConfig.save();

@@ -54,6 +54,12 @@ public interface GitConfig {
 
         Updater set(GitConfigKey key, int newValue);
 
+        Updater setCommented(GitConfigKey key, boolean newValue);
+
+        Updater setCommented(GitConfigKey key, String newValue);
+
+        Updater setCommented(GitConfigKey key, int newValue);
+
         void save() throws IOException;
     }
 }
