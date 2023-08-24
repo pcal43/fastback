@@ -21,18 +21,24 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
+import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.mod.Mod;
+import net.pcal.fastback.repo.Repo;
+import net.pcal.fastback.repo.RepoFactory;
+
+import java.nio.file.Path;
 
 import static net.minecraft.server.command.CommandManager.literal;
+import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.commandLogger;
-import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.missingArgument;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.config.GitConfigKey.IS_LOCK_CLEANUP_ENABLED;
+import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.localized;
-import static net.pcal.fastback.utils.Executor.ExecutionLock.WRITE_CONFIG;
+import static net.pcal.fastback.mod.Mod.mod;
 
 /**
  * Sets various configuration values.
@@ -54,27 +60,47 @@ enum SetCommand implements Command {
         final LiteralArgumentBuilder<ServerCommandSource> setCommand = literal(COMMAND_NAME).
                 requires(subcommandPermission(mod, COMMAND_NAME)).
                 executes(cc -> missingArgument("key", mod, cc));
-        registerNativeGit(setCommand, mod);
+        registerNativeGit(setCommand);
         registerForceDebug(setCommand, mod);
+        registerLockCleanup(setCommand);
         root.then(setCommand);
+    }
+
+    private static int setConfigValue(final CommandContext<ServerCommandSource> cc, GitConfigKey key, boolean value)  {
+        try(UserLogger ulog = UserLogger.forCommand(cc)) {
+            final Path worldSaveDir = mod().getWorldDirectory();
+            final RepoFactory rf = RepoFactory.get();
+            if (rf.isGitRepo(worldSaveDir)) {
+                try (Repo repo = rf.load(worldSaveDir)) {
+                    repo.setConfigValue(key, value, UserLogger.forCommand(cc));
+                } catch (Exception e) {
+                    ulog.internalError(e);
+                    return FAILURE;
+                }
+            }
+            ulog.message(localized("fastback.chat.ok"));
+        }
+        return SUCCESS;
     }
 
     // ======================================================================
     // native-git
 
-    private static void registerNativeGit(final LiteralArgumentBuilder<ServerCommandSource> setCommand, Mod mod) {
-        final LiteralArgumentBuilder<ServerCommandSource> nativeGit = literal("native-git");
-        nativeGit.then(literal("enabled").executes(cc -> setNativeGit(mod, cc, true)));
-        nativeGit.then(literal("disabled").executes(cc -> setNativeGit(mod, cc, false)));
-        setCommand.then(nativeGit);
+    private static void registerNativeGit(final LiteralArgumentBuilder<ServerCommandSource> setCommand) {
+        final LiteralArgumentBuilder<ServerCommandSource> builder = literal("native-git");
+        builder.then(literal("enabled").executes(cc -> setConfigValue(cc, IS_NATIVE_GIT_ENABLED, true)));
+        builder.then(literal("disabled").executes(cc -> setConfigValue(cc, IS_NATIVE_GIT_ENABLED, false)));
+        setCommand.then(builder);
     }
 
-    private static int setNativeGit(final Mod mod, final CommandContext<ServerCommandSource> cc, boolean value) {
-        final UserLogger ulog = commandLogger(mod, cc.getSource());
-        gitOp(mod, WRITE_CONFIG, ulog, repo -> {
-            repo.setNativeGitEnabled(value, ulog);
-        });
-        return SUCCESS;
+    // ======================================================================
+    // lock-cleanup-enabled
+
+    private static void registerLockCleanup(final LiteralArgumentBuilder<ServerCommandSource> setCommand) {
+        final LiteralArgumentBuilder<ServerCommandSource> builder = literal("lock-cleanup");
+        builder.then(literal("enabled").executes(cc -> setConfigValue(cc, IS_LOCK_CLEANUP_ENABLED, true)));
+        builder.then(literal("disabled").executes(cc -> setConfigValue(cc, IS_LOCK_CLEANUP_ENABLED, false)));
+        setCommand.then(builder);
     }
 
     // ======================================================================
@@ -82,14 +108,16 @@ enum SetCommand implements Command {
 
     private static void registerForceDebug(final LiteralArgumentBuilder<ServerCommandSource> setCommand, final Mod mod) {
         final LiteralArgumentBuilder<ServerCommandSource> debug = literal("force-debug");
-        debug.then(literal("enabled").executes(cc -> setForceDebug(mod, cc, true)));
-        debug.then(literal("disabled").executes(cc -> setForceDebug(mod, cc, false)));
+        debug.then(literal("enabled").executes(cc -> setForceDebug(cc, true)));
+        debug.then(literal("disabled").executes(cc -> setForceDebug(cc, false)));
         setCommand.then(debug);
     }
 
-    private static int setForceDebug(final Mod mod, final CommandContext<ServerCommandSource> cc, boolean value) {
+    private static int setForceDebug(final CommandContext<ServerCommandSource> cc, boolean value) {
         syslog().setForceDebugEnabled(value);
-        commandLogger(mod, cc.getSource()).message(localized("fastback.chat.ok"));
+        try(UserLogger ulog = UserLogger.forCommand(cc)) {
+            ulog.message(localized("fastback.chat.ok"));
+        }
         return SUCCESS;
     }
 }

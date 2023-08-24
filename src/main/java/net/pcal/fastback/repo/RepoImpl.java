@@ -20,6 +20,7 @@ package net.pcal.fastback.repo;
 
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.config.GitConfig;
+import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.utils.EnvironmentUtils;
@@ -27,6 +28,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.util.FileUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -41,15 +43,18 @@ import java.util.List;
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.config.GitConfigKey.BROADCAST_NOTICE_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.BROADCAST_NOTICE_MESSAGE;
+import static net.pcal.fastback.config.GitConfigKey.IS_LOCK_CLEANUP_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.REMOTE_NAME;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.BROADCAST;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.WARNING;
 import static net.pcal.fastback.logging.UserMessage.localized;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 import static net.pcal.fastback.logging.UserMessage.styledRaw;
 import static net.pcal.fastback.mod.Mod.mod;
+import static org.eclipse.jgit.util.FileUtils.RETRY;
 
 /**
  * @author pcal
@@ -81,6 +86,7 @@ class RepoImpl implements Repo {
     @Override
     public void doCommitAndPush(final UserLogger ulog) {
         if (!doNativeCheck(ulog)) return;
+        checkIndexLock(ulog);
         broadcastBackupNotice();
         final long start = System.currentTimeMillis();
         final SnapshotId newSid;
@@ -103,6 +109,7 @@ class RepoImpl implements Repo {
     @Override
     public void doCommitSnapshot(final UserLogger ulog) {
         if (!doNativeCheck(ulog)) return;
+        checkIndexLock(ulog);
         broadcastBackupNotice();
         final long start = System.currentTimeMillis();
         try {
@@ -215,12 +222,49 @@ class RepoImpl implements Repo {
     }
 
     @Override
-    public void setNativeGitEnabled(boolean enabled, UserLogger userlog) throws IOException {
-        MaintenanceUtils.setNativeGitEnabled(enabled, this, userlog);
+    public void setConfigValue(GitConfigKey key, boolean value, UserLogger userlog) {
+        requireNonNull(key);
+        if (key == IS_NATIVE_GIT_ENABLED) {
+            try {
+                MaintenanceUtils.setNativeGitEnabled(value, this, userlog);
+            } catch (IOException e) {
+                userlog.internalError(e);
+            }
+        } else {
+            try {
+                this.getConfig().updater().set(key, value).save();
+            } catch (IOException e) {
+                userlog.internalError(e);
+            }
+        }
     }
 
     // ======================================================================
     // Private
+
+    private void checkIndexLock(UserLogger ulog) {
+        final File lockFile = this.getWorkTree().toPath().resolve(".git/index.lock").toFile();
+        if (lockFile.exists()) {
+            ulog.message(styledRaw(lockFile.getAbsolutePath() + "exists", WARNING)); //FIXME i18n
+            if (getConfig().getBoolean(IS_LOCK_CLEANUP_ENABLED)) {
+                ulog.message(styledRaw("lock-cleanup-enabled = true, attempting to delete index.lock", WARNING)); //FIXME i18n
+                try {
+                    FileUtils.delete(lockFile, RETRY);
+                } catch (IOException e) {
+                    syslog().debug(e); // we kind of don't care
+                }
+                if (lockFile.exists()) {
+                    ulog.message(styledRaw("Cleanup failed.  Your backup will probably not succeed.", ERROR));
+                } else {
+                    ulog.message(styledRaw("Cleanup succeeded, proceeding with backup.  But if you see this message again, you should check your system to see if some other git process is accessing your backup.", WARNING));
+                }
+            } else {
+                ulog.message(styledRaw("Please check to see if other processes are using this git repo.  If you're sure they aren't, you can enable automatic index.lock cleanup by typing '/set lock-cleanup enabled'", WARNING));
+                ulog.message(styledRaw("Proceeding with backup but it will probably not succeed.", WARNING));
+
+            }
+        }
+    }
 
     private static String getDuration(long since) {
         final Duration d = Duration.of(System.currentTimeMillis() - since, ChronoUnit.MILLIS);

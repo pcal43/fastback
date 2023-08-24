@@ -18,8 +18,10 @@
 
 package net.pcal.fastback.logging;
 
+import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 
+import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 import static net.pcal.fastback.mod.Mod.mod;
@@ -51,6 +53,15 @@ public interface UserLogger extends AutoCloseable {
 
     default void internalError() {
         this.message(styledLocalized("fastback.chat.internal-error", ERROR));
+    }
+
+    default void internalError(Exception e) {
+        syslog().error(e);
+        internalError();
+    }
+
+    static UserLogger forCommand(final CommandContext<ServerCommandSource> cc) {
+        return new CommandLogger(cc.getSource());
     }
 
     static UserLogger forCommand(final ServerCommandSource scs) {

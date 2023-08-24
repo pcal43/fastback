@@ -19,7 +19,6 @@
 package net.pcal.fastback.repo;
 
 import net.pcal.fastback.config.GitConfig.Updater;
-import net.pcal.fastback.mod.Mod;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
@@ -29,6 +28,7 @@ import java.nio.file.Path;
 
 import static net.pcal.fastback.config.GitConfigKey.BROADCAST_NOTICE_ENABLED;
 import static net.pcal.fastback.config.GitConfigKey.COMMIT_SIGNING_ENABLED;
+import static net.pcal.fastback.config.GitConfigKey.IS_LOCK_CLEANUP_ENABLED;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.repo.MaintenanceUtils.createWorldUuid;
 import static net.pcal.fastback.repo.MaintenanceUtils.ensureWorldHasUuid;
@@ -47,6 +47,7 @@ class RepoFactoryImpl implements RepoFactory {
             final Updater updater = repo.getConfig().updater();
             updater.set(COMMIT_SIGNING_ENABLED, false);
             updater.set(BROADCAST_NOTICE_ENABLED, true);
+            updater.set(IS_LOCK_CLEANUP_ENABLED, true);
             updater.save();
             return repo;
         } catch (GitAPIException e) {

@@ -20,6 +20,7 @@ package net.pcal.fastback.repo;
 
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.config.GitConfig;
+import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.UserLogger;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
@@ -42,7 +43,7 @@ public interface Repo extends AutoCloseable {
 
     /**
      * @return the UUID of the world.
-     * @throws FileNotFoundException if the world.uuid file is missing for some reason.
+     * @throws java.io.FileNotFoundException if the world.uuid file is missing for some reason.
      */
     String getWorldUuid() throws IOException;
 
@@ -70,6 +71,5 @@ public interface Repo extends AutoCloseable {
 
     void deleteLocalBranches(List<String> branchesToDelete) throws GitAPIException, IOException;
 
-    void setNativeGitEnabled(boolean enabled, UserLogger user) throws IOException;
-
+    void setConfigValue(GitConfigKey key, boolean value, UserLogger userlog);
 }

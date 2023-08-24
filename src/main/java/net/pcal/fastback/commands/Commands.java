@@ -84,6 +84,7 @@ public class Commands {
         CommandRegistrationCallback.EVENT.register((dispatcher, regAccess, env) -> dispatcher.register(root));
     }
 
+    @Deprecated
     public static UserLogger commandLogger(final Mod mod, final ServerCommandSource scs) {
         return UserLogger.forCommand(scs);
     }

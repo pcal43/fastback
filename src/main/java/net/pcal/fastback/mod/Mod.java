@@ -26,12 +26,6 @@ import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
 
-//MORE TODO
-// add a main branch with a README.md on init
-// add a uuid/<their uuid branch> and get rid of the uui prefix in snapshot names
-// move fastback to .fastback
-// add command to delete the index.lock file.  or maybe just always delete it.
-
 /**
  * Singleton that provides various mod-wide services.
  *
