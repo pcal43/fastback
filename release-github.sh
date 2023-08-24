@@ -34,7 +34,7 @@ rm -rf build/libs
 
 ./gradlew remapJar
 
-git commit -am "Release ${RELEASE_VERSION}"
+git commit -am "*** Release ${RELEASE_VERSION} ***"
 #git tag "${RELEASE_VERSION}"
 git push
 
