@@ -112,8 +112,13 @@ public class Commands {
         }
     }
 
+    @Deprecated
     public static int missingArgument(final String argName, final Mod mod, final CommandContext<ServerCommandSource> cc) {
         return missingArgument(argName, commandLogger(mod, cc.getSource()));
+    }
+
+    public static int missingArgument(final String argName, final CommandContext<ServerCommandSource> cc) {
+        return missingArgument(argName, UserLogger.forCommand(cc));
     }
 
     public static int missingArgument(final String argName, final UserLogger log) {
