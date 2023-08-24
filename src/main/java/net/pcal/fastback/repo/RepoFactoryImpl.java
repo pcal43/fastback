@@ -48,6 +48,7 @@ class RepoFactoryImpl implements RepoFactory {
             updater.set(COMMIT_SIGNING_ENABLED, false);
             updater.set(BROADCAST_NOTICE_ENABLED, true);
             updater.set(IS_LOCK_CLEANUP_ENABLED, true);
+
             updater.save();
             return repo;
         } catch (GitAPIException e) {

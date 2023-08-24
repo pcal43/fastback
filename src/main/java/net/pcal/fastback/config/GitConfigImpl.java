@@ -50,7 +50,7 @@ class GitConfigImpl implements GitConfig {
     @Override
     public boolean getBoolean(GitConfigKey key) {
         if (key.getSectionName() == null) return key.getBooleanDefault();
-        return storedConfig.getBoolean(key.getSectionName(), key.getSubSectionName(), key.getSettingName(), key.getBooleanDefault());
+        return storedConfig.getBoolean(key.getSectionName(), key.getSubSectionName(), "# "+ key.getSettingName(), key.getBooleanDefault());
     }
 
     @Override
