@@ -37,6 +37,8 @@ import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.missingArgument;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_ENABLED;
+import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_MESSAGE;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_LOCK_CLEANUP_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.RESTORE_DIRECTORY;
@@ -67,6 +69,8 @@ enum SetCommand implements Command {
                 executes(cc -> missingArgument("key", mod, cc));
         registerBooleanConfigValue(IS_NATIVE_GIT_ENABLED, setCommand);
         registerBooleanConfigValue(IS_LOCK_CLEANUP_ENABLED, setCommand);
+        registerBooleanConfigValue(BROADCAST_ENABLED, setCommand);
+        registerStringConfigValue(BROADCAST_MESSAGE, setCommand);
         registerStringConfigValue(RESTORE_DIRECTORY, setCommand);
         registerForceDebug(setCommand);
         root.then(setCommand);
