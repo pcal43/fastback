@@ -84,6 +84,7 @@ public class Commands {
         CommandRegistrationCallback.EVENT.register((dispatcher, regAccess, env) -> dispatcher.register(root));
     }
 
+    @Deprecated
     public static UserLogger commandLogger(final Mod mod, final ServerCommandSource scs) {
         return UserLogger.forCommand(scs);
     }
@@ -111,8 +112,13 @@ public class Commands {
         }
     }
 
+    @Deprecated
     public static int missingArgument(final String argName, final Mod mod, final CommandContext<ServerCommandSource> cc) {
         return missingArgument(argName, commandLogger(mod, cc.getSource()));
+    }
+
+    public static int missingArgument(final String argName, final CommandContext<ServerCommandSource> cc) {
+        return missingArgument(argName, UserLogger.forCommand(cc));
     }
 
     public static int missingArgument(final String argName, final UserLogger log) {

@@ -31,6 +31,8 @@ public enum GitConfigKey {
 
     IS_NATIVE_GIT_ENABLED("native-git-enabled", false),
 
+    IS_LOCK_CLEANUP_ENABLED("lock-cleanup-enabled", false),
+
     AUTOBACK_ACTION("autoback-action", null),
 
     SHUTDOWN_ACTION("shutdown-action", null),
@@ -67,6 +69,7 @@ public enum GitConfigKey {
     IS_REMOTE_TEMP_BRANCH_CLEANUP_ENABLED(true),
 
     IS_SMART_PUSH_ENABLED(true),
+
 
     IS_GIT_HUD_OUTPUT_ENABLED(true),
 
