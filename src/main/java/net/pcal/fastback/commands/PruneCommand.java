@@ -59,8 +59,10 @@ enum PruneCommand implements Command {
         final UserLogger ulog = commandLogger(mod, scs);
         gitOp(mod, WRITE, ulog, repo -> {
             final Collection<SnapshotId> pruned = repo.doLocalPrune(ulog);
-            ulog.message(UserMessage.localized("fastback.chat.prune-done", pruned.size()));
-            if (pruned.size() > 0) ulog.message(UserMessage.localized("fastback.chat.prune-suggest-gc"));
+            if (pruned != null) {
+                ulog.message(UserMessage.localized("fastback.chat.prune-done", pruned.size()));
+                if (pruned.size() > 0) ulog.message(UserMessage.localized("fastback.chat.prune-suggest-gc"));
+            }
         });
         return SUCCESS;
     }
