@@ -19,7 +19,6 @@
 package net.pcal.fastback.repo;
 
 import com.google.common.collect.ListMultimap;
-import net.pcal.fastback.config.FastbackConfigKey;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.UserLogger;
@@ -36,6 +35,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
@@ -47,6 +47,7 @@ import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_NOTICE_MESSAG
 import static net.pcal.fastback.config.FastbackConfigKey.IS_LOCK_CLEANUP_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.REMOTE_NAME;
+import static net.pcal.fastback.config.FastbackConfigKey.RESTORE_DIRECTORY;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.BROADCAST;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
@@ -239,6 +240,17 @@ class RepoImpl implements Repo {
             }
         }
     }
+
+    @Override
+    public Path getRestoresDir() throws IOException {
+        final Path restoresDir;
+        if (getConfig().getString(RESTORE_DIRECTORY) != null) {
+            return Paths.get(getConfig().getString(RESTORE_DIRECTORY));
+        } else {
+            return mod().getDefaultRestoresDir();
+        }
+    }
+
 
     // ======================================================================
     // Private

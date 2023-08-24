@@ -29,6 +29,9 @@ import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;
 import net.pcal.fastback.retention.RetentionPolicyType;
 
+import java.io.IOException;
+import java.nio.file.Path;
+
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
@@ -41,8 +44,10 @@ import static net.pcal.fastback.config.FastbackConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.LOCAL_RETENTION_POLICY;
 import static net.pcal.fastback.config.FastbackConfigKey.REMOTE_RETENTION_POLICY;
+import static net.pcal.fastback.config.FastbackConfigKey.RESTORE_DIRECTORY;
 import static net.pcal.fastback.config.FastbackConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.config.OtherConfigKey.REMOTE_PUSH_URL;
+import static net.pcal.fastback.logging.UserMessage.raw;
 import static net.pcal.fastback.utils.EnvironmentUtils.getGitLfsVersion;
 import static net.pcal.fastback.utils.EnvironmentUtils.getGitVersion;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.NONE;
@@ -79,6 +84,12 @@ enum InfoCommand implements Command {
                 ulog.message(UserMessage.localized("fastback.chat.info-local-disabled"));
             }
             ulog.message(UserMessage.localized("fastback.chat.info-remote-url", c.getString(REMOTE_PUSH_URL)));
+            Path restoreDir = null;
+            try {
+                restoreDir = repo.getRestoresDir();
+            } catch(IOException ioe) {
+            }
+            ulog.message(raw(RESTORE_DIRECTORY.getSettingName() + ": " + restoreDir));
             final SchedulableAction shutdownAction = SchedulableAction.forConfigValue(c.getString(SHUTDOWN_ACTION));
             ulog.message(UserMessage.localized("fastback.chat.info-shutdown-action", getActionDisplay(shutdownAction)));
             final SchedulableAction autobackAction = SchedulableAction.forConfigValue(c.getString(AUTOBACK_ACTION));

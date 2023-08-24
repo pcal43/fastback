@@ -73,4 +73,6 @@ public interface Repo extends AutoCloseable {
     void deleteLocalBranches(List<String> branchesToDelete) throws GitAPIException, IOException;
 
     void setConfigValue(GitConfigKey key, boolean value, UserLogger userlog);
+
+    Path getRestoresDir() throws IOException;
 }
