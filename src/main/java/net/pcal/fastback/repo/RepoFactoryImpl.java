@@ -28,6 +28,7 @@ import java.nio.file.Path;
 
 import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_NOTICE_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_LOCK_CLEANUP_ENABLED;
+import static net.pcal.fastback.config.FastbackConfigKey.RESTORE_DIRECTORY;
 import static net.pcal.fastback.config.OtherConfigKey.COMMIT_SIGNING_ENABLED;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.repo.MaintenanceUtils.createWorldUuid;
@@ -48,7 +49,8 @@ class RepoFactoryImpl implements RepoFactory {
             updater.set(COMMIT_SIGNING_ENABLED, false);
             updater.set(BROADCAST_NOTICE_ENABLED, true);
             updater.set(IS_LOCK_CLEANUP_ENABLED, true);
-
+            updater.setCommented(BROADCAST_NOTICE_ENABLED, "Custom message notifying players that a backup is starting.");
+            updater.setCommented(RESTORE_DIRECTORY, "Custom path to a directory that snapshots should be restored into.");
             updater.save();
             return repo;
         } catch (GitAPIException e) {

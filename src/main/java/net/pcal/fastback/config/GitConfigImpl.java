@@ -50,7 +50,7 @@ class GitConfigImpl implements GitConfig {
     @Override
     public boolean getBoolean(GitConfigKey key) {
         if (key.getSectionName() == null) return key.getBooleanDefault();
-        return storedConfig.getBoolean(key.getSectionName(), key.getSubSectionName(), "# "+ key.getSettingName(), key.getBooleanDefault());
+        return storedConfig.getBoolean(key.getSectionName(), key.getSubSectionName(), key.getSettingName(), key.getBooleanDefault());
     }
 
     @Override
@@ -75,7 +75,7 @@ class GitConfigImpl implements GitConfig {
 
         @Override
         public Updater set(GitConfigKey key, boolean newValue) {
-            storedConfig.setBoolean(key.getSectionName(), key.getSubSectionName(), key.getSettingName(), newValue);
+            storedConfig.setBoolean(key.getSectionName(), key.getSubSectionName(), "# " + key.getSettingName(), newValue);
             return this;
         }
 
@@ -88,6 +88,29 @@ class GitConfigImpl implements GitConfig {
         @Override
         public Updater set(GitConfigKey key, int newValue) {
             storedConfig.setInt(key.getSectionName(), key.getSubSectionName(), key.getSettingName(), newValue);
+            return this;
+        }
+
+        // ======================================================================
+        // Methods for adding commented-out settings.  Useful for making the
+        // initial git config a little more self-documenting.  jgit evidently
+        // doesn't know the difference.
+
+        @Override
+        public Updater setCommented(GitConfigKey key, boolean newValue) {
+            storedConfig.setBoolean(key.getSectionName(), key.getSubSectionName(), "# " + key.getSettingName(), newValue);
+            return this;
+        }
+
+        @Override
+        public Updater setCommented(GitConfigKey key, String newValue) {
+            storedConfig.setString(key.getSectionName(), key.getSubSectionName(), "# " + key.getSettingName(), newValue);
+            return this;
+        }
+
+        @Override
+        public Updater setCommented(GitConfigKey key, int newValue) {
+            storedConfig.setInt(key.getSectionName(), key.getSubSectionName(), "# " + key.getSettingName(), newValue);
             return this;
         }
 

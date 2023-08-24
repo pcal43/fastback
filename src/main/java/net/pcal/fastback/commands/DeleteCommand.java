@@ -50,7 +50,7 @@ enum DeleteCommand implements Command {
         argb.then(literal(COMMAND_NAME).
                 requires(subcommandPermission(mod, COMMAND_NAME)).then(
                         argument(ARGUMENT, StringArgumentType.string()).
-                                suggests(SnapshotNameSuggestions.local(mod)).
+                                suggests(SnapshotNameSuggestions.local()).
                                 executes(cc -> delete(mod, cc))
                 )
         );

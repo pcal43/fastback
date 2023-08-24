@@ -100,20 +100,19 @@ public enum FastbackConfigKey implements GitConfigKey {
 
     @Override
     public boolean getBooleanDefault() {
-        if (this.booleanDefault == null) throw new IllegalStateException();
+        if (this.booleanDefault == null) throw new IllegalStateException(this + " is not a boolean");
         return this.booleanDefault;
     }
 
     @Override
     public String getStringDefault() {
-        if (this.stringDefault == null) throw new IllegalStateException();
         if (this.stringDefault == NULL_STRING) return null;
         return this.stringDefault;
     }
 
     @Override
     public int getIntDefault() {
-        if (this.intDefault == null) throw new IllegalStateException();
+        if (this.intDefault == null) throw new IllegalStateException(this + " is not an int");
         return this.intDefault;
     }
 }
