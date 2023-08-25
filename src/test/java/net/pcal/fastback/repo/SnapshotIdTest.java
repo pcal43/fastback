@@ -68,9 +68,9 @@ public class SnapshotIdTest {
 
     @Test
     public void testSortWorldSnapshots() throws ParseException {
-        final String uuid0 = UUID.randomUUID().toString();
-        final String uuid1 = UUID.randomUUID().toString();
-        final ListMultimap<String, SnapshotId> sids = ArrayListMultimap.create();
+        final WorldId uuid0 = WorldId.parse(UUID.randomUUID().toString());
+        final WorldId uuid1 = WorldId.parse(UUID.randomUUID().toString());
+        final ListMultimap<WorldId, SnapshotId> sids = ArrayListMultimap.create();
 
         final SnapshotId s0 = SnapshotId.fromBranch("snapshots/" + uuid0 + "/1977-09-24_01-02-03");
         final SnapshotId s1 = SnapshotId.fromBranch("snapshots/" + uuid0 + "/2010-05-08_01-02-03");

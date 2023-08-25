@@ -82,7 +82,7 @@ class PushUtils {
             final Git jgit = repo.getJGit();
             final Collection<Ref> remoteBranchRefs = jgit.lsRemote().setHeads(true).setTags(false).
                     setRemote(conf.getString(REMOTE_NAME)).call();
-            final ListMultimap<String, SnapshotId> snapshotsPerWorld =
+            final ListMultimap<WorldId, SnapshotId> snapshotsPerWorld =
                     SnapshotId.getSnapshotsPerWorld(remoteBranchRefs);
             if (conf.getBoolean(IS_UUID_CHECK_ENABLED)) {
                 boolean uuidCheckResult;
@@ -106,7 +106,7 @@ class PushUtils {
             if (conf.getBoolean(IS_NATIVE_GIT_ENABLED)) {
                 native_doPush(repo, sid.getBranchName(), ulog);
             } else if (conf.getBoolean(IS_SMART_PUSH_ENABLED)) {
-                final String uuid = repo.getWorldUuid();
+                final WorldId uuid = repo.getWorldId();
                 jgit_doSmartPush(repo, snapshotsPerWorld.get(uuid), sid.getBranchName(), conf, ulog);
             } else {
                 jgit_doNaivePush(jgit, sid.getBranchName(), conf, ulog);
@@ -135,7 +135,7 @@ class PushUtils {
         try {
             final Git jgit = repo.getJGit();
             final String remoteName = conf.getString(REMOTE_NAME);
-            final String worldUuid = repo.getWorldUuid();
+            final WorldId worldUuid = repo.getWorldId();
             final SnapshotId latestCommonSnapshot;
             if (remoteSnapshots.isEmpty()) {
                 syslog().warn("** This appears to be the first time this world has been pushed.");
@@ -144,7 +144,7 @@ class PushUtils {
                 return;
             } else {
                 final Collection<Ref> localBranchRefs = jgit.branchList().call();
-                final ListMultimap<String, SnapshotId> localSnapshotsPerWorld =
+                final ListMultimap<WorldId, SnapshotId> localSnapshotsPerWorld =
                         SnapshotId.getSnapshotsPerWorld(localBranchRefs);
                 final List<SnapshotId> localSnapshots = localSnapshotsPerWorld.get(worldUuid);
                 remoteSnapshots.retainAll(localSnapshots);
@@ -217,8 +217,8 @@ class PushUtils {
         }
     }
 
-    private static boolean jgit_doUuidCheck(RepoImpl repo, Set<String> remoteWorldUuids) throws IOException {
-        final String localUuid = repo.getWorldUuid();
+    private static boolean jgit_doUuidCheck(RepoImpl repo, Set<WorldId> remoteWorldUuids) throws IOException {
+        final WorldId localUuid = repo.getWorldId();
         if (remoteWorldUuids.size() > 2) {
             syslog().warn("Remote has more than one world-uuid.  This is unusual. " + remoteWorldUuids);
         }

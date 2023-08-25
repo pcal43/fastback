@@ -18,5 +18,17 @@
 
 package net.pcal.fastback.repo;
 
+import net.pcal.fastback.repo.WorldIdUtils.WorldUuidId;
+
+/**
+ * @author pcal
+ * @since 0.14.0
+ */
 public interface WorldId {
+
+    String toString();
+
+    static WorldId parse(String uuid) {
+        return new WorldUuidId(uuid);
+    }
 }

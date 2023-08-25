@@ -36,7 +36,7 @@ import static net.pcal.fastback.logging.SystemLogger.syslog;
  *
  * @author pcal
  */
-public record SnapshotId(String worldUuid, Date snapshotDate) implements Comparable<SnapshotId> {
+public record SnapshotId(WorldId worldUuid, Date snapshotDate) implements Comparable<SnapshotId> {
 
     // ====================================================================
     // Constants
@@ -81,8 +81,8 @@ public record SnapshotId(String worldUuid, Date snapshotDate) implements Compara
     // ====================================================================
     // Factories and utils
 
-    static ListMultimap<String, SnapshotId> getSnapshotsPerWorld(Iterable<Ref> refs) {
-        final ListMultimap<String, SnapshotId> out = ArrayListMultimap.create();
+    static ListMultimap<WorldId, SnapshotId> getSnapshotsPerWorld(Iterable<Ref> refs) {
+        final ListMultimap<WorldId, SnapshotId> out = ArrayListMultimap.create();
         for (final Ref ref : refs) {
             final String branchName = getBranchName(ref);
             if (branchName == null) continue;
@@ -114,12 +114,12 @@ public record SnapshotId(String worldUuid, Date snapshotDate) implements Compara
         }
         final String[] segments = rawBranchName.split(SEP);
         if (segments.length < 3) throw new ParseException("too few segments " + rawBranchName, segments.length);
-        final String worldUuid = segments[1];
+        final WorldId worldUuid = WorldId.parse(segments[1]);
         final Date date = DATE_FORMAT.parse(segments[2]);
         return new SnapshotId(worldUuid, date);
     }
 
-    static SnapshotId create(String worldUuid) {
+    static SnapshotId create(WorldId worldUuid) {
         return new SnapshotId(worldUuid, new Date());
     }
 
@@ -128,18 +128,18 @@ public record SnapshotId(String worldUuid, Date snapshotDate) implements Compara
         return branchName.startsWith(PREFIX + SEP);
     }
 
-    public static SnapshotId create(String worldUuid, Date date) {
+    public static SnapshotId create(WorldId worldUuid, Date date) {
         return new SnapshotId(worldUuid, date);
     }
 
-    public static SnapshotId fromUuidAndName(String worldUuid, String snapshotDate) throws ParseException {
+    public static SnapshotId fromUuidAndName(WorldId worldUuid, String snapshotDate) throws ParseException {
         return new SnapshotId(worldUuid, DATE_FORMAT.parse(snapshotDate));
     }
 
     /**
      * Extract the sids that apply to the given world and return them in a sorted list.
      */
-    public static NavigableSet<SnapshotId> sortWorldSnapshots(ListMultimap<String, SnapshotId> snapshotsPerWorld, String worldUuid) {
+    public static NavigableSet<SnapshotId> sortWorldSnapshots(ListMultimap<WorldId, SnapshotId> snapshotsPerWorld, WorldId worldUuid) {
         return new TreeSet<>(snapshotsPerWorld.get(worldUuid));
     }
 

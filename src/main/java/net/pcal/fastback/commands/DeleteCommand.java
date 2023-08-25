@@ -26,6 +26,7 @@ import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.Mod;
 import net.pcal.fastback.repo.SnapshotId;
+import net.pcal.fastback.repo.WorldId;
 
 import java.util.List;
 
@@ -60,7 +61,7 @@ enum DeleteCommand implements Command {
         final UserLogger log = commandLogger(mod, cc.getSource());
         gitOp(mod, WRITE, log, repo -> {
             final String snapshotName = getArgumentNicely(ARGUMENT, String.class, cc.getLastChild(), log);
-            final String uuid = repo.getWorldUuid();
+            final WorldId uuid = repo.getWorldId();
             final SnapshotId sid = SnapshotId.fromUuidAndName(uuid, snapshotName);
             final String branchName = sid.getBranchName();
             repo.deleteLocalBranches(List.of(branchName));

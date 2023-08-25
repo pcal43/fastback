@@ -139,12 +139,12 @@ class RepoImpl implements Repo {
     }
 
     @Override
-    public String getWorldUuid() throws IOException {
+    public WorldId getWorldId() throws IOException {
         return WorldIdUtils.getWorldUuid(this.getWorkTree().toPath());
     }
 
     @Override
-    public ListMultimap<String, SnapshotId> listSnapshots() throws IOException {
+    public ListMultimap<WorldId, SnapshotId> listSnapshots() throws IOException {
         final JGitSupplier<Collection<Ref>> refProvider = () -> {
             try {
                 return jgit.branchList().call();
@@ -160,7 +160,7 @@ class RepoImpl implements Repo {
     }
 
     @Override
-    public ListMultimap<String, SnapshotId> listRemoteSnapshots() throws IOException {
+    public ListMultimap<WorldId, SnapshotId> listRemoteSnapshots() throws IOException {
         final GitConfig conf = GitConfig.load(jgit);
         final String remoteName = conf.getString(REMOTE_NAME);
         final JGitSupplier<Collection<Ref>> refProvider = () -> {
@@ -241,7 +241,6 @@ class RepoImpl implements Repo {
             return mod().getDefaultRestoresDir();
         }
     }
-
 
     // ======================================================================
     // Private

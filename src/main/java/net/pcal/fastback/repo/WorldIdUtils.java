@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 
+import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 
 /**
@@ -31,11 +32,11 @@ class WorldIdUtils {
     // ======================================================================
     // Utils
 
-     static String getWorldUuid(final Path worldSaveDir) throws IOException {
+     static WorldId getWorldUuid(final Path worldSaveDir) throws IOException {
          migrateFastbackDir(worldSaveDir);
          final Path uuidPath = worldSaveDir.resolve(WORLD_UUID_PATH);
          if (!uuidPath.toFile().exists()) throw new FileNotFoundException(uuidPath.toString());
-         return Files.readString(uuidPath).trim();
+         return new WorldUuidId(requireNonNull(Files.readString(uuidPath).trim()));
     }
 
     static void createWorldUuid(final Path worldSaveDir) throws IOException {
@@ -59,6 +60,15 @@ class WorldIdUtils {
             createWorldUuid(worldSaveDir);
         }
     }
+
+    record WorldUuidId(String uuid) implements WorldId {
+
+        @Override
+        public String toString() {
+            return uuid;
+        }
+    }
+
 
     // ======================================================================
     // Private
