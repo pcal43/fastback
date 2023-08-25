@@ -61,7 +61,7 @@ public interface MaintenanceUtils {
         syslog.debug("Doing world maintenance");
         final Git jgit = repo.getJGit();
         final Path worldSaveDir = jgit.getRepository().getWorkTree().toPath();
-        UuidUtils.ensureWorldHasUuid(worldSaveDir);
+        WorldIdUtils.ensureWorldHasUuid(worldSaveDir);
         final GitConfig config = GitConfig.load(jgit);
         if (config.getBoolean(UPDATE_GITIGNORE_ENABLED)) {
             final Path targetPath = worldSaveDir.resolve(".gitignore");

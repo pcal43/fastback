@@ -32,8 +32,8 @@ import static net.pcal.fastback.config.FastbackConfigKey.IS_LOCK_CLEANUP_ENABLED
 import static net.pcal.fastback.config.FastbackConfigKey.RESTORE_DIRECTORY;
 import static net.pcal.fastback.config.OtherConfigKey.COMMIT_SIGNING_ENABLED;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
-import static net.pcal.fastback.repo.UuidUtils.createWorldUuid;
-import static net.pcal.fastback.repo.UuidUtils.ensureWorldHasUuid;
+import static net.pcal.fastback.repo.WorldIdUtils.createWorldUuid;
+import static net.pcal.fastback.repo.WorldIdUtils.ensureWorldHasUuid;
 
 /**
  * @author pcal
