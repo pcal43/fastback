@@ -2,7 +2,6 @@ package net.pcal.fastback.repo;
 
 import net.pcal.fastback.utils.FileUtils;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -13,6 +12,10 @@ import java.util.UUID;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 
 /**
+ * Utils for managing the world.uuid file, which uniquely identifies a given world
+ * for backup purposes.  The basic idea is we want to help them avoid mixing snapshots
+ * from different worlds in the same remote repository, since that will be painful to
+ * untangle and be pretty inefficient.
  *
  * @author pcal
  * @since 0.13.0
@@ -23,6 +26,8 @@ class UuidUtils {
     // Constants
 
     static final Path WORLD_UUID_PATH = Path.of(".fastback/world.uuid");
+
+    // older versions of fastback created the file in fastback/ (not dot-fastback)
     static final Path WORLD_UUID_PATH_OLD = Path.of("fastback/world.uuid");
 
     // ======================================================================
