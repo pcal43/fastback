@@ -26,6 +26,7 @@ import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.Mod;
 import net.pcal.fastback.repo.SnapshotId;
+import net.pcal.fastback.repo.WorldId;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,8 +58,8 @@ enum RemoteListCommand implements Command {
     private static int remoteList(final Mod mod, final CommandContext<ServerCommandSource> cc) {
         final UserLogger log = commandLogger(mod, cc.getSource());
         gitOp(mod, NONE, log, repo -> {
-            final ListMultimap<String, SnapshotId> snapshotsPerWorld = repo.listRemoteSnapshots();
-            final List<SnapshotId> snapshots = new ArrayList<>(snapshotsPerWorld.get(repo.getWorldUuid()));
+            final ListMultimap<WorldId, SnapshotId> snapshotsPerWorld = repo.listRemoteSnapshots();
+            final List<SnapshotId> snapshots = new ArrayList<>(snapshotsPerWorld.get(repo.getWorldId()));
             Collections.sort(snapshots);
             snapshots.forEach(sid -> log.message(UserMessage.raw(sid.getName())));
             log.message(UserMessage.localized("fastback.chat.remote-list-done", snapshots.size(), repo.getConfig().getString(REMOTE_PUSH_URL)));

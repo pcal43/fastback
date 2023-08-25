@@ -32,7 +32,7 @@ import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 
 @SuppressWarnings({"Convert2MethodRef", "FunctionalExpressionCanBeFolded"})
-class ListSnapshotsTask implements Callable<ListMultimap<String, SnapshotId>> {
+class ListSnapshotsTask implements Callable<ListMultimap<WorldId, SnapshotId>> {
 
 
     private final JGitSupplier<Collection<Ref>> refProvider;
@@ -42,8 +42,8 @@ class ListSnapshotsTask implements Callable<ListMultimap<String, SnapshotId>> {
     }
 
     @Override
-    public ListMultimap<String, SnapshotId> call() throws GitAPIException, IOException {
-        final ListMultimap<String, SnapshotId> snapshotsPerWorld = ArrayListMultimap.create();
+    public ListMultimap<WorldId, SnapshotId> call() throws GitAPIException, IOException {
+        final ListMultimap<WorldId, SnapshotId> snapshotsPerWorld = ArrayListMultimap.create();
         final Collection<Ref> refs = this.refProvider.get();
         for (final Ref ref : refs) {
             final SnapshotId sid;

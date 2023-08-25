@@ -53,7 +53,7 @@ class CommitUtils {
 
     public static SnapshotId doCommitSnapshot(final RepoImpl repo, final UserLogger ulog) throws IOException {
         MaintenanceUtils.doPreflight(repo);
-        final String uuid = repo.getWorldUuid();
+        final WorldId uuid = repo.getWorldId();
         final SnapshotId newSid = SnapshotId.create(uuid);
         syslog().debug("start doCommitSnapshot for "+newSid);
         final String newBranchName = newSid.getBranchName();

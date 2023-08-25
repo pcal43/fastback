@@ -21,6 +21,7 @@ package net.pcal.fastback.retention;
 import net.pcal.fastback.logging.Log4jLogger;
 import net.pcal.fastback.logging.SystemLogger;
 import net.pcal.fastback.repo.SnapshotId;
+import net.pcal.fastback.repo.WorldId;
 import org.apache.logging.log4j.LogManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -86,6 +87,6 @@ public class GFSRetentionPolicyTest {
 
     private static SnapshotId sid(int year, int month, int day, int hour) {
         Date date = Date.from(ZonedDateTime.of(LocalDate.of(year, month, day).atTime(hour, 0), TimeZone.getDefault().toZoneId()).toInstant());
-        return SnapshotId.create("3552efde-b34d-11ed-afa1-0242ac120002", date);
+        return SnapshotId.create(WorldId.parse("3552efde-b34d-11ed-afa1-0242ac120002"), date);
     }
 }
