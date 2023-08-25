@@ -19,7 +19,6 @@
 package net.pcal.fastback.repo;
 
 import com.google.common.collect.ListMultimap;
-import net.pcal.fastback.config.FastbackConfigKey;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.UserLogger;
@@ -46,15 +45,15 @@ public interface Repo extends AutoCloseable {
      * @return the UUID of the world.
      * @throws java.io.FileNotFoundException if the world.uuid file is missing for some reason.
      */
-    String getWorldUuid() throws IOException;
+    WorldId getWorldId() throws IOException;
 
     File getDirectory() throws NoWorkTreeException;
 
     File getWorkTree() throws NoWorkTreeException;
 
-    ListMultimap<String, SnapshotId> listSnapshots() throws IOException;
+    ListMultimap<WorldId, SnapshotId> listSnapshots() throws IOException;
 
-    ListMultimap<String, SnapshotId> listRemoteSnapshots() throws IOException;
+    ListMultimap<WorldId, SnapshotId> listRemoteSnapshots() throws IOException;
 
     void doCommitAndPush(UserLogger ulog) throws IOException;
 

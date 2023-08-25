@@ -94,7 +94,7 @@ class PruneUtils {
     private static Collection<SnapshotId> doPrune(Repo repo,
                                                   UserLogger log,
                                                   FastbackConfigKey policyConfigKey,
-                                                  JGitSupplier<ListMultimap<String, SnapshotId>> listSnapshotsFn,
+                                                  JGitSupplier<ListMultimap<WorldId, SnapshotId>> listSnapshotsFn,
                                                   JGitConsumer<SnapshotId> deleteSnapshotsFn,
                                                   String notSetKey) throws IOException {
         final GitConfig conf = repo.getConfig();
@@ -108,7 +108,7 @@ class PruneUtils {
             return null;
         }
         final Collection<SnapshotId> toPrune = policy.getSnapshotsToPrune(
-                sortWorldSnapshots(listSnapshotsFn.get(), repo.getWorldUuid()));
+                sortWorldSnapshots(listSnapshotsFn.get(), repo.getWorldId()));
         log.update(UserMessage.localized("fastback.hud.prune-started"));
         for (final SnapshotId sid : toPrune) {
             deleteSnapshotsFn.accept(sid);

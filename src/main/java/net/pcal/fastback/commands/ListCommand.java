@@ -25,6 +25,7 @@ import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.Mod;
 import net.pcal.fastback.repo.SnapshotId;
+import net.pcal.fastback.repo.WorldId;
 
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
@@ -52,7 +53,7 @@ enum ListCommand implements Command {
     private int execute(final Mod mod, final CommandContext<ServerCommandSource> cc) {
         final UserLogger ulog = commandLogger(mod, cc.getSource());
         gitOp(mod, NONE, ulog, repo -> {
-            final String uuid = repo.getWorldUuid();
+            final WorldId uuid = repo.getWorldId();
             for (final SnapshotId sid : sortWorldSnapshots(repo.listSnapshots(), uuid)) {
                 ulog.message(UserMessage.raw(sid.getName()));
             }

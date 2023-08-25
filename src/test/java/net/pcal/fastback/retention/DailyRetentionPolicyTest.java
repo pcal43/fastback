@@ -21,6 +21,7 @@ package net.pcal.fastback.retention;
 import net.pcal.fastback.logging.Log4jLogger;
 import net.pcal.fastback.logging.SystemLogger;
 import net.pcal.fastback.repo.SnapshotId;
+import net.pcal.fastback.repo.WorldId;
 import org.apache.logging.log4j.LogManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -46,7 +47,7 @@ public class DailyRetentionPolicyTest {
 
     @Test
     public void testDailyRetention() {
-        final String uuid = UUID.randomUUID().toString();
+        final WorldId uuid = WorldId.parse(UUID.randomUUID().toString());
         long now = new Date().getTime();
         final SnapshotId todayEvening = SnapshotId.create(uuid,
                 new Date(now + now % DAY_MILLIS - (4 * HOUR_MILLIS)));

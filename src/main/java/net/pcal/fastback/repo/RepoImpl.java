@@ -31,9 +31,7 @@ import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.util.FileUtils;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
@@ -63,11 +61,6 @@ import static org.eclipse.jgit.util.FileUtils.RETRY;
  * @since 0.13.0
  */
 class RepoImpl implements Repo {
-
-    // ======================================================================
-    // Constants
-
-    static final Path WORLD_UUID_PATH = Path.of("fastback/world.uuid");
 
     // ======================================================================
     // Fields
@@ -146,14 +139,12 @@ class RepoImpl implements Repo {
     }
 
     @Override
-    public String getWorldUuid() throws IOException {
-        final Path uuidPath = getWorkTree().toPath().resolve(WORLD_UUID_PATH);
-        if (!uuidPath.toFile().exists()) throw new FileNotFoundException(uuidPath.toString());
-        return Files.readString(uuidPath).trim();
+    public WorldId getWorldId() throws IOException {
+        return WorldIdUtils.getWorldUuid(this.getWorkTree().toPath());
     }
 
     @Override
-    public ListMultimap<String, SnapshotId> listSnapshots() throws IOException {
+    public ListMultimap<WorldId, SnapshotId> listSnapshots() throws IOException {
         final JGitSupplier<Collection<Ref>> refProvider = () -> {
             try {
                 return jgit.branchList().call();
@@ -169,7 +160,7 @@ class RepoImpl implements Repo {
     }
 
     @Override
-    public ListMultimap<String, SnapshotId> listRemoteSnapshots() throws IOException {
+    public ListMultimap<WorldId, SnapshotId> listRemoteSnapshots() throws IOException {
         final GitConfig conf = GitConfig.load(jgit);
         final String remoteName = conf.getString(REMOTE_NAME);
         final JGitSupplier<Collection<Ref>> refProvider = () -> {
@@ -250,7 +241,6 @@ class RepoImpl implements Repo {
             return mod().getDefaultRestoresDir();
         }
     }
-
 
     // ======================================================================
     // Private

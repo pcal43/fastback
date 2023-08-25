@@ -78,7 +78,7 @@ enum InfoCommand implements Command {
             final GitConfig c = repo.getConfig();
             ulog.message(UserMessage.localized("fastback.chat.info-header"));
             ulog.message(UserMessage.localized("fastback.chat.info-fastback-version", mod.getModVersion()));
-            ulog.message(UserMessage.localized("fastback.chat.info-uuid", repo.getWorldUuid()));
+            ulog.message(UserMessage.localized("fastback.chat.info-uuid", repo.getWorldId()));
             if (c.getBoolean(IS_BACKUP_ENABLED)) {
                 ulog.message(UserMessage.localized("fastback.chat.info-local-enabled"));
             } else {
