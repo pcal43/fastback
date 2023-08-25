@@ -22,14 +22,11 @@ import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.SystemLogger;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.utils.EnvironmentUtils;
-import net.pcal.fastback.utils.FileUtils;
 import org.eclipse.jgit.api.Git;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collections;
-import java.util.UUID;
 
 import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.UPDATE_GITATTRIBUTES_ENABLED;
@@ -41,7 +38,6 @@ import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.WARNING;
 import static net.pcal.fastback.logging.UserMessage.localized;
 import static net.pcal.fastback.logging.UserMessage.raw;
 import static net.pcal.fastback.logging.UserMessage.styledRaw;
-import static net.pcal.fastback.repo.RepoImpl.WORLD_UUID_PATH;
 import static net.pcal.fastback.utils.FileUtils.writeResourceToFile;
 import static net.pcal.fastback.utils.ProcessUtils.doExec;
 
@@ -65,7 +61,7 @@ public interface MaintenanceUtils {
         syslog.debug("Doing world maintenance");
         final Git jgit = repo.getJGit();
         final Path worldSaveDir = jgit.getRepository().getWorkTree().toPath();
-        ensureWorldHasUuid(worldSaveDir);
+        UuidUtils.ensureWorldHasUuid(worldSaveDir);
         final GitConfig config = GitConfig.load(jgit);
         if (config.getBoolean(UPDATE_GITIGNORE_ENABLED)) {
             final Path targetPath = worldSaveDir.resolve(".gitignore");
@@ -115,26 +111,6 @@ public interface MaintenanceUtils {
         } else {
             conf.updater().set(IS_NATIVE_GIT_ENABLED, false).save();
             user.message(localized("fastback.chat.ok"));
-        }
-    }
-
-    static void createWorldUuid(final Path worldSaveDir) throws IOException {
-        final Path worldUuidpath = worldSaveDir.resolve(WORLD_UUID_PATH).toAbsolutePath().normalize();
-        FileUtils.mkdirs(worldUuidpath.getParent());
-        final String newUuid = UUID.randomUUID().toString();
-        try (final FileWriter fw = new FileWriter(worldUuidpath.toFile())) {
-            fw.append(newUuid);
-            fw.append('\n');
-        }
-        syslog().debug("Generated new world.uuid " + newUuid);
-    }
-
-    static void ensureWorldHasUuid(final Path worldSaveDir) throws IOException {
-        final Path worldUuidpath = worldSaveDir.resolve(WORLD_UUID_PATH).toAbsolutePath().normalize();
-        if (!worldUuidpath.toFile().exists()) {
-            syslog().warn("Did not find expected uuid file at "+worldUuidpath);
-            syslog().warn("We'll create a new one and carry on.  But this indicates something weird is going on.");
-            createWorldUuid(worldSaveDir);
         }
     }
 

@@ -65,11 +65,6 @@ import static org.eclipse.jgit.util.FileUtils.RETRY;
 class RepoImpl implements Repo {
 
     // ======================================================================
-    // Constants
-
-    static final Path WORLD_UUID_PATH = Path.of("fastback/world.uuid");
-
-    // ======================================================================
     // Fields
 
     private final Git jgit;
@@ -147,9 +142,7 @@ class RepoImpl implements Repo {
 
     @Override
     public String getWorldUuid() throws IOException {
-        final Path uuidPath = getWorkTree().toPath().resolve(WORLD_UUID_PATH);
-        if (!uuidPath.toFile().exists()) throw new FileNotFoundException(uuidPath.toString());
-        return Files.readString(uuidPath).trim();
+        return UuidUtils.getWorldUuid(this.getWorkTree().toPath());
     }
 
     @Override

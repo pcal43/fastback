@@ -33,7 +33,8 @@ import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.localized;
 import static net.pcal.fastback.logging.UserMessage.styledRaw;
-import static net.pcal.fastback.repo.RepoImpl.WORLD_UUID_PATH;
+import static net.pcal.fastback.repo.UuidUtils.WORLD_UUID_PATH;
+import static net.pcal.fastback.repo.UuidUtils.WORLD_UUID_PATH_OLD;
 
 /**
  * Utilities for restoring a snapshot
@@ -67,6 +68,7 @@ class RestoreUtils {
         }
         FileUtils.rmdir(restoreDir.resolve(".git"));
         restoreDir.resolve(WORLD_UUID_PATH).toFile().delete();
+        restoreDir.resolve(WORLD_UUID_PATH_OLD).toFile().delete();
         return restoreDir;
     }
 
