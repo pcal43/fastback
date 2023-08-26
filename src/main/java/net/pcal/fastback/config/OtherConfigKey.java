@@ -27,7 +27,12 @@ import static java.util.Objects.requireNonNull;
  */
 public enum OtherConfigKey implements GitConfigKey {
 
-    REMOTE_PUSH_URL("remote", "origin", "url"),
+    REMOTE_PUSH_URL("remote", "origin", "url") {
+        @Override
+        public String getDisplayName() {
+            return "remote-url";
+        }
+    },
 
     /**
      * We disable commit signing on git init.  https://github.com/pcal43/fastback/issues/165

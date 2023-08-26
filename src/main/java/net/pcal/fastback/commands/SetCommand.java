@@ -41,7 +41,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -79,27 +78,27 @@ enum SetCommand implements Command {
         final LiteralArgumentBuilder<ServerCommandSource> sc = literal(COMMAND_NAME).
                 requires(subcommandPermission(COMMAND_NAME)).
                 executes(cc -> missingArgument("key", cc));
-        registerBooleanConfigValue(IS_NATIVE_GIT_ENABLED, null, sc);
-        registerBooleanConfigValue(IS_LOCK_CLEANUP_ENABLED, null, sc);
-        registerBooleanConfigValue(IS_BACKUP_ENABLED, null, sc);
-        registerBooleanConfigValue(IS_MODS_BACKUP_ENABLED, null, sc);
-        registerBooleanConfigValue(BROADCAST_ENABLED, null, sc);
-        registerStringConfigValue(BROADCAST_MESSAGE, null, "message", sc);
-        registerStringConfigValue(RESTORE_DIRECTORY, null, "full-directory-path", sc);
-        registerStringConfigValue(REMOTE_PUSH_URL, "remote-url", "url", sc);
-        registerIntegerConfigValue(AUTOBACK_WAIT_MINUTES, null, "minutes", sc);
+        registerBooleanConfigValue(IS_NATIVE_GIT_ENABLED,  sc);
+        registerBooleanConfigValue(IS_LOCK_CLEANUP_ENABLED, sc);
+        registerBooleanConfigValue(IS_BACKUP_ENABLED, sc);
+        registerBooleanConfigValue(IS_MODS_BACKUP_ENABLED, sc);
+        registerBooleanConfigValue(BROADCAST_ENABLED, sc);
+        registerStringConfigValue(BROADCAST_MESSAGE, "message", sc);
+        registerStringConfigValue(RESTORE_DIRECTORY, "full-directory-path", sc);
+        registerStringConfigValue(REMOTE_PUSH_URL, "url", sc);
+        registerIntegerConfigValue(AUTOBACK_WAIT_MINUTES, "minutes", sc);
 
         {
             final List<String> schedulableActions = new ArrayList<>();
             for (final SchedulableAction sa : SchedulableAction.values()) {
                 schedulableActions.add(sa.getConfigValue());
             }
-            registerSelectConfigValue(AUTOBACK_ACTION, null, schedulableActions, sc);
-            registerSelectConfigValue(SHUTDOWN_ACTION, null, schedulableActions, sc);
+            registerSelectConfigValue(AUTOBACK_ACTION, schedulableActions, sc);
+            registerSelectConfigValue(SHUTDOWN_ACTION, schedulableActions, sc);
         }
 
-        registerSetRetentionCommand(LOCAL_RETENTION_POLICY, null, sc);
-        registerSetRetentionCommand(REMOTE_RETENTION_POLICY, null, sc);
+        registerSetRetentionCommand(LOCAL_RETENTION_POLICY, sc);
+        registerSetRetentionCommand(REMOTE_RETENTION_POLICY, sc);
 
         registerForceDebug(sc);
         root.then(sc);
@@ -109,15 +108,14 @@ enum SetCommand implements Command {
     // ======================================================================
     // Boolean config values
 
-    private static void registerBooleanConfigValue(final GitConfigKey key, final String keyDisplayOrNull, final LiteralArgumentBuilder<ServerCommandSource> setCommand) {
-        final String keyDisplay = keyDisplayOrNull != null ? keyDisplayOrNull : key.getSettingName();
-        final LiteralArgumentBuilder<ServerCommandSource> builder = literal(keyDisplay);
-        builder.then(literal("true").executes(cc -> setBooleanConfigValue(key, keyDisplay, true, cc)));
-        builder.then(literal("false").executes(cc -> setBooleanConfigValue(key, keyDisplay, false, cc)));
+    private static void registerBooleanConfigValue(final GitConfigKey key, final LiteralArgumentBuilder<ServerCommandSource> setCommand) {
+        final LiteralArgumentBuilder<ServerCommandSource> builder = literal(key.getDisplayName());
+        builder.then(literal("true").executes(cc -> setBooleanConfigValue(key, true, cc)));
+        builder.then(literal("false").executes(cc -> setBooleanConfigValue(key, false, cc)));
         setCommand.then(builder);
     }
 
-    private static int setBooleanConfigValue(final GitConfigKey key, final String keyDisplay, final boolean newValue, final CommandContext<ServerCommandSource> cc) {
+    private static int setBooleanConfigValue(final GitConfigKey key, final boolean newValue, final CommandContext<ServerCommandSource> cc) {
         try (UserLogger ulog = ulog(cc)) {
             final Path worldSaveDir = mod().getWorldDirectory();
             final RepoFactory rf = rf();
@@ -132,7 +130,7 @@ enum SetCommand implements Command {
                             if (!validateNativeGitChange(newValue, repo, ulog)) return FAILURE;
                         }
                         repo.getConfig().updater().set(key, newValue).save();
-                        ulog.message(raw(keyDisplay + " = " + newValue));
+                        ulog.message(raw(key.getDisplayName() + " = " + newValue));
                     }
                 } catch (Exception e) {
                     ulog.internalError(e);
@@ -146,15 +144,14 @@ enum SetCommand implements Command {
     // ======================================================================
     // Integer config values
 
-    private static void registerIntegerConfigValue(final GitConfigKey key, final String keyDisplayOrNull, final String argName, final LiteralArgumentBuilder<ServerCommandSource> setCommand) {
-        final String keyDisplay = keyDisplayOrNull != null ? keyDisplayOrNull : key.getSettingName();
-        final LiteralArgumentBuilder<ServerCommandSource> builder = literal(keyDisplay);
+    private static void registerIntegerConfigValue(final GitConfigKey key, final String argName, final LiteralArgumentBuilder<ServerCommandSource> setCommand) {
+        final LiteralArgumentBuilder<ServerCommandSource> builder = literal(key.getDisplayName());
         builder.then(argument(argName, IntegerArgumentType.integer()).
-                executes(cc -> setIntegerConfigValue(key, keyDisplay, argName, cc)));
+                executes(cc -> setIntegerConfigValue(key, argName, cc)));
         setCommand.then(builder);
     }
 
-    private static int setIntegerConfigValue(final GitConfigKey key, final String keyDisplay, final String argName, final CommandContext<ServerCommandSource> cc) {
+    private static int setIntegerConfigValue(final GitConfigKey key, final String argName, final CommandContext<ServerCommandSource> cc) {
         try (UserLogger ulog = ulog(cc)) {
             final Path worldSaveDir = mod().getWorldDirectory();
             final RepoFactory rf = rf();
@@ -162,7 +159,7 @@ enum SetCommand implements Command {
                 try (Repo repo = rf.load(worldSaveDir)) {
                     final Integer newValue = cc.getArgument(argName, Integer.class);
                     repo.getConfig().updater().set(key, newValue).save();
-                    ulog.message(raw(keyDisplay + " = " + newValue));
+                    ulog.message(raw(key.getDisplayName() + " = " + newValue));
                 } catch (Exception e) {
                     ulog.internalError(e);
                     return FAILURE;
@@ -175,15 +172,14 @@ enum SetCommand implements Command {
     // ======================================================================
     // String config values
 
-    private static void registerStringConfigValue(final GitConfigKey key, final String keyDisplayOrNull, final String argName, final LiteralArgumentBuilder<ServerCommandSource> setCommand) {
-        final String keyDisplay = keyDisplayOrNull != null ? keyDisplayOrNull : key.getSettingName();
-        final LiteralArgumentBuilder<ServerCommandSource> builder = literal(keyDisplay);
+    private static void registerStringConfigValue(final GitConfigKey key, final String argName, final LiteralArgumentBuilder<ServerCommandSource> setCommand) {
+        final LiteralArgumentBuilder<ServerCommandSource> builder = literal(key.getDisplayName());
         builder.then(argument(argName, StringArgumentType.greedyString()).
-                executes(cc -> setStringConfigValue(key, keyDisplay, argName, cc)));
+                executes(cc -> setStringConfigValue(key, argName, cc)));
         setCommand.then(builder);
     }
 
-    private static int setStringConfigValue(final GitConfigKey key, final String keyDisplay, final String argName, final CommandContext<ServerCommandSource> cc) {
+    private static int setStringConfigValue(final GitConfigKey key, final String argName, final CommandContext<ServerCommandSource> cc) {
         try (UserLogger ulog = ulog(cc)) {
             final Path worldSaveDir = mod().getWorldDirectory();
             final RepoFactory rf = rf();
@@ -191,7 +187,7 @@ enum SetCommand implements Command {
                 try (Repo repo = rf.load(worldSaveDir)) {
                     final String newValue = cc.getArgument(argName, String.class);
                     repo.getConfig().updater().set(key, newValue).save();
-                    ulog.message(raw(keyDisplay + " = " + newValue));
+                    ulog.message(raw(key.getDisplayName() + " = " + newValue));
                 } catch (Exception e) {
                     ulog.internalError(e);
                     return FAILURE;
@@ -204,22 +200,21 @@ enum SetCommand implements Command {
     // ======================================================================
     // Selection config values
 
-    private static void registerSelectConfigValue(GitConfigKey key, String keyDisplayOrNull, List<String> selections, final LiteralArgumentBuilder<ServerCommandSource> setCommand) {
-        final String keyDisplay = keyDisplayOrNull != null ? keyDisplayOrNull : key.getSettingName();
-        final LiteralArgumentBuilder<ServerCommandSource> builder = literal(keyDisplay);
+    private static void registerSelectConfigValue(GitConfigKey key, List<String> selections, final LiteralArgumentBuilder<ServerCommandSource> setCommand) {
+        final LiteralArgumentBuilder<ServerCommandSource> builder = literal(key.getDisplayName());
         for (final String selection : selections) {
-            builder.then(literal(selection).executes(cc -> setSelectionConfigValue(key, keyDisplay, selection, cc)));
+            builder.then(literal(selection).executes(cc -> setSelectionConfigValue(key, selection, cc)));
         }
         setCommand.then(builder);
     }
 
-    private static int setSelectionConfigValue(final GitConfigKey key, final String keyDisplay, final String newValue, final CommandContext<ServerCommandSource> cc) {
+    private static int setSelectionConfigValue(final GitConfigKey key, final String newValue, final CommandContext<ServerCommandSource> cc) {
         try (UserLogger ulog = ulog(cc)) {
             final Path worldSaveDir = mod().getWorldDirectory();
             if (rf().isGitRepo(worldSaveDir)) {
                 try (final Repo repo = rf().load(worldSaveDir)) {
                     repo.getConfig().updater().set(key, newValue).save();
-                    ulog.message(raw(keyDisplay + " = " + newValue));
+                    ulog.message(raw(key.getDisplayName() + " = " + newValue));
                 } catch (Exception e) {
                     ulog.internalError(e);
                     return FAILURE;
@@ -262,7 +257,6 @@ enum SetCommand implements Command {
      * Just generally not sure how to beat brigadier into submission here.
      */
     private static void registerSetRetentionCommand(final FastbackConfigKey key,
-                                                    final BiFunction<CommandContext<ServerCommandSource>, RetentionPolicyType, Integer> setPolicyFn,
                                                     final LiteralArgumentBuilder<ServerCommandSource> argb) {
         final LiteralArgumentBuilder<ServerCommandSource> retainCommand = literal(key.getSettingName());
         for (final RetentionPolicyType rpt : RetentionPolicyType.getAvailable()) {
