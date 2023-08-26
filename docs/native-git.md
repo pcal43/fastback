@@ -26,7 +26,7 @@ run `/backup init`.
 If for some reason you don't want this, you can disable it by immediately running 
 `/backup set native-git-enabled false`.
 
-### If you *don't* have git intsalled
+### If you *don't* have git installed
 
 If you don't have git installed, you'll be told about this when you run `/backup init`.  
 
