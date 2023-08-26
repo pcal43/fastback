@@ -33,7 +33,9 @@ import net.pcal.fastback.repo.RepoFactory;
 import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;
 import net.pcal.fastback.retention.RetentionPolicyType;
+import net.pcal.fastback.utils.EnvironmentUtils;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -62,8 +64,8 @@ import static net.pcal.fastback.config.FastbackConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.config.OtherConfigKey.REMOTE_PUSH_URL;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserLogger.ulog;
-import static net.pcal.fastback.logging.UserMessage.localized;
-import static net.pcal.fastback.logging.UserMessage.raw;
+import static net.pcal.fastback.logging.UserMessage.*;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.mod.Mod.mod;
 import static net.pcal.fastback.repo.RepoFactory.rf;
 
@@ -130,8 +132,17 @@ enum SetCommand implements Command {
             final RepoFactory rf = rf();
             if (rf.isGitRepo(worldSaveDir)) {
                 try (Repo repo = rf.load(worldSaveDir)) {
-                    repo.getConfig().updater().set(key, newValue).save();
-                    ulog.message(raw(keyDisplay + " = " + newValue));
+                    final GitConfig conf = repo.getConfig();
+                    boolean current = conf.getBoolean(key);
+                    if (current == newValue) {
+                        ulog.message(raw("No change.")); // FIXME i18n
+                    } else {
+                        if (key == IS_NATIVE_GIT_ENABLED) {
+                            if (!validateNativeGitChange(newValue, repo, ulog)) return FAILURE;
+                        }
+                        repo.getConfig().updater().set(key, newValue).save();
+                        ulog.message(raw(keyDisplay + " = " + newValue));
+                    }
                 } catch (Exception e) {
                     ulog.internalError(e);
                     return FAILURE;
@@ -313,5 +324,28 @@ enum SetCommand implements Command {
             return FAILURE;
         }
     }
+
+    // ======================================================================
+    // Special validations
+
+    /**
+     * FIXME i18n
+     */
+    private static boolean validateNativeGitChange(final boolean newValue, final Repo repo, final UserLogger user) throws IOException {
+        if (newValue) {
+            if (!EnvironmentUtils.isNativeGitInstalled()) {
+                user.message(styledRaw("Native git is not installed on your machine.  Please install it and try again.", ERROR)); //FIXME i18n
+                return false;
+            }
+        }
+        if (!repo.getLocalSnapshots().isEmpty()) {
+            user.message(styledRaw("You can't change " +IS_NATIVE_GIT_ENABLED.getSettingName()+" once you've " +
+                    "made a backup.  If you want to delete your current backups and start over, delete the .git directory in your world folder. ", ERROR));
+            return false;
+        }
+        return true;
+    }
+
+
 
 }
