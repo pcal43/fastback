@@ -22,6 +22,8 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.logging.Log4jLogger;
 import net.pcal.fastback.logging.SystemLogger;
+import net.pcal.fastback.repo.SnapshotIdUtils.SnapshotIdCodec;
+import net.pcal.fastback.repo.WorldIdUtils.WorldIdImpl;
 import org.apache.logging.log4j.LogManager;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -34,9 +36,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import static net.pcal.fastback.repo.SnapshotIdUtils.SnapshotIdCodec.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SnapshotIdTest {
+/**
+ * @author pcal
+ * @since 0.4.0
+ */
+public class V1SnapshotIdTest {
 
     @BeforeAll
     public static void setup() {
@@ -48,19 +55,19 @@ public class SnapshotIdTest {
         final String uuid = UUID.randomUUID().toString();
         final String date = "2010-05-08_01-02-03";
         final String branchName = "snapshots/" + uuid + "/" + date;
-        final SnapshotId sid = SnapshotId.fromBranch(branchName);
-        assertEquals(date, sid.getName());
+        final SnapshotId sid = V1.fromBranch(branchName);
+        assertEquals(date, sid.getShortName());
         assertEquals(branchName, sid.getBranchName());
-        assertEquals(uuid, sid.worldUuid());
+        assertEquals(uuid, sid.getWorldId().toString());
         final Date parsedDate = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").parse(date);
-        assertEquals(parsedDate, sid.snapshotDate());
+        assertEquals(parsedDate, sid.getDate());
     }
 
     @Test
     public void testSorting() throws ParseException {
-        final SnapshotId s0 = SnapshotId.fromBranch("snapshots/" + UUID.randomUUID() + "/1977-09-24_01-02-03");
-        final SnapshotId s1 = SnapshotId.fromBranch("snapshots/" + UUID.randomUUID() + "/2010-05-08_01-02-03");
-        final SnapshotId s2 = SnapshotId.fromBranch("snapshots/" + UUID.randomUUID() + "/2013-10-02_01-02-03");
+        final SnapshotId s0 = V1.fromBranch("snapshots/" + UUID.randomUUID() + "/1977-09-24_01-02-03");
+        final SnapshotId s1 = V1.fromBranch("snapshots/" + UUID.randomUUID() + "/2010-05-08_01-02-03");
+        final SnapshotId s2 = V1.fromBranch("snapshots/" + UUID.randomUUID() + "/2013-10-02_01-02-03");
         List<SnapshotId> list = new ArrayList<>(List.of(s1, s2, s0));
         Collections.sort(list);
         assertEquals(List.of(s0, s1, s2), list);
@@ -68,26 +75,38 @@ public class SnapshotIdTest {
 
     @Test
     public void testSortWorldSnapshots() throws ParseException {
-        final WorldId uuid0 = WorldId.parse(UUID.randomUUID().toString());
-        final WorldId uuid1 = WorldId.parse(UUID.randomUUID().toString());
+        final WorldId uuid0 = new WorldIdImpl(UUID.randomUUID().toString());
+        final WorldId uuid1 = new WorldIdImpl(UUID.randomUUID().toString());
         final ListMultimap<WorldId, SnapshotId> sids = ArrayListMultimap.create();
 
-        final SnapshotId s0 = SnapshotId.fromBranch("snapshots/" + uuid0 + "/1977-09-24_01-02-03");
-        final SnapshotId s1 = SnapshotId.fromBranch("snapshots/" + uuid0 + "/2010-05-08_01-02-03");
-        final SnapshotId s2 = SnapshotId.fromBranch("snapshots/" + uuid0 + "/2013-10-02_01-02-03");
+        final SnapshotId s0 = V1.fromBranch("snapshots/" + uuid0 + "/1977-09-24_01-02-03");
+        final SnapshotId s1 = V1.fromBranch("snapshots/" + uuid0 + "/2010-05-08_01-02-03");
+        final SnapshotId s2 = V1.fromBranch("snapshots/" + uuid0 + "/2013-10-02_01-02-03");
         sids.put(uuid0, s0);
         sids.put(uuid0, s1);
         sids.put(uuid0, s2);
 
-        final SnapshotId s3 = SnapshotId.fromBranch("snapshots/" + uuid1 + "/1977-09-24_01-02-03");
-        final SnapshotId s4 = SnapshotId.fromBranch("snapshots/" + uuid1 + "/2010-05-08_01-02-03");
-        final SnapshotId s5 = SnapshotId.fromBranch("snapshots/" + uuid1 + "/2013-10-02_01-02-03");
+        final SnapshotId s3 = V1.fromBranch("snapshots/" + uuid1 + "/1977-09-24_01-02-03");
+        final SnapshotId s4 = V1.fromBranch("snapshots/" + uuid1 + "/2010-05-08_01-02-03");
+        final SnapshotId s5 = V1.fromBranch("snapshots/" + uuid1 + "/2013-10-02_01-02-03");
         sids.put(uuid1, s3);
         sids.put(uuid1, s4);
         sids.put(uuid1, s5);
 
-        assertEquals(List.of(s0, s1, s2), List.copyOf(SnapshotId.sortWorldSnapshots(sids, uuid0)));
-        assertEquals(List.of(s3, s4, s5), List.copyOf(SnapshotId.sortWorldSnapshots(sids, uuid1)));
+        assertEquals(List.of(s0, s1, s2), List.copyOf(Repo.sortWorldSnapshots(sids, uuid0)));
+        assertEquals(List.of(s3, s4, s5), List.copyOf(Repo.sortWorldSnapshots(sids, uuid1)));
     }
 
+    // so other tests can get at it
+    public static SnapshotId v1sid(WorldId wid, Date date) throws ParseException {
+        return V1.create(wid, SnapshotIdCodec.DATE_FORMAT.format(date));
+    }
+
+    public static SnapshotId v1sid(String wid, Date date) throws ParseException {
+        return V1.create(createWorldId(wid), SnapshotIdCodec.DATE_FORMAT.format(date));
+    }
+
+    public static WorldId createWorldId(String wid) {
+        return new WorldIdImpl(wid);
+    }
 }

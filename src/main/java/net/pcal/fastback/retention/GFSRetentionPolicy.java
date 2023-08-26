@@ -69,7 +69,7 @@ class GFSRetentionPolicy implements RetentionPolicy {
         final LocalDate oneMonthAgo = now.minus(Period.ofDays(30));
         Integer currentDay = null, currentWeek = null, currentMonth = null;
         for (final SnapshotId sid : snapshots.descendingSet()) {
-            final LocalDate snapshotDate = sid.snapshotDate().toInstant().atZone(TimeZone.getDefault().toZoneId()).toLocalDate();
+            final LocalDate snapshotDate = sid.getDate().toInstant().atZone(TimeZone.getDefault().toZoneId()).toLocalDate();
             if (snapshotDate.isAfter(gracePeriodStart)) {
                 syslog().debug("Will retain " + sid + " because still in the grace period");
             } else if (snapshotDate.isAfter(oneWeekAgo)) {

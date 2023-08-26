@@ -32,7 +32,7 @@ import java.util.concurrent.CompletableFuture;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.mod.Mod.mod;
-import static net.pcal.fastback.repo.SnapshotId.sortWorldSnapshots;
+import static net.pcal.fastback.repo.Repo.sortWorldSnapshots;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.NONE;
 
 abstract class SnapshotNameSuggestions implements SuggestionProvider<ServerCommandSource> {
@@ -64,7 +64,7 @@ abstract class SnapshotNameSuggestions implements SuggestionProvider<ServerComma
         final UserLogger ulog = commandLogger(mod(), cc.getSource());
         gitOp(mod(), NONE, ulog, repo -> {
             for (final SnapshotId sid : this.getSnapshotIds(repo, ulog)) {
-                builder.suggest(sid.getName());
+                builder.suggest(sid.getShortName());
             }
             completableFuture.complete(builder.buildFuture().get());
         });

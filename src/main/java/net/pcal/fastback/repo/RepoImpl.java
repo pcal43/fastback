@@ -23,6 +23,8 @@ import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
+import net.pcal.fastback.repo.SnapshotIdUtils.SnapshotIdCodec;
+import net.pcal.fastback.repo.WorldIdUtils.WorldIdInfo;
 import net.pcal.fastback.utils.EnvironmentUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -34,6 +36,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.ParseException;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
@@ -67,6 +70,7 @@ class RepoImpl implements Repo {
 
     private final Git jgit;
     private GitConfig config;
+    private WorldIdInfo worldIdInfo;
 
     // ======================================================================
     // Constructors
@@ -140,7 +144,7 @@ class RepoImpl implements Repo {
 
     @Override
     public WorldId getWorldId() throws IOException {
-        return WorldIdUtils.getWorldUuid(this.getWorkTree().toPath());
+        return WorldIdUtils.getWorldIdInfo(this.getWorkTree().toPath()).wid();
     }
 
     @Override
@@ -153,7 +157,7 @@ class RepoImpl implements Repo {
             }
         };
         try {
-            return new ListSnapshotsTask(refProvider).call();
+            return BranchUtils.listSnapshots(this, refProvider);
         } catch (GitAPIException e) {
             throw new IOException(e);
         }
@@ -171,7 +175,7 @@ class RepoImpl implements Repo {
             }
         };
         try {
-            return new ListSnapshotsTask(refProvider).call();
+            return BranchUtils.listSnapshots(this, refProvider);
         } catch (GitAPIException e) {
             throw new IOException(e);
         }
@@ -234,7 +238,6 @@ class RepoImpl implements Repo {
 
     @Override
     public Path getRestoresDir() throws IOException {
-        final Path restoresDir;
         if (getConfig().getString(RESTORE_DIRECTORY) != null) {
             return Paths.get(getConfig().getString(RESTORE_DIRECTORY));
         } else {
@@ -242,8 +245,27 @@ class RepoImpl implements Repo {
         }
     }
 
+    @Override
+    public SnapshotId createSnapshotId(String shortName) throws IOException, ParseException {
+        return getWorldIdInfo().sidCodec().create(this.getWorldId(), shortName);
+    }
+
+    // ======================================================================
+    // Package-private
+
+    SnapshotIdCodec getSidCodec() throws IOException {
+        return this.getWorldIdInfo().sidCodec();
+    }
+
     // ======================================================================
     // Private
+
+    private WorldIdInfo getWorldIdInfo() throws IOException {
+        if (this.worldIdInfo == null) {
+            this.worldIdInfo = WorldIdUtils.getWorldIdInfo(this.getWorkTree().toPath());
+        }
+        return this.worldIdInfo;
+    }
 
     private void checkIndexLock(UserLogger ulog) {
         final File lockFile = this.getWorkTree().toPath().resolve(".git/index.lock").toFile();

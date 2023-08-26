@@ -32,8 +32,8 @@ import static net.pcal.fastback.config.FastbackConfigKey.IS_LOCK_CLEANUP_ENABLED
 import static net.pcal.fastback.config.FastbackConfigKey.RESTORE_DIRECTORY;
 import static net.pcal.fastback.config.OtherConfigKey.COMMIT_SIGNING_ENABLED;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
-import static net.pcal.fastback.repo.WorldIdUtils.createWorldUuid;
-import static net.pcal.fastback.repo.WorldIdUtils.ensureWorldHasUuid;
+import static net.pcal.fastback.repo.WorldIdUtils.createWorldId;
+import static net.pcal.fastback.repo.WorldIdUtils.ensureWorldHasId;
 
 /**
  * @author pcal
@@ -44,7 +44,7 @@ class RepoFactoryImpl implements RepoFactory {
     @Override
     public Repo init(final Path worldSaveDir) throws IOException {
         try (final Git jgit = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
-            createWorldUuid(worldSaveDir);
+            createWorldId(worldSaveDir);
             final Repo repo = new RepoImpl(jgit);
             final Updater updater = repo.getConfig().updater();
             updater.set(COMMIT_SIGNING_ENABLED, false);
@@ -65,7 +65,7 @@ class RepoFactoryImpl implements RepoFactory {
         final Git jgit = Git.open(worldSaveDir.toFile());
         // It should already be there.  But let's try to be extra sure this is there, because lots of stuff
         // will blow up if it's missing.
-        ensureWorldHasUuid(worldSaveDir);
+        ensureWorldHasId(worldSaveDir);
         return new RepoImpl(jgit);
     }
 

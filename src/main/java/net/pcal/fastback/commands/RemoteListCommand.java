@@ -61,7 +61,7 @@ enum RemoteListCommand implements Command {
             final ListMultimap<WorldId, SnapshotId> snapshotsPerWorld = repo.listRemoteSnapshots();
             final List<SnapshotId> snapshots = new ArrayList<>(snapshotsPerWorld.get(repo.getWorldId()));
             Collections.sort(snapshots);
-            snapshots.forEach(sid -> log.message(UserMessage.raw(sid.getName())));
+            snapshots.forEach(sid -> log.message(UserMessage.raw(sid.getShortName())));
             log.message(UserMessage.localized("fastback.chat.remote-list-done", snapshots.size(), repo.getConfig().getString(REMOTE_PUSH_URL)));
             if (snapshotsPerWorld.keySet().size() > 1) {
                 log.message(UserMessage.localized("fastback.chat.remote-list-others",

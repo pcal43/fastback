@@ -38,7 +38,6 @@ import static net.pcal.fastback.config.FastbackConfigKey.REMOTE_NAME;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
-import static net.pcal.fastback.repo.SnapshotId.sortWorldSnapshots;
 
 /**
  * Utils for pruning and deleting snapshot branches.
@@ -72,7 +71,7 @@ class PruneUtils {
                 LOCAL_RETENTION_POLICY,
                 repo::listSnapshots,
                 sid -> {
-                    syslog().info("Pruning local snapshot " + sid.getName());
+                    syslog().info("Pruning local snapshot " + sid.getBranchName());
                     deleteLocalBranches(repo, List.of(sid.getBranchName()));
                 },
                 "fastback.chat.retention-policy-not-set"
@@ -84,7 +83,7 @@ class PruneUtils {
                 FastbackConfigKey.REMOTE_RETENTION_POLICY,
                 repo::listRemoteSnapshots,
                 sid -> {
-                    syslog().info("Pruning remote snapshot " + sid.getName());
+                    syslog().info("Pruning remote snapshot " + sid.getBranchName());
                     repo.deleteRemoteBranch(sid.getBranchName());
                 },
                 "fastback.chat.remote-retention-policy-not-set"
@@ -108,7 +107,7 @@ class PruneUtils {
             return null;
         }
         final Collection<SnapshotId> toPrune = policy.getSnapshotsToPrune(
-                sortWorldSnapshots(listSnapshotsFn.get(), repo.getWorldId()));
+                Repo.sortWorldSnapshots(listSnapshotsFn.get(), repo.getWorldId()));
         log.update(UserMessage.localized("fastback.hud.prune-started"));
         for (final SnapshotId sid : toPrune) {
             deleteSnapshotsFn.accept(sid);

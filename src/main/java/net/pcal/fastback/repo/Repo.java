@@ -28,8 +28,11 @@ import org.eclipse.jgit.errors.NoWorkTreeException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.text.ParseException;
 import java.util.Collection;
 import java.util.List;
+import java.util.NavigableSet;
+import java.util.TreeSet;
 
 /**
  * Encapsulates everything the mod needs to do to the git repo.
@@ -43,7 +46,7 @@ public interface Repo extends AutoCloseable {
 
     /**
      * @return the UUID of the world.
-     * @throws java.io.FileNotFoundException if the world.uuid file is missing for some reason.
+     * @throws java.io.FileNotFoundException if the world.id file is missing for some reason.
      */
     WorldId getWorldId() throws IOException;
 
@@ -74,4 +77,13 @@ public interface Repo extends AutoCloseable {
     void setConfigValue(GitConfigKey key, boolean value, UserLogger userlog);
 
     Path getRestoresDir() throws IOException;
+
+    SnapshotId createSnapshotId(String date) throws IOException, ParseException;
+
+    /**
+     * Extract the sids that apply to the given world and return them in a sorted list.  TODO find a better home for this please
+     */
+    static NavigableSet<SnapshotId> sortWorldSnapshots(ListMultimap<WorldId, SnapshotId> snapshotsPerWorld, WorldId worldUuid) {
+        return new TreeSet<>(snapshotsPerWorld.get(worldUuid));
+    }
 }

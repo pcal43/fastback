@@ -22,12 +22,10 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.Mod;
 import net.pcal.fastback.repo.SnapshotId;
-import net.pcal.fastback.repo.WorldId;
 
 import java.nio.file.Path;
 
@@ -61,10 +59,8 @@ enum RestoreCommand implements Command {
     private static int restore(CommandContext<ServerCommandSource> cc) {
         try(final UserLogger ulog = UserLogger.forCommand(cc)) {
             gitOp(mod(), NONE, ulog, repo -> {
-                final GitConfig conf = repo.getConfig();
                 final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
-                final WorldId uuid = repo.getWorldId();
-                final SnapshotId sid = SnapshotId.fromUuidAndName(uuid, snapshotName);
+                final SnapshotId sid = repo.createSnapshotId(snapshotName);
                 final String uri = "file://" + mod().getWorldDirectory().toAbsolutePath();
                 final Path restoreDir = repo.doRestoreSnapshot(uri, repo.getRestoresDir(), mod().getWorldName(), sid, ulog);
                 ulog.message(UserMessage.localized("fastback.chat.restore-done", restoreDir));

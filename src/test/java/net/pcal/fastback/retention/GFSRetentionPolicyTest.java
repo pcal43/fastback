@@ -21,12 +21,14 @@ package net.pcal.fastback.retention;
 import net.pcal.fastback.logging.Log4jLogger;
 import net.pcal.fastback.logging.SystemLogger;
 import net.pcal.fastback.repo.SnapshotId;
+import net.pcal.fastback.repo.V1SnapshotIdTest;
 import net.pcal.fastback.repo.WorldId;
 import org.apache.logging.log4j.LogManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -47,7 +49,7 @@ public class GFSRetentionPolicyTest {
     }
 
     @Test
-    public void testGFSRetention() {
+    public void testGFSRetention() throws ParseException {
 
         final LocalDate now = LocalDate.of(2023, 2, 23); // this is a wednesday
         final List<SnapshotId> expectPruned = new ArrayList<>();
@@ -81,12 +83,12 @@ public class GFSRetentionPolicyTest {
         Assertions.assertEquals(expectPruned, toPruneList);
     }
 
-    private static SnapshotId sid(int year, int month, int day) {
+    private static SnapshotId sid(int year, int month, int day) throws ParseException {
         return sid(year, month, day, 11);
     }
 
-    private static SnapshotId sid(int year, int month, int day, int hour) {
+    private static SnapshotId sid(int year, int month, int day, int hour) throws ParseException {
         Date date = Date.from(ZonedDateTime.of(LocalDate.of(year, month, day).atTime(hour, 0), TimeZone.getDefault().toZoneId()).toInstant());
-        return SnapshotId.create(WorldId.parse("3552efde-b34d-11ed-afa1-0242ac120002"), date);
+        return V1SnapshotIdTest.v1sid("3552efde-b34d-11ed-afa1-0242ac120002", date);
     }
 }
