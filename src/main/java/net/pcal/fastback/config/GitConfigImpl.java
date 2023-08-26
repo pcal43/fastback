@@ -33,10 +33,6 @@ import static java.util.Objects.requireNonNull;
  */
 class GitConfigImpl implements GitConfig {
 
-    static GitConfig load(final Path worldSaveDir) throws IOException {
-        return load(Git.open(worldSaveDir.toFile()));
-    }
-
     static GitConfig load(final Git jgit) {
         return new GitConfigImpl(jgit.getRepository().getConfig());
     }
