@@ -60,9 +60,6 @@ public class Commands {
         RestoreCommand.INSTANCE.register(root,mod());
         CreateFileRemoteCommand.INSTANCE.register(root,mod());
 
-        SetRetentionCommand.INSTANCE.register(root,mod());
-        SetRemoteRetentionCommand.INSTANCE.register(root,mod());
-
         PruneCommand.INSTANCE.register(root,mod());
         DeleteCommand.INSTANCE.register(root,mod());
         GcCommand.INSTANCE.register(root,mod());
