@@ -33,7 +33,6 @@ import net.pcal.fastback.utils.Executor.ExecutionLock;
 import java.nio.file.Path;
 import java.util.function.Predicate;
 
-import static net.pcal.fastback.commands.HelpCommand.help;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
@@ -51,7 +50,7 @@ public class Commands {
     public static void registerCommands(final Mod mod) {
         final LiteralArgumentBuilder<ServerCommandSource> root = LiteralArgumentBuilder.<ServerCommandSource>literal("backup").
                 requires(Permissions.require(BACKUP_COMMAND_PERM, mod.getDefaultPermLevel())).
-                executes(cc -> help(mod, cc));
+                executes(HelpCommand::generalHelp);
         InitCommand.INSTANCE.register(root,mod());
         LocalCommand.INSTANCE.register(root,mod());
         FullCommand.INSTANCE.register(root,mod());

@@ -24,7 +24,6 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import com.mojang.brigadier.tree.CommandNode;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
@@ -32,7 +31,6 @@ import net.pcal.fastback.mod.Mod;
 
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -41,11 +39,13 @@ import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
+import static net.pcal.fastback.logging.UserLogger.ulog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
+import static net.pcal.fastback.mod.Mod.mod;
+import static net.pcal.fastback.repo.RepoFactory.rf;
 
 enum HelpCommand implements Command {
 
@@ -58,12 +58,12 @@ enum HelpCommand implements Command {
     public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(mod, COMMAND_NAME)).
-                        executes(cc -> help(mod, cc)).
+                        requires(subcommandPermission(COMMAND_NAME)).
+                        executes(HelpCommand::generalHelp).
                         then(
                                 argument(ARGUMENT, StringArgumentType.word()).
                                         suggests(new HelpTopicSuggestions()).
-                                        executes(cc -> helpSubcommand(mod, cc))
+                                        executes(this::subcommandHelp)
                         )
         );
     }
@@ -89,8 +89,8 @@ enum HelpCommand implements Command {
         }
     }
 
-    static int help(final Mod mod, final CommandContext<ServerCommandSource> cc) {
-        final UserLogger log = commandLogger(mod, cc.getSource());
+    static int generalHelp(final CommandContext<ServerCommandSource> cc) {
+        final UserLogger ulog = ulog(cc);
         StringWriter subcommands = null;
         for (final String available : getSubcommandNames(cc)) {
             if (subcommands == null) {
@@ -100,22 +100,25 @@ enum HelpCommand implements Command {
             }
             subcommands.append(available);
         }
-        log.message(UserMessage.localized("fastback.help.subcommands", String.valueOf(subcommands)));
+        ulog.message(UserMessage.localized("fastback.help.subcommands", String.valueOf(subcommands)));
+        if (!rf().isGitRepo(mod().getWorldDirectory())) {
+            ulog.message(UserMessage.localized("fastback.help.suggest-init"));
+        }
         return SUCCESS;
     }
 
-    private int helpSubcommand(final Mod mod, final CommandContext<ServerCommandSource> cc) {
-        final UserLogger log = commandLogger(mod, cc.getSource());
-        final Collection<CommandNode<ServerCommandSource>> subcommands = cc.getNodes().get(0).getNode().getChildren();
-        final String subcommand = cc.getLastChild().getArgument(ARGUMENT, String.class);
-        for (String available : getSubcommandNames(cc)) {
-            if (subcommand.equals(available)) {
-                final String prefix = "/backup " + subcommand + ": ";
-                log.message(UserMessage.localized("fastback.help.command." + subcommand, prefix));
-                return SUCCESS;
+    private int subcommandHelp(final CommandContext<ServerCommandSource> cc) {
+        try (final UserLogger ulog = ulog(cc)) {
+            final String subcommand = cc.getLastChild().getArgument(ARGUMENT, String.class);
+            for (String available : getSubcommandNames(cc)) {
+                if (subcommand.equals(available)) {
+                    final String prefix = "/backup " + subcommand + ": ";
+                    ulog.message(UserMessage.localized("fastback.help.command." + subcommand, prefix));
+                    return SUCCESS;
+                }
             }
+            ulog.message(styledLocalized("fastback.chat.invalid-input", ERROR, subcommand));
         }
-        log.message(styledLocalized("fastback.chat.invalid-input", ERROR, subcommand));
         return FAILURE;
     }
 
