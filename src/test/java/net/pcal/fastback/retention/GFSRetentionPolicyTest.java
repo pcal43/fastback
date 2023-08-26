@@ -22,7 +22,6 @@ import net.pcal.fastback.logging.Log4jLogger;
 import net.pcal.fastback.logging.SystemLogger;
 import net.pcal.fastback.repo.SnapshotId;
 import net.pcal.fastback.repo.V1SnapshotIdTest;
-import net.pcal.fastback.repo.WorldId;
 import org.apache.logging.log4j.LogManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
