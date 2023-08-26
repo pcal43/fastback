@@ -64,7 +64,7 @@ enum CreateFileRemoteCommand implements Command {
     }
 
     private static int setFileRemote(final Mod mod, final CommandContext<ServerCommandSource> cc) {
-        final UserLogger ulog = UserLogger.forCommand(cc);
+        final UserLogger ulog = UserLogger.ulog(cc);
         gitOp(mod, NONE, ulog, repo -> {
             final String targetPath = cc.getArgument(ARGUMENT, String.class);
             final Path fupHome = Path.of(targetPath);

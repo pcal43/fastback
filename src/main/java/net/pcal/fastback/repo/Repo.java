@@ -19,7 +19,6 @@
 package net.pcal.fastback.repo;
 
 import net.pcal.fastback.config.GitConfig;
-import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.UserLogger;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
@@ -66,15 +65,13 @@ public interface Repo extends AutoCloseable {
 
     void doGc(UserLogger ulog) throws IOException;
 
+    void doPushSnapshot(SnapshotId sid, UserLogger ulog) throws IOException, ParseException;
+
     Path doRestoreSnapshot(String uri, Path restoresDir, String worldName, SnapshotId sid, UserLogger ulog) throws IOException;
 
     void deleteRemoteBranch(String remoteBranchName) throws IOException;
 
     void deleteLocalBranches(List<String> branchesToDelete) throws GitAPIException, IOException;
-
-    void doPushSnapshot(SnapshotId sid, UserLogger ulog) throws IOException, ParseException;
-
-    void setConfigValue(GitConfigKey key, boolean value, UserLogger userlog);
 
     Path getRestoresDir() throws IOException;
 

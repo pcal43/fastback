@@ -18,6 +18,8 @@
 
 package net.pcal.fastback.repo;
 
+import net.pcal.fastback.logging.UserLogger;
+
 import java.io.IOException;
 import java.nio.file.Path;
 
@@ -30,13 +32,15 @@ import java.nio.file.Path;
 public interface RepoFactory {
 
     // TODO this probably should move to ModContext
-    static RepoFactory get() {
+    static RepoFactory rf() {
         return new RepoFactoryImpl();
     }
 
-    Repo init(final Path worldSaveDir) throws IOException;
+    void doInit(Path worldSaveDir, UserLogger ulog) throws IOException;
 
     Repo load(final Path worldSaveDir) throws IOException;
+
+    boolean doInitCheck(Path worldSaveDir, UserLogger ulog);
 
     boolean isGitRepo(Path worldSaveDir);
 

@@ -32,7 +32,6 @@ import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.getArgumentNicely;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
-import static net.pcal.fastback.mod.Mod.mod;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.NONE;
 
 
@@ -50,7 +49,7 @@ enum PushCommand implements Command {
     @Override
     public void register(LiteralArgumentBuilder<ServerCommandSource> argb, Mod mod) {
         argb.then(literal(COMMAND_NAME).
-                requires(subcommandPermission(mod(), COMMAND_NAME)).then(
+                requires(subcommandPermission(COMMAND_NAME)).then(
                         argument(ARGUMENT, StringArgumentType.string()).
                                 suggests(SnapshotNameSuggestions.local()).
                                 executes(PushCommand::execute)
@@ -59,7 +58,7 @@ enum PushCommand implements Command {
     }
 
     private static int execute(CommandContext<ServerCommandSource> cc) {
-        final UserLogger log = UserLogger.forCommand(cc);
+        final UserLogger log = UserLogger.ulog(cc);
         gitOp(NONE, log, repo -> {
             final String snapshotName = getArgumentNicely(ARGUMENT, String.class, cc.getLastChild(), log);
             final SnapshotId sid = repo.createSnapshotId(snapshotName);

@@ -20,7 +20,6 @@ package net.pcal.fastback.repo;
 
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.SystemLogger;
-import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.utils.EnvironmentUtils;
 import org.eclipse.jgit.api.Git;
 
@@ -32,12 +31,6 @@ import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.UPDATE_GITATTRIBUTES_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.UPDATE_GITIGNORE_ENABLED;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
-import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
-import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;
-import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.WARNING;
-import static net.pcal.fastback.logging.UserMessage.localized;
-import static net.pcal.fastback.logging.UserMessage.raw;
-import static net.pcal.fastback.logging.UserMessage.styledRaw;
 import static net.pcal.fastback.utils.FileUtils.writeResourceToFile;
 import static net.pcal.fastback.utils.ProcessUtils.doExec;
 
@@ -47,7 +40,7 @@ import static net.pcal.fastback.utils.ProcessUtils.doExec;
  * @author pcal
  * @since 0.13.0
  */
-public interface MaintenanceUtils {
+public interface PreflightUtils {
 
     // ======================================================================
     // Util methods
@@ -76,52 +69,19 @@ public interface MaintenanceUtils {
             }
         }
         try {
-            ensureNativeLfsInstallation(repo);
+            updateNativeLfsInstallation(repo);
         } catch (InterruptedException e) {
             throw new IOException(e);
-        }
-    }
-
-    /**
-     * FIXME i18n
-     */
-    static void setNativeGitEnabled(boolean newSetting, final Repo repo, final UserLogger user) throws IOException {
-        final GitConfig conf = repo.getConfig();
-        boolean currentSetting = repo.getConfig().getBoolean(IS_NATIVE_GIT_ENABLED);
-        if (currentSetting == newSetting) {
-            user.message(raw("Nothing changed."));
-            return;
-        }
-        if (!repo.getLocalSnapshots().isEmpty()) {
-            user.message(styledRaw("Existing snapshots found.  You can't change the native-git setting after you've " +
-                    "done a backup.  Consider making a fresh copy of your world, deleting the .git directory " +
-                    "in the copy, and enabling native git there.", ERROR));
-            return;
-        }
-        if (newSetting) {
-            if (!EnvironmentUtils.isNativeGitInstalled()) {
-                user.message(styledRaw("Please install git and git-lfs and try again.", ERROR));
-                return;
-            } else {
-            }
-            conf.updater().set(IS_NATIVE_GIT_ENABLED, true).save();
-            user.message(localized("fastback.chat.ok"));
-            user.message(styledRaw("native-git enabled.", NATIVE_GIT));
-            user.message(styledRaw("WARNING!  This is an experimental feature.  Please don't use it on a world you love.", WARNING));
-        } else {
-            conf.updater().set(IS_NATIVE_GIT_ENABLED, false).save();
-            user.message(localized("fastback.chat.ok"));
         }
     }
 
     // ======================================================================
     // Private
 
-
     /**
      * Ensures that git-lfs is installed or uninstalled in the worktree as appropriate.
      */
-    private static void ensureNativeLfsInstallation(final Repo repo) throws IOException, InterruptedException {
+    private static void updateNativeLfsInstallation(final Repo repo) throws IOException, InterruptedException {
         if (EnvironmentUtils.isNativeGitInstalled()) {
             final boolean isNativeEnabled = repo.getConfig().getBoolean(IS_NATIVE_GIT_ENABLED);
             final String action = isNativeEnabled ? "install" : "uninstall";

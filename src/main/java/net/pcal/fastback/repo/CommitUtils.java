@@ -18,8 +18,9 @@
 
 package net.pcal.fastback.repo;
 
+import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
-import net.pcal.fastback.repo.SnapshotIdUtils.SnapshotIdCodec;
+import net.pcal.fastback.utils.EnvironmentUtils;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
@@ -28,12 +29,14 @@ import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.function.Consumer;
 
 import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
@@ -44,6 +47,7 @@ import static net.pcal.fastback.logging.UserMessage.localized;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 import static net.pcal.fastback.logging.UserMessage.styledRaw;
 import static net.pcal.fastback.mod.Mod.mod;
+import static net.pcal.fastback.repo.RepoImpl.FASTBACK_DIR;
 import static net.pcal.fastback.utils.ProcessUtils.doExec;
 
 /**
@@ -55,11 +59,13 @@ import static net.pcal.fastback.utils.ProcessUtils.doExec;
 class CommitUtils {
 
     public static SnapshotId doCommitSnapshot(final RepoImpl repo, final UserLogger ulog) throws IOException {
-        MaintenanceUtils.doPreflight(repo);
+        PreflightUtils.doPreflight(repo);
         final WorldId uuid = repo.getWorldId();
         final SnapshotId newSid = repo.getSidCodec().create(uuid);
         ulog.message(localized("fastback.chat.commit-start", newSid.getShortName()));
         syslog().debug("start doCommitSnapshot for "+newSid);
+        writeBackupProperties(repo.getWorkTree().toPath(), repo.getConfig());
+
         final String newBranchName = newSid.getBranchName();
         try {
             if (repo.getConfig().getBoolean(IS_NATIVE_GIT_ENABLED)) {
@@ -97,7 +103,7 @@ class CommitUtils {
         syslog().debug("End native_commit");
     }
 
-    private static void jgit_commit(final String newBranchName, final Git jgit, final UserLogger ulog) throws GitAPIException {
+    private static void jgit_commit(final String newBranchName, final Git jgit, final UserLogger ulog) throws GitAPIException, IOException {
         syslog().debug("Starting jgit_commit");
         ulog.update(styledLocalized("fastback.hud.local-saving", JGIT));
         jgit.checkout().setOrphan(true).setName(newBranchName).call();
@@ -106,14 +112,19 @@ class CommitUtils {
         final Status status = jgit.status().call();
 
         try {
+
             syslog().debug("Disabling world save for 'git add'");
             mod().setWorldSaveEnabled(false);
+
+
+
             //
             // Figure out what files to add and remove.  We don't just 'git add .' because this:
             // https://bugs.eclipse.org/bugs/show_bug.cgi?id=494323
             //
             {
                 final List<String> toAdd = new ArrayList<>();
+                toAdd.add(FASTBACK_DIR);
                 toAdd.addAll(status.getModified());
                 toAdd.addAll(status.getUntracked());
                 Collections.sort(toAdd);
@@ -153,4 +164,17 @@ class CommitUtils {
         ulog.update(styledRaw("Commit complete", JGIT)); //FIXME i18n
         jgit.commit().setMessage(newBranchName).call();
     }
+
+    private static void writeBackupProperties(Path worldSaveDir, GitConfig conf) throws IOException {
+        final Properties props = new Properties();
+        props.put(IS_NATIVE_GIT_ENABLED.getSettingName(), conf.getString(IS_NATIVE_GIT_ENABLED));
+        props.put("git-version", EnvironmentUtils.getGitVersion());
+        props.put("git-lfs-version", EnvironmentUtils.getGitLfsVersion());
+        final Path path = worldSaveDir.resolve(FASTBACK_DIR + "/backup.properties");
+        try (final FileWriter fw = new FileWriter(path.toFile())) {
+            props.store(fw, null);
+        }
+    }
+
+
 }

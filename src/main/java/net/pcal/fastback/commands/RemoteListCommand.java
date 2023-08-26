@@ -47,13 +47,13 @@ enum RemoteListCommand implements Command {
     public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(mod, COMMAND_NAME)).
+                        requires(subcommandPermission(COMMAND_NAME)).
                         executes(RemoteListCommand::execute)
         );
     }
 
     private static int execute(final CommandContext<ServerCommandSource> cc) {
-        final UserLogger log = UserLogger.forCommand(cc);
+        final UserLogger log = UserLogger.ulog(cc);
         gitOp(NONE, log, repo -> {
             final List<SnapshotId> snapshots = new ArrayList<>(repo.getRemoteSnapshots());
             Collections.sort(snapshots);

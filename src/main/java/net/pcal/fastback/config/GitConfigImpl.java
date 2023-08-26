@@ -49,7 +49,7 @@ class GitConfigImpl implements GitConfig {
 
     @Override
     public boolean getBoolean(GitConfigKey key) {
-        if (key.getSectionName() == null) return key.getBooleanDefault();
+        if (key.getSettingName() == null) return key.getBooleanDefault();
         return storedConfig.getBoolean(key.getSectionName(), key.getSubSectionName(), key.getSettingName(), key.getBooleanDefault());
     }
 
@@ -62,7 +62,7 @@ class GitConfigImpl implements GitConfig {
 
     @Override
     public int getInt(GitConfigKey key) {
-        if (key.getSectionName() == null) return key.getIntDefault();
+        if (key.getSettingName() == null) return key.getIntDefault();
         return storedConfig.getInt(key.getSectionName(), key.getSubSectionName(), key.getSettingName(), key.getIntDefault());
     }
 

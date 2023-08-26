@@ -4,6 +4,24 @@ title: Native Git Support
 nav_order: 95
 ---
 
+
+NUMBERS ON HERMITCRAFT WORLD
+
+jgit
+- commit: 2m 19s / 2m 20s / 2m 22s
+- push: 6m 18s / 6m 7s
+- second commit: 1s
+- second push: 6m 25s
+
+native
+- initial commit: 25s // 22s
+- initial push:  9m 34s / 8m34s (30 concurrent)
+- second commit: 1s / 1s
+- second push: 11s / 10s
+- third commit: 1s
+- second push: 7s
+- 
+
 # Native Git Support
 
 As of version `0.13.0`, Fastback includes **experimental** support for native git.  This means that

@@ -29,8 +29,6 @@
   "fastback.chat.create-file-remote-dir-exists"  : "Directory already exists:\n%s",
   "fastback.chat.delete-done"                    : "Deleted snapshot %s",
   "fastback.chat.disable-already-disabled"       : "Backups already disabled.",
-  "fastback.chat.disable-done"                   : "Backups disabled.",
-  "fastback.chat.enable-done"                    : "Enabled automatic local backups on world shutdown.",
   "fastback.chat.gc-done"                        : "Garbage collection complete.  %s reclaimed.",
   "fastback.chat.commit-failed"                  : "Backup failed.  See log for details.",
   "fastback.chat.commit-start"                   : "Creating backup snapshot %s",

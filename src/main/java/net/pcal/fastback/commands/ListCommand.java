@@ -24,7 +24,6 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.Mod;
-import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.SnapshotId;
 
 import java.util.ArrayList;
@@ -32,9 +31,12 @@ import java.util.Collections;
 import java.util.List;
 
 import static net.minecraft.server.command.CommandManager.literal;
+import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.mod.Mod.mod;
+import static net.pcal.fastback.repo.RepoFactory.rf;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.NONE;
 
 enum ListCommand implements Command {
@@ -53,14 +55,16 @@ enum ListCommand implements Command {
     }
 
     private int execute(final CommandContext<ServerCommandSource> cc) {
-        final UserLogger ulog = UserLogger.forCommand(cc);
-        gitOp(NONE, ulog, repo -> {
-            final List<SnapshotId> snapshots = new ArrayList<>(repo.getLocalSnapshots());
-            Collections.sort(snapshots);
-            for (final SnapshotId sid : snapshots) {
-                ulog.message(UserMessage.raw(sid.getShortName()));
-            }
-        });
+        try (final UserLogger ulog = UserLogger.ulog(cc)) {
+            if (!rf().doInitCheck(mod().getWorldDirectory(), ulog)) return FAILURE;
+            gitOp(NONE, ulog, repo -> {
+                final List<SnapshotId> snapshots = new ArrayList<>(repo.getLocalSnapshots());
+                Collections.sort(snapshots);
+                for (final SnapshotId sid : snapshots) {
+                    ulog.message(UserMessage.raw(sid.getShortName()));
+                }
+            });
+        }
         return SUCCESS;
     }
 

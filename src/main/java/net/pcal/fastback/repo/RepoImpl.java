@@ -19,7 +19,6 @@
 package net.pcal.fastback.repo;
 
 import net.pcal.fastback.config.GitConfig;
-import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.repo.SnapshotIdUtils.SnapshotIdCodec;
@@ -67,6 +66,11 @@ import static org.eclipse.jgit.util.FileUtils.RETRY;
 class RepoImpl implements Repo {
 
     // ======================================================================
+    // Constants
+
+    static final String FASTBACK_DIR = ".fastback";
+
+    // ======================================================================
     // Fields
 
     private final Git jgit;
@@ -103,7 +107,7 @@ class RepoImpl implements Repo {
             syslog().error(ioe);
             return;
         }
-        ulog.message(localized("fastback.chat.backup-complete-elapsed", newSid, getDuration(start)));
+        ulog.message(localized("fastback.chat.backup-complete-elapsed", getDuration(start)));
     }
 
     @Override
@@ -112,8 +116,9 @@ class RepoImpl implements Repo {
         checkIndexLock(ulog);
         broadcastBackupNotice();
         final long start = System.currentTimeMillis();
+        final SnapshotId newSid;
         try {
-            CommitUtils.doCommitSnapshot(this, ulog);
+            newSid = CommitUtils.doCommitSnapshot(this, ulog);
         } catch(IOException ioe) {
             ulog.message(styledLocalized("fastback.chat.commit-failed", ERROR));
             syslog().error(ioe);
@@ -121,6 +126,25 @@ class RepoImpl implements Repo {
         }
         ulog.message(localized("fastback.chat.backup-complete-elapsed", getDuration(start)));
     }
+
+    @Override
+    public void doPushSnapshot(SnapshotId sid, final UserLogger ulog) throws IOException, ParseException {
+        if (!this.getConfig().isSet(REMOTE_PUSH_URL)) {
+            ulog.message(styledLocalized("No remote is configured.  Run set-remote <url>", ERROR)); //FIXME i18n
+            return;
+        }
+        if (!doNativeCheck(ulog)) return;
+        final long start = System.currentTimeMillis();
+        try {
+            PushUtils.doPush(sid, this, ulog);
+        } catch(IOException ioe) {
+            ulog.message(styledLocalized("fastback.chat.commit-failed", ERROR));
+            syslog().error(ioe);
+            return;
+        }
+        ulog.message(UserMessage.localized("Successfully pushed " + sid.getShortName() + ".  Time elapsed: "+getDuration(start))); // FIXME i18n
+    }
+
 
     @Override
     public Collection<SnapshotId> doLocalPrune(final UserLogger ulog) throws IOException {
@@ -143,16 +167,6 @@ class RepoImpl implements Repo {
         return RestoreUtils.restoreSnapshot(uri, restoresDir, worldName, sid, ulog);
     }
 
-
-    @Override
-    public void doPushSnapshot(SnapshotId sid, final UserLogger ulog) throws IOException, ParseException {
-        if (!this.getConfig().isSet(REMOTE_PUSH_URL)) {
-            ulog.message(styledLocalized("No remote is configured.  Run set-remote <url>", ERROR)); //FIXME i18n
-        } else {
-            PushUtils.doPush(sid, this, ulog);
-            ulog.message(UserMessage.localized("Successfully pushed " + sid)); // FIXME i18n
-        }
-    }
 
     // ======================================================================
     // Other repo implementation
@@ -220,31 +234,13 @@ class RepoImpl implements Repo {
     }
 
     @Override
-    public void deleteLocalBranches(List<String> branchesToDelete) throws IOException {
+    public void deleteLocalBranches(final List<String> branchesToDelete) throws IOException {
         PruneUtils.deleteLocalBranches(this, branchesToDelete);
     }
 
     @Override
     public void close() {
         this.getJGit().close();
-    }
-
-    @Override
-    public void setConfigValue(GitConfigKey key, boolean value, UserLogger userlog) {
-        requireNonNull(key);
-        if (key == IS_NATIVE_GIT_ENABLED) { // FIXME this is gross.  find some other place
-            try {
-                MaintenanceUtils.setNativeGitEnabled(value, this, userlog);
-            } catch (IOException e) {
-                userlog.internalError(e);
-            }
-        } else {
-            try {
-                this.getConfig().updater().set(key, value).save();
-            } catch (IOException e) {
-                userlog.internalError(e);
-            }
-        }
     }
 
     @Override
@@ -301,7 +297,6 @@ class RepoImpl implements Repo {
             } else {
                 ulog.message(styledRaw("Please check to see if other processes are using this git repo.  If you're sure they aren't, you can enable automatic index.lock cleanup by typing '/set lock-cleanup enabled'", WARNING));
                 ulog.message(styledRaw("Proceeding with backup but it will probably not succeed.", WARNING));
-
             }
         }
     }

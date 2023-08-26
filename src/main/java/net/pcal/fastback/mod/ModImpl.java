@@ -199,7 +199,7 @@ class ModImpl implements LifecycleListener, Mod {
             }
             executor().stop();
             this.clearHudText();
-            final RepoFactory rf = RepoFactory.get();
+            final RepoFactory rf = RepoFactory.rf();
             if (rf.isGitRepo(worldSaveDir)) {
                 try (final Repo repo = rf.load(worldSaveDir)) {
                     final GitConfig config = repo.getConfig();

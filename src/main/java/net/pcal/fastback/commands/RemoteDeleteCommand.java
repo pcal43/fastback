@@ -30,9 +30,9 @@ import net.pcal.fastback.repo.SnapshotId;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.logging.UserLogger.ulog;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.WRITE;
 
 enum RemoteDeleteCommand implements Command {
@@ -45,17 +45,17 @@ enum RemoteDeleteCommand implements Command {
     @Override
     public void register(LiteralArgumentBuilder<ServerCommandSource> argb, Mod mod) {
         argb.then(literal(COMMAND_NAME).
-                requires(subcommandPermission(mod, COMMAND_NAME)).then(
+                requires(subcommandPermission(COMMAND_NAME)).then(
                         argument(ARGUMENT, StringArgumentType.string()).
                                 suggests(SnapshotNameSuggestions.remote()).
-                                executes(cc -> delete(mod, cc))
+                                executes(RemoteDeleteCommand::delete)
                 )
         );
     }
 
-    private static int delete(Mod mod, CommandContext<ServerCommandSource> cc) {
-        final UserLogger log = commandLogger(mod, cc.getSource());
-        gitOp(mod, WRITE, log, repo -> {
+    private static int delete(CommandContext<ServerCommandSource> cc) {
+        final UserLogger log = ulog(cc);
+        gitOp(WRITE, log, repo -> {
             final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
             final SnapshotId sid = repo.createSnapshotId(snapshotName);
             repo.deleteRemoteBranch(sid.getBranchName());
