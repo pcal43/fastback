@@ -64,8 +64,8 @@ class CommitUtils {
         final WorldId uuid = repo.getWorldId();
         final SnapshotId newSid = repo.getSidCodec().create(uuid);
         ulog.message(localized("fastback.chat.commit-start", newSid.getShortName()));
-        syslog().debug("start doCommitSnapshot for "+newSid);
-        writeBackupProperties(repo.getWorkTree().toPath(), repo.getConfig());
+        syslog().debug("start doCommitSnapshot for " + newSid);
+        writeBackupProperties(repo);
 
         final String newBranchName = newSid.getBranchName();
         try {
@@ -86,7 +86,7 @@ class CommitUtils {
         log.update(styledLocalized("fastback.hud.local-saving", NATIVE_GIT));
         final File worktree = repo.getWorkTree();
         final Map<String, String> env = Map.of("GIT_LFS_FORCE_PROGRESS", "1");
-        final Consumer<String> outputConsumer = line->log.update(styledRaw(line, NATIVE_GIT));
+        final Consumer<String> outputConsumer = line -> log.update(styledRaw(line, NATIVE_GIT));
         String[] checkout = {"git", "-C", worktree.getAbsolutePath(), "checkout", "--orphan", newBranchName};
         doExec(checkout, env, outputConsumer, outputConsumer);
         mod().setWorldSaveEnabled(false);
@@ -116,7 +116,6 @@ class CommitUtils {
 
             syslog().debug("Disabling world save for 'git add'");
             mod().setWorldSaveEnabled(false);
-
 
 
             //
@@ -166,25 +165,24 @@ class CommitUtils {
         jgit.commit().setMessage(newBranchName).call();
     }
 
-    private static void writeBackupProperties(Path worldSaveDir, GitConfig conf) throws IOException {
+    private static void writeBackupProperties(Repo repo) throws IOException {
         final Map<String, String> props = new HashMap<>();
-        props.put(IS_NATIVE_GIT_ENABLED.getSettingName(), conf.getString(IS_NATIVE_GIT_ENABLED));
+        GitConfig conf = repo.getConfig();
+        props.put("fastback-" + IS_NATIVE_GIT_ENABLED.getSettingName(), conf.getString(IS_NATIVE_GIT_ENABLED));
         props.put("git-version", EnvironmentUtils.getGitVersion());
         props.put("git-lfs-version", EnvironmentUtils.getGitLfsVersion());
         try {
             mod().addBackupProperties(props);
-        } catch(Exception e) {
+        } catch (Exception e) {
             syslog().error("Failed to add extra backup.properties", e);
         }
-        final Path path = worldSaveDir.resolve(FASTBACK_DIR + "/backup.properties");
+        final Path path = repo.getWorkTree().toPath().resolve(FASTBACK_DIR + "/backup.properties");
         final List<String> keys = new ArrayList<>(props.keySet());
         try (final PrintWriter pw = new PrintWriter(new FileWriter(path.toFile()))) {
             Collections.sort(keys);
-            for(String key : keys) {
+            for (String key : keys) {
                 pw.println(key + " = " + props.get(key));
             }
         }
     }
-
-
 }

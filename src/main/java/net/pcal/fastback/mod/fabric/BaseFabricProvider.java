@@ -29,6 +29,10 @@ import net.pcal.fastback.mod.fabric.mixins.ServerAccessors;
 import net.pcal.fastback.mod.fabric.mixins.SessionAccessors;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -126,6 +130,19 @@ public abstract class BaseFabricProvider implements FrameworkServiceProvider, Mi
             props.put("minecraft-version", minecraftServer.getVersion());
             props.put("minecraft-game-mode", String.valueOf(minecraftServer.getSaveProperties().getGameMode()));
             props.put("minecraft-level-name", minecraftServer.getSaveProperties().getLevelName());
+        }
+        try {
+            final Collection<ModContainer> mods = FabricLoader.getInstance().getAllMods();
+            final List<String> modList = new ArrayList<>();
+            for (final ModContainer mc : mods) {
+                modList.add(mc.getMetadata().getId() + ':' + mc.getMetadata().getVersion());
+            }
+            Collections.sort(modList);
+            final StringBuilder modListProp = new StringBuilder();
+            for (final String mod : modList) modListProp.append(mod + ", ");
+            props.put("fabric-mods", modListProp.toString());
+        } catch (Exception ohwell) {
+            syslog().error(ohwell);
         }
     }
 
