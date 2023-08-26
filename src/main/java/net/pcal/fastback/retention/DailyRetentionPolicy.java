@@ -26,9 +26,10 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.NavigableSet;
+import java.util.Set;
 import java.util.TimeZone;
 
 import static net.pcal.fastback.logging.SystemLogger.syslog;
@@ -58,12 +59,14 @@ class DailyRetentionPolicy implements RetentionPolicy {
     }
 
     @Override
-    public Collection<SnapshotId> getSnapshotsToPrune(NavigableSet<SnapshotId> snapshots) {
+    public Collection<SnapshotId> getSnapshotsToPrune(Set<SnapshotId> snapshots) {
         final LocalDate today = LocalDate.now(TimeZone.getDefault().toZoneId());
         final LocalDate gracePeriodStart = today.minus(Period.ofDays(gracePeriod));
         final List<SnapshotId> toPrune = new ArrayList<>();
         LocalDate previousDate = null;
-        for (final SnapshotId sid : snapshots.descendingSet()) {
+        List<SnapshotId> sortedDesending = new ArrayList<>(snapshots);
+        Collections.sort(sortedDesending, Collections.reverseOrder());
+        for (final SnapshotId sid : sortedDesending) {
             final LocalDate currentDate = sid.getDate().toInstant().atZone(TimeZone.getDefault().toZoneId()).toLocalDate();
             if (previousDate != null) {
                 if (currentDate.isAfter(gracePeriodStart)) {

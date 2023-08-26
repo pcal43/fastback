@@ -18,48 +18,52 @@
 
 package net.pcal.fastback.commands;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.UserLogger;
-import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.Mod;
-import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.SnapshotId;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
+import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
+import static net.pcal.fastback.commands.Commands.getArgumentNicely;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.mod.Mod.mod;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.NONE;
 
-enum ListCommand implements Command {
+
+/**
+ * @author pcal
+ * @since 0.15.0
+ */
+enum PushCommand implements Command {
 
     INSTANCE;
 
-    private static final String COMMAND_NAME = "list";
+    private static final String COMMAND_NAME = "push";
+    private static final String ARGUMENT = "snapshot-date";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
-        argb.then(
-                literal(COMMAND_NAME).
-                        requires(subcommandPermission(mod, COMMAND_NAME)).
-                        executes(this::execute)
+    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, Mod mod) {
+        argb.then(literal(COMMAND_NAME).
+                requires(subcommandPermission(mod(), COMMAND_NAME)).then(
+                        argument(ARGUMENT, StringArgumentType.string()).
+                                suggests(SnapshotNameSuggestions.local()).
+                                executes(PushCommand::execute)
+                )
         );
     }
 
-    private int execute(final CommandContext<ServerCommandSource> cc) {
-        final UserLogger ulog = UserLogger.forCommand(cc);
-        gitOp(NONE, ulog, repo -> {
-            final List<SnapshotId> snapshots = new ArrayList<>(repo.getLocalSnapshots());
-            Collections.sort(snapshots);
-            for (final SnapshotId sid : snapshots) {
-                ulog.message(UserMessage.raw(sid.getShortName()));
-            }
+    private static int execute(CommandContext<ServerCommandSource> cc) {
+        final UserLogger log = UserLogger.forCommand(cc);
+        gitOp(NONE, log, repo -> {
+            final String snapshotName = getArgumentNicely(ARGUMENT, String.class, cc.getLastChild(), log);
+            final SnapshotId sid = repo.createSnapshotId(snapshotName);
+            repo.doPushSnapshot(sid, log);
         });
         return SUCCESS;
     }

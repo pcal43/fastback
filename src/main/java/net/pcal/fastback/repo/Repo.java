@@ -18,7 +18,6 @@
 
 package net.pcal.fastback.repo;
 
-import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.UserLogger;
@@ -31,8 +30,7 @@ import java.nio.file.Path;
 import java.text.ParseException;
 import java.util.Collection;
 import java.util.List;
-import java.util.NavigableSet;
-import java.util.TreeSet;
+import java.util.Set;
 
 /**
  * Encapsulates everything the mod needs to do to the git repo.
@@ -54,9 +52,9 @@ public interface Repo extends AutoCloseable {
 
     File getWorkTree() throws NoWorkTreeException;
 
-    ListMultimap<WorldId, SnapshotId> listSnapshots() throws IOException;
+    Set<SnapshotId> getLocalSnapshots() throws IOException;
 
-    ListMultimap<WorldId, SnapshotId> listRemoteSnapshots() throws IOException;
+    Set<SnapshotId> getRemoteSnapshots() throws IOException;
 
     void doCommitAndPush(UserLogger ulog) throws IOException;
 
@@ -74,16 +72,11 @@ public interface Repo extends AutoCloseable {
 
     void deleteLocalBranches(List<String> branchesToDelete) throws GitAPIException, IOException;
 
+    void doPushSnapshot(SnapshotId sid, UserLogger ulog) throws IOException, ParseException;
+
     void setConfigValue(GitConfigKey key, boolean value, UserLogger userlog);
 
     Path getRestoresDir() throws IOException;
 
     SnapshotId createSnapshotId(String date) throws IOException, ParseException;
-
-    /**
-     * Extract the sids that apply to the given world and return them in a sorted list.  TODO find a better home for this please
-     */
-    static NavigableSet<SnapshotId> sortWorldSnapshots(ListMultimap<WorldId, SnapshotId> snapshotsPerWorld, WorldId worldUuid) {
-        return new TreeSet<>(snapshotsPerWorld.get(worldUuid));
-    }
 }

@@ -27,7 +27,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.NavigableSet;
+import java.util.Set;
 
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 
@@ -67,7 +67,7 @@ class FixedCountRetentionPolicy implements RetentionPolicy {
     }
 
     @Override
-    public Collection<SnapshotId> getSnapshotsToPrune(NavigableSet<SnapshotId> fromSnapshots) {
+    public Collection<SnapshotId> getSnapshotsToPrune(Set<SnapshotId> fromSnapshots) {
         final List<SnapshotId> sorted = new ArrayList<>(fromSnapshots);
         sorted.sort(Collections.reverseOrder());
         if (sorted.size() > count) {

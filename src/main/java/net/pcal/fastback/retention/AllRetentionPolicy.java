@@ -25,7 +25,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.NavigableSet;
+import java.util.Set;
 
 /**
  * Policy to retain all snapshots.
@@ -45,7 +45,7 @@ enum AllRetentionPolicy implements RetentionPolicy {
     }
 
     @Override
-    public Collection<SnapshotId> getSnapshotsToPrune(NavigableSet<SnapshotId> fromSnapshots) {
+    public Collection<SnapshotId> getSnapshotsToPrune(Set<SnapshotId> fromSnapshots) {
         return Collections.emptySet();
     }
 

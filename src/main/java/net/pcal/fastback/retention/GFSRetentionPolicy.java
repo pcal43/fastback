@@ -30,7 +30,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.NavigableSet;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.function.Supplier;
 
@@ -61,14 +61,16 @@ class GFSRetentionPolicy implements RetentionPolicy {
     }
 
     @Override
-    public Collection<SnapshotId> getSnapshotsToPrune(NavigableSet<SnapshotId> snapshots) {
+    public Collection<SnapshotId> getSnapshotsToPrune(Set<SnapshotId> snapshots) {
         final List<SnapshotId> toPrune = new ArrayList<>();
         final LocalDate now = nowSupplier.get();
         final LocalDate gracePeriodStart = now.minus(Period.ofDays(2));
         final LocalDate oneWeekAgo = now.minus(Period.ofDays(7));
         final LocalDate oneMonthAgo = now.minus(Period.ofDays(30));
         Integer currentDay = null, currentWeek = null, currentMonth = null;
-        for (final SnapshotId sid : snapshots.descendingSet()) {
+        List<SnapshotId> sortedDesending = new ArrayList<>(snapshots);
+        Collections.sort(sortedDesending, Collections.reverseOrder());
+        for (final SnapshotId sid : sortedDesending) {
             final LocalDate snapshotDate = sid.getDate().toInstant().atZone(TimeZone.getDefault().toZoneId()).toLocalDate();
             if (snapshotDate.isAfter(gracePeriodStart)) {
                 syslog().debug("Will retain " + sid + " because still in the grace period");

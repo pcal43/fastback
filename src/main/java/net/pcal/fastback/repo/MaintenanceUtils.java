@@ -92,7 +92,7 @@ public interface MaintenanceUtils {
             user.message(raw("Nothing changed."));
             return;
         }
-        if (!repo.listSnapshots().isEmpty()) {
+        if (!repo.getLocalSnapshots().isEmpty()) {
             user.message(styledRaw("Existing snapshots found.  You can't change the native-git setting after you've " +
                     "done a backup.  Consider making a fresh copy of your world, deleting the .git directory " +
                     "in the copy, and enabling native git there.", ERROR));

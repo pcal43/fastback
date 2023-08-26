@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Test;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -97,9 +98,14 @@ public class V2SnapshotIdTest {
         sids.put(wid1, s4);
         sids.put(wid1, s5);
 
-        assertEquals(List.of(s0, s1, s2), List.copyOf(Repo.sortWorldSnapshots(sids, wid0)));
-        assertEquals(List.of(s3, s4, s5), List.copyOf(Repo.sortWorldSnapshots(sids, wid1)));
+        assertEquals(List.of(s0, s1, s2), sorted(sids.get(wid0)));
+        assertEquals(List.of(s3, s4, s5), sorted(sids.get(wid1)));
     }
 
+    private static List<SnapshotId> sorted(Collection<SnapshotId> sids) {
+        List<SnapshotId> out = new ArrayList<>(sids);
+        Collections.sort(out);
+        return out;
+    }
 
 }

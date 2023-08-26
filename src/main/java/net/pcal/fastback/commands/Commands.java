@@ -38,6 +38,7 @@ import static net.pcal.fastback.config.FastbackConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
+import static net.pcal.fastback.mod.Mod.mod;
 import static net.pcal.fastback.utils.Executor.executor;
 
 public class Commands {
@@ -51,35 +52,36 @@ public class Commands {
         final LiteralArgumentBuilder<ServerCommandSource> root = LiteralArgumentBuilder.<ServerCommandSource>literal("backup").
                 requires(Permissions.require(BACKUP_COMMAND_PERM, mod.getDefaultPermLevel())).
                 executes(cc -> help(mod, cc));
-        EnableCommand.INSTANCE.register(root, mod);
-        DisableCommand.INSTANCE.register(root, mod);
-        LocalCommand.INSTANCE.register(root, mod);
-        FullCommand.INSTANCE.register(root, mod);
-        InfoCommand.INSTANCE.register(root, mod);
+        EnableCommand.INSTANCE.register(root,mod());
+        DisableCommand.INSTANCE.register(root,mod());
+        LocalCommand.INSTANCE.register(root,mod());
+        FullCommand.INSTANCE.register(root,mod());
+        InfoCommand.INSTANCE.register(root,mod());
 
-        RestoreCommand.INSTANCE.register(root, mod);
-        CreateFileRemoteCommand.INSTANCE.register(root, mod);
-        SetRemoteCommand.INSTANCE.register(root, mod);
-        SetAutobackActionCommand.INSTANCE.register(root, mod);
-        SetAutobackWaitCommand.INSTANCE.register(root, mod);
-        SetShutdownActionCommand.INSTANCE.register(root, mod);
+        RestoreCommand.INSTANCE.register(root,mod());
+        CreateFileRemoteCommand.INSTANCE.register(root,mod());
+        SetRemoteCommand.INSTANCE.register(root,mod());
+        SetAutobackActionCommand.INSTANCE.register(root,mod());
+        SetAutobackWaitCommand.INSTANCE.register(root,mod());
+        SetShutdownActionCommand.INSTANCE.register(root,mod());
 
-        SetRetentionCommand.INSTANCE.register(root, mod);
-        SetRemoteRetentionCommand.INSTANCE.register(root, mod);
+        SetRetentionCommand.INSTANCE.register(root,mod());
+        SetRemoteRetentionCommand.INSTANCE.register(root,mod());
 
-        PruneCommand.INSTANCE.register(root, mod);
-        DeleteCommand.INSTANCE.register(root, mod);
-        GcCommand.INSTANCE.register(root, mod);
-        ListCommand.INSTANCE.register(root, mod);
+        PruneCommand.INSTANCE.register(root,mod());
+        DeleteCommand.INSTANCE.register(root,mod());
+        GcCommand.INSTANCE.register(root,mod());
+        ListCommand.INSTANCE.register(root,mod());
+        PushCommand.INSTANCE.register(root,mod());
 
-        RemoteListCommand.INSTANCE.register(root, mod);
-        RemoteDeleteCommand.INSTANCE.register(root, mod);
-        RemotePruneCommand.INSTANCE.register(root, mod);
-        RemoteRestoreCommand.INSTANCE.register(root, mod);
+        RemoteListCommand.INSTANCE.register(root,mod());
+        RemoteDeleteCommand.INSTANCE.register(root,mod());
+        RemotePruneCommand.INSTANCE.register(root,mod());
+        RemoteRestoreCommand.INSTANCE.register(root,mod());
 
-        SetCommand.INSTANCE.register(root, mod);
+        SetCommand.INSTANCE.register(root,mod());
 
-        HelpCommand.INSTANCE.register(root, mod);
+        HelpCommand.INSTANCE.register(root,mod());
 
         CommandRegistrationCallback.EVENT.register((dispatcher, regAccess, env) -> dispatcher.register(root));
     }
@@ -130,6 +132,36 @@ public class Commands {
         void execute(Repo repo) throws Exception;
     }
 
+    static void gitOp(final ExecutionLock lock, final UserLogger ulog, final GitOp op) {
+        try {
+            executor().execute(lock, ulog, () -> {
+                final Path worldSaveDir = mod().getWorldDirectory();
+                final RepoFactory rf = RepoFactory.get();
+                if (!rf.isGitRepo(worldSaveDir)) { // FIXME this is not the right place for these checks
+                    ulog.message(styledLocalized("fastback.chat.not-enabled", ERROR));
+                    return;
+                }
+                try (final Repo repo = rf.load(worldSaveDir)) {
+                    final GitConfig repoConfig = repo.getConfig();
+                    if (!repoConfig.getBoolean(IS_BACKUP_ENABLED)) {
+                        ulog.message(styledLocalized("fastback.chat.not-enabled", ERROR));
+                    } else {
+                        op.execute(repo);
+                    }
+                } catch (Exception e) {
+                    ulog.message(styledLocalized("fastback.chat.internal-error", ERROR));
+                    syslog().error(e);
+                } finally {
+                    mod().clearHudText();
+                }
+            });
+        } catch(Exception e) {
+            ulog.internalError();
+            syslog().error(e);
+        }
+    }
+
+    @Deprecated
     static void gitOp(final Mod mod, final ExecutionLock lock, final UserLogger ulog, final GitOp op) {
         try {
             executor().execute(lock, ulog, () -> {
