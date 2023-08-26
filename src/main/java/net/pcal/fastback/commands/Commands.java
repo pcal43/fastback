@@ -60,8 +60,6 @@ public class Commands {
         RestoreCommand.INSTANCE.register(root,mod());
         CreateFileRemoteCommand.INSTANCE.register(root,mod());
 
-        SetAutobackActionCommand.INSTANCE.register(root,mod());
-        SetShutdownActionCommand.INSTANCE.register(root,mod());
         SetRetentionCommand.INSTANCE.register(root,mod());
         SetRemoteRetentionCommand.INSTANCE.register(root,mod());
 
