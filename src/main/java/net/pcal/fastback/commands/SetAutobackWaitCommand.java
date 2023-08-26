@@ -30,10 +30,10 @@ import net.pcal.fastback.mod.Mod;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.missingArgument;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.logging.UserLogger.ulog;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.WRITE_CONFIG;
 
 enum SetAutobackWaitCommand implements Command {
@@ -47,18 +47,18 @@ enum SetAutobackWaitCommand implements Command {
     public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(mod, COMMAND_NAME)).
-                        executes(cc -> missingArgument(ARGUMENT, mod, cc)).
+                        requires(subcommandPermission(COMMAND_NAME)).
+                        executes(cc -> missingArgument(ARGUMENT, cc)).
                         then(
                                 argument(ARGUMENT, IntegerArgumentType.integer(0)).
-                                        executes(cc -> setWait(mod, cc))
+                                        executes(SetAutobackWaitCommand::setWait)
                         )
         );
     }
 
-    private static int setWait(final Mod mod, final CommandContext<ServerCommandSource> cc) {
-        final UserLogger ulog = commandLogger(mod, cc.getSource());
-        gitOp(mod, WRITE_CONFIG, ulog, repo -> {
+    private static int setWait(final CommandContext<ServerCommandSource> cc) {
+        final UserLogger ulog = ulog(cc);
+        gitOp(WRITE_CONFIG, ulog, repo -> {
             final int waitMinutes = cc.getArgument(ARGUMENT, int.class);
             repo.getConfig().updater().set(FastbackConfigKey.AUTOBACK_WAIT_MINUTES, waitMinutes).save();
             ulog.message(UserMessage.localized("fastback.chat.info-autoback-wait", waitMinutes));

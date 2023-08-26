@@ -59,7 +59,7 @@ import static net.pcal.fastback.utils.ProcessUtils.doExec;
 class CommitUtils {
 
     public static SnapshotId doCommitSnapshot(final RepoImpl repo, final UserLogger ulog) throws IOException {
-        MaintenanceUtils.doPreflight(repo);
+        PreflightUtils.doPreflight(repo);
         final WorldId uuid = repo.getWorldId();
         final SnapshotId newSid = repo.getSidCodec().create(uuid);
         ulog.message(localized("fastback.chat.commit-start", newSid.getShortName()));

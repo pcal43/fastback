@@ -35,7 +35,4 @@ public interface GitConfigKey {
     String getStringDefault();
 
     int getIntDefault();
-
-    default String getSettingDisplayName() { return this.getSettingName(); }
-
 }

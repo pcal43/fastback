@@ -21,7 +21,6 @@ package net.pcal.fastback.repo;
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
-import net.pcal.fastback.repo.SnapshotIdUtils.SnapshotIdCodec;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
@@ -102,7 +101,7 @@ class PushUtils {
             }
             syslog().debug("Pushing to " + pushUrl);
 
-            MaintenanceUtils.doPreflight(repo);
+            PreflightUtils.doPreflight(repo);
 
             if (conf.getBoolean(IS_NATIVE_GIT_ENABLED)) {
                 native_doPush(repo, sid.getBranchName(), ulog);

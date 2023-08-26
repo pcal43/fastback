@@ -18,6 +18,7 @@
 
 package net.pcal.fastback.commands;
 
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -36,12 +37,14 @@ import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.missingArgument;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.config.FastbackConfigKey.AUTOBACK_WAIT_MINUTES;
 import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_MESSAGE;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_LOCK_CLEANUP_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.RESTORE_DIRECTORY;
+import static net.pcal.fastback.config.OtherConfigKey.REMOTE_PUSH_URL;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserLogger.ulog;
 import static net.pcal.fastback.logging.UserMessage.raw;
@@ -67,12 +70,14 @@ enum SetCommand implements Command {
         final LiteralArgumentBuilder<ServerCommandSource> sc = literal(COMMAND_NAME).
                 requires(subcommandPermission(COMMAND_NAME)).
                 executes(cc -> missingArgument("key", cc));
-        registerBooleanConfigValue(IS_NATIVE_GIT_ENABLED, sc);
-        registerBooleanConfigValue(IS_LOCK_CLEANUP_ENABLED, sc);
-        registerBooleanConfigValue(IS_BACKUP_ENABLED, sc);
-        registerBooleanConfigValue(BROADCAST_ENABLED, sc);
-        registerStringConfigValue(BROADCAST_MESSAGE, "message", sc);
-        registerStringConfigValue(RESTORE_DIRECTORY, "full-directory-path", sc);
+        registerBooleanConfigValue(IS_NATIVE_GIT_ENABLED, IS_NATIVE_GIT_ENABLED.getSettingName(), sc);
+        registerBooleanConfigValue(IS_LOCK_CLEANUP_ENABLED, IS_LOCK_CLEANUP_ENABLED.getSettingName(), sc);
+        registerBooleanConfigValue(IS_BACKUP_ENABLED, IS_BACKUP_ENABLED.getSettingName(), sc);
+        registerBooleanConfigValue(BROADCAST_ENABLED, BROADCAST_ENABLED.getSettingName(), sc);
+        registerStringConfigValue(BROADCAST_MESSAGE, BROADCAST_MESSAGE.getSettingName(), "message", sc);
+        registerStringConfigValue(RESTORE_DIRECTORY, BROADCAST_MESSAGE.getSettingName(), "full-directory-path", sc);
+        registerStringConfigValue(REMOTE_PUSH_URL, "remote-url", "url", sc);
+        registerIntegerConfigValue(AUTOBACK_WAIT_MINUTES, AUTOBACK_WAIT_MINUTES.getSettingName(), "minutes", sc);
         registerForceDebug(sc);
         root.then(sc);
     }
@@ -81,21 +86,49 @@ enum SetCommand implements Command {
     // ======================================================================
     // Boolean config values
 
-    private static void registerBooleanConfigValue(GitConfigKey key, final LiteralArgumentBuilder<ServerCommandSource> setCommand) {
-        final LiteralArgumentBuilder<ServerCommandSource> builder = literal(key.getSettingDisplayName());
-        builder.then(literal("true").executes(cc -> setBooleanConfigValue(key, true, cc)));
-        builder.then(literal("false").executes(cc -> setBooleanConfigValue(key, false, cc)));
+    private static void registerBooleanConfigValue(GitConfigKey key, String keyDisplay, final LiteralArgumentBuilder<ServerCommandSource> setCommand) {
+        final LiteralArgumentBuilder<ServerCommandSource> builder = literal(keyDisplay);
+        builder.then(literal("true").executes(cc -> setBooleanConfigValue(key, keyDisplay, true, cc)));
+        builder.then(literal("false").executes(cc -> setBooleanConfigValue(key, keyDisplay, false, cc)));
         setCommand.then(builder);
     }
 
-    private static int setBooleanConfigValue(GitConfigKey key, boolean newValue, final CommandContext<ServerCommandSource> cc) {
+    private static int setBooleanConfigValue(GitConfigKey key, String keyDisplay, boolean newValue, final CommandContext<ServerCommandSource> cc) {
         try (UserLogger ulog = ulog(cc)) {
             final Path worldSaveDir = mod().getWorldDirectory();
             final RepoFactory rf = RepoFactory.rf();
             if (rf.isGitRepo(worldSaveDir)) {
                 try (Repo repo = rf.load(worldSaveDir)) {
                     repo.getConfig().updater().set(key, newValue).save();
-                    ulog.message(raw(key.getSettingDisplayName() + " = " + newValue));
+                    ulog.message(raw(keyDisplay + " = " + newValue));
+                } catch (Exception e) {
+                    ulog.internalError(e);
+                    return FAILURE;
+                }
+            }
+        }
+        return SUCCESS;
+    }
+
+    // ======================================================================
+    // Integer config values
+
+    private static void registerIntegerConfigValue(GitConfigKey key, String keyDisplay, String argName, final LiteralArgumentBuilder<ServerCommandSource> setCommand) {
+        final LiteralArgumentBuilder<ServerCommandSource> builder = literal(keyDisplay);
+        builder.then(argument(argName, IntegerArgumentType.integer()).
+                executes(cc -> setIntegerConfigValue(key, keyDisplay, argName, cc)));
+        setCommand.then(builder);
+    }
+
+    private static int setIntegerConfigValue(GitConfigKey key, String keyDisplay, String argName, final CommandContext<ServerCommandSource> cc) {
+        try (UserLogger ulog = ulog(cc)) {
+            final Path worldSaveDir = mod().getWorldDirectory();
+            final RepoFactory rf = RepoFactory.rf();
+            if (rf.isGitRepo(worldSaveDir)) {
+                try (Repo repo = rf.load(worldSaveDir)) {
+                    final Integer newValue = cc.getArgument(argName, Integer.class);
+                    repo.getConfig().updater().set(key, newValue).save();
+                    ulog.message(raw(keyDisplay + " = " + newValue));
                 } catch (Exception e) {
                     ulog.internalError(e);
                     return FAILURE;
@@ -108,14 +141,14 @@ enum SetCommand implements Command {
     // ======================================================================
     // String config values
 
-    private static void registerStringConfigValue(GitConfigKey key, String argName, final LiteralArgumentBuilder<ServerCommandSource> setCommand) {
-        final LiteralArgumentBuilder<ServerCommandSource> builder = literal(key.getSettingDisplayName());
+    private static void registerStringConfigValue(GitConfigKey key, String keyDisplay, String argName, final LiteralArgumentBuilder<ServerCommandSource> setCommand) {
+        final LiteralArgumentBuilder<ServerCommandSource> builder = literal(keyDisplay);
         builder.then(argument(argName, StringArgumentType.greedyString()).
-                executes(cc -> setStringConfigValue(key, argName, cc)));
+                executes(cc -> setStringConfigValue(key, keyDisplay, argName, cc)));
         setCommand.then(builder);
     }
 
-    private static int setStringConfigValue(GitConfigKey key, String argName, final CommandContext<ServerCommandSource> cc) {
+    private static int setStringConfigValue(GitConfigKey key, String keyDisplay, String argName, final CommandContext<ServerCommandSource> cc) {
         try (UserLogger ulog = ulog(cc)) {
             final Path worldSaveDir = mod().getWorldDirectory();
             final RepoFactory rf = RepoFactory.rf();
@@ -123,7 +156,7 @@ enum SetCommand implements Command {
                 try (Repo repo = rf.load(worldSaveDir)) {
                     final String newValue = cc.getArgument(argName, String.class);
                     repo.getConfig().updater().set(key, newValue).save();
-                    ulog.message(raw(key.getSettingDisplayName() + " = " + newValue));
+                    ulog.message(raw(keyDisplay + " = " + newValue));
                 } catch (Exception e) {
                     ulog.internalError(e);
                     return FAILURE;

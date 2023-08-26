@@ -26,11 +26,11 @@ import net.pcal.fastback.mod.Mod;
 
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.missingArgument;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.config.FastbackConfigKey.AUTOBACK_ACTION;
+import static net.pcal.fastback.logging.UserLogger.ulog;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.WRITE_CONFIG;
 
 enum SetAutobackActionCommand implements Command {
@@ -42,8 +42,8 @@ enum SetAutobackActionCommand implements Command {
     @Override
     public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
         final LiteralArgumentBuilder<ServerCommandSource> setCommand = literal(COMMAND_NAME).
-                requires(subcommandPermission(mod, COMMAND_NAME)).
-                executes(cc -> missingArgument("actionName", mod, cc));
+                requires(subcommandPermission(COMMAND_NAME)).
+                executes(cc -> missingArgument("actionName", cc));
         for (final SchedulableAction action : SchedulableAction.values()) {
             final LiteralArgumentBuilder<ServerCommandSource> azz = literal(action.getArgumentName());
             azz.executes(cc -> setAutobackAction(mod, cc.getSource(), action));
@@ -53,8 +53,8 @@ enum SetAutobackActionCommand implements Command {
     }
 
     private static int setAutobackAction(final Mod mod, final ServerCommandSource scs, SchedulableAction action) {
-        final UserLogger ulog = commandLogger(mod, scs);
-        gitOp(mod, WRITE_CONFIG, ulog, repo -> {
+        final UserLogger ulog = ulog(scs);
+        gitOp(WRITE_CONFIG, ulog, repo -> {
             repo.getConfig().updater().set(AUTOBACK_ACTION, action.getConfigValue()).save();
             ulog.message(UserMessage.localized("fastback.chat.info-autoback-action", action.getArgumentName()));
         });
