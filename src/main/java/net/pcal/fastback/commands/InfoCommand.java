@@ -76,7 +76,7 @@ enum InfoCommand implements Command {
                 final Text notInstalled = Text.translatable("fastback.values.not-installed");
                 ulog.message(UserMessage.localized("fastback.chat.info-header"));
                 ulog.message(UserMessage.localized("fastback.chat.info-fastback-version", mod.getModVersion()));
-                ulog.message(raw("native git installed:" + EnvironmentUtils.isNativeGitInstalled())); //fixme i18n
+                ulog.message(raw("native git installed: " + EnvironmentUtils.isNativeGitInstalled())); //fixme i18n
                 final String gitVersion = getGitVersion();
                 ulog.message(UserMessage.localized("fastback.chat.info-native-git-version", gitVersion != null ? gitVersion : notInstalled));
                 final String gitLfsVersion = getGitLfsVersion();

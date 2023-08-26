@@ -45,7 +45,7 @@ public enum FastbackConfigKey implements GitConfigKey {
     REMOTE_NAME("remote-name", "origin"),
     REMOTE_RETENTION_POLICY("remote-retention-policy", null),
     RESTORE_DIRECTORY("restore-directory", null),
-    SHUTDOWN_ACTION("shutdown-action", null),
+    SHUTDOWN_ACTION("shutdown-action", "local"),
     UPDATE_GITATTRIBUTES_ENABLED("update-gitattributes-enabled", true),
     UPDATE_GITIGNORE_ENABLED("update-gitignore-enabled", true);
 
