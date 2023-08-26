@@ -35,10 +35,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
-import static net.pcal.fastback.repo.SnapshotIdUtils.SnapshotIdCodec.*;
+import static net.pcal.fastback.repo.SnapshotIdUtils.SnapshotIdCodec.V1;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**

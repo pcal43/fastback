@@ -31,12 +31,13 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.function.Consumer;
 
 import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
@@ -166,13 +167,22 @@ class CommitUtils {
     }
 
     private static void writeBackupProperties(Path worldSaveDir, GitConfig conf) throws IOException {
-        final Properties props = new Properties();
+        final Map<String, String> props = new HashMap<>();
         props.put(IS_NATIVE_GIT_ENABLED.getSettingName(), conf.getString(IS_NATIVE_GIT_ENABLED));
         props.put("git-version", EnvironmentUtils.getGitVersion());
         props.put("git-lfs-version", EnvironmentUtils.getGitLfsVersion());
+        try {
+            mod().addBackupProperties(props);
+        } catch(Exception e) {
+            syslog().error("Failed to add extra backup.properties", e);
+        }
         final Path path = worldSaveDir.resolve(FASTBACK_DIR + "/backup.properties");
-        try (final FileWriter fw = new FileWriter(path.toFile())) {
-            props.store(fw, null);
+        final List<String> keys = new ArrayList<>(props.keySet());
+        try (final PrintWriter pw = new PrintWriter(new FileWriter(path.toFile()))) {
+            Collections.sort(keys);
+            for(String key : keys) {
+                pw.println(key + " = " + props.get(key));
+            }
         }
     }
 

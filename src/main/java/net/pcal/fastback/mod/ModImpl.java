@@ -31,6 +31,7 @@ import net.pcal.fastback.repo.RepoFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Map;
 
 import static java.nio.file.Files.createTempDirectory;
 import static java.util.Objects.requireNonNull;
@@ -137,6 +138,11 @@ class ModImpl implements LifecycleListener, Mod {
     @Override
     public int getDefaultPermLevel() {
         return fsp.isClient() ? 0 : 4;
+    }
+
+    @Override
+    public void addBackupProperties(Map<String, String> props) {
+        fsp.addBackupProperties(props);
     }
 
     @Override

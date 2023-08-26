@@ -22,6 +22,7 @@ import net.minecraft.text.Text;
 import net.pcal.fastback.logging.SystemLogger;
 
 import java.nio.file.Path;
+import java.util.Map;
 
 /**
  * Services that must be provided by the underlying mod framework.  Currently, that means fabric only.
@@ -66,11 +67,6 @@ public interface FrameworkServiceProvider {
     boolean isClient();
 
     /**
-     * @return true if world saving is currently enabled (i.e. if we haven't disabled it).
-     */
-    boolean isWorldSaveEnabled();
-
-    /**
      * If on a server, broadcasts a message to all connected users.
      */
     void sendBroadcast(Text text);
@@ -96,4 +92,10 @@ public interface FrameworkServiceProvider {
     void setAutoSaveListener(Runnable runnable);
 
     boolean isDedicatedServer();
+
+    /**
+     * Add some interesting properties to record in backup.properties.
+     */
+    void addBackupProperties(Map<String, String> props);
+
 }

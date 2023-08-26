@@ -29,6 +29,7 @@ import net.pcal.fastback.mod.fabric.mixins.ServerAccessors;
 import net.pcal.fastback.mod.fabric.mixins.SessionAccessors;
 
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
@@ -114,6 +115,18 @@ public abstract class BaseFabricProvider implements FrameworkServiceProvider, Mi
     @Override
     public boolean isDedicatedServer() {
         return this.minecraftServer != null && this.minecraftServer.isDedicated();
+    }
+
+    /**
+     * Add extra properties that will be stored in .fastback/backup.properties.
+     */
+    public void addBackupProperties(Map<String, String> props) {
+        props.put("fastback-version", this.getModVersion());
+        if (this.minecraftServer != null) {
+            props.put("minecraft-version", minecraftServer.getVersion());
+            props.put("minecraft-game-mode", String.valueOf(minecraftServer.getSaveProperties().getGameMode()));
+            props.put("minecraft-level-name", minecraftServer.getSaveProperties().getLevelName());
+        }
     }
 
     // ======================================================================
