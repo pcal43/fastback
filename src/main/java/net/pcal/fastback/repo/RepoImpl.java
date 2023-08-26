@@ -67,6 +67,11 @@ import static org.eclipse.jgit.util.FileUtils.RETRY;
 class RepoImpl implements Repo {
 
     // ======================================================================
+    // Constants
+
+    static final String FASTBACK_DIR = ".fastback";
+
+    // ======================================================================
     // Fields
 
     private final Git jgit;
@@ -229,31 +234,13 @@ class RepoImpl implements Repo {
     }
 
     @Override
-    public void deleteLocalBranches(List<String> branchesToDelete) throws IOException {
+    public void deleteLocalBranches(final List<String> branchesToDelete) throws IOException {
         PruneUtils.deleteLocalBranches(this, branchesToDelete);
     }
 
     @Override
     public void close() {
         this.getJGit().close();
-    }
-
-    @Override
-    public void setConfigValue(GitConfigKey key, boolean value, UserLogger userlog) {
-        requireNonNull(key);
-        if (key == IS_NATIVE_GIT_ENABLED) { // FIXME this is gross.  find some other place
-            try {
-                MaintenanceUtils.setNativeGitEnabled(value, this, userlog);
-            } catch (IOException e) {
-                userlog.internalError(e);
-            }
-        } else {
-            try {
-                this.getConfig().updater().set(key, value).save();
-            } catch (IOException e) {
-                userlog.internalError(e);
-            }
-        }
     }
 
     @Override
@@ -310,7 +297,6 @@ class RepoImpl implements Repo {
             } else {
                 ulog.message(styledRaw("Please check to see if other processes are using this git repo.  If you're sure they aren't, you can enable automatic index.lock cleanup by typing '/set lock-cleanup enabled'", WARNING));
                 ulog.message(styledRaw("Proceeding with backup but it will probably not succeed.", WARNING));
-
             }
         }
     }

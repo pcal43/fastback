@@ -63,8 +63,8 @@ class RepoFactoryImpl implements RepoFactory {
             } else {
                 ulog.message(styledRaw("Native git not installed on your system.", WARNING)); // FIXME i18n
                 ulog.message(raw("Native git is not required but it makes Fastback *much* faster.  You are strongly encouraged to install it *before* doing your first backup."));
-                ulog.message(raw("For more information, see https://pcal43.github.io/fastback/native.html"));
-                //updater.set(IS_NATIVE_GIT_ENABLED, false);
+                ulog.message(raw("For more information, see https://pcal43.github.io/fastback/native-git.html"));
+                updater.set(IS_NATIVE_GIT_ENABLED, false);
             }
             updater.save();
             ulog.message(raw("Backups initialized.  Run '/backup local' to do your first backup.  '/backup help' for more options."));

@@ -88,14 +88,14 @@ enum SetCommand implements Command {
         setCommand.then(builder);
     }
 
-    private static int setBooleanConfigValue(GitConfigKey key, boolean value, final CommandContext<ServerCommandSource> cc) {
+    private static int setBooleanConfigValue(GitConfigKey key, boolean newValue, final CommandContext<ServerCommandSource> cc) {
         try (UserLogger ulog = ulog(cc)) {
             final Path worldSaveDir = mod().getWorldDirectory();
             final RepoFactory rf = RepoFactory.rf();
             if (rf.isGitRepo(worldSaveDir)) {
                 try (Repo repo = rf.load(worldSaveDir)) {
-                    repo.setConfigValue(key, value, ulog(cc));
-                    ulog.message(raw(key.getSettingDisplayName() + " = " + value));
+                    repo.getConfig().updater().set(key, newValue).save();
+                    ulog.message(raw(key.getSettingDisplayName() + " = " + newValue));
                 } catch (Exception e) {
                     ulog.internalError(e);
                     return FAILURE;

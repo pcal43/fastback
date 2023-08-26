@@ -50,7 +50,7 @@ enum InitCommand implements Command {
     public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(mod, COMMAND_NAME)).
+                        requires(subcommandPermission(COMMAND_NAME)).
                         executes(InitCommand::init)
         );
     }
