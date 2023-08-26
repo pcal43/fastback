@@ -18,7 +18,7 @@ The disadvantage of this approach is that you can't use it unless you first inst
 
 ## How to Enable Native Git Support
 
-### If you already have git
+### If you already have git installed
 
 If you already have git and git-lfs installed, native support will be enabled automatically when you
 run `/backup init`.  
@@ -26,31 +26,31 @@ run `/backup init`.
 If for some reason you don't want this, you can disable it by immediately running 
 `/backup set native-git-enabled false`.
 
-### If you don't hve git
+### If you *don't* have git intsalled
 
 If you don't have git installed, you'll be told about this when you run `/backup init`.  
 
 If possible, you're strongly encouraged to install it.  How you do this will depend on
-your platform.  There are a ton of resources on the web describing how to do this.  
-[Start here](https://github.com/git-lfs/git-lfs/wiki/Installation) and ask google for more help if needed.
+your platform.  There are a ton of resources on the web describing how to do this.  [Start here](https://github.com/git-lfs/git-lfs/wiki/Installation) and ask google for more help if needed.
 
 After installing git and git-lfs, you can run `/backup set native-git-enabled true` *if you haven't
-yet done a backup*. 
+already done a backup*. 
 
 ### Changing `native-git-enabled` if you've already done a backup
 
-It isn't recommended to enable native support on a world that has already made backups in non-native mode (or vice
-versa).  Native and non-native employ different strategies, and mixing them in the same repo may cause performance
+You're strongly discouraged from enabling native support on a world that has already made backups in non-native mode 
+(or vice versa).  Native and non-native employ different strategies, and mixing them in the same repo may cause performance
 issues or other problems in the future.
 
 If you want to change the native setting on a world that you've already backed up, you have three options:
 
 * Start over: Create a brand new world that you've never backed up
-* Erase backups: delete the `.git` directory from an existing world.  THIS WILL DELETE ALL BACKUP DATA FOR THAT WORLD.
-* Live dangerously: edit `.git/config` by hand to force a change.  You may have bad performance in the future if you do this.
+* Erase backups: delete the `.git` directory from an existing world.  
+  * THIS WILL DELETE ALL BACKUP DATA FOR THAT WORLD.
+* Live dangerously: edit `.git/config` by hand to force a change to `fastback.native-git-enabled`
+  * YOU MAY HAVE BAD PERFORMANCE OR OTHER PROBLEMS IN THE FUTURE IF YOU DO THIS.
 
-
-## Pushing to a remote with native mode enabled
+### Pushing to a remote with native mode enabled
 
 If you're going to be pushing remote backups with native mode enabled, the server **must** support `git-lfs`.   
 
