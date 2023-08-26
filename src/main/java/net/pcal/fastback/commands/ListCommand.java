@@ -24,7 +24,6 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.Mod;
-import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.SnapshotId;
 
 import java.util.ArrayList;
@@ -53,7 +52,7 @@ enum ListCommand implements Command {
     }
 
     private int execute(final CommandContext<ServerCommandSource> cc) {
-        final UserLogger ulog = UserLogger.forCommand(cc);
+        final UserLogger ulog = UserLogger.ulog(cc);
         gitOp(NONE, ulog, repo -> {
             final List<SnapshotId> snapshots = new ArrayList<>(repo.getLocalSnapshots());
             Collections.sort(snapshots);

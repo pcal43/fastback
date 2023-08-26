@@ -59,7 +59,7 @@ enum PushCommand implements Command {
     }
 
     private static int execute(CommandContext<ServerCommandSource> cc) {
-        final UserLogger log = UserLogger.forCommand(cc);
+        final UserLogger log = UserLogger.ulog(cc);
         gitOp(NONE, log, repo -> {
             final String snapshotName = getArgumentNicely(ARGUMENT, String.class, cc.getLastChild(), log);
             final SnapshotId sid = repo.createSnapshotId(snapshotName);

@@ -86,12 +86,12 @@ enum SetCommand implements Command {
     }
 
     private static int setBooleanConfigValue(final CommandContext<ServerCommandSource> cc, GitConfigKey key, boolean value) {
-        try (UserLogger ulog = UserLogger.forCommand(cc)) {
+        try (UserLogger ulog = UserLogger.ulog(cc)) {
             final Path worldSaveDir = mod().getWorldDirectory();
             final RepoFactory rf = RepoFactory.get();
             if (rf.isGitRepo(worldSaveDir)) {
                 try (Repo repo = rf.load(worldSaveDir)) {
-                    repo.setConfigValue(key, value, UserLogger.forCommand(cc));
+                    repo.setConfigValue(key, value, UserLogger.ulog(cc));
                     ulog.message(raw(key.getSettingDisplayName() + " = " + value));
                 } catch (Exception e) {
                     ulog.internalError(e);
@@ -115,7 +115,7 @@ enum SetCommand implements Command {
     }
 
     private static int setStringConfigValue(final CommandContext<ServerCommandSource> cc, GitConfigKey key) {
-        try (UserLogger ulog = UserLogger.forCommand(cc)) {
+        try (UserLogger ulog = UserLogger.ulog(cc)) {
             final Path worldSaveDir = mod().getWorldDirectory();
             final RepoFactory rf = RepoFactory.get();
             if (rf.isGitRepo(worldSaveDir)) {
@@ -147,7 +147,7 @@ enum SetCommand implements Command {
 
     private static int setForceDebug(final CommandContext<ServerCommandSource> cc, boolean value) {
         syslog().setForceDebugEnabled(value);
-        try (UserLogger ulog = UserLogger.forCommand(cc)) {
+        try (UserLogger ulog = UserLogger.ulog(cc)) {
             ulog.message(raw("force-debug-enabled = " + value));
         }
         return SUCCESS;

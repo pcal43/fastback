@@ -56,7 +56,7 @@ abstract class SnapshotNameSuggestions implements SuggestionProvider<ServerComma
     public CompletableFuture<Suggestions> getSuggestions(final CommandContext<ServerCommandSource> cc,
                                                          final SuggestionsBuilder builder) {
         CompletableFuture<Suggestions> completableFuture = new CompletableFuture<>();
-        try (final UserLogger ulog = UserLogger.forCommand(cc)) {
+        try (final UserLogger ulog = UserLogger.ulog(cc)) {
             gitOp(NONE, ulog, repo -> {
                 final Iterator<SnapshotId> i = getSnapshotIds(repo, ulog);
                 // Note to self: there's no point sorting here because the mc code (Suggestion.java) is

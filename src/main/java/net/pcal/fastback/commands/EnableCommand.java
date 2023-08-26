@@ -31,12 +31,12 @@ import java.nio.file.Path;
 
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.commands.SchedulableAction.DEFAULT_SHUTDOWN_ACTION;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
+import static net.pcal.fastback.logging.UserLogger.ulog;
 import static net.pcal.fastback.logging.UserMessage.localized;
 import static net.pcal.fastback.mod.Mod.mod;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.NONE;
@@ -53,12 +53,12 @@ enum EnableCommand implements Command {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(mod, COMMAND_NAME)).
-                        executes(cc -> enable(cc))
+                        executes(EnableCommand::enable)
         );
     }
 
     private static int enable(final CommandContext<ServerCommandSource> cc) {
-        final UserLogger ulog = commandLogger(mod(), cc.getSource());
+        final UserLogger ulog = ulog(cc);
         executor().execute(NONE, ulog, () -> {
                     final Path worldSaveDir = mod().getWorldDirectory();
                     final RepoFactory rf = RepoFactory.get();

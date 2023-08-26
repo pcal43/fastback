@@ -57,7 +57,7 @@ enum RestoreCommand implements Command {
     }
 
     private static int restore(CommandContext<ServerCommandSource> cc) {
-        try(final UserLogger ulog = UserLogger.forCommand(cc)) {
+        try(final UserLogger ulog = UserLogger.ulog(cc)) {
             gitOp(mod(), NONE, ulog, repo -> {
                 final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
                 final SnapshotId sid = repo.createSnapshotId(snapshotName);

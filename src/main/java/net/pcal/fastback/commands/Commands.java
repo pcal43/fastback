@@ -88,7 +88,7 @@ public class Commands {
 
     @Deprecated
     public static UserLogger commandLogger(final Mod mod, final ServerCommandSource scs) {
-        return UserLogger.forCommand(scs);
+        return UserLogger.ulog(scs);
     }
 
     public static String subcommandPermName(String subcommandName) {
@@ -120,7 +120,7 @@ public class Commands {
     }
 
     public static int missingArgument(final String argName, final CommandContext<ServerCommandSource> cc) {
-        return missingArgument(argName, UserLogger.forCommand(cc));
+        return missingArgument(argName, UserLogger.ulog(cc));
     }
 
     public static int missingArgument(final String argName, final UserLogger log) {

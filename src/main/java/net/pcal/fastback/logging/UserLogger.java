@@ -60,11 +60,11 @@ public interface UserLogger extends AutoCloseable {
         internalError();
     }
 
-    static UserLogger forCommand(final CommandContext<ServerCommandSource> cc) {
+    static UserLogger ulog(final CommandContext<ServerCommandSource> cc) {
         return new CommandLogger(cc.getSource());
     }
 
-    static UserLogger forCommand(final ServerCommandSource scs) {
+    static UserLogger ulog(final ServerCommandSource scs) {
         return new CommandLogger(scs);
     }
 

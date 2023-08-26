@@ -21,45 +21,58 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
+import net.pcal.fastback.config.GitConfig.Updater;
 import net.pcal.fastback.logging.UserLogger;
-import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.Mod;
-import net.pcal.fastback.repo.SnapshotId;
+import net.pcal.fastback.repo.Repo;
+import net.pcal.fastback.repo.RepoFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.nio.file.Path;
 
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
-import static net.pcal.fastback.config.OtherConfigKey.REMOTE_PUSH_URL;
+import static net.pcal.fastback.commands.SchedulableAction.DEFAULT_SHUTDOWN_ACTION;
+import static net.pcal.fastback.config.FastbackConfigKey.IS_BACKUP_ENABLED;
+import static net.pcal.fastback.config.FastbackConfigKey.SHUTDOWN_ACTION;
+import static net.pcal.fastback.logging.SystemLogger.syslog;
+import static net.pcal.fastback.logging.UserLogger.ulog;
+import static net.pcal.fastback.logging.UserMessage.localized;
+import static net.pcal.fastback.mod.Mod.mod;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.NONE;
+import static net.pcal.fastback.utils.Executor.executor;
 
-enum RemoteListCommand implements Command {
+/**
+ * @author pcal
+ * @since 0.15.0
+ */
+enum InitCommand implements Command {
 
     INSTANCE;
 
-    private static final String COMMAND_NAME = "remote-list";
+    private static final String COMMAND_NAME = "init";
 
     @Override
     public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(mod, COMMAND_NAME)).
-                        executes(RemoteListCommand::execute)
+                        executes(InitCommand::init)
         );
     }
 
-    private static int execute(final CommandContext<ServerCommandSource> cc) {
-        final UserLogger log = UserLogger.ulog(cc);
-        gitOp(NONE, log, repo -> {
-            final List<SnapshotId> snapshots = new ArrayList<>(repo.getRemoteSnapshots());
-            Collections.sort(snapshots);
-            snapshots.forEach(sid -> log.message(UserMessage.raw(sid.getShortName())));
-            log.message(UserMessage.localized("fastback.chat.remote-list-done", snapshots.size(), repo.getConfig().getString(REMOTE_PUSH_URL)));
-        });
+    private static int init(final CommandContext<ServerCommandSource> cc) {
+        try (final UserLogger ulog = ulog(cc)) {
+            executor().execute(NONE, ulog, () -> {
+                        final Path worldSaveDir = mod().getWorldDirectory();
+                        final RepoFactory rf = RepoFactory.get();
+                        rf.init(worldSaveDir);
+                        } catch (Exception e) {
+                            syslog().error("Error enabling backups", e);
+                        }
+                    }
+            );
+        }
         return SUCCESS;
     }
 }
