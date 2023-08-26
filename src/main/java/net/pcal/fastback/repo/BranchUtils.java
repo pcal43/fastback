@@ -20,42 +20,53 @@ package net.pcal.fastback.repo;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
+import net.pcal.fastback.repo.SnapshotIdUtils.SnapshotIdCodec;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
 
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Collection;
-import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 
-@SuppressWarnings({"Convert2MethodRef", "FunctionalExpressionCanBeFolded"})
-class ListSnapshotsTask implements Callable<ListMultimap<WorldId, SnapshotId>> {
 
+/**
+ * @author pcal
+ */
+class BranchUtils {
 
-    private final JGitSupplier<Collection<Ref>> refProvider;
-
-    ListSnapshotsTask(JGitSupplier<Collection<Ref>> refProvider) {
-        this.refProvider = requireNonNull(refProvider);
-    }
-
-    @Override
-    public ListMultimap<WorldId, SnapshotId> call() throws GitAPIException, IOException {
+    static ListMultimap<WorldId, SnapshotId> listSnapshots(RepoImpl repo, JGitSupplier<Collection<Ref>> refProvider) throws GitAPIException, IOException {
         final ListMultimap<WorldId, SnapshotId> snapshotsPerWorld = ArrayListMultimap.create();
-        final Collection<Ref> refs = this.refProvider.get();
+        final Collection<Ref> refs = refProvider.get();
+        final SnapshotIdCodec codec = repo.getSidCodec();
         for (final Ref ref : refs) {
-            final SnapshotId sid;
-            try {
-                sid = requireNonNull(SnapshotId.fromBranchRef(ref));
-            } catch (ParseException pe) {
-                syslog().warn("Ignoring unrecognized branch " + ref.getName());
-                continue;
+            String branchName = getBranchName(ref);
+            if (repo.getSidCodec().isSnapshotBranchName(repo.getWorldId(), branchName)) {
+                final SnapshotId sid;
+                try {
+                    sid = requireNonNull(codec.fromBranch(branchName));
+                } catch (ParseException pe) {
+                    syslog().error("Unexpected parse error, ignoring branch "+branchName, pe);
+                    continue;
+                }
+                snapshotsPerWorld.put(sid.getWorldId(), sid);
+            } else {
+                syslog().warn("Ignoring unrecognized branch "+branchName);
             }
-            snapshotsPerWorld.put(sid.worldUuid(), sid);
         }
         return snapshotsPerWorld;
     }
+
+    static String getBranchName(Ref fromBranchRef) {
+       final String REFS_HEADS = "refs/heads/";
+       final String name = fromBranchRef.getName();
+       if (name.startsWith(REFS_HEADS)) {
+           return name.substring(REFS_HEADS.length());
+       } else {
+           return null;
+       }
+   }
 
 }

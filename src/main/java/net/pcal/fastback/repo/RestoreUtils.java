@@ -33,7 +33,6 @@ import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.localized;
 import static net.pcal.fastback.logging.UserMessage.styledRaw;
-import static net.pcal.fastback.repo.WorldIdUtils.WORLD_UUID_PATH;
 
 /**
  * Utilities for restoring a snapshot
@@ -58,7 +57,7 @@ class RestoreUtils {
     // Private
 
     private static Path jgit_restoreSnapshot(final String repoUri, final Path restoreTargetDir, final String worldName, final SnapshotId sid, final UserLogger ulog) throws IOException, GitAPIException {
-        final Path restoreDir = getTargetDir(restoreTargetDir, worldName, sid.getName());
+        final Path restoreDir = getTargetDir(restoreTargetDir, worldName, sid.getShortName());
         final String branchName = sid.getBranchName();
         ulog.update(localized("fastback.hud.restore-percent", 0));
         final ProgressMonitor pm = new JGitIncrementalProgressMonitor(new JGitRestoreProgressMonitor(ulog), 100);

@@ -21,6 +21,7 @@ package net.pcal.fastback.repo;
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
+import net.pcal.fastback.repo.SnapshotIdUtils.SnapshotIdCodec;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
@@ -83,19 +84,19 @@ class PushUtils {
             final Collection<Ref> remoteBranchRefs = jgit.lsRemote().setHeads(true).setTags(false).
                     setRemote(conf.getString(REMOTE_NAME)).call();
             final ListMultimap<WorldId, SnapshotId> snapshotsPerWorld =
-                    SnapshotId.getSnapshotsPerWorld(remoteBranchRefs);
+                    SnapshotIdUtils.getSnapshotsPerWorld(remoteBranchRefs, repo.getSidCodec());
             if (conf.getBoolean(IS_UUID_CHECK_ENABLED)) {
                 boolean uuidCheckResult;
                 try {
                     uuidCheckResult = jgit_doUuidCheck(repo, snapshotsPerWorld.keySet());
                 } catch (final IOException e) {
-                    syslog().error("Unexpected exception thrown during uuid check", e);
+                    syslog().error("Unexpected exception thrown during id check", e);
                     uuidCheckResult = false;
                 }
                 if (!uuidCheckResult) {
                     final URIish remoteUri = jgit_getRemoteUri(repo.getJGit(), repo.getConfig().getString(REMOTE_NAME));
-                    ulog.message(styledLocalized("fastback.chat.push-uuid-mismatch", ERROR, remoteUri));
-                    syslog().error("Failing remote backup due to failed uuid check");
+                    ulog.message(styledLocalized("fastback.chat.push-id-mismatch", ERROR, remoteUri));
+                    syslog().error("Failing remote backup due to failed id check");
                     return;
                 }
             }
@@ -145,7 +146,7 @@ class PushUtils {
             } else {
                 final Collection<Ref> localBranchRefs = jgit.branchList().call();
                 final ListMultimap<WorldId, SnapshotId> localSnapshotsPerWorld =
-                        SnapshotId.getSnapshotsPerWorld(localBranchRefs);
+                        SnapshotIdUtils.getSnapshotsPerWorld(localBranchRefs, repo.getSidCodec());
                 final List<SnapshotId> localSnapshots = localSnapshotsPerWorld.get(worldUuid);
                 remoteSnapshots.retainAll(localSnapshots);
                 if (remoteSnapshots.isEmpty()) {
@@ -220,7 +221,7 @@ class PushUtils {
     private static boolean jgit_doUuidCheck(RepoImpl repo, Set<WorldId> remoteWorldUuids) throws IOException {
         final WorldId localUuid = repo.getWorldId();
         if (remoteWorldUuids.size() > 2) {
-            syslog().warn("Remote has more than one world-uuid.  This is unusual. " + remoteWorldUuids);
+            syslog().warn("Remote has more than one world-id.  This is unusual. " + remoteWorldUuids);
         }
         if (remoteWorldUuids.isEmpty()) {
             syslog().debug("Remote does not have any previously-backed up worlds.");
@@ -230,7 +231,7 @@ class PushUtils {
                 return false;
             }
         }
-        syslog().debug("world-uuid check passed.");
+        syslog().debug("world-id check passed.");
         return true;
     }
 

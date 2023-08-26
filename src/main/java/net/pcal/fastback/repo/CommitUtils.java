@@ -19,6 +19,7 @@
 package net.pcal.fastback.repo;
 
 import net.pcal.fastback.logging.UserLogger;
+import net.pcal.fastback.repo.SnapshotIdUtils.SnapshotIdCodec;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
@@ -30,6 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -54,7 +56,7 @@ class CommitUtils {
     public static SnapshotId doCommitSnapshot(final RepoImpl repo, final UserLogger ulog) throws IOException {
         MaintenanceUtils.doPreflight(repo);
         final WorldId uuid = repo.getWorldId();
-        final SnapshotId newSid = SnapshotId.create(uuid);
+        final SnapshotId newSid = repo.getSidCodec().create(uuid);
         syslog().debug("start doCommitSnapshot for "+newSid);
         final String newBranchName = newSid.getBranchName();
         try {

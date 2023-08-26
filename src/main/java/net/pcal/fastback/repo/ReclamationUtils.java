@@ -107,12 +107,12 @@ class ReclamationUtils {
         if (config.getBoolean(IS_BRANCH_CLEANUP_ENABLED)) {
             final List<String> branchesToDelete = new ArrayList<>();
             for (final Ref ref : repo.getJGit().branchList().setListMode(ALL).call()) {
-                final String branchName = SnapshotId.getBranchName(ref);
+                final String branchName = BranchUtils.getBranchName(ref);
                 if (branchName == null) {
                     syslog().warn("Non-branch ref returned by branchList: " + ref);
                 } else if (isTempBranch(branchName)) {
                     branchesToDelete.add(branchName);
-                } else if (SnapshotId.isSnapshotBranchName(branchName)) {
+                } else if (repo.getSidCodec().isSnapshotBranchName(repo.getWorldId(), branchName)) {
                     // ok fine
                 } else {
                     syslog().warn("Unidentified branch found " + branchName + " - consider removing it with 'git branch -D'");

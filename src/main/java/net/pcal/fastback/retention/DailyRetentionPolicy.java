@@ -64,7 +64,7 @@ class DailyRetentionPolicy implements RetentionPolicy {
         final List<SnapshotId> toPrune = new ArrayList<>();
         LocalDate previousDate = null;
         for (final SnapshotId sid : snapshots.descendingSet()) {
-            final LocalDate currentDate = sid.snapshotDate().toInstant().atZone(TimeZone.getDefault().toZoneId()).toLocalDate();
+            final LocalDate currentDate = sid.getDate().toInstant().atZone(TimeZone.getDefault().toZoneId()).toLocalDate();
             if (previousDate != null) {
                 if (currentDate.isAfter(gracePeriodStart)) {
                     syslog().debug("Will retain " + sid + " because still in the grace period");

@@ -24,6 +24,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.Mod;
+import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.SnapshotId;
 import net.pcal.fastback.repo.WorldId;
 
@@ -32,7 +33,6 @@ import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
-import static net.pcal.fastback.repo.SnapshotId.sortWorldSnapshots;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.NONE;
 
 enum ListCommand implements Command {
@@ -54,10 +54,11 @@ enum ListCommand implements Command {
         final UserLogger ulog = commandLogger(mod, cc.getSource());
         gitOp(mod, NONE, ulog, repo -> {
             final WorldId uuid = repo.getWorldId();
-            for (final SnapshotId sid : sortWorldSnapshots(repo.listSnapshots(), uuid)) {
-                ulog.message(UserMessage.raw(sid.getName()));
+            for (final SnapshotId sid : Repo.sortWorldSnapshots(repo.listSnapshots(), uuid)) {
+                ulog.message(UserMessage.raw(sid.getShortName()));
             }
         });
         return SUCCESS;
     }
+
 }

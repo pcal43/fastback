@@ -57,7 +57,7 @@ enum RemoteDeleteCommand implements Command {
         final UserLogger log = commandLogger(mod, cc.getSource());
         gitOp(mod, WRITE, log, repo -> {
             final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
-            final SnapshotId sid = SnapshotId.fromUuidAndName(repo.getWorldId(), snapshotName);
+            final SnapshotId sid = repo.createSnapshotId(snapshotName);
             repo.deleteRemoteBranch(sid.getBranchName());
             log.message(UserMessage.localized("fastback.chat.remote-delete-done", snapshotName));
         });

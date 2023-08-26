@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.text.ParseException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -34,6 +35,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
+
+import static net.pcal.fastback.repo.V1SnapshotIdTest.createWorldId;
+import static net.pcal.fastback.repo.V1SnapshotIdTest.v1sid;
 
 public class DailyRetentionPolicyTest {
 
@@ -46,33 +50,21 @@ public class DailyRetentionPolicyTest {
     }
 
     @Test
-    public void testDailyRetention() {
-        final WorldId uuid = WorldId.parse(UUID.randomUUID().toString());
+    public void testDailyRetention() throws ParseException {
+        final WorldId uuid = createWorldId(UUID.randomUUID().toString());
         long now = new Date().getTime();
-        final SnapshotId todayEvening = SnapshotId.create(uuid,
-                new Date(now + now % DAY_MILLIS - (4 * HOUR_MILLIS)));
-        final SnapshotId todayMorning = SnapshotId.create(uuid,
-                new Date(todayEvening.snapshotDate().getTime() - (DAY_MILLIS / 2)));
-        final SnapshotId yesterdayA = SnapshotId.create(uuid,
-                new Date(todayEvening.snapshotDate().getTime() - (DAY_MILLIS) - 30000));
-        final SnapshotId yesterdayB = SnapshotId.create(uuid,
-                new Date(todayEvening.snapshotDate().getTime() - (DAY_MILLIS) - 20000));
-        final SnapshotId yesterdayC = SnapshotId.create(uuid,
-                new Date(todayEvening.snapshotDate().getTime() - (DAY_MILLIS) - 10000));
-        final SnapshotId threeDaysAgoA = SnapshotId.create(uuid,
-                new Date(todayEvening.snapshotDate().getTime() - (3 * DAY_MILLIS) - 30000));
-        final SnapshotId threeDaysAgoB = SnapshotId.create(uuid,
-                new Date(todayEvening.snapshotDate().getTime() - (3 * DAY_MILLIS) - 20000));
-        final SnapshotId threeDaysAgoC = SnapshotId.create(uuid,
-                new Date(todayEvening.snapshotDate().getTime() - (3 * DAY_MILLIS) - 10000));
-        final SnapshotId lastWeek = SnapshotId.create(uuid,
-                new Date(todayEvening.snapshotDate().getTime() - (7 * DAY_MILLIS)));
-        final SnapshotId lastYearA = SnapshotId.create(uuid,
-                new Date(todayEvening.snapshotDate().getTime() - (373 * DAY_MILLIS) - 30000));
-        final SnapshotId lastYearB = SnapshotId.create(uuid,
-                new Date(todayEvening.snapshotDate().getTime() - (373 * DAY_MILLIS) - 20000));
-        final SnapshotId lastYearC = SnapshotId.create(uuid,
-                new Date(todayEvening.snapshotDate().getTime() - (373 * DAY_MILLIS) - 10000));
+        final SnapshotId todayEvening = v1sid(uuid,  new Date(now + now % DAY_MILLIS - (4 * HOUR_MILLIS)));
+        final SnapshotId todayMorning = v1sid(uuid,  new Date(todayEvening.getDate().getTime() - (DAY_MILLIS / 2)));
+        final SnapshotId yesterdayA = v1sid(uuid,    new Date(todayEvening.getDate().getTime() - (DAY_MILLIS) - 30000));
+        final SnapshotId yesterdayB = v1sid(uuid,    new Date(todayEvening.getDate().getTime() - (DAY_MILLIS) - 20000));
+        final SnapshotId yesterdayC = v1sid(uuid,    new Date(todayEvening.getDate().getTime() - (DAY_MILLIS) - 10000));
+        final SnapshotId threeDaysAgoA = v1sid(uuid, new Date(todayEvening.getDate().getTime() - (3 * DAY_MILLIS) - 30000));
+        final SnapshotId threeDaysAgoB = v1sid(uuid, new Date(todayEvening.getDate().getTime() - (3 * DAY_MILLIS) - 20000));
+        final SnapshotId threeDaysAgoC = v1sid(uuid, new Date(todayEvening.getDate().getTime() - (3 * DAY_MILLIS) - 10000));
+        final SnapshotId lastWeek = v1sid(uuid,      new Date(todayEvening.getDate().getTime() - (7 * DAY_MILLIS)));
+        final SnapshotId lastYearA = v1sid(uuid,     new Date(todayEvening.getDate().getTime() - (373 * DAY_MILLIS) - 30000));
+        final SnapshotId lastYearB = v1sid(uuid,     new Date(todayEvening.getDate().getTime() - (373 * DAY_MILLIS) - 20000));
+        final SnapshotId lastYearC = v1sid(uuid,     new Date(todayEvening.getDate().getTime() - (373 * DAY_MILLIS) - 10000));
         final int GRACE_PERIOD = 2;
         TreeSet<SnapshotId> snapshots = new TreeSet<>(Set.of(
                 todayEvening, todayMorning,
@@ -85,4 +77,5 @@ public class DailyRetentionPolicyTest {
         Collection<SnapshotId> toPruneList = policy.getSnapshotsToPrune(snapshots);
         Assertions.assertEquals(List.of(threeDaysAgoB, threeDaysAgoA, lastYearB, lastYearA), toPruneList);
     }
+
 }
