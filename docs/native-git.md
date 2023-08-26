@@ -4,6 +4,18 @@ title: Native Git Support
 nav_order: 95
 ---
 
+
+NUMBERS ON HERMITCRAFT WORLD
+
+jgit
+- commit: 2m 19s
+- push:
+
+native
+- commit:
+- push:
+
+
 # Native Git Support
 
 As of version `0.13.0`, Fastback includes **experimental** support for native git.  This means that
