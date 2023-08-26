@@ -96,7 +96,7 @@ class PushUtils {
                     final URIish remoteUri = jgit_getRemoteUri(repo.getJGit(), repo.getConfig().getString(REMOTE_NAME));
                     ulog.message(styledLocalized("fastback.chat.push-id-mismatch", ERROR, remoteUri));
                     syslog().error("Failing remote backup due to failed id check");
-                    return;
+                    throw new IOException();
                 }
             }
             syslog().debug("Pushing to " + pushUrl);

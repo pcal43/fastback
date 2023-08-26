@@ -107,7 +107,7 @@ class RepoImpl implements Repo {
             syslog().error(ioe);
             return;
         }
-        ulog.message(localized("fastback.chat.backup-complete-elapsed", newSid, getDuration(start)));
+        ulog.message(localized("fastback.chat.backup-complete-elapsed", getDuration(start)));
     }
 
     @Override
@@ -116,8 +116,9 @@ class RepoImpl implements Repo {
         checkIndexLock(ulog);
         broadcastBackupNotice();
         final long start = System.currentTimeMillis();
+        final SnapshotId newSid;
         try {
-            CommitUtils.doCommitSnapshot(this, ulog);
+            newSid = CommitUtils.doCommitSnapshot(this, ulog);
         } catch(IOException ioe) {
             ulog.message(styledLocalized("fastback.chat.commit-failed", ERROR));
             syslog().error(ioe);
@@ -141,7 +142,7 @@ class RepoImpl implements Repo {
             syslog().error(ioe);
             return;
         }
-        ulog.message(UserMessage.localized("Successfully pushed " + sid + ".  Time elapsed: "+getDuration(start))); // FIXME i18n
+        ulog.message(UserMessage.localized("Successfully pushed " + sid.getShortName() + ".  Time elapsed: "+getDuration(start))); // FIXME i18n
     }
 
 
