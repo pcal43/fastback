@@ -23,21 +23,29 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
+import net.pcal.fastback.config.FastbackConfigKey;
+import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.mod.Mod;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.RepoFactory;
+import net.pcal.fastback.retention.RetentionPolicy;
+import net.pcal.fastback.retention.RetentionPolicyCodec;
 import net.pcal.fastback.retention.RetentionPolicyType;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.BiFunction;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
+import static net.pcal.fastback.commands.Commands.getArgumentNicely;
 import static net.pcal.fastback.commands.Commands.missingArgument;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.config.FastbackConfigKey.AUTOBACK_ACTION;
@@ -47,12 +55,14 @@ import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_MESSAGE;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_LOCK_CLEANUP_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
+import static net.pcal.fastback.config.FastbackConfigKey.LOCAL_RETENTION_POLICY;
 import static net.pcal.fastback.config.FastbackConfigKey.REMOTE_RETENTION_POLICY;
 import static net.pcal.fastback.config.FastbackConfigKey.RESTORE_DIRECTORY;
 import static net.pcal.fastback.config.FastbackConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.config.OtherConfigKey.REMOTE_PUSH_URL;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserLogger.ulog;
+import static net.pcal.fastback.logging.UserMessage.localized;
 import static net.pcal.fastback.logging.UserMessage.raw;
 import static net.pcal.fastback.mod.Mod.mod;
 import static net.pcal.fastback.repo.RepoFactory.rf;
@@ -94,14 +104,10 @@ enum SetCommand implements Command {
             registerSelectConfigValue(AUTOBACK_ACTION, null, schedulableActions, sc);
             registerSelectConfigValue(SHUTDOWN_ACTION, null, schedulableActions, sc);
         }
-        {
-            final List<String> retentionPolicies = new ArrayList<>();
-            for (final RetentionPolicyType rpt : RetentionPolicyType.getAvailable()) {
-                retentionPolicies.add(rpt.getConfigValue());
-            }
-            registerSelectConfigValue(AUTOBACK_ACTION, null, schedulableActions, sc);
-            registerSelectConfigValue(SHUTDOWN_ACTION, null, schedulableActions, sc);
-        }
+
+        registerSetRetentionCommand(LOCAL_RETENTION_POLICY, null, sc);
+        registerSetRetentionCommand(REMOTE_RETENTION_POLICY, null, sc);
+
         registerForceDebug(sc);
         root.then(sc);
     }
@@ -199,7 +205,7 @@ enum SetCommand implements Command {
     private static void registerSelectConfigValue(GitConfigKey key, String keyDisplayOrNull, List<String> selections, final LiteralArgumentBuilder<ServerCommandSource> setCommand) {
         final String keyDisplay = keyDisplayOrNull != null ? keyDisplayOrNull : key.getSettingName();
         final LiteralArgumentBuilder<ServerCommandSource> builder = literal(keyDisplay);
-        for(final String selection : selections) {
+        for (final String selection : selections) {
             builder.then(literal(selection).executes(cc -> setSelectionConfigValue(key, keyDisplay, selection, cc)));
         }
         setCommand.then(builder);
@@ -240,4 +246,72 @@ enum SetCommand implements Command {
         }
         return SUCCESS;
     }
+
+
+    // ======================================================================
+    // Retention policy commands
+
+    /**
+     * Register a 'set retention' command that tab completes with all the policies and the policy arguments.
+     * Broken out as a helper methods so this logic can be shared by set-retention and set-remote-retention.
+     * <p>
+     * FIXME? The command parsing here could be more user-friendly.  Not really clear how to implement
+     * argument defaults.  Also a lot of noise from bugs like this: https://bugs.mojang.com/browse/MC-165562
+     * Just generally not sure how to beat brigadier into submission here.
+     */
+    private static void registerSetRetentionCommand(final FastbackConfigKey key,
+                                                    final BiFunction<CommandContext<ServerCommandSource>, RetentionPolicyType, Integer> setPolicyFn,
+                                                    final LiteralArgumentBuilder<ServerCommandSource> argb) {
+        final LiteralArgumentBuilder<ServerCommandSource> retainCommand = literal(key.getSettingName());
+        for (final RetentionPolicyType rpt : RetentionPolicyType.getAvailable()) {
+            final LiteralArgumentBuilder<ServerCommandSource> policyCommand = literal(rpt.getCommandName());
+            policyCommand.executes(cc -> setRetentionPolicy(cc, rpt, key));
+            if (rpt.getParameters() != null) {
+                for (RetentionPolicyType.Parameter<?> param : rpt.getParameters()) {
+                    policyCommand.then(argument(param.name(), param.type()).
+                            executes(cc -> setRetentionPolicy(cc, rpt, key)));
+                }
+            }
+            retainCommand.then(policyCommand);
+        }
+        argb.then(retainCommand);
+    }
+
+
+    /**
+     * Does the work to encode a policy configuration and set it in git configuration.
+     * Broken out as a helper methods so this logic can be shared by set-retention and set-remote-retention.
+     * <p>
+     * TODO this should probably move to Repo.
+     */
+    public static int setRetentionPolicy(final CommandContext<ServerCommandSource> cc,
+                                         final RetentionPolicyType rpt,
+                                         final FastbackConfigKey confKey) {
+        final UserLogger ulog = ulog(cc);
+        final Path worldSaveDir = mod().getWorldDirectory();
+        try (final Repo repo = rf().load(worldSaveDir)) {
+            final Map<String, String> config = new HashMap<>();
+            for (final RetentionPolicyType.Parameter<?> p : rpt.getParameters()) {
+                final Object val = getArgumentNicely(p.name(), p.clazz(), cc, ulog);
+                if (val == null) return FAILURE;
+                config.put(p.name(), String.valueOf(val));
+            }
+            final String encodedPolicy = RetentionPolicyCodec.INSTANCE.encodePolicy(rpt, config);
+            final RetentionPolicy rp =
+                    RetentionPolicyCodec.INSTANCE.decodePolicy(RetentionPolicyType.getAvailable(), encodedPolicy);
+            if (rp == null) {
+                syslog().error("Failed to decode policy " + encodedPolicy, new Exception());
+                return FAILURE;
+            }
+            final GitConfig conf = repo.getConfig();
+            conf.updater().set(confKey, encodedPolicy).save();
+            ulog.message(localized("fastback.chat.retention-policy-set"));
+            ulog.message(rp.getDescription());
+            return SUCCESS;
+        } catch (Exception e) {
+            syslog().error("Failed to set retention policy", e);
+            return FAILURE;
+        }
+    }
+
 }

@@ -23,6 +23,8 @@ import net.pcal.fastback.logging.UserLogger;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import static net.pcal.fastback.mod.Mod.mod;
+
 /**
  * Creates Repo instances.
  *
