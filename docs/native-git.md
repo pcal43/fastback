@@ -5,22 +5,6 @@ nav_order: 95
 ---
 
 
-NUMBERS ON HERMITCRAFT WORLD
-
-jgit
-- commit: 2m 19s / 2m 20s / 2m 22s
-- push: 6m 18s / 6m 7s
-- second commit: 1s
-- second push: 6m 25s
-
-native
-- initial commit: 25s // 22s
-- initial push:  9m 34s / 8m34s (30 concurrent)
-- second commit: 1s / 1s
-- second push: 11s / 10s
-- third commit: 1s
-- second push: 7s
-- 
 
 # Native Git Support
 
@@ -32,6 +16,8 @@ The advantage of this approach is that it appears to be significantly faster in 
 also be less wasteful of disk space.
 
 The disadvantage of this approach is that you can't use it unless you first install git on your machine.
+
+
 
 ## How to Enable Native Git Support
 
@@ -74,6 +60,24 @@ If you installed git correctly, it should tell you that native-git is now enable
 You can now do backups like normal.  As always, your first `/backup full` is going to take a while (but hopefully will be faster 
 than before).
 
+
+## Performance Analysis
+
+Some rough numbers using a [5.5gb world](https://hermitcraft.fandom.com/wiki/Season_4) and pushing to a gitea server
+over LAN:
+
+
+| Test            | JGit     | Native  | 
+|-----------------|----------|---------|
+| first commit    | 2m 20s   | **23s** |
+| first push      | 6m 18s   | 8m 34s  |
+| second commit   | 1s       | 1s      |
+| second push     | 6m 25s   | **11s** |
+
+Incremental remote backups are obviously a huge win here.  Mainly because native mode is using LFS.
+
+jGit actually does have some LFS support but it's not mature enough to be used here (in particular, it doesn't
+have support for `lfs prune`)
 
 
 ## Other Stuff
