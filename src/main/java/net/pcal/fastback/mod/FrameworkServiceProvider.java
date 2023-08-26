@@ -22,6 +22,7 @@ import net.minecraft.text.Text;
 import net.pcal.fastback.logging.SystemLogger;
 
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -97,5 +98,10 @@ public interface FrameworkServiceProvider {
      * Add some interesting properties to record in backup.properties.
      */
     void addBackupProperties(Map<String, String> props);
+
+    /**
+     * @return paths to backup when mods-backup enabled.
+     */
+    Collection<Path> getModsBackupPaths();
 
 }

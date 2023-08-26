@@ -23,6 +23,7 @@ import net.pcal.fastback.logging.UserMessage;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.Map;
 
 import static java.util.Objects.requireNonNull;
@@ -99,6 +100,11 @@ public interface Mod {
      * @return default permission level to use for commands.
      */
     int getDefaultPermLevel();
+
+    /**
+     * @return paths to backup when mods-backup enabled.
+     */
+    Collection<Path> getModsBackupPaths();
 
     /**
      * Add extra properties that will be stored in .fastback/backup.properties.

@@ -31,6 +31,7 @@ import net.pcal.fastback.repo.RepoFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.Map;
 
 import static java.nio.file.Files.createTempDirectory;
@@ -153,6 +154,11 @@ class ModImpl implements LifecycleListener, Mod {
     @Override
     public void saveWorld() {
         this.fsp.saveWorld();
+    }
+
+    @Override
+    public Collection<Path> getModsBackupPaths() {
+        return fsp.getModsBackupPaths();
     }
 
     // ======================================================================

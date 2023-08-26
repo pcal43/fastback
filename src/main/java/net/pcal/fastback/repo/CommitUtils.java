@@ -21,6 +21,7 @@ package net.pcal.fastback.repo;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.utils.EnvironmentUtils;
+import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
@@ -41,6 +42,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
+import static net.pcal.fastback.config.FastbackConfigKey.IS_MODS_BACKUP_ENABLED;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.JGIT;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;
@@ -62,14 +64,19 @@ class CommitUtils {
     public static SnapshotId doCommitSnapshot(final RepoImpl repo, final UserLogger ulog) throws IOException {
         PreflightUtils.doPreflight(repo);
         final WorldId uuid = repo.getWorldId();
+        final GitConfig conf = repo.getConfig();
         final SnapshotId newSid = repo.getSidCodec().create(uuid);
         ulog.message(localized("fastback.chat.commit-start", newSid.getShortName()));
         syslog().debug("start doCommitSnapshot for " + newSid);
         writeBackupProperties(repo);
 
+        if (conf.getBoolean(IS_MODS_BACKUP_ENABLED)) {
+            doSettingsBackup(repo, ulog);
+        }
+
         final String newBranchName = newSid.getBranchName();
         try {
-            if (repo.getConfig().getBoolean(IS_NATIVE_GIT_ENABLED)) {
+            if (conf.getBoolean(IS_NATIVE_GIT_ENABLED)) {
                 native_commit(newBranchName, repo, ulog);
             } else {
                 jgit_commit(newBranchName, repo.getJGit(), ulog);
@@ -79,6 +86,33 @@ class CommitUtils {
         }
         syslog().debug("Local backup complete.");
         return newSid;
+    }
+
+    private static void doSettingsBackup(RepoImpl repo, UserLogger ulog) {
+        syslog().info("Backing up minecraft settings");
+        try {
+            final File backupDir = repo.getDotFasbackDir().resolve("mods-backup").toFile();
+            if (backupDir.exists()) FileUtils.deleteDirectory(backupDir);
+            backupDir.mkdirs();
+            for (Path src : mod().getModsBackupPaths()) {
+                try {
+                    final File srcFile = src.toFile();
+                    syslog().debug("backing up " + srcFile + " to " + backupDir);
+                    if (srcFile.exists()) {
+                        if (srcFile.isDirectory()) {
+                            FileUtils.copyDirectory(srcFile,
+                                    backupDir.toPath().resolve(srcFile.getName()).toFile());
+                        } else {
+                            FileUtils.copyFile(srcFile, backupDir);
+                        }
+                    }
+                } catch (Exception ohwell) {
+                    syslog().error(ohwell);
+                }
+            }
+        } catch (Exception ohwell) {
+            syslog().error(ohwell);
+        }
     }
 
     private static void native_commit(final String newBranchName, final Repo repo, final UserLogger log) throws IOException, InterruptedException {
