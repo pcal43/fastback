@@ -50,7 +50,7 @@ class AutosaveListener implements Runnable {
         try (final UserLogger ulog = UserLogger.forAutosave()) {
             executor().execute(Executor.ExecutionLock.WRITE, ulog, () -> {
                 try {
-                    final RepoFactory rf = RepoFactory.get();
+                    final RepoFactory rf = RepoFactory.rf();
                     final Path worldSaveDir = mod().getWorldDirectory();
                     if (!rf.isGitRepo(worldSaveDir)) return;
                     try (final Repo repo = rf.load(worldSaveDir)) {

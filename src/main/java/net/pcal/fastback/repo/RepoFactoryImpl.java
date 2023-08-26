@@ -19,6 +19,8 @@
 package net.pcal.fastback.repo;
 
 import net.pcal.fastback.config.GitConfig.Updater;
+import net.pcal.fastback.logging.UserLogger;
+import net.pcal.fastback.utils.EnvironmentUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
@@ -26,12 +28,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_ENABLED;
-import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_MESSAGE;
-import static net.pcal.fastback.config.FastbackConfigKey.IS_LOCK_CLEANUP_ENABLED;
-import static net.pcal.fastback.config.FastbackConfigKey.RESTORE_DIRECTORY;
+import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.OtherConfigKey.COMMIT_SIGNING_ENABLED;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.WARNING;
+import static net.pcal.fastback.logging.UserMessage.raw;
+import static net.pcal.fastback.logging.UserMessage.styledRaw;
 import static net.pcal.fastback.repo.WorldIdUtils.createWorldId;
 import static net.pcal.fastback.repo.WorldIdUtils.ensureWorldHasId;
 
@@ -42,22 +46,41 @@ import static net.pcal.fastback.repo.WorldIdUtils.ensureWorldHasId;
 class RepoFactoryImpl implements RepoFactory {
 
     @Override
-    public Repo init(final Path worldSaveDir) throws IOException {
+    public void doInit(final Path worldSaveDir, final UserLogger ulog) throws IOException {
+        if (isGitRepo(worldSaveDir)) {
+            ensureWorldHasId(worldSaveDir);
+            ulog.message(styledRaw("Backups already initialized.", WARNING)); // FIXME i18n
+            return;
+        }
         try (final Git jgit = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
             createWorldId(worldSaveDir);
-            final Repo repo = new RepoImpl(jgit);
+            Repo repo = new RepoImpl(jgit);
             final Updater updater = repo.getConfig().updater();
-            updater.set(COMMIT_SIGNING_ENABLED, false);
-            updater.setCommented(IS_LOCK_CLEANUP_ENABLED, true);
-            updater.setCommented(BROADCAST_ENABLED, true);
-            updater.setCommented(BROADCAST_MESSAGE, "Attention: the server is starting a backup.");
-            updater.setCommented(RESTORE_DIRECTORY, "/home/myuser/target/directory/for/restores");
+            updater.set(COMMIT_SIGNING_ENABLED, false); // because some people have it set globally
+            if (EnvironmentUtils.isNativeGitInstalled()) {
+                ulog.message(styledRaw("Native git detected.", NATIVE_GIT)); // FIXME i18n
+                updater.set(IS_NATIVE_GIT_ENABLED, true);
+            } else {
+                ulog.message(styledRaw("Native git not installed on your system.", WARNING)); // FIXME i18n
+                ulog.message(raw("Native git is not required but it makes Fastback *much* faster.  You are strongly encouraged to install it *before* doing your first backup."));
+                ulog.message(raw("For more information, see https://pcal43.github.io/fastback/native.html"));
+                //updater.set(IS_NATIVE_GIT_ENABLED, false);
+            }
             updater.save();
-            return repo;
+            ulog.message(raw("Backups initialized.  Run '/backup local' to do your first backup.  '/backup help' for more options."));
         } catch (GitAPIException e) {
             syslog().error("Error initializing repo", e);
             throw new IOException(e);
         }
+    }
+
+    @Override
+    public boolean doInitCheck(Path worldSaveDir, UserLogger ulog) {
+        if (!isGitRepo(worldSaveDir)) {
+            ulog.message(styledRaw("Please run '/backup init' first.", ERROR));
+            return false;
+        }
+        return true;
     }
 
     @Override

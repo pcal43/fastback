@@ -38,10 +38,12 @@ import static net.pcal.fastback.commands.Commands.missingArgument;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_MESSAGE;
+import static net.pcal.fastback.config.FastbackConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_LOCK_CLEANUP_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.RESTORE_DIRECTORY;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
+import static net.pcal.fastback.logging.UserLogger.ulog;
 import static net.pcal.fastback.logging.UserMessage.raw;
 import static net.pcal.fastback.mod.Mod.mod;
 
@@ -62,16 +64,17 @@ enum SetCommand implements Command {
 
     @Override
     public void register(final LiteralArgumentBuilder<ServerCommandSource> root, final Mod mod) {
-        final LiteralArgumentBuilder<ServerCommandSource> setCommand = literal(COMMAND_NAME).
-                requires(subcommandPermission(mod, COMMAND_NAME)).
-                executes(cc -> missingArgument("key", mod, cc));
-        registerBooleanConfigValue(IS_NATIVE_GIT_ENABLED, setCommand);
-        registerBooleanConfigValue(IS_LOCK_CLEANUP_ENABLED, setCommand);
-        registerBooleanConfigValue(BROADCAST_ENABLED, setCommand);
-        registerStringConfigValue(BROADCAST_MESSAGE, setCommand);
-        registerStringConfigValue(RESTORE_DIRECTORY, setCommand);
-        registerForceDebug(setCommand);
-        root.then(setCommand);
+        final LiteralArgumentBuilder<ServerCommandSource> sc = literal(COMMAND_NAME).
+                requires(subcommandPermission(COMMAND_NAME)).
+                executes(cc -> missingArgument("key", cc));
+        registerBooleanConfigValue(IS_NATIVE_GIT_ENABLED, sc);
+        registerBooleanConfigValue(IS_LOCK_CLEANUP_ENABLED, sc);
+        registerBooleanConfigValue(IS_BACKUP_ENABLED, sc);
+        registerBooleanConfigValue(BROADCAST_ENABLED, sc);
+        registerStringConfigValue(BROADCAST_MESSAGE, "message", sc);
+        registerStringConfigValue(RESTORE_DIRECTORY, "full-directory-path", sc);
+        registerForceDebug(sc);
+        root.then(sc);
     }
 
 
@@ -80,18 +83,18 @@ enum SetCommand implements Command {
 
     private static void registerBooleanConfigValue(GitConfigKey key, final LiteralArgumentBuilder<ServerCommandSource> setCommand) {
         final LiteralArgumentBuilder<ServerCommandSource> builder = literal(key.getSettingDisplayName());
-        builder.then(literal("true").executes(cc -> setBooleanConfigValue(cc, key, true)));
-        builder.then(literal("false").executes(cc -> setBooleanConfigValue(cc, key, false)));
+        builder.then(literal("true").executes(cc -> setBooleanConfigValue(key, true, cc)));
+        builder.then(literal("false").executes(cc -> setBooleanConfigValue(key, false, cc)));
         setCommand.then(builder);
     }
 
-    private static int setBooleanConfigValue(final CommandContext<ServerCommandSource> cc, GitConfigKey key, boolean value) {
-        try (UserLogger ulog = UserLogger.ulog(cc)) {
+    private static int setBooleanConfigValue(GitConfigKey key, boolean value, final CommandContext<ServerCommandSource> cc) {
+        try (UserLogger ulog = ulog(cc)) {
             final Path worldSaveDir = mod().getWorldDirectory();
-            final RepoFactory rf = RepoFactory.get();
+            final RepoFactory rf = RepoFactory.rf();
             if (rf.isGitRepo(worldSaveDir)) {
                 try (Repo repo = rf.load(worldSaveDir)) {
-                    repo.setConfigValue(key, value, UserLogger.ulog(cc));
+                    repo.setConfigValue(key, value, ulog(cc));
                     ulog.message(raw(key.getSettingDisplayName() + " = " + value));
                 } catch (Exception e) {
                     ulog.internalError(e);
@@ -105,22 +108,20 @@ enum SetCommand implements Command {
     // ======================================================================
     // String config values
 
-    private static final String STRING_VALUE = "value";
-
-    private static void registerStringConfigValue(GitConfigKey key, final LiteralArgumentBuilder<ServerCommandSource> setCommand) {
+    private static void registerStringConfigValue(GitConfigKey key, String argName, final LiteralArgumentBuilder<ServerCommandSource> setCommand) {
         final LiteralArgumentBuilder<ServerCommandSource> builder = literal(key.getSettingDisplayName());
-        builder.then(argument(STRING_VALUE, StringArgumentType.greedyString()).
-                executes(cc -> setStringConfigValue(cc, key)));
+        builder.then(argument(argName, StringArgumentType.greedyString()).
+                executes(cc -> setStringConfigValue(key, argName, cc)));
         setCommand.then(builder);
     }
 
-    private static int setStringConfigValue(final CommandContext<ServerCommandSource> cc, GitConfigKey key) {
-        try (UserLogger ulog = UserLogger.ulog(cc)) {
+    private static int setStringConfigValue(GitConfigKey key, String argName, final CommandContext<ServerCommandSource> cc) {
+        try (UserLogger ulog = ulog(cc)) {
             final Path worldSaveDir = mod().getWorldDirectory();
-            final RepoFactory rf = RepoFactory.get();
+            final RepoFactory rf = RepoFactory.rf();
             if (rf.isGitRepo(worldSaveDir)) {
                 try (Repo repo = rf.load(worldSaveDir)) {
-                    final String newValue = cc.getArgument(STRING_VALUE, String.class);
+                    final String newValue = cc.getArgument(argName, String.class);
                     repo.getConfig().updater().set(key, newValue).save();
                     ulog.message(raw(key.getSettingDisplayName() + " = " + newValue));
                 } catch (Exception e) {
@@ -147,7 +148,7 @@ enum SetCommand implements Command {
 
     private static int setForceDebug(final CommandContext<ServerCommandSource> cc, boolean value) {
         syslog().setForceDebugEnabled(value);
-        try (UserLogger ulog = UserLogger.ulog(cc)) {
+        try (final UserLogger ulog = ulog(cc)) {
             ulog.message(raw("force-debug-enabled = " + value));
         }
         return SUCCESS;

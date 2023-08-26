@@ -31,6 +31,7 @@ import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
+import static net.pcal.fastback.logging.UserLogger.ulog;
 import static net.pcal.fastback.logging.UserMessage.raw;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.WRITE;
 
@@ -49,20 +50,20 @@ enum FullCommand implements Command {
     public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(mod, COMMAND_NAME)).
+                        requires(subcommandPermission(COMMAND_NAME)).
                         executes(cc -> run(mod, cc.getSource()))
         );
     }
 
     public static int run(Mod mod, ServerCommandSource scs) {
-        final UserLogger ulog = commandLogger(mod, scs);
+        final UserLogger ulog = ulog(scs);
         try {
             saveWorldBeforeBackup(mod, ulog);
         } catch (IOException e) {
             ulog.internalError();
             syslog().error(e);
         }
-        gitOp(mod, WRITE, ulog, repo -> repo.doCommitAndPush(ulog));
+        gitOp(WRITE, ulog, repo -> repo.doCommitAndPush(ulog));
         return SUCCESS;
     }
 

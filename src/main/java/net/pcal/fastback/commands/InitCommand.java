@@ -21,10 +21,8 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
-import net.pcal.fastback.config.GitConfig.Updater;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.mod.Mod;
-import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.RepoFactory;
 
 import java.io.IOException;
@@ -33,12 +31,7 @@ import java.nio.file.Path;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
-import static net.pcal.fastback.commands.SchedulableAction.DEFAULT_SHUTDOWN_ACTION;
-import static net.pcal.fastback.config.FastbackConfigKey.IS_BACKUP_ENABLED;
-import static net.pcal.fastback.config.FastbackConfigKey.SHUTDOWN_ACTION;
-import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserLogger.ulog;
-import static net.pcal.fastback.logging.UserMessage.localized;
 import static net.pcal.fastback.mod.Mod.mod;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.NONE;
 import static net.pcal.fastback.utils.Executor.executor;
@@ -66,9 +59,9 @@ enum InitCommand implements Command {
         try (final UserLogger ulog = ulog(cc)) {
             executor().execute(NONE, ulog, () -> {
                         final Path worldSaveDir = mod().getWorldDirectory();
-                        final RepoFactory rf = RepoFactory.get();
+                        final RepoFactory rf = RepoFactory.rf();
                         try {
-                            rf.init(worldSaveDir);
+                            rf.doInit(worldSaveDir, ulog);
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }

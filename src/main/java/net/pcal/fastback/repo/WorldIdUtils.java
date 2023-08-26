@@ -77,6 +77,10 @@ class WorldIdUtils {
     static void createWorldId(final Path worldSaveDir) throws IOException {
         migrateFastbackDir(worldSaveDir);
         final Path worldIdPath = worldSaveDir.resolve(WORLD_ID_PATH).toAbsolutePath().normalize();
+        if (worldIdPath.toFile().exists()) {
+            syslog().debug(worldIdPath + " already exists, skipping id creation");
+            return;
+        }
         FileUtils.mkdirs(worldIdPath.getParent());
         final String worldId = generateRandomWorldId(WORLD_ID_LENGTH);
         try (final FileWriter fw = new FileWriter(worldIdPath.toFile())) {

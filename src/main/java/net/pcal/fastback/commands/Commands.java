@@ -52,19 +52,18 @@ public class Commands {
         final LiteralArgumentBuilder<ServerCommandSource> root = LiteralArgumentBuilder.<ServerCommandSource>literal("backup").
                 requires(Permissions.require(BACKUP_COMMAND_PERM, mod.getDefaultPermLevel())).
                 executes(cc -> help(mod, cc));
-        EnableCommand.INSTANCE.register(root,mod());
-        DisableCommand.INSTANCE.register(root,mod());
+        InitCommand.INSTANCE.register(root,mod());
         LocalCommand.INSTANCE.register(root,mod());
         FullCommand.INSTANCE.register(root,mod());
         InfoCommand.INSTANCE.register(root,mod());
 
         RestoreCommand.INSTANCE.register(root,mod());
         CreateFileRemoteCommand.INSTANCE.register(root,mod());
+
         SetRemoteCommand.INSTANCE.register(root,mod());
         SetAutobackActionCommand.INSTANCE.register(root,mod());
         SetAutobackWaitCommand.INSTANCE.register(root,mod());
         SetShutdownActionCommand.INSTANCE.register(root,mod());
-
         SetRetentionCommand.INSTANCE.register(root,mod());
         SetRemoteRetentionCommand.INSTANCE.register(root,mod());
 
@@ -95,8 +94,13 @@ public class Commands {
         return "fastback.command." + subcommandName;
     }
 
+    @Deprecated
     public static Predicate<ServerCommandSource> subcommandPermission(Mod mod, String subcommandName) {
-        return Permissions.require(subcommandPermName(subcommandName), mod.getDefaultPermLevel());
+        return subcommandPermission(subcommandName);
+    }
+
+    public static Predicate<ServerCommandSource> subcommandPermission(String subcommandName) {
+        return Permissions.require(subcommandPermName(subcommandName), mod().getDefaultPermLevel());
     }
 
     /**
@@ -136,7 +140,7 @@ public class Commands {
         try {
             executor().execute(lock, ulog, () -> {
                 final Path worldSaveDir = mod().getWorldDirectory();
-                final RepoFactory rf = RepoFactory.get();
+                final RepoFactory rf = RepoFactory.rf();
                 if (!rf.isGitRepo(worldSaveDir)) { // FIXME this is not the right place for these checks
                     ulog.message(styledLocalized("fastback.chat.not-enabled", ERROR));
                     return;
@@ -166,7 +170,7 @@ public class Commands {
         try {
             executor().execute(lock, ulog, () -> {
                 final Path worldSaveDir = mod.getWorldDirectory();
-                final RepoFactory rf = RepoFactory.get();
+                final RepoFactory rf = RepoFactory.rf();
                 if (!rf.isGitRepo(worldSaveDir)) { // FIXME this is not the right place for these checks
                     ulog.message(styledLocalized("fastback.chat.not-enabled", ERROR));
                     return;

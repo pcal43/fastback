@@ -47,8 +47,8 @@ enum SetRemoteCommand implements Command {
     public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(mod, COMMAND_NAME)).
-                        executes(cc -> missingArgument(URL_ARGUMENT, mod, cc)).
+                        requires(subcommandPermission(COMMAND_NAME)).
+                        executes(cc -> missingArgument(URL_ARGUMENT, cc)).
                         then(
                                 argument(URL_ARGUMENT, StringArgumentType.greedyString()).
                                         executes(cc -> setRemoteUrl(mod, cc))
@@ -58,7 +58,7 @@ enum SetRemoteCommand implements Command {
 
     private static int setRemoteUrl(final Mod mod, final CommandContext<ServerCommandSource> cc) {
         final UserLogger ulog = commandLogger(mod, cc.getSource());
-        gitOp(mod, WRITE_CONFIG, ulog, repo -> {
+        gitOp(WRITE_CONFIG, ulog, repo -> {
             final String newUrl = cc.getArgument(URL_ARGUMENT, String.class);
             repo.getConfig().updater().set(REMOTE_PUSH_URL, newUrl).save();
             ulog.message(UserMessage.localized("fastback.chat.remote-enabled", newUrl));
