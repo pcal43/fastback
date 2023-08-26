@@ -45,7 +45,7 @@ enum PushCommand implements Command {
     INSTANCE;
 
     private static final String COMMAND_NAME = "push";
-    private static final String ARGUMENT = "snapshot";
+    private static final String ARGUMENT = "snapshot-date";
 
     @Override
     public void register(LiteralArgumentBuilder<ServerCommandSource> argb, Mod mod) {
