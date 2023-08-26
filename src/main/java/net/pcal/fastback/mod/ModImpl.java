@@ -236,6 +236,9 @@ class ModImpl implements LifecycleListener, Mod {
     // ======================================================================
     // Private
 
+    /**
+     * Convert an abstract UserMessage into a concrete Text object that Minecraft can display.
+     */
     private static Text messageToText(final UserMessage m) {
         final MutableText out;
         if (m.localized() != null) {
@@ -243,18 +246,25 @@ class ModImpl implements LifecycleListener, Mod {
         } else {
             out = Text.literal(m.raw());
         }
-        if (m.style() == ERROR) {
-            out.setStyle(EMPTY.withColor(TextColor.parse("red")));
-        } else if (m.style() == WARNING) {
-            out.setStyle(EMPTY.withColor(TextColor.parse("yellow")));
-        } else if (m.style() == NATIVE_GIT) {
-            out.setStyle(EMPTY.withColor(TextColor.parse("green")));
-        } else if (m.style() == JGIT) {
-            out.setStyle(EMPTY.withColor(TextColor.parse("gray")));
-        } else if (m.style() == BROADCAST) {
-            out.setStyle(EMPTY.withItalic(true));
-        } else {
-            out.setStyle(EMPTY.withColor(TextColor.parse("white")));
+        switch(m.style()) {
+            case ERROR -> {
+                out.setStyle(EMPTY.withColor(TextColor.parse("red")));
+            }
+            case WARNING -> {
+                out.setStyle(EMPTY.withColor(TextColor.parse("yellow")));
+            }
+            case JGIT -> {
+                out.setStyle(EMPTY.withColor(TextColor.parse("gray")));
+            }
+            case NATIVE_GIT -> {
+                out.setStyle(EMPTY.withColor(TextColor.parse("green")));
+            }
+            case BROADCAST -> {
+                out.setStyle(EMPTY.withItalic(true));
+            }
+            default -> {
+                out.setStyle(EMPTY.withColor(TextColor.parse("white")));
+            }
         }
         return out;
     }
