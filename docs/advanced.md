@@ -82,3 +82,13 @@ You can configure this in `[worlddir]/.git/config`:
 	broadcast-notice-message = My custom message.
 ```
 
+## Debugging
+
+If things go haywire, you can run
+
+```
+/backup set force-debug-enabled true
+```
+
+to temporarily send debugging output to the minecraft logs.  This can be useful in tracking down problems.
+

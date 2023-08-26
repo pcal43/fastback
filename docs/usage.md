@@ -19,11 +19,19 @@ This page explains how to do most common tasks.
 
 To enable backups on your world, just run
 
+```
+/backup init
+```
+
+you can then type
 
 ```
-/backup enable
-Enabled automatic local backups on world shutdown.
+/backup local
 ```
+
+to do backup right away.  You can then run other commands to set up automatic backups, remote backups
+pruning policies and more.  Read on.
+
 
 ## Listing available backup snapshots
 
