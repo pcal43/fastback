@@ -91,7 +91,7 @@ class CommitUtils {
     private static void doSettingsBackup(RepoImpl repo, UserLogger ulog) {
         syslog().info("Backing up minecraft settings");
         try {
-            final File backupDir = repo.getDotFasbackDir().resolve("minecraft").toFile();
+            final File backupDir = repo.getDotFasbackDir().resolve("mods-backup").toFile();
             if (backupDir.exists()) FileUtils.deleteDirectory(backupDir);
             backupDir.mkdirs();
             for (Path src : mod().getModsBackupPaths()) {
@@ -100,7 +100,8 @@ class CommitUtils {
                     syslog().debug("backing up " + srcFile + " to " + backupDir);
                     if (srcFile.exists()) {
                         if (srcFile.isDirectory()) {
-                            FileUtils.copyDirectory(srcFile, backupDir);
+                            FileUtils.copyDirectory(srcFile,
+                                    backupDir.toPath().resolve(srcFile.getName()).toFile());
                         } else {
                             FileUtils.copyFile(srcFile, backupDir);
                         }
