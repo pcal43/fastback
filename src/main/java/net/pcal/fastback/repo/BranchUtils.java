@@ -18,8 +18,6 @@
 
 package net.pcal.fastback.repo;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.repo.SnapshotIdUtils.SnapshotIdCodec;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
@@ -27,6 +25,8 @@ import org.eclipse.jgit.lib.Ref;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
@@ -37,10 +37,13 @@ import static net.pcal.fastback.logging.SystemLogger.syslog;
  */
 class BranchUtils {
 
-    static ListMultimap<WorldId, SnapshotId> listSnapshots(RepoImpl repo, JGitSupplier<Collection<Ref>> refProvider) throws GitAPIException, IOException {
-        final ListMultimap<WorldId, SnapshotId> snapshotsPerWorld = ArrayListMultimap.create();
+    /**
+     * Get the snapshots for this repo.  Snapshot branches for worlds other than the Repo's are ignored.
+     */
+    static Set<SnapshotId> listSnapshots(RepoImpl repo, JGitSupplier<Collection<Ref>> refProvider) throws GitAPIException, IOException {
         final Collection<Ref> refs = refProvider.get();
         final SnapshotIdCodec codec = repo.getSidCodec();
+        final Set<SnapshotId> out = new HashSet<>();
         for (final Ref ref : refs) {
             String branchName = getBranchName(ref);
             if (repo.getSidCodec().isSnapshotBranchName(repo.getWorldId(), branchName)) {
@@ -51,12 +54,16 @@ class BranchUtils {
                     syslog().error("Unexpected parse error, ignoring branch "+branchName, pe);
                     continue;
                 }
-                snapshotsPerWorld.put(sid.getWorldId(), sid);
+                if (sid.getWorldId().equals(repo.getWorldId())) {
+                    out.add(sid);
+                } else {
+                    syslog().debug("Ignoring branch from other world "+branchName);
+                }
             } else {
-                syslog().warn("Ignoring unrecognized branch "+branchName);
+                syslog().debug("Ignoring unrecognized branch "+branchName);
             }
         }
-        return snapshotsPerWorld;
+        return out;
     }
 
     static String getBranchName(Ref fromBranchRef) {

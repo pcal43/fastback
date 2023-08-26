@@ -18,7 +18,6 @@
 
 package net.pcal.fastback.repo;
 
-import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.config.FastbackConfigKey;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
@@ -30,8 +29,11 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.transport.RefSpec;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static net.pcal.fastback.config.FastbackConfigKey.LOCAL_RETENTION_POLICY;
 import static net.pcal.fastback.config.FastbackConfigKey.REMOTE_NAME;
@@ -69,7 +71,7 @@ class PruneUtils {
     static Collection<SnapshotId> doLocalPrune(final RepoImpl repo, final UserLogger log) throws IOException {
         return doPrune(repo, log,
                 LOCAL_RETENTION_POLICY,
-                repo::listSnapshots,
+                repo::getLocalSnapshots,
                 sid -> {
                     syslog().info("Pruning local snapshot " + sid.getBranchName());
                     deleteLocalBranches(repo, List.of(sid.getBranchName()));
@@ -81,7 +83,7 @@ class PruneUtils {
     static Collection<SnapshotId> doRemotePrune(RepoImpl repo, UserLogger ulog) throws IOException {
         return doPrune(repo, ulog,
                 FastbackConfigKey.REMOTE_RETENTION_POLICY,
-                repo::listRemoteSnapshots,
+                repo::getRemoteSnapshots,
                 sid -> {
                     syslog().info("Pruning remote snapshot " + sid.getBranchName());
                     repo.deleteRemoteBranch(sid.getBranchName());
@@ -93,7 +95,7 @@ class PruneUtils {
     private static Collection<SnapshotId> doPrune(Repo repo,
                                                   UserLogger log,
                                                   FastbackConfigKey policyConfigKey,
-                                                  JGitSupplier<ListMultimap<WorldId, SnapshotId>> listSnapshotsFn,
+                                                  JGitSupplier<Set<SnapshotId>> listSnapshotsFn,
                                                   JGitConsumer<SnapshotId> deleteSnapshotsFn,
                                                   String notSetKey) throws IOException {
         final GitConfig conf = repo.getConfig();
@@ -106,8 +108,9 @@ class PruneUtils {
             log.message(styledLocalized(notSetKey, ERROR));
             return null;
         }
-        final Collection<SnapshotId> toPrune = policy.getSnapshotsToPrune(
-                Repo.sortWorldSnapshots(listSnapshotsFn.get(), repo.getWorldId()));
+        final Collection<SnapshotId> toPruneUnsorted = policy.getSnapshotsToPrune(listSnapshotsFn.get());
+        final List<SnapshotId> toPrune = new ArrayList<>(toPruneUnsorted);
+        Collections.sort(toPrune);
         log.update(UserMessage.localized("fastback.hud.prune-started"));
         for (final SnapshotId sid : toPrune) {
             deleteSnapshotsFn.accept(sid);

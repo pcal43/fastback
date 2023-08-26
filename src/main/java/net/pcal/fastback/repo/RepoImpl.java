@@ -18,7 +18,6 @@
 
 package net.pcal.fastback.repo;
 
-import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.UserLogger;
@@ -41,6 +40,7 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_ENABLED;
@@ -49,6 +49,7 @@ import static net.pcal.fastback.config.FastbackConfigKey.IS_LOCK_CLEANUP_ENABLED
 import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.REMOTE_NAME;
 import static net.pcal.fastback.config.FastbackConfigKey.RESTORE_DIRECTORY;
+import static net.pcal.fastback.config.OtherConfigKey.REMOTE_PUSH_URL;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.BROADCAST;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
@@ -80,7 +81,7 @@ class RepoImpl implements Repo {
     }
 
     // ======================================================================
-    // Repo implementation
+    // 'do' methods - implement higher-level command-oriented logic.
 
     @Override
     public void doCommitAndPush(final UserLogger ulog) {
@@ -102,7 +103,7 @@ class RepoImpl implements Repo {
             syslog().error(ioe);
             return;
         }
-        ulog.message(localized("fastback.chat.backup-complete-elapsed", getDuration(start)));
+        ulog.message(localized("fastback.chat.backup-complete-elapsed", newSid, getDuration(start)));
     }
 
     @Override
@@ -142,13 +143,27 @@ class RepoImpl implements Repo {
         return RestoreUtils.restoreSnapshot(uri, restoresDir, worldName, sid, ulog);
     }
 
+
+    @Override
+    public void doPushSnapshot(SnapshotId sid, final UserLogger ulog) throws IOException, ParseException {
+        if (!this.getConfig().isSet(REMOTE_PUSH_URL)) {
+            ulog.message(styledLocalized("No remote is configured.  Run set-remote <url>", ERROR)); //FIXME i18n
+        } else {
+            PushUtils.doPush(sid, this, ulog);
+            ulog.message(UserMessage.localized("Successfully pushed " + sid)); // FIXME i18n
+        }
+    }
+
+    // ======================================================================
+    // Other repo implementation
+
     @Override
     public WorldId getWorldId() throws IOException {
         return WorldIdUtils.getWorldIdInfo(this.getWorkTree().toPath()).wid();
     }
 
     @Override
-    public ListMultimap<WorldId, SnapshotId> listSnapshots() throws IOException {
+    public Set<SnapshotId> getLocalSnapshots() throws IOException {
         final JGitSupplier<Collection<Ref>> refProvider = () -> {
             try {
                 return jgit.branchList().call();
@@ -164,7 +179,7 @@ class RepoImpl implements Repo {
     }
 
     @Override
-    public ListMultimap<WorldId, SnapshotId> listRemoteSnapshots() throws IOException {
+    public Set<SnapshotId> getRemoteSnapshots() throws IOException {
         final GitConfig conf = GitConfig.load(jgit);
         final String remoteName = conf.getString(REMOTE_NAME);
         final JGitSupplier<Collection<Ref>> refProvider = () -> {
@@ -209,10 +224,6 @@ class RepoImpl implements Repo {
         PruneUtils.deleteLocalBranches(this, branchesToDelete);
     }
 
-    Git getJGit() {
-        return this.jgit;
-    }
-
     @Override
     public void close() {
         this.getJGit().close();
@@ -255,6 +266,10 @@ class RepoImpl implements Repo {
 
     SnapshotIdCodec getSidCodec() throws IOException {
         return this.getWorldIdInfo().sidCodec();
+    }
+
+    Git getJGit() {
+        return this.jgit;
     }
 
     // ======================================================================
@@ -324,5 +339,4 @@ class RepoImpl implements Repo {
         }
         return true;
     }
-
 }

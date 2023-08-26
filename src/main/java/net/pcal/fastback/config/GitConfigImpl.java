@@ -67,6 +67,12 @@ class GitConfigImpl implements GitConfig {
     }
 
     @Override
+    public boolean isSet(GitConfigKey key) {
+        final String out = storedConfig.getString(key.getSectionName(), key.getSubSectionName(), key.getSettingName());
+        return out != null;
+    }
+
+    @Override
     public Updater updater() {
         return new UpdaterImpl();
     }

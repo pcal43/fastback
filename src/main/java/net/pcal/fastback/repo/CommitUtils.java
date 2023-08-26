@@ -40,6 +40,7 @@ import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.JGIT;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;
+import static net.pcal.fastback.logging.UserMessage.localized;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 import static net.pcal.fastback.logging.UserMessage.styledRaw;
 import static net.pcal.fastback.mod.Mod.mod;
@@ -57,6 +58,7 @@ class CommitUtils {
         MaintenanceUtils.doPreflight(repo);
         final WorldId uuid = repo.getWorldId();
         final SnapshotId newSid = repo.getSidCodec().create(uuid);
+        ulog.message(localized("fastback.chat.commit-start", newSid.getShortName()));
         syslog().debug("start doCommitSnapshot for "+newSid);
         final String newBranchName = newSid.getBranchName();
         try {

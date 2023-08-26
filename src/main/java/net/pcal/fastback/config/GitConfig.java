@@ -41,6 +41,8 @@ public interface GitConfig {
 
     int getInt(GitConfigKey key);
 
+    boolean isSet(GitConfigKey key);
+
     Updater updater();
 
     /**

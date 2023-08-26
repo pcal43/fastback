@@ -26,33 +26,28 @@ import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.SnapshotId;
 
-import java.util.Collection;
+import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
 
-import static net.pcal.fastback.commands.Commands.commandLogger;
 import static net.pcal.fastback.commands.Commands.gitOp;
-import static net.pcal.fastback.mod.Mod.mod;
-import static net.pcal.fastback.repo.Repo.sortWorldSnapshots;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.NONE;
 
 abstract class SnapshotNameSuggestions implements SuggestionProvider<ServerCommandSource> {
 
     static SnapshotNameSuggestions local() {
         return new SnapshotNameSuggestions() {
-
             @Override
-            protected Collection<SnapshotId> getSnapshotIds(Repo repo, UserLogger ulog) throws Exception {
-                return sortWorldSnapshots(repo.listSnapshots(), repo.getWorldId());
+            protected Iterator<SnapshotId> getSnapshotIds(Repo repo, UserLogger ulog) throws Exception {
+                return repo.getLocalSnapshots().iterator();
             }
         };
     }
 
     static SnapshotNameSuggestions remote() {
         return new SnapshotNameSuggestions() {
-
             @Override
-            protected Collection<SnapshotId> getSnapshotIds(Repo repo, UserLogger ulog) throws Exception {
-                return sortWorldSnapshots(repo.listRemoteSnapshots(), repo.getWorldId());
+            protected Iterator<SnapshotId> getSnapshotIds(Repo repo, UserLogger ulog) throws Exception {
+                return repo.getRemoteSnapshots().iterator();
             }
         };
     }
@@ -61,16 +56,18 @@ abstract class SnapshotNameSuggestions implements SuggestionProvider<ServerComma
     public CompletableFuture<Suggestions> getSuggestions(final CommandContext<ServerCommandSource> cc,
                                                          final SuggestionsBuilder builder) {
         CompletableFuture<Suggestions> completableFuture = new CompletableFuture<>();
-        final UserLogger ulog = commandLogger(mod(), cc.getSource());
-        gitOp(mod(), NONE, ulog, repo -> {
-            for (final SnapshotId sid : this.getSnapshotIds(repo, ulog)) {
-                builder.suggest(sid.getShortName());
-            }
-            completableFuture.complete(builder.buildFuture().get());
-        });
+        try (final UserLogger ulog = UserLogger.forCommand(cc)) {
+            gitOp(NONE, ulog, repo -> {
+                final Iterator<SnapshotId> i = getSnapshotIds(repo, ulog);
+                // Note to self: there's no point sorting here because the mc code (Suggestion.java) is
+                // going to resort it anyway.
+                while (i.hasNext()) builder.suggest(i.next().getShortName());
+                completableFuture.complete(builder.buildFuture().get());
+            });
+        }
         return completableFuture;
     }
 
-    abstract protected Collection<SnapshotId> getSnapshotIds(Repo repo, UserLogger log) throws Exception;
+    abstract protected Iterator<SnapshotId> getSnapshotIds(Repo repo, UserLogger log) throws Exception;
 
 }
