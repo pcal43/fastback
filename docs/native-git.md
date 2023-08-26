@@ -46,10 +46,11 @@ to start with a clean slate.  Options:
 Start the world.  In the console type
 
 ```
-/backup enable
+/backup init
 ```
 
-as normal and then
+If fastback can find native git installed on your machine, it will enable it.  If not, it's recommended that you 
+install it *before doing a backup* and then run
 
 ```
 /backup set native-git enabled
