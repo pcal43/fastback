@@ -43,7 +43,7 @@
   "fastback.chat.internal-error": "出现意外的备份错误。详情请查看日志。",
   "fastback.chat.invalid-input": "输入无效: %s",
   "fastback.chat.list-local-snapshots-header": "本地快照：",
-  "fastback.chat.not-enabled": "在这个世界上没有启用备份。运行 '/backup enable'",
+  "fastback.chat.not-enabled": "在这个世界上没有启用备份。运行 '/backup init'",
   "fastback.chat.prune-done": "打印了 %s 张快照。",
   "fastback.chat.prune-no-default": "未配置默认打印策略。请运行 /备份设置保留",
   "fastback.chat.prune-suggest-gc": "运行 /backup gc 来恢复磁盘空间。",
