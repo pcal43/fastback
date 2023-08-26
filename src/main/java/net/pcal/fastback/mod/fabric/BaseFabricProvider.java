@@ -28,6 +28,7 @@ import net.pcal.fastback.mod.FrameworkServiceProvider;
 import net.pcal.fastback.mod.fabric.mixins.ServerAccessors;
 import net.pcal.fastback.mod.fabric.mixins.SessionAccessors;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -144,6 +145,21 @@ public abstract class BaseFabricProvider implements FrameworkServiceProvider, Mi
         } catch (Exception ohwell) {
             syslog().error(ohwell);
         }
+    }
+
+    /**
+     * @return paths to the files and directories that should be backed up when config-backup is enabled.
+     */
+    @Override
+    public Collection<Path> getModsBackupPaths() {
+        final List<Path> out = new ArrayList<>();
+        final FabricLoader fl = FabricLoader.getInstance();
+        final Path gameDir = fl.getGameDir();
+        out.add(gameDir.resolve("options.txt´"));
+        out.add(gameDir.resolve("mods"));
+        out.add(gameDir.resolve("config"));
+        out.add(gameDir.resolve("resourcepacks"));
+        return out;
     }
 
     // ======================================================================

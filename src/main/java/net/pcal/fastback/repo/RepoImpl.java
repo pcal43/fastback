@@ -268,6 +268,10 @@ class RepoImpl implements Repo {
         return this.jgit;
     }
 
+    Path getDotFasbackDir() {
+        return this.getWorkTree().toPath().resolve(FASTBACK_DIR);
+    }
+
     // ======================================================================
     // Private
 
