@@ -27,6 +27,7 @@ import net.pcal.fastback.mod.Mod;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.RepoFactory;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
 import static net.minecraft.server.command.CommandManager.literal;
@@ -66,9 +67,10 @@ enum InitCommand implements Command {
             executor().execute(NONE, ulog, () -> {
                         final Path worldSaveDir = mod().getWorldDirectory();
                         final RepoFactory rf = RepoFactory.get();
-                        rf.init(worldSaveDir);
-                        } catch (Exception e) {
-                            syslog().error("Error enabling backups", e);
+                        try {
+                            rf.init(worldSaveDir);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
                         }
                     }
             );

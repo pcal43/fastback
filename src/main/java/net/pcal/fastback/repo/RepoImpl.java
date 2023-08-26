@@ -123,6 +123,25 @@ class RepoImpl implements Repo {
     }
 
     @Override
+    public void doPushSnapshot(SnapshotId sid, final UserLogger ulog) throws IOException, ParseException {
+        if (!this.getConfig().isSet(REMOTE_PUSH_URL)) {
+            ulog.message(styledLocalized("No remote is configured.  Run set-remote <url>", ERROR)); //FIXME i18n
+            return;
+        }
+        if (!doNativeCheck(ulog)) return;
+        final long start = System.currentTimeMillis();
+        try {
+            PushUtils.doPush(sid, this, ulog);
+        } catch(IOException ioe) {
+            ulog.message(styledLocalized("fastback.chat.commit-failed", ERROR));
+            syslog().error(ioe);
+            return;
+        }
+        ulog.message(UserMessage.localized("Successfully pushed " + sid + ".  Time elapsed: "+getDuration(start))); // FIXME i18n
+    }
+
+
+    @Override
     public Collection<SnapshotId> doLocalPrune(final UserLogger ulog) throws IOException {
         return PruneUtils.doLocalPrune(this, ulog);
     }
@@ -143,16 +162,6 @@ class RepoImpl implements Repo {
         return RestoreUtils.restoreSnapshot(uri, restoresDir, worldName, sid, ulog);
     }
 
-
-    @Override
-    public void doPushSnapshot(SnapshotId sid, final UserLogger ulog) throws IOException, ParseException {
-        if (!this.getConfig().isSet(REMOTE_PUSH_URL)) {
-            ulog.message(styledLocalized("No remote is configured.  Run set-remote <url>", ERROR)); //FIXME i18n
-        } else {
-            PushUtils.doPush(sid, this, ulog);
-            ulog.message(UserMessage.localized("Successfully pushed " + sid)); // FIXME i18n
-        }
-    }
 
     // ======================================================================
     // Other repo implementation
