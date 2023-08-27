@@ -26,17 +26,16 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
+ * Implements a callback that lets us render extra text on MessageScreens (i.e., exit/saving screen).
+ *
  * @author pcal
- * @since 0.0.1
+ * @since 0.14.0
  */
 @Mixin(MessageScreen.class)
 public class MessageScreenMixin {
 
-    /**
-     * Apply filtering behavior to free floating entities above the hopper.
-     */
     @Inject(method = "render", at = @At("TAIL"))
-    public void __render(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+    public void fastback_render(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         MixinGateway.get().renderMessageScreen(context, delta);
     }
 }

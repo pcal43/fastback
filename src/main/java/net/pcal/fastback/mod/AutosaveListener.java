@@ -38,6 +38,8 @@ import static net.pcal.fastback.mod.Mod.mod;
 import static net.pcal.fastback.utils.Executor.executor;
 
 /**
+ * Responds to vanilla autosaves and follows them with an automatic backup (autoback).
+ *
  * @author pcal
  * @since 0.2.0
  */

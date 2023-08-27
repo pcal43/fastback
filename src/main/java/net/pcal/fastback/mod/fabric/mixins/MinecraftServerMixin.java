@@ -28,6 +28,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 
 /**
+ * Allows us to disable vanilla saving during 'git add' to avoid coherency problems in the backup snapshots.  Also
+ * sends notifications when autosaving completes so we can follow them with automated backups.
+ *
  * @author pcal
  * @since 0.0.1
  */
@@ -35,8 +38,8 @@ import static net.pcal.fastback.logging.SystemLogger.syslog;
 public class MinecraftServerMixin {
 
     /**
-     * Intercept the call to saveAll that triggers on autobacks, pass it through and then send out notification that
-     * the autoback is done.
+     * Intercept the call to saveAll that triggers on autosave, pass it through and then send out notification that
+     * the autosave is done.
      */
     @Redirect(method = "tick(Ljava/util/function/BooleanSupplier;)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;saveAll(ZZZ)Z"))
