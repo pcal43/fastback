@@ -42,20 +42,11 @@ import java.util.List;
 import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_ENABLED;
-import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_MESSAGE;
-import static net.pcal.fastback.config.FastbackConfigKey.IS_LOCK_CLEANUP_ENABLED;
-import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
-import static net.pcal.fastback.config.FastbackConfigKey.REMOTE_NAME;
-import static net.pcal.fastback.config.FastbackConfigKey.RESTORE_DIRECTORY;
+import static net.pcal.fastback.config.FastbackConfigKey.*;
 import static net.pcal.fastback.config.OtherConfigKey.REMOTE_PUSH_URL;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
-import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.BROADCAST;
-import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
-import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.WARNING;
-import static net.pcal.fastback.logging.UserMessage.localized;
-import static net.pcal.fastback.logging.UserMessage.styledLocalized;
-import static net.pcal.fastback.logging.UserMessage.styledRaw;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.*;
+import static net.pcal.fastback.logging.UserMessage.*;
 import static net.pcal.fastback.mod.Mod.mod;
 import static org.eclipse.jgit.util.FileUtils.RETRY;
 
@@ -316,7 +307,6 @@ class RepoImpl implements Repo {
     }
 
     private void broadcastBackupNotice() {
-        if (!mod().isDecicatedServer()) return;
         if (!getConfig().getBoolean(BROADCAST_ENABLED)) return;
         final UserMessage m;
         final String configuredMessage = getConfig().getString(BROADCAST_MESSAGE);
@@ -332,7 +322,7 @@ class RepoImpl implements Repo {
         final GitConfig config = this.getConfig();
         if (config.getBoolean(IS_NATIVE_GIT_ENABLED)) {
             if (!EnvironmentUtils.isNativeGitInstalled()) {
-                ulog.message(UserMessage.rawError("Unable to backup: native mode enabled but git is not installed."));
+                ulog.message(styledRaw("Unable to backup: native mode enabled but git is not installed.", ERROR));
                 return false;
             }
         }

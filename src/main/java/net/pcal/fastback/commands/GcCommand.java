@@ -25,10 +25,8 @@ import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.mod.Mod;
 
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.commandLogger;
-import static net.pcal.fastback.commands.Commands.gitOp;
-import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.commands.Commands.*;
+import static net.pcal.fastback.logging.UserLogger.ulog;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.WRITE;
 
 
@@ -48,14 +46,14 @@ enum GcCommand implements Command {
     public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(mod, COMMAND_NAME)).
-                        executes(cc -> gc(mod, cc))
+                        requires(subcommandPermission(COMMAND_NAME)).
+                        executes(GcCommand::gc)
         );
     }
 
-    private static int gc(Mod mod, CommandContext<ServerCommandSource> cc) {
-        final UserLogger ulog = commandLogger(mod, cc.getSource());
-        gitOp(mod, WRITE, ulog, repo -> {
+    private static int gc(CommandContext<ServerCommandSource> cc) {
+        final UserLogger ulog = ulog(cc);
+        gitOp(WRITE, ulog, repo -> {
             repo.doGc(ulog);
             //log.chat(localized("fastback.chat.gc-done", byteCountToDisplaySize(gc.getBytesReclaimed())));
         });

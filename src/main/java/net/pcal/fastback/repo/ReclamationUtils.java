@@ -38,15 +38,11 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.config.FastbackConfigKey.IS_BRANCH_CLEANUP_ENABLED;
-import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
-import static net.pcal.fastback.config.FastbackConfigKey.IS_REFLOG_DELETION_ENABLED;
+import static net.pcal.fastback.config.FastbackConfigKey.*;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.JGIT;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;
-import static net.pcal.fastback.logging.UserMessage.raw;
-import static net.pcal.fastback.logging.UserMessage.styledLocalized;
-import static net.pcal.fastback.logging.UserMessage.styledRaw;
+import static net.pcal.fastback.logging.UserMessage.*;
 import static net.pcal.fastback.repo.PushUtils.isTempBranch;
 import static net.pcal.fastback.utils.ProcessUtils.doExec;
 import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
@@ -59,7 +55,7 @@ import static org.eclipse.jgit.api.ListBranchCommand.ListMode.ALL;
  * @author pcal
  * @since 0.13.0
  */
-class ReclamationUtils {
+abstract class ReclamationUtils {
 
     static void doReclamation(RepoImpl repo, UserLogger ulog) throws IOException {
         if (repo.getConfig().getBoolean(IS_NATIVE_GIT_ENABLED)) {

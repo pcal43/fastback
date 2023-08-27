@@ -32,9 +32,6 @@ import net.pcal.fastback.retention.RetentionPolicyCodec;
 import net.pcal.fastback.retention.RetentionPolicyType;
 import net.pcal.fastback.utils.EnvironmentUtils;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
@@ -43,7 +40,6 @@ import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.config.FastbackConfigKey.*;
 import static net.pcal.fastback.config.OtherConfigKey.REMOTE_PUSH_URL;
-import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserLogger.ulog;
 import static net.pcal.fastback.logging.UserMessage.raw;
 import static net.pcal.fastback.mod.Mod.mod;

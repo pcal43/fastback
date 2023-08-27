@@ -22,11 +22,7 @@ import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.utils.EnvironmentUtils;
 import org.apache.commons.io.FileUtils;
-import org.eclipse.jgit.api.AddCommand;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ResetCommand;
-import org.eclipse.jgit.api.RmCommand;
-import org.eclipse.jgit.api.Status;
+import org.eclipse.jgit.api.*;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.File;
@@ -34,21 +30,15 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
-import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_MODS_BACKUP_ENABLED;
+import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.JGIT;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;
-import static net.pcal.fastback.logging.UserMessage.localized;
-import static net.pcal.fastback.logging.UserMessage.styledLocalized;
-import static net.pcal.fastback.logging.UserMessage.styledRaw;
+import static net.pcal.fastback.logging.UserMessage.*;
 import static net.pcal.fastback.mod.Mod.mod;
 import static net.pcal.fastback.repo.RepoImpl.FASTBACK_DIR;
 import static net.pcal.fastback.utils.ProcessUtils.doExec;
@@ -59,7 +49,7 @@ import static net.pcal.fastback.utils.ProcessUtils.doExec;
  * @author pcal
  * @since 0.13.0
  */
-class CommitUtils {
+abstract class CommitUtils {
 
     public static SnapshotId doCommitSnapshot(final RepoImpl repo, final UserLogger ulog) throws IOException {
         PreflightUtils.doPreflight(repo);

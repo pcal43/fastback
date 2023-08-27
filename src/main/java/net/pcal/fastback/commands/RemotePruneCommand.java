@@ -28,10 +28,8 @@ import net.pcal.fastback.repo.SnapshotId;
 import java.util.Collection;
 
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.commandLogger;
-import static net.pcal.fastback.commands.Commands.gitOp;
-import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.commands.Commands.*;
+import static net.pcal.fastback.logging.UserLogger.ulog;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.WRITE;
 
 /**
@@ -50,14 +48,14 @@ enum RemotePruneCommand implements Command {
     public void register(LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(mod, COMMAND_NAME)).
-                        executes(cc -> remotePrune(mod, cc.getSource()))
+                        requires(subcommandPermission(COMMAND_NAME)).
+                        executes(cc -> remotePrune(cc.getSource()))
         );
     }
 
-    private static int remotePrune(final Mod mod, final ServerCommandSource scs) {
-        final UserLogger ulog = commandLogger(mod, scs);
-        gitOp(mod, WRITE, ulog, repo -> {
+    private static int remotePrune(final ServerCommandSource scs) {
+        final UserLogger ulog = ulog(scs);
+        gitOp(WRITE, ulog, repo -> {
             final Collection<SnapshotId> pruned = repo.doRemotePrune(ulog);
             ulog.message(UserMessage.localized("fastback.chat.prune-done", pruned.size()));
         });

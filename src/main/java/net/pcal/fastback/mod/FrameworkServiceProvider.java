@@ -55,11 +55,14 @@ public interface FrameworkServiceProvider {
     Path getSavesDir();
 
     /**
-     * @return path to the directory of the current world.
+     * @return path to the directory of the current world, or null if no world is loaded.
      */
     Path getWorldDirectory();
 
 
+    /**
+     * @return the name of the current world, or null if no world is loaded.
+     */
     String getWorldName();
 
     /**
@@ -72,8 +75,14 @@ public interface FrameworkServiceProvider {
      */
     void sendBroadcast(Text text);
 
+    /**
+     * Enable or disable world saving.
+     */
     void setWorldSaveEnabled(boolean enabled);
 
+    /**
+     * Force a world save to start now.  Called when a manual backup is performed.
+     */
     void saveWorld();
 
     /**
@@ -82,6 +91,9 @@ public interface FrameworkServiceProvider {
      */
     void setHudText(Text text);
 
+    /**
+     * Remove text set by setHudText.
+     */
     void clearHudText();
 
     /**
@@ -90,9 +102,10 @@ public interface FrameworkServiceProvider {
      */
     void setMessageScreenText(Text text);
 
+    /**
+     * Register a callback that should be called after an autosave completes.
+     */
     void setAutoSaveListener(Runnable runnable);
-
-    boolean isDedicatedServer();
 
     /**
      * Add some interesting properties to record in backup.properties.

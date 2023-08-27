@@ -35,7 +35,7 @@ import static net.pcal.fastback.logging.SystemLogger.syslog;
 /**
  * @author pcal
  */
-class BranchUtils {
+abstract class BranchUtils {
 
     /**
      * Get the snapshots for this repo.  Snapshot branches for worlds other than the Repo's are ignored.

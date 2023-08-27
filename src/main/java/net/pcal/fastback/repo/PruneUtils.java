@@ -29,11 +29,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.transport.RefSpec;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static net.pcal.fastback.config.FastbackConfigKey.LOCAL_RETENTION_POLICY;
 import static net.pcal.fastback.config.FastbackConfigKey.REMOTE_NAME;
@@ -47,7 +43,7 @@ import static net.pcal.fastback.logging.UserMessage.styledLocalized;
  * @author pcal
  * @since 0.13.0
  */
-class PruneUtils {
+abstract class PruneUtils {
 
     static void deleteRemoteBranch(final RepoImpl repo, String remoteBranchName) throws IOException {
         RefSpec refSpec = new RefSpec()

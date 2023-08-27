@@ -24,10 +24,7 @@ import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.mod.Mod;
 
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.commands.Commands.FAILURE;
-import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.gitOp;
-import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.commands.Commands.*;
 import static net.pcal.fastback.commands.FullCommand.saveWorldBeforeBackup;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserLogger.ulog;
@@ -51,7 +48,7 @@ enum LocalCommand implements Command {
     public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(mod, COMMAND_NAME)).
+                        requires(subcommandPermission(COMMAND_NAME)).
                         executes(cc -> run(mod, cc.getSource()))
         );
     }

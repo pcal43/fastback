@@ -44,8 +44,8 @@ public class Commands {
 
     static String BACKUP_COMMAND_PERM = "fastback.command";
 
-    static int FAILURE = 0;
-    static int SUCCESS = 1;
+    static final int FAILURE = 0;
+    static final int SUCCESS = 1;
 
     public static void registerCommands(final Mod mod) {
         final LiteralArgumentBuilder<ServerCommandSource> root = LiteralArgumentBuilder.<ServerCommandSource>literal("backup").
@@ -76,19 +76,9 @@ public class Commands {
 
         CommandRegistrationCallback.EVENT.register((dispatcher, regAccess, env) -> dispatcher.register(root));
     }
-
-    @Deprecated
-    public static UserLogger commandLogger(final Mod mod, final ServerCommandSource scs) {
-        return UserLogger.ulog(scs);
-    }
-
+    
     public static String subcommandPermName(String subcommandName) {
         return "fastback.command." + subcommandName;
-    }
-
-    @Deprecated
-    public static Predicate<ServerCommandSource> subcommandPermission(Mod mod, String subcommandName) {
-        return subcommandPermission(subcommandName);
     }
 
     public static Predicate<ServerCommandSource> subcommandPermission(String subcommandName) {
@@ -108,11 +98,6 @@ public class Commands {
             missingArgument(argName, log);
             return null;
         }
-    }
-
-    @Deprecated
-    public static int missingArgument(final String argName, final Mod mod, final CommandContext<ServerCommandSource> cc) {
-        return missingArgument(argName, commandLogger(mod, cc.getSource()));
     }
 
     public static int missingArgument(final String argName, final CommandContext<ServerCommandSource> cc) {
@@ -149,36 +134,6 @@ public class Commands {
                     syslog().error(e);
                 } finally {
                     mod().clearHudText();
-                }
-            });
-        } catch(Exception e) {
-            ulog.internalError();
-            syslog().error(e);
-        }
-    }
-
-    @Deprecated
-    static void gitOp(final Mod mod, final ExecutionLock lock, final UserLogger ulog, final GitOp op) {
-        try {
-            executor().execute(lock, ulog, () -> {
-                final Path worldSaveDir = mod.getWorldDirectory();
-                final RepoFactory rf = RepoFactory.rf();
-                if (!rf.isGitRepo(worldSaveDir)) { // FIXME this is not the right place for these checks
-                    ulog.message(styledLocalized("fastback.chat.not-enabled", ERROR));
-                    return;
-                }
-                try (final Repo repo = rf.load(worldSaveDir)) {
-                    final GitConfig repoConfig = repo.getConfig();
-                    if (!repoConfig.getBoolean(IS_BACKUP_ENABLED)) {
-                        ulog.message(styledLocalized("fastback.chat.not-enabled", ERROR));
-                    } else {
-                        op.execute(repo);
-                    }
-                } catch (Exception e) {
-                    ulog.message(styledLocalized("fastback.chat.internal-error", ERROR));
-                    syslog().error(e);
-                } finally {
-                    mod.clearHudText();
                 }
             });
         } catch(Exception e) {

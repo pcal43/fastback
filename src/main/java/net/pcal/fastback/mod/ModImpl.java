@@ -40,11 +40,7 @@ import static net.minecraft.text.Style.EMPTY;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
-import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.BROADCAST;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
-import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.JGIT;
-import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;
-import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.WARNING;
 import static net.pcal.fastback.logging.UserMessage.localized;
 import static net.pcal.fastback.utils.EnvironmentUtils.getGitLfsVersion;
 import static net.pcal.fastback.utils.EnvironmentUtils.getGitVersion;
@@ -144,11 +140,6 @@ class ModImpl implements LifecycleListener, Mod {
     @Override
     public void addBackupProperties(Map<String, String> props) {
         fsp.addBackupProperties(props);
-    }
-
-    @Override
-    public boolean isDecicatedServer() {
-        return fsp.isDedicatedServer();
     }
 
     @Override

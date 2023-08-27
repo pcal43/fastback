@@ -40,7 +40,7 @@ import static net.pcal.fastback.logging.UserMessage.styledRaw;
  * @author pcal
  * @since 0.13.0
  */
-class RestoreUtils {
+abstract class RestoreUtils {
 
     // ======================================================================
     // Utility methods

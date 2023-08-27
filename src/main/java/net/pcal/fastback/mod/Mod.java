@@ -45,7 +45,6 @@ public interface Mod {
      */
     Path getDefaultRestoresDir() throws IOException;
 
-
     /**
      * @return the version of the fastback mod.
      */
@@ -72,7 +71,7 @@ public interface Mod {
     void sendChat(UserMessage message, ServerCommandSource scs);
 
     /**
-     * If on a server, broadcast a message to the chat window of all connected users.
+     * If on a dedicated server, broadcast a message to the chat window of all connected users.
      */
     void sendBroadcast(UserMessage message);
 
@@ -110,11 +109,6 @@ public interface Mod {
      * Add extra properties that will be stored in .fastback/backup.properties.
      */
     void addBackupProperties(Map<String, String> props);
-
-    /**
-     * @return true if we're running on a dedicated server.
-     */
-    boolean isDecicatedServer();
 
     class Singleton {
         private static Mod INSTANCE = null;

@@ -104,7 +104,7 @@ public enum FastbackConfigKey implements GitConfigKey {
 
     @Override
     public String getStringDefault() {
-        if (this.stringDefault == NULL_STRING) return null;
+        if (this.stringDefault.equals(NULL_STRING)) return null;
         return this.stringDefault;
     }
 

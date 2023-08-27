@@ -33,10 +33,7 @@ import java.nio.file.Path;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.gitOp;
-import static net.pcal.fastback.commands.Commands.missingArgument;
-import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.commands.Commands.*;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_FILE_REMOTE_BARE;
 import static net.pcal.fastback.config.OtherConfigKey.REMOTE_PUSH_URL;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
@@ -55,7 +52,7 @@ enum CreateFileRemoteCommand implements Command {
     public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(mod, COMMAND_NAME)).
+                        requires(subcommandPermission(COMMAND_NAME)).
                         executes(cc -> missingArgument(ARGUMENT, cc)).
                         then(argument(ARGUMENT, StringArgumentType.greedyString()).
                                 executes(cc -> setFileRemote(mod, cc))
@@ -65,7 +62,7 @@ enum CreateFileRemoteCommand implements Command {
 
     private static int setFileRemote(final Mod mod, final CommandContext<ServerCommandSource> cc) {
         final UserLogger ulog = UserLogger.ulog(cc);
-        gitOp(mod, NONE, ulog, repo -> {
+        gitOp(NONE, ulog, repo -> {
             final String targetPath = cc.getArgument(ARGUMENT, String.class);
             final Path fupHome = Path.of(targetPath);
             if (fupHome.toFile().exists()) {

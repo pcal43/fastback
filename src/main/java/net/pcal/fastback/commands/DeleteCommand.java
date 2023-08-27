@@ -31,11 +31,8 @@ import java.util.List;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.commandLogger;
-import static net.pcal.fastback.commands.Commands.getArgumentNicely;
-import static net.pcal.fastback.commands.Commands.gitOp;
-import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.commands.Commands.*;
+import static net.pcal.fastback.logging.UserLogger.ulog;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.WRITE;
 
 enum DeleteCommand implements Command {
@@ -48,7 +45,7 @@ enum DeleteCommand implements Command {
     @Override
     public void register(LiteralArgumentBuilder<ServerCommandSource> argb, Mod mod) {
         argb.then(literal(COMMAND_NAME).
-                requires(subcommandPermission(mod, COMMAND_NAME)).then(
+                requires(subcommandPermission(COMMAND_NAME)).then(
                         argument(ARGUMENT, StringArgumentType.string()).
                                 suggests(SnapshotNameSuggestions.local()).
                                 executes(cc -> delete(mod, cc))
@@ -57,8 +54,8 @@ enum DeleteCommand implements Command {
     }
 
     private static int delete(Mod mod, CommandContext<ServerCommandSource> cc) {
-        final UserLogger log = commandLogger(mod, cc.getSource());
-        gitOp(mod, WRITE, log, repo -> {
+        final UserLogger log = ulog(cc);
+        gitOp(WRITE, log, repo -> {
             final String snapshotName = getArgumentNicely(ARGUMENT, String.class, cc.getLastChild(), log);
             final SnapshotId sid = repo.createSnapshotId(snapshotName);
             final String branchName = sid.getBranchName();

@@ -30,7 +30,7 @@ import java.util.Date;
 
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 
-class SnapshotIdUtils {
+abstract class SnapshotIdUtils {
 
     static ListMultimap<WorldId, SnapshotId> getSnapshotsPerWorld(Iterable<Ref> refs, SnapshotIdCodec codec) {
         final ListMultimap<WorldId, SnapshotId> out = ArrayListMultimap.create();

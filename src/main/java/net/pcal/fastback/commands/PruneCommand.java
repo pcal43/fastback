@@ -28,10 +28,8 @@ import net.pcal.fastback.repo.SnapshotId;
 import java.util.Collection;
 
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.commandLogger;
-import static net.pcal.fastback.commands.Commands.gitOp;
-import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.commands.Commands.*;
+import static net.pcal.fastback.logging.UserLogger.ulog;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.WRITE;
 
 /**
@@ -50,18 +48,18 @@ enum PruneCommand implements Command {
     public void register(LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(mod, COMMAND_NAME)).
-                        executes(cc -> prune(mod, cc.getSource()))
+                        requires(subcommandPermission(COMMAND_NAME)).
+                        executes(cc -> prune(cc.getSource()))
         );
     }
 
-    private static int prune(final Mod mod, final ServerCommandSource scs) {
-        final UserLogger ulog = commandLogger(mod, scs);
-        gitOp(mod, WRITE, ulog, repo -> {
+    private static int prune(final ServerCommandSource scs) {
+        final UserLogger ulog = ulog(scs);
+        gitOp(WRITE, ulog, repo -> {
             final Collection<SnapshotId> pruned = repo.doLocalPrune(ulog);
             if (pruned != null) {
                 ulog.message(UserMessage.localized("fastback.chat.prune-done", pruned.size()));
-                if (pruned.size() > 0) ulog.message(UserMessage.localized("fastback.chat.prune-suggest-gc"));
+                if (!pruned.isEmpty()) ulog.message(UserMessage.localized("fastback.chat.prune-suggest-gc"));
             }
         });
         return SUCCESS;

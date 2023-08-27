@@ -37,9 +37,7 @@ import java.util.concurrent.ExecutionException;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.commands.Commands.FAILURE;
-import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.commands.Commands.*;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserLogger.ulog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
@@ -90,21 +88,22 @@ enum HelpCommand implements Command {
     }
 
     static int generalHelp(final CommandContext<ServerCommandSource> cc) {
-        final UserLogger ulog = ulog(cc);
-        StringWriter subcommands = null;
-        for (final String available : getSubcommandNames(cc)) {
-            if (subcommands == null) {
-                subcommands = new StringWriter();
-            } else {
-                subcommands.append(", ");
+        try(final UserLogger ulog = ulog(cc)) {
+            StringWriter subcommands = null;
+            for (final String available : getSubcommandNames(cc)) {
+                if (subcommands == null) {
+                    subcommands = new StringWriter();
+                } else {
+                    subcommands.append(", ");
+                }
+                subcommands.append(available);
             }
-            subcommands.append(available);
+            ulog.message(UserMessage.localized("fastback.help.subcommands", String.valueOf(subcommands)));
+            if (!rf().isGitRepo(mod().getWorldDirectory())) {
+                ulog.message(UserMessage.localized("fastback.help.suggest-init"));
+            }
+            return SUCCESS;
         }
-        ulog.message(UserMessage.localized("fastback.help.subcommands", String.valueOf(subcommands)));
-        if (!rf().isGitRepo(mod().getWorldDirectory())) {
-            ulog.message(UserMessage.localized("fastback.help.suggest-init"));
-        }
-        return SUCCESS;
     }
 
     private int subcommandHelp(final CommandContext<ServerCommandSource> cc) {

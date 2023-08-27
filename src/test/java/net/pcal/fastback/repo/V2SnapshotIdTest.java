@@ -28,11 +28,7 @@ import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static net.pcal.fastback.repo.SnapshotIdUtils.SnapshotIdCodec.V2;
 import static net.pcal.fastback.repo.V1SnapshotIdTest.createWorldId;

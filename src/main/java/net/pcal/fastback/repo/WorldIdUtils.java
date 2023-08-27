@@ -23,9 +23,9 @@ import static net.pcal.fastback.logging.SystemLogger.syslog;
  * @author pcal
  * @since 0.13.0
  */
-class WorldIdUtils {
+abstract class WorldIdUtils {
 
-    // ======================================================================
+    // ==============================A========================================
     // Constants
 
     /**

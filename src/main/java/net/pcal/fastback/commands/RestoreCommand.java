@@ -31,9 +31,7 @@ import java.nio.file.Path;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.gitOp;
-import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.commands.Commands.*;
 import static net.pcal.fastback.mod.Mod.mod;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.NONE;
 
@@ -48,7 +46,7 @@ enum RestoreCommand implements Command {
     public void register(LiteralArgumentBuilder<ServerCommandSource> argb, Mod mod) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(mod, COMMAND_NAME)).then(
+                        requires(subcommandPermission(COMMAND_NAME)).then(
                                 argument(ARGUMENT, StringArgumentType.string()).
                                         suggests(SnapshotNameSuggestions.local()).
                                         executes(RestoreCommand::restore)
@@ -56,9 +54,9 @@ enum RestoreCommand implements Command {
         );
     }
 
-    private static int restore(CommandContext<ServerCommandSource> cc) {
+    private static int restore(final CommandContext<ServerCommandSource> cc) {
         try(final UserLogger ulog = UserLogger.ulog(cc)) {
-            gitOp(mod(), NONE, ulog, repo -> {
+            gitOp(NONE, ulog, repo -> {
                 final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
                 final SnapshotId sid = repo.createSnapshotId(snapshotName);
                 final String uri = "file://" + mod().getWorldDirectory().toAbsolutePath();

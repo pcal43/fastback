@@ -23,19 +23,15 @@ import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModMetadata;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
+import net.minecraft.world.level.LevelInfo;
 import net.minecraft.world.level.storage.LevelStorage;
+import net.minecraft.world.level.storage.LevelSummary;
 import net.pcal.fastback.mod.FrameworkServiceProvider;
 import net.pcal.fastback.mod.fabric.mixins.ServerAccessors;
 import net.pcal.fastback.mod.fabric.mixins.SessionAccessors;
 
-import java.io.File;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
@@ -71,7 +67,7 @@ public abstract class BaseFabricProvider implements FrameworkServiceProvider, Mi
 
     @Override
     public void sendBroadcast(Text text) {
-        if (this.minecraftServer != null) {
+        if (this.minecraftServer != null && this.minecraftServer.isDedicated()) {
             minecraftServer.getPlayerManager().broadcast(text, false);
         }
     }
@@ -114,12 +110,11 @@ public abstract class BaseFabricProvider implements FrameworkServiceProvider, Mi
     public String getWorldName() {
         if (this.minecraftServer == null) throw new IllegalStateException();
         final LevelStorage.Session session = ((ServerAccessors) this.minecraftServer).getSession();
-        return session.getLevelSummary().getLevelInfo().getLevelName();
-    }
-
-    @Override
-    public boolean isDedicatedServer() {
-        return this.minecraftServer != null && this.minecraftServer.isDedicated();
+        final LevelSummary ls = session.getLevelSummary();
+        if (ls == null) return null;
+        final LevelInfo li = ls.getLevelInfo();
+        if (li == null) return null;
+        return li.getLevelName();
     }
 
     /**
