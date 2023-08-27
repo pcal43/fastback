@@ -23,6 +23,8 @@ of disk space.
 * Schedule backups to run automatically
 * Easily restore backup snapshots
 * Snapshot pruning, retention policies
+* Include mod jars and config files in backup snapshots
+* Broadcast server-wide notifications during backups 
 * LuckPerms support
 * Works on clients and dedicated servers
 * Works on Linux, Mac and Windows 

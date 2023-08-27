@@ -76,7 +76,7 @@ public class Commands {
 
         CommandRegistrationCallback.EVENT.register((dispatcher, regAccess, env) -> dispatcher.register(root));
     }
-    
+
     public static String subcommandPermName(String subcommandName) {
         return "fastback.command." + subcommandName;
     }
