@@ -40,6 +40,12 @@ fi
 
 
 #
+# Always run this in the root of the repo
+#
+cd $(git rev-parse --show-toplevel)
+
+
+#
 # Build release
 #
 

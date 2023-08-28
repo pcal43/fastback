@@ -14,7 +14,7 @@ test:
 
 .PHONY: release
 release:
-	./release.sh
+	./etc/release.sh
 
 .PHONY: ide
 ide:
