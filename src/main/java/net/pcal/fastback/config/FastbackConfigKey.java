@@ -49,9 +49,6 @@ public enum FastbackConfigKey implements GitConfigKey {
     UPDATE_GITATTRIBUTES_ENABLED("update-gitattributes-enabled", true),
     UPDATE_GITIGNORE_ENABLED("update-gitignore-enabled", true);
 
-
-    private static final String NULL_STRING = "";
-
     private final String  settingName;
     private final Boolean booleanDefault;
     private final String stringDefault;
@@ -104,7 +101,6 @@ public enum FastbackConfigKey implements GitConfigKey {
 
     @Override
     public String getStringDefault() {
-        if (this.stringDefault.equals(NULL_STRING)) return null;
         return this.stringDefault;
     }
 
