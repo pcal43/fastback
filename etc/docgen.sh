@@ -1,6 +1,11 @@
 #!/bin/sh
 
 #
+# Always run this in the root of the repo
+#
+cd $(git rev-parse --show-toplevel)
+
+#
 # generate commands-list.md
 #
 echo '''
