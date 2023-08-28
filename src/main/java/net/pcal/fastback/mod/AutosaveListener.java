@@ -30,7 +30,9 @@ import java.time.Duration;
 
 import static net.pcal.fastback.commands.SchedulableAction.NONE;
 import static net.pcal.fastback.commands.SchedulableAction.forConfigValue;
-import static net.pcal.fastback.config.FastbackConfigKey.*;
+import static net.pcal.fastback.config.FastbackConfigKey.AUTOBACK_ACTION;
+import static net.pcal.fastback.config.FastbackConfigKey.AUTOBACK_WAIT_MINUTES;
+import static net.pcal.fastback.config.FastbackConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.mod.Mod.mod;
 import static net.pcal.fastback.utils.Executor.executor;

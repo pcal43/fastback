@@ -27,7 +27,6 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.mod.Mod;
 
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -37,7 +36,9 @@ import java.util.concurrent.ExecutionException;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.commands.Commands.*;
+import static net.pcal.fastback.commands.Commands.FAILURE;
+import static net.pcal.fastback.commands.Commands.SUCCESS;
+import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserLogger.ulog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
@@ -53,10 +54,10 @@ enum HelpCommand implements Command {
     private static final String ARGUMENT = "subcommand";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, PermissionsFactory<ServerCommandSource> pf) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(COMMAND_NAME)).
+                        requires(subcommandPermission(COMMAND_NAME, pf)).
                         executes(HelpCommand::generalHelp).
                         then(
                                 argument(ARGUMENT, StringArgumentType.word()).

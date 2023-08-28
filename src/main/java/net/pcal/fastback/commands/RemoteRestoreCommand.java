@@ -25,14 +25,15 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.mod.Mod;
 import net.pcal.fastback.repo.SnapshotId;
 
 import java.nio.file.Path;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.commands.Commands.*;
+import static net.pcal.fastback.commands.Commands.SUCCESS;
+import static net.pcal.fastback.commands.Commands.gitOp;
+import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.config.OtherConfigKey.REMOTE_PUSH_URL;
 import static net.pcal.fastback.logging.UserLogger.ulog;
 import static net.pcal.fastback.mod.Mod.mod;
@@ -47,10 +48,10 @@ enum RemoteRestoreCommand implements Command {
 
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, PermissionsFactory<ServerCommandSource> pf) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(COMMAND_NAME)).then(
+                        requires(subcommandPermission(COMMAND_NAME, pf)).then(
                                 argument(ARGUMENT, StringArgumentType.string()).
                                         suggests(SnapshotNameSuggestions.remote()).
                                         executes(RemoteRestoreCommand::remoteRestore)

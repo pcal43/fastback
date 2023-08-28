@@ -21,10 +21,12 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.UserLogger;
-import net.pcal.fastback.mod.Mod;
 
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.commands.Commands.*;
+import static net.pcal.fastback.commands.Commands.FAILURE;
+import static net.pcal.fastback.commands.Commands.SUCCESS;
+import static net.pcal.fastback.commands.Commands.gitOp;
+import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.commands.FullCommand.saveWorldBeforeBackup;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserLogger.ulog;
@@ -45,19 +47,19 @@ enum LocalCommand implements Command {
     private static final String COMMAND_NAME = "local";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, PermissionsFactory<ServerCommandSource> pf) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(COMMAND_NAME)).
-                        executes(cc -> run(mod, cc.getSource()))
+                        requires(subcommandPermission(COMMAND_NAME, pf)).
+                        executes(cc -> run(cc.getSource()))
         );
     }
 
-    public static int run(Mod mod, ServerCommandSource scs) {
+    private static int run(ServerCommandSource scs) {
         try (final UserLogger ulog = ulog(scs)) {
             if (!rf().doInitCheck(mod().getWorldDirectory(), ulog)) return FAILURE;
             try {
-                saveWorldBeforeBackup(mod, ulog);
+                saveWorldBeforeBackup(ulog);
             } catch (Exception e) {
                 ulog.internalError();
                 syslog().error(e);

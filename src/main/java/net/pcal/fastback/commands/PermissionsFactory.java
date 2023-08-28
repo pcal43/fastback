@@ -1,3 +1,5 @@
+package net.pcal.fastback.commands;
+
 /*
  * FastBack - Fast, incremental Minecraft backups powered by Git.
  * Copyright (C) 2022 pcal.net
@@ -16,13 +18,9 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.commands;
+import java.util.function.Predicate;
 
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import net.minecraft.server.command.ServerCommandSource;
+public interface PermissionsFactory<S> {
 
-public interface Command {
-
-    void register(final LiteralArgumentBuilder<ServerCommandSource> argb, PermissionsFactory<ServerCommandSource> pf);
-
+    Predicate<S> require(String permissionName);
 }

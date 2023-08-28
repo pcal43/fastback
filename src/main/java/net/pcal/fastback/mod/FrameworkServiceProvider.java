@@ -18,12 +18,15 @@
 
 package net.pcal.fastback.mod;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.pcal.fastback.logging.SystemLogger;
 
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
+import java.util.function.Predicate;
 
 /**
  * Services that must be provided by the underlying mod framework.  Currently, that means fabric only.
@@ -117,4 +120,7 @@ public interface FrameworkServiceProvider {
      */
     Collection<Path> getModsBackupPaths();
 
+    Predicate<ServerCommandSource> createPermissionsPredicate(String permName, int level);
+
+    void registerCommand(LiteralArgumentBuilder<ServerCommandSource> command);
 }
