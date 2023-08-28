@@ -24,6 +24,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import net.minecraft.command.CommandSource;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
@@ -87,7 +88,7 @@ enum HelpCommand implements Command {
         }
     }
 
-    static int generalHelp(final CommandContext<ServerCommandSource> cc) {
+    static int generalHelp(final CommandContext<CommandSource> cc) {
         try(final UserLogger ulog = ulog(cc)) {
             StringWriter subcommands = null;
             for (final String available : getSubcommandNames(cc)) {

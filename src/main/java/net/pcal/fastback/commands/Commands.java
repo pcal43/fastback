@@ -22,6 +22,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.minecraft.command.CommandSource;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
@@ -47,10 +48,18 @@ public class Commands {
     static final int FAILURE = 0;
     static final int SUCCESS = 1;
 
+
     public static void registerCommands(final Mod mod) {
-        final LiteralArgumentBuilder<ServerCommandSource> root = LiteralArgumentBuilder.<ServerCommandSource>literal("backup").
-                requires(Permissions.require(BACKUP_COMMAND_PERM, mod.getDefaultPermLevel())).
-                executes(HelpCommand::generalHelp);
+    }
+
+    public static void registerCommands(final PermissionsFactory pf) {
+
+
+    final LiteralArgumentBuilder<CommandSource> root = LiteralArgumentBuilder.<ServerCommandSource>literal("backup").
+            requires(pf.require("asdf",4)).
+            executes(HelpCommand::generalHelp);
+
+
         InitCommand.INSTANCE.register(root,mod());
         LocalCommand.INSTANCE.register(root,mod());
         FullCommand.INSTANCE.register(root,mod());
