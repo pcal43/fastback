@@ -16,6 +16,10 @@ test:
 release:
 	./etc/release.sh
 
+.PHONY: docgen
+docgen:
+	./etc/docgen.sh
+
 .PHONY: ide
 ide:
 	./gradlew cleanIdea idea
