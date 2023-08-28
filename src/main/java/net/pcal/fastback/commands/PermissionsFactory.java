@@ -18,11 +18,9 @@ package net.pcal.fastback.commands;
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-import net.minecraft.command.CommandSource;
-
 import java.util.function.Predicate;
 
-public interface PermissionsFactory {
+public interface PermissionsFactory<S> {
 
-    Predicate<CommandSource> require(String permissionName, int level);
+    Predicate<S> require(String permissionName, int level);
 }

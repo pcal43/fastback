@@ -49,39 +49,34 @@ public class Commands {
     static final int SUCCESS = 1;
 
 
-    public static void registerCommands(final Mod mod) {
-    }
+    public static void registerCommands(final PermissionsFactory<ServerCommandSource> pf) {
 
-    public static void registerCommands(final PermissionsFactory pf) {
+        final LiteralArgumentBuilder<ServerCommandSource> root = LiteralArgumentBuilder.<ServerCommandSource>literal("backup").
+                requires(pf.require("asdf", 4)).
+                executes(HelpCommand::generalHelp);
 
+        InitCommand.INSTANCE.register(root, mod());
+        LocalCommand.INSTANCE.register(root, mod());
+        FullCommand.INSTANCE.register(root, mod());
+        InfoCommand.INSTANCE.register(root, mod());
 
-    final LiteralArgumentBuilder<CommandSource> root = LiteralArgumentBuilder.<ServerCommandSource>literal("backup").
-            requires(pf.require("asdf",4)).
-            executes(HelpCommand::generalHelp);
+        RestoreCommand.INSTANCE.register(root, mod());
+        CreateFileRemoteCommand.INSTANCE.register(root, mod());
 
+        PruneCommand.INSTANCE.register(root, mod());
+        DeleteCommand.INSTANCE.register(root, mod());
+        GcCommand.INSTANCE.register(root, mod());
+        ListCommand.INSTANCE.register(root, mod());
+        PushCommand.INSTANCE.register(root, mod());
 
-        InitCommand.INSTANCE.register(root,mod());
-        LocalCommand.INSTANCE.register(root,mod());
-        FullCommand.INSTANCE.register(root,mod());
-        InfoCommand.INSTANCE.register(root,mod());
+        RemoteListCommand.INSTANCE.register(root, mod());
+        RemoteDeleteCommand.INSTANCE.register(root, mod());
+        RemotePruneCommand.INSTANCE.register(root, mod());
+        RemoteRestoreCommand.INSTANCE.register(root, mod());
 
-        RestoreCommand.INSTANCE.register(root,mod());
-        CreateFileRemoteCommand.INSTANCE.register(root,mod());
+        SetCommand.INSTANCE.register(root, mod());
 
-        PruneCommand.INSTANCE.register(root,mod());
-        DeleteCommand.INSTANCE.register(root,mod());
-        GcCommand.INSTANCE.register(root,mod());
-        ListCommand.INSTANCE.register(root,mod());
-        PushCommand.INSTANCE.register(root,mod());
-
-        RemoteListCommand.INSTANCE.register(root,mod());
-        RemoteDeleteCommand.INSTANCE.register(root,mod());
-        RemotePruneCommand.INSTANCE.register(root,mod());
-        RemoteRestoreCommand.INSTANCE.register(root,mod());
-
-        SetCommand.INSTANCE.register(root,mod());
-
-        HelpCommand.INSTANCE.register(root,mod());
+        HelpCommand.INSTANCE.register(root, mod());
 
         CommandRegistrationCallback.EVENT.register((dispatcher, regAccess, env) -> dispatcher.register(root));
     }
@@ -145,7 +140,7 @@ public class Commands {
                     mod().clearHudText();
                 }
             });
-        } catch(Exception e) {
+        } catch (Exception e) {
             ulog.internalError();
             syslog().error(e);
         }
