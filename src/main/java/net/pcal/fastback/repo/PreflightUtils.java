@@ -27,7 +27,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collections;
 
-import static net.pcal.fastback.config.FastbackConfigKey.*;
+import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
+import static net.pcal.fastback.config.FastbackConfigKey.UPDATE_GITATTRIBUTES_ENABLED;
+import static net.pcal.fastback.config.FastbackConfigKey.UPDATE_GITIGNORE_ENABLED;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.utils.FileUtils.writeResourceToFile;
 import static net.pcal.fastback.utils.ProcessUtils.doExec;

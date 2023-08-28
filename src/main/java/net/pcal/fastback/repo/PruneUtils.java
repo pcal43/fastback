@@ -29,7 +29,11 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.transport.RefSpec;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 import static net.pcal.fastback.config.FastbackConfigKey.LOCAL_RETENTION_POLICY;
 import static net.pcal.fastback.config.FastbackConfigKey.REMOTE_NAME;

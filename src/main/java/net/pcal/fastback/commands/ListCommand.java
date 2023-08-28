@@ -30,7 +30,10 @@ import java.util.Collections;
 import java.util.List;
 
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.commands.Commands.*;
+import static net.pcal.fastback.commands.Commands.FAILURE;
+import static net.pcal.fastback.commands.Commands.SUCCESS;
+import static net.pcal.fastback.commands.Commands.gitOp;
+import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.mod.Mod.mod;
 import static net.pcal.fastback.repo.RepoFactory.rf;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.NONE;

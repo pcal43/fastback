@@ -18,19 +18,16 @@
 
 package net.pcal.fastback.mod.fabric;
 
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.MessageScreen;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.pcal.fastback.mod.fabric.mixins.ScreenAccessors;
 
 import java.nio.file.Path;
-import java.util.function.Predicate;
 
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 

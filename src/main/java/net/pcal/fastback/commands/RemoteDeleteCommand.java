@@ -28,7 +28,9 @@ import net.pcal.fastback.repo.SnapshotId;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
-import static net.pcal.fastback.commands.Commands.*;
+import static net.pcal.fastback.commands.Commands.SUCCESS;
+import static net.pcal.fastback.commands.Commands.gitOp;
+import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.UserLogger.ulog;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.WRITE;
 

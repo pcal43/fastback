@@ -18,11 +18,9 @@
 
 package net.pcal.fastback.mod;
 
-import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
-import net.pcal.fastback.commands.PermissionsFactory;
 import net.pcal.fastback.logging.SystemLogger;
 
 import java.nio.file.Path;
