@@ -20,13 +20,9 @@ package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import me.lucko.fabric.api.permissions.v0.Permissions;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.minecraft.command.CommandSource;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
-import net.pcal.fastback.mod.Mod;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.RepoFactory;
 import net.pcal.fastback.utils.Executor.ExecutionLock;
@@ -49,44 +45,44 @@ public class Commands {
     static final int SUCCESS = 1;
 
 
-    public static void registerCommands(final PermissionsFactory<ServerCommandSource> pf) {
+    public static LiteralArgumentBuilder<ServerCommandSource> createBackupCommand(final PermissionsFactory<ServerCommandSource> pf) {
 
         final LiteralArgumentBuilder<ServerCommandSource> root = LiteralArgumentBuilder.<ServerCommandSource>literal("backup").
                 requires(pf.require("asdf", 4)).
                 executes(HelpCommand::generalHelp);
 
-        InitCommand.INSTANCE.register(root, mod());
-        LocalCommand.INSTANCE.register(root, mod());
-        FullCommand.INSTANCE.register(root, mod());
-        InfoCommand.INSTANCE.register(root, mod());
+        InitCommand.INSTANCE.register(root, pf);
+        LocalCommand.INSTANCE.register(root, pf);
+        FullCommand.INSTANCE.register(root, pf);
+        InfoCommand.INSTANCE.register(root, pf);
 
-        RestoreCommand.INSTANCE.register(root, mod());
-        CreateFileRemoteCommand.INSTANCE.register(root, mod());
+        RestoreCommand.INSTANCE.register(root, pf);
+        CreateFileRemoteCommand.INSTANCE.register(root, pf);
 
-        PruneCommand.INSTANCE.register(root, mod());
-        DeleteCommand.INSTANCE.register(root, mod());
-        GcCommand.INSTANCE.register(root, mod());
-        ListCommand.INSTANCE.register(root, mod());
-        PushCommand.INSTANCE.register(root, mod());
+        PruneCommand.INSTANCE.register(root, pf);
+        DeleteCommand.INSTANCE.register(root, pf);
+        GcCommand.INSTANCE.register(root, pf);
+        ListCommand.INSTANCE.register(root, pf);
+        PushCommand.INSTANCE.register(root, pf);
 
-        RemoteListCommand.INSTANCE.register(root, mod());
-        RemoteDeleteCommand.INSTANCE.register(root, mod());
-        RemotePruneCommand.INSTANCE.register(root, mod());
-        RemoteRestoreCommand.INSTANCE.register(root, mod());
+        RemoteListCommand.INSTANCE.register(root, pf);
+        RemoteDeleteCommand.INSTANCE.register(root, pf);
+        RemotePruneCommand.INSTANCE.register(root, pf);
+        RemoteRestoreCommand.INSTANCE.register(root, pf);
 
-        SetCommand.INSTANCE.register(root, mod());
+        SetCommand.INSTANCE.register(root, pf);
 
-        HelpCommand.INSTANCE.register(root, mod());
+        HelpCommand.INSTANCE.register(root, pf);
+        return root;
 
-        CommandRegistrationCallback.EVENT.register((dispatcher, regAccess, env) -> dispatcher.register(root));
     }
 
     public static String subcommandPermName(String subcommandName) {
         return "fastback.command." + subcommandName;
     }
 
-    public static Predicate<ServerCommandSource> subcommandPermission(String subcommandName) {
-        return Permissions.require(subcommandPermName(subcommandName), mod().getDefaultPermLevel());
+    public static Predicate<ServerCommandSource> subcommandPermission(String subcommandName, PermissionsFactory<ServerCommandSource> pf) {
+        return pf.require(subcommandPermName(subcommandName), mod().getDefaultPermLevel());
     }
 
     /**

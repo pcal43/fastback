@@ -23,7 +23,6 @@ import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.mod.Mod;
 import net.pcal.fastback.repo.SnapshotId;
 
 import java.util.ArrayList;
@@ -42,10 +41,10 @@ enum RemoteListCommand implements Command {
     private static final String COMMAND_NAME = "remote-list";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, PermissionsFactory<ServerCommandSource> pf) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(COMMAND_NAME)).
+                        requires(subcommandPermission(COMMAND_NAME, pf)).
                         executes(RemoteListCommand::execute)
         );
     }

@@ -27,7 +27,6 @@ import net.pcal.fastback.config.FastbackConfigKey;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.UserLogger;
-import net.pcal.fastback.mod.Mod;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.RepoFactory;
 import net.pcal.fastback.retention.RetentionPolicy;
@@ -70,9 +69,9 @@ enum SetCommand implements Command {
     private static final String COMMAND_NAME = "set";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> root, final Mod mod) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> root, PermissionsFactory<ServerCommandSource> pf) {
         final LiteralArgumentBuilder<ServerCommandSource> sc = literal(COMMAND_NAME).
-                requires(subcommandPermission(COMMAND_NAME)).
+                requires(subcommandPermission(COMMAND_NAME, pf)).
                 executes(cc -> missingArgument("key", cc));
         registerBooleanConfigValue(IS_NATIVE_GIT_ENABLED,  sc);
         registerBooleanConfigValue(IS_LOCK_CLEANUP_ENABLED, sc);

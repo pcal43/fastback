@@ -43,17 +43,17 @@ enum DeleteCommand implements Command {
     private static final String ARGUMENT = "snapshot";
 
     @Override
-    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, Mod mod) {
+    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, PermissionsFactory<ServerCommandSource> pf) {
         argb.then(literal(COMMAND_NAME).
-                requires(subcommandPermission(COMMAND_NAME)).then(
+                requires(subcommandPermission(COMMAND_NAME, pf)).then(
                         argument(ARGUMENT, StringArgumentType.string()).
                                 suggests(SnapshotNameSuggestions.local()).
-                                executes(cc -> delete(mod, cc))
+                                executes(DeleteCommand::delete)
                 )
         );
     }
 
-    private static int delete(Mod mod, CommandContext<ServerCommandSource> cc) {
+    private static int delete(final CommandContext<ServerCommandSource> cc) {
         final UserLogger log = ulog(cc);
         gitOp(WRITE, log, repo -> {
             final String snapshotName = getArgumentNicely(ARGUMENT, String.class, cc.getLastChild(), log);

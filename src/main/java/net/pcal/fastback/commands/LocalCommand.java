@@ -45,19 +45,19 @@ enum LocalCommand implements Command {
     private static final String COMMAND_NAME = "local";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, PermissionsFactory<ServerCommandSource> pf) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(COMMAND_NAME)).
-                        executes(cc -> run(mod, cc.getSource()))
+                        requires(subcommandPermission(COMMAND_NAME, pf)).
+                        executes(cc -> run(cc.getSource()))
         );
     }
 
-    public static int run(Mod mod, ServerCommandSource scs) {
+    private static int run(ServerCommandSource scs) {
         try (final UserLogger ulog = ulog(scs)) {
             if (!rf().doInitCheck(mod().getWorldDirectory(), ulog)) return FAILURE;
             try {
-                saveWorldBeforeBackup(mod, ulog);
+                saveWorldBeforeBackup(ulog);
             } catch (Exception e) {
                 ulog.internalError();
                 syslog().error(e);

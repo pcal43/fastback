@@ -18,10 +18,14 @@
 
 package net.pcal.fastback.mod.fabric;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import me.lucko.fabric.api.permissions.v0.Permissions;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModMetadata;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.world.level.LevelInfo;
 import net.minecraft.world.level.storage.LevelStorage;
@@ -32,6 +36,7 @@ import net.pcal.fastback.mod.fabric.mixins.SessionAccessors;
 
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Predicate;
 
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
@@ -155,6 +160,16 @@ public abstract class BaseFabricProvider implements FrameworkServiceProvider, Mi
         out.add(gameDir.resolve("config"));
         out.add(gameDir.resolve("resourcepacks"));
         return out;
+    }
+
+    @Override
+    public Predicate<ServerCommandSource> createPermissionsPredicate(String permName, int level) {
+        return Permissions.require(permName, level);
+    }
+
+    @Override
+    public void registerCommand(LiteralArgumentBuilder<ServerCommandSource> command) {
+        CommandRegistrationCallback.EVENT.register((dispatcher, regAccess, env) -> dispatcher.register(command));
     }
 
     // ======================================================================

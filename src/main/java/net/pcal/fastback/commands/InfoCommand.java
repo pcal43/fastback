@@ -25,7 +25,6 @@ import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.mod.Mod;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;
@@ -56,22 +55,21 @@ enum InfoCommand implements Command {
     private static final String COMMAND_NAME = "info";
 
     @Override
-    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, Mod mod) {
+    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, PermissionsFactory<ServerCommandSource> pf) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(COMMAND_NAME)).
-                        executes(cc -> info(mod, cc.getSource()))
+                        requires(subcommandPermission(COMMAND_NAME, pf)).
+                        executes(cc -> info(cc.getSource()))
         );
     }
 
-    private static int info(final Mod mod, final ServerCommandSource scs) {
-        requireNonNull(mod);
+    private static int info(final ServerCommandSource scs) {
         requireNonNull(scs);
         try (final UserLogger ulog = ulog(scs)) {
             try {
                 final Text notInstalled = Text.translatable("fastback.values.not-installed");
                 ulog.message(UserMessage.localized("fastback.chat.info-header"));
-                ulog.message(UserMessage.localized("fastback.chat.info-fastback-version", mod.getModVersion()));
+                ulog.message(UserMessage.localized("fastback.chat.info-fastback-version", mod().getModVersion()));
                 ulog.message(raw("native git installed: " + EnvironmentUtils.isNativeGitInstalled())); //fixme i18n
                 final String gitVersion = getGitVersion();
                 ulog.message(UserMessage.localized("fastback.chat.info-native-git-version", gitVersion != null ? gitVersion : notInstalled));

@@ -49,18 +49,18 @@ enum CreateFileRemoteCommand implements Command {
     private static final String ARGUMENT = "file-path";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, PermissionsFactory<ServerCommandSource> pf) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(COMMAND_NAME)).
+                        requires(subcommandPermission(COMMAND_NAME, pf)).
                         executes(cc -> missingArgument(ARGUMENT, cc)).
                         then(argument(ARGUMENT, StringArgumentType.greedyString()).
-                                executes(cc -> setFileRemote(mod, cc))
+                                executes(CreateFileRemoteCommand::setFileRemote)
                         )
         );
     }
 
-    private static int setFileRemote(final Mod mod, final CommandContext<ServerCommandSource> cc) {
+    private static int setFileRemote(final CommandContext<ServerCommandSource> cc) {
         final UserLogger ulog = UserLogger.ulog(cc);
         gitOp(NONE, ulog, repo -> {
             final String targetPath = cc.getArgument(ARGUMENT, String.class);

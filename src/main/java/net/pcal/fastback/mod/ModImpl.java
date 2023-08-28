@@ -17,11 +17,13 @@
  */
 package net.pcal.fastback.mod;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.pcal.fastback.commands.Commands;
+import net.pcal.fastback.commands.PermissionsFactory;
 import net.pcal.fastback.commands.SchedulableAction;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
@@ -160,7 +162,12 @@ class ModImpl implements LifecycleListener, Mod {
      */
     @Override
     public void onInitialize() {
-        Commands.registerCommands(this);
+        {
+            // initialize the /backup command
+            final LiteralArgumentBuilder<ServerCommandSource> command =
+                    Commands.createBackupCommand(this.fsp::createPermissionsPredicate);
+            fsp.registerCommand(command);
+        }
         {
             final String gitVersion = getGitVersion();
             if (gitVersion == null) {

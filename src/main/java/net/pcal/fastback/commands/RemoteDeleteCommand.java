@@ -24,7 +24,6 @@ import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.mod.Mod;
 import net.pcal.fastback.repo.SnapshotId;
 
 import static net.minecraft.server.command.CommandManager.argument;
@@ -41,9 +40,9 @@ enum RemoteDeleteCommand implements Command {
     private static final String ARGUMENT = "snapshot";
 
     @Override
-    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, Mod mod) {
+    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, PermissionsFactory<ServerCommandSource> pf) {
         argb.then(literal(COMMAND_NAME).
-                requires(subcommandPermission(COMMAND_NAME)).then(
+                requires(subcommandPermission(COMMAND_NAME, pf)).then(
                         argument(ARGUMENT, StringArgumentType.string()).
                                 suggests(SnapshotNameSuggestions.remote()).
                                 executes(RemoteDeleteCommand::delete)

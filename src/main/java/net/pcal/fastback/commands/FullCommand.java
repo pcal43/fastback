@@ -30,6 +30,7 @@ import static net.pcal.fastback.commands.Commands.*;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserLogger.ulog;
 import static net.pcal.fastback.logging.UserMessage.raw;
+import static net.pcal.fastback.mod.Mod.mod;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.WRITE;
 
 /**
@@ -44,18 +45,18 @@ enum FullCommand implements Command {
 
     private static final String COMMAND_NAME = "full";
 
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, final Mod mod) {
+    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, PermissionsFactory<ServerCommandSource> pf) {
         argb.then(
                 literal(COMMAND_NAME).
-                        requires(subcommandPermission(COMMAND_NAME)).
-                        executes(cc -> run(mod, cc.getSource()))
+                        requires(subcommandPermission(COMMAND_NAME, pf)).
+                        executes(cc -> run(cc.getSource()))
         );
     }
 
-    public static int run(Mod mod, ServerCommandSource scs) {
+    public static int run(ServerCommandSource scs) {
         final UserLogger ulog = ulog(scs);
         try {
-            saveWorldBeforeBackup(mod, ulog);
+            saveWorldBeforeBackup(ulog);
         } catch (IOException e) {
             ulog.internalError();
             syslog().error(e);
@@ -70,10 +71,10 @@ enum FullCommand implements Command {
      * <p>
      * Workaround for https://github.com/pcal43/fastback/issues/112
      */
-    static void saveWorldBeforeBackup(Mod mod, UserLogger ulog) throws IOException {
+    static void saveWorldBeforeBackup(UserLogger ulog) throws IOException {
         ulog.update(raw("Saving world before backup...")); //FIXME i18n
         syslog().info("Saving before backup");
-        mod.saveWorld();
+        mod().saveWorld();
         syslog().info("Starting backup..."); //FIXME i18n
     }
 }
