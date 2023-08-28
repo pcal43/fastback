@@ -22,7 +22,6 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
-import net.pcal.fastback.commands.Commands;
 import net.pcal.fastback.commands.SchedulableAction;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
@@ -38,6 +37,7 @@ import java.util.Map;
 import static java.nio.file.Files.createTempDirectory;
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.text.Style.EMPTY;
+import static net.pcal.fastback.commands.Commands.createBackupCommand;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
@@ -134,11 +134,6 @@ class ModImpl implements LifecycleListener, Mod {
     }
 
     @Override
-    public int getDefaultPermLevel() {
-        return fsp.isClient() ? 0 : 4;
-    }
-
-    @Override
     public void addBackupProperties(Map<String, String> props) {
         fsp.addBackupProperties(props);
     }
@@ -163,9 +158,10 @@ class ModImpl implements LifecycleListener, Mod {
     public void onInitialize() {
         {
             // initialize the /backup command
-            final LiteralArgumentBuilder<ServerCommandSource> command =
-                    Commands.createBackupCommand(this.fsp::createPermissionsPredicate);
-            fsp.registerCommand(command);
+            final int requiredLevel =  fsp.isClient() ? 0 : 4;
+            final LiteralArgumentBuilder<ServerCommandSource> backupCommand =
+                    createBackupCommand(permName -> this.fsp.createPermissionsPredicate(permName, requiredLevel));
+            fsp.registerCommand(backupCommand);
         }
         {
             final String gitVersion = getGitVersion();

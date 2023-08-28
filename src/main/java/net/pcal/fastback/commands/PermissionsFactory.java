@@ -22,5 +22,5 @@ import java.util.function.Predicate;
 
 public interface PermissionsFactory<S> {
 
-    Predicate<S> require(String permissionName, int level);
+    Predicate<S> require(String permissionName);
 }

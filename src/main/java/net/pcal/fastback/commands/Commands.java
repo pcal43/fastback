@@ -39,8 +39,6 @@ import static net.pcal.fastback.utils.Executor.executor;
 
 public class Commands {
 
-    static String BACKUP_COMMAND_PERM = "fastback.command";
-
     static final int FAILURE = 0;
     static final int SUCCESS = 1;
 
@@ -48,7 +46,7 @@ public class Commands {
     public static LiteralArgumentBuilder<ServerCommandSource> createBackupCommand(final PermissionsFactory<ServerCommandSource> pf) {
 
         final LiteralArgumentBuilder<ServerCommandSource> root = LiteralArgumentBuilder.<ServerCommandSource>literal("backup").
-                requires(pf.require("asdf", 4)).
+                requires(pf.require("fastback.command")).
                 executes(HelpCommand::generalHelp);
 
         InitCommand.INSTANCE.register(root, pf);
@@ -77,12 +75,9 @@ public class Commands {
 
     }
 
-    public static String subcommandPermName(String subcommandName) {
-        return "fastback.command." + subcommandName;
-    }
-
-    public static Predicate<ServerCommandSource> subcommandPermission(String subcommandName, PermissionsFactory<ServerCommandSource> pf) {
-        return pf.require(subcommandPermName(subcommandName), mod().getDefaultPermLevel());
+    static Predicate<ServerCommandSource> subcommandPermission(String subcommandName, PermissionsFactory<ServerCommandSource> pf) {
+        final String permName = "fastback.command." + subcommandName;
+        return pf.require(permName);
     }
 
     /**
@@ -91,7 +86,7 @@ public class Commands {
      * cases where the list of arguments is dynamic (e.g., retention policies) and we can't
      * rely on brigadier's static parse trees.
      */
-    public static <V> V getArgumentNicely(final String argName, final Class<V> clazz, final CommandContext<?> cc, UserLogger log) {
+    static <V> V getArgumentNicely(final String argName, final Class<V> clazz, final CommandContext<?> cc, UserLogger log) {
         try {
             return cc.getArgument(argName, clazz);
         } catch (IllegalArgumentException iae) {
@@ -100,11 +95,11 @@ public class Commands {
         }
     }
 
-    public static int missingArgument(final String argName, final CommandContext<ServerCommandSource> cc) {
+    static int missingArgument(final String argName, final CommandContext<ServerCommandSource> cc) {
         return missingArgument(argName, UserLogger.ulog(cc));
     }
 
-    public static int missingArgument(final String argName, final UserLogger log) {
+    static int missingArgument(final String argName, final UserLogger log) {
         log.message(styledLocalized("fastback.chat.missing-argument", ERROR, argName));
         return FAILURE;
     }
@@ -142,5 +137,3 @@ public class Commands {
         }
     }
 }
-
-

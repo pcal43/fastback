@@ -96,11 +96,6 @@ public interface Mod {
     String getWorldName();
 
     /**
-     * @return default permission level to use for commands.
-     */
-    int getDefaultPermLevel();
-
-    /**
      * @return paths to backup when mods-backup enabled.
      */
     Collection<Path> getModsBackupPaths();
