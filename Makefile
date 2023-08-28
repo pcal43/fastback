@@ -12,26 +12,13 @@ jar:
 test:
 	./gradlew test
 
-
 .PHONY: release
 release:
-ifndef SKIP_CHECKS
-	@gitStatus=$$(git status --porcelain) ;\
-	if [ "$${gitStatus}" != "" ]; then \
-		echo $${gitStatus} ;\
-		echo "You have uncommitted work."; echo; false; \
-	fi
+	./etc/release.sh
 
-	@currentBranch=$$(git rev-parse --abbrev-ref HEAD) ;\
-	if [ "$${currentBranch}" != "main" ]; then \
-		echo "Releases must be performed on main"; false; \
-	fi
-endif
-# todo port this into the makefile.  i think
-	./release-github.sh
-	./release-curseforge.sh
-	./release-modrinth.sh
-	./release-post.sh
+.PHONY: docgen
+docgen:
+	./etc/docgen.sh
 
 .PHONY: ide
 ide:
