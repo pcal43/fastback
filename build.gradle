@@ -45,7 +45,7 @@ project.ext.versions = [
     // https://github.com/apache/mina-sshd/blob/dfa109b7b535d64e8ee395ddd0419e7696fb24ee/docs/dependencies.md
     eddsa                       : '0.3.0',
 
-    test_log4j                  : '2.16.0',
+    test_log4j                  : '2.17.0',
     junit_jupiter               : '5.8.2',
 
 ]

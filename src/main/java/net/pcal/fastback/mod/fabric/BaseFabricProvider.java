@@ -30,9 +30,13 @@ import net.minecraft.text.Text;
 import net.minecraft.world.level.LevelInfo;
 import net.minecraft.world.level.storage.LevelStorage;
 import net.minecraft.world.level.storage.LevelSummary;
+import net.pcal.fastback.logging.Log4jLogger;
+import net.pcal.fastback.logging.SystemLogger;
 import net.pcal.fastback.mod.FrameworkServiceProvider;
+import net.pcal.fastback.mod.LifecycleListener;
 import net.pcal.fastback.mod.fabric.mixins.ServerAccessors;
 import net.pcal.fastback.mod.fabric.mixins.SessionAccessors;
+import org.apache.logging.log4j.LogManager;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -41,39 +45,25 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Predicate;
 
 import static java.util.Objects.requireNonNull;
+import static net.pcal.fastback.commands.Commands.createBackupCommand;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 
 /**
  * @author pcal
  * @since 0.1.0
  */
-public abstract class BaseFabricProvider implements FrameworkServiceProvider, MixinGateway {
+abstract class BaseFabricProvider implements FrameworkServiceProvider, MixinGateway {
 
     static final String MOD_ID = "fastback";
 
-    private static BaseFabricProvider INSTANCE;
     private MinecraftServer minecraftServer;
     private Runnable autoSaveListener;
 
-    public static BaseFabricProvider getInstance() {
-        if (INSTANCE == null) throw new IllegalStateException("not initialized");
-        return INSTANCE;
-    }
-
     private boolean isWorldSaveEnabled = true;
 
-    protected BaseFabricProvider() {
-        if (INSTANCE != null) throw new IllegalStateException();
-        INSTANCE = this;
-    }
-
-    void setMinecraftServer(MinecraftServer serverOrNull) {
-        if ((serverOrNull == null) == (this.minecraftServer == null)) throw new IllegalStateException();
-        this.minecraftServer = serverOrNull;
-    }
+    protected BaseFabricProvider() {}
 
     @Override
     public void sendBroadcast(Text text) {
@@ -167,16 +157,6 @@ public abstract class BaseFabricProvider implements FrameworkServiceProvider, Mi
         return out;
     }
 
-    @Override
-    public Predicate<ServerCommandSource> createPermissionsPredicate(String permName, int level) {
-        return Permissions.require(permName, level);
-    }
-
-    @Override
-    public void registerCommand(LiteralArgumentBuilder<ServerCommandSource> command) {
-        CommandRegistrationCallback.EVENT.register((dispatcher, regAccess, env) -> dispatcher.register(command));
-    }
-
     // ======================================================================
     // MixinGateway implementation
 
@@ -193,5 +173,32 @@ public abstract class BaseFabricProvider implements FrameworkServiceProvider, Mi
             syslog().warn("Autosave just happened but, unexpectedly, no one is listening.");
         }
     }
+
+    // ======================================================================
+    // Package private
+
+    void setMinecraftServer(MinecraftServer serverOrNull) {
+        if ((serverOrNull == null) == (this.minecraftServer == null)) throw new IllegalStateException();
+        this.minecraftServer = serverOrNull;
+    }
+
+    /**
+     * This is the key initialization routine.  Registers the logger, the frameworkprovider and the commands
+     * where the rest of the mod can get at them.
+     */
+    LifecycleListener initialize() {
+        SystemLogger.Singleton.register(new Log4jLogger(LogManager.getLogger(MOD_ID)));
+        final LifecycleListener lifecycle = FrameworkServiceProvider.register(this);
+        LiteralArgumentBuilder<ServerCommandSource> backupCommand = createBackupCommand(permName-> {
+            final int requiredLevel = this.isClient() ? 0 : 4;
+            return Permissions.require(permName, requiredLevel);
+        });
+        CommandRegistrationCallback.EVENT.register((dispatcher, regAccess, env) -> dispatcher.register(backupCommand));
+        syslog().debug("registered backup command");
+        MixinGateway.Singleton.register(this);
+        lifecycle.onInitialize();
+        return lifecycle;
+    }
+
 
 }
