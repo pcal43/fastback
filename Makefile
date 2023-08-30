@@ -2,12 +2,13 @@
 
 .PHONY: clean
 clean:
-	rm -rf build
+	rm -rf build common/build fabric/build forge/build
+
 
 .PHONY: jar
 jar:
 	./gradlew remapJar
-	ls -1 build/libs
+	ls -1 fabric/build/libs
 
 test:
 	./gradlew test

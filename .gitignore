@@ -4,6 +4,8 @@
 *~
 \#*
 
+
+
 .gradle/
 build/
 out/
@@ -33,5 +35,7 @@ classes/
 
 # fabric
 
-/run/
-/logs/
+run/
+logs/
+
+.architectury-transformer/

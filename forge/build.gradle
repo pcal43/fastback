@@ -1,0 +1,92 @@
+plugins {
+    id "com.github.johnrengelman.shadow" version "7.1.2"
+}
+architectury {
+    platformSetupLoomIde()
+    forge()
+}
+
+configurations {
+    common
+    shadowCommon
+    shade
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+    developmentForge.extendsFrom common
+}
+
+archivesBaseName = "${project.archives_base_name}-forge"
+version = project.mod_version
+group = project.maven_group
+
+dependencies {
+    forge("net.minecraftforge:forge:${project.forge_version}")
+
+    common(project(path: ":common", configuration: "namedElements")) { transitive false }
+    shadowCommon(project(path: ":common", configuration: "transformProductionForge")) { transitive = false }
+
+    // This probably isn't right but it seems to work mostly.  Dynamic load of apache sshd is still busted.
+    // Cobbled this together from examples on github.  Basically no good docs explaining how to do this.
+    // Maybe we can use jarjar for this?  The docs make it sound even harder to do...
+    // https://github.com/minecraft-dev/MinecraftDev/blob/b3d07a201b96ee310cdcbee0246521a9206968e8/src/main/resources/fileTemplates/j2ee/architectury/architectury_forge_build.gradle.ft
+    // https://github.com/AlphaMode/Valkyrien-Skies-2/blob/main/forge/build.gradle
+    // https://github.com/architectury/architectury-loom/pull/64
+    //https://github.com/alexvasilkov/GradleGitDependenciesPlugin/issues/20
+
+
+    forgeRuntimeLibrary(implementation(shade "org.eclipse.jgit:org.eclipse.jgit:${project.jgit_version}"))
+    forgeRuntimeLibrary(implementation(shade "org.eclipse.jgit:org.eclipse.jgit.ssh.jsch:${project.jgit_version}"))
+    // include at compile time so we can reference it statically and register with jgit by hand
+    implementation "org.eclipse.jgit:org.eclipse.jgit.ssh.jsch:${project.jgit_version}"
+
+    // ome serious thrashing trying to get mina to load
+
+    // forgeRuntimeLibrary (implementation (shade "org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${project.jgit_version}"))
+    // implementation ( "org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${project.jgit_version}")
+    // forgeRuntimeLibrary (implementation (shade  ("org.apache.sshd:sshd-common:${project.apache_sshd_version}")))
+    // forgeRuntimeLibrary (implementation (shade ("org.apache.sshd:sshd-core:${project.apache_sshd_version}")))
+    // forgeRuntimeLibrary (implementation (shade ("org.apache.sshd:sshd-osgi:${project.apache_sshd_version}")))
+    // forgeRuntimeLibrary shade ("org.apache.sshd:sshd-mina:${project.apache_sshd_version}")
+    // forgeRuntimeLibrary (implementation (shade ("com.googlecode.javaewah:JavaEWAH:${project.JavaEWAH_version}")))
+    // forgeRuntimeLibrary (shade ("net.i2p.crypto:eddsa:${project.eddsa_version}"))
+    // implementation  ("net.i2p.crypto:eddsa:${project.eddsa_version}")
+
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("META-INF/mods.toml") {
+        expand "version": project.version
+    }
+}
+
+shadowJar {
+    configurations = [project.configurations.shade]
+    // relocate 'org.apache', "net.pcal.fastback.relocated.org.apache"
+    archiveClassifier = 'dev-shadow'
+}
+
+remapJar {
+    inputFile.set shadowJar.archiveFile
+    dependsOn shadowJar
+    archiveClassifier = null
+}
+
+jar {
+    archiveClassifier = 'dev'
+}
+
+sourcesJar {
+    def commonSources = project(":common").sourcesJar
+    dependsOn commonSources
+    from commonSources.archiveFile.map { zipTree(it) }
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("META-INF/mods.toml") {
+        expand "version": project.version
+    }
+}
