@@ -27,7 +27,7 @@ dependencies {
     include implementation("org.eclipse.jgit:org.eclipse.jgit:${project.jgit_version}") { transitive = false }
 
     // jgit needs this
-    // https://download.eclipse.org/jgit/site/6.4.0.202211300538-r/dependencies.html
+    //   https://download.eclipse.org/jgit/site/6.4.0.202211300538-r/dependencies.html
     include runtimeOnly("com.googlecode.javaewah:JavaEWAH:${project.JavaEWAH_version}")  { transitive = false }
 
     // so jgit can do modern ssh
@@ -39,13 +39,15 @@ dependencies {
     // https://github.com/apache/mina-sshd/blob/dfa109b7b535d64e8ee395ddd0419e7696fb24ee/docs/dependencies.md
     include runtimeOnly("net.i2p.crypto:eddsa:${project.eddsa_version}") { transitive = false }
 
-    // LuckPerms
+    // fabric-permissions-api (luckperms support)
     include modImplementation("me.lucko:fabric-permissions-api:${project.fabric_permissions_version}") { transitive = false }
 
     // Server Translations
+    //   https://github.com/NucleoidMC/Server-Translations
     include modImplementation("xyz.nucleoid:server-translations-api:${project.server_translations_version}") { transitive = false }
 
-    // needed by Server Translations
+    // Needed by Server Translations
+    //   https://github.com/NucleoidMC/packet-tweaker
     include modRuntimeOnly("xyz.nucleoid:packet-tweaker:${project.packet_tweaker_version}") { transitive = false }
 
 }
