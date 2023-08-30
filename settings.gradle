@@ -1,10 +1,39 @@
+
+
+// thank you to this dude.  why can the gradle docs not have a plain-English explanation?
+// https://stackoverflow.com/questions/68292663/whats-the-difference-in-defining-repositories-in-build-gradle-vs-settings-gra
+// Plugin repositories defined in settings.gradle are used for resolving gradle plugins. By default, they can be o
+// mitted and default plugin portal will be used https://plugins.gradle.org. Gradle build system has many plugins
+// and you may write your own.
+// Plugins should be resolved earlier during the build process that's why they are located in separate
+// settings.gradle file, which is executed before build.gradle.
+
 pluginManagement {
     repositories {
         maven {
-            name = 'Fabric'
-            url = 'https://maven.fabricmc.net/'
+            name = "Fabric"
+            url = "https://maven.fabricmc.net/"
         }
-        mavenCentral()
+        maven {
+            name = "Forge"
+            url = "https://maven.minecraftforge.net/"
+        }
+        maven {
+            name = "Architectury"
+            url = "https://maven.architectury.dev/"
+        }
+        //mavenCentral()
         gradlePluginPortal()
+        maven {
+            name = 'NeoForged'
+            url = 'https://maven.neoforged.net/releases'
+        }
+
     }
 }
+
+rootProject.name = "fastback-universal"
+
+include(":common")
+include(":fabric")
+include(":forge")

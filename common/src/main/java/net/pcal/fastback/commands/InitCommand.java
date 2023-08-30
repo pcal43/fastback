@@ -30,10 +30,9 @@ import java.nio.file.Path;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserLogger.ulog;
 import static net.pcal.fastback.mod.Mod.mod;
-import static net.pcal.fastback.utils.Executor.ExecutionLock.NONE;
-import static net.pcal.fastback.utils.Executor.executor;
 
 /**
  * @author pcal
@@ -56,17 +55,19 @@ enum InitCommand implements Command {
 
     private static int init(final CommandContext<ServerCommandSource> cc) {
         try (final UserLogger ulog = ulog(cc)) {
-            executor().execute(NONE, ulog, () -> {
-                        final Path worldSaveDir = mod().getWorldDirectory();
-                        final RepoFactory rf = RepoFactory.rf();
-                        try {
-                            rf.doInit(worldSaveDir, ulog);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-            );
+            //executor().execute(NONE, ulog, () -> {
+            final Path worldSaveDir = mod().getWorldDirectory();
+            final RepoFactory rf = RepoFactory.rf();
+            try {
+                rf.doInit(worldSaveDir, ulog);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } catch(Error e) {
+            syslog().error(e);
         }
+        //  );
+
         return SUCCESS;
     }
 }
