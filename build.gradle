@@ -3,8 +3,6 @@ plugins {
     id "architectury-plugin" version "3.4+"
     id "io.github.pacifistmc.forgix" version "1.2.6"
     id "dev.architectury.loom" version "1.2+" apply false
-    id "com.modrinth.minotaur" version "2.8.2"
-    id "com.matthewprenger.cursegradle" version "1.4.0"
 }
 
 
@@ -64,46 +62,8 @@ tasks.register("removeForgixJar", Delete) {
     delete file("build/libs/${project.name}.jar")
 }
 
+/**
 build.finalizedBy("mergeJars")
 mergeJars.finalizedBy("createFinalJar")
 createFinalJar.finalizedBy("removeForgixJar")
-
-
-// https://github.com/modrinth/minotaur
-modrinth {
-    token = System.getenv("MODRINTH_TOKEN") ?: 'MODRINTH_TOKEN_NOT_SET'
-    projectId = "fastback"
-    versionNumber = "${project.mod_version}"
-    versionType = "release"
-    uploadFile = "fabric/build/libs/${project.name}-${project.version}.jar" //FIXME?
-    changelog = "<p><a href='https://github.com/pcal43/fastback/releases/tag/${project.mod_version}'>https://github.com/pcal43/fastback/releases/tag/${project.mod_version}</a></p>"
-    gameVersions = ["${project.minecraft_version}"]
-    loaders = ["fabric"]
-    dependencies {
-        required.project "fabric-api"
-    }
-}
-
-
-// https://github.com/matthewprenger/CurseGradle
-curseforge {
-    apiKey = System.getenv("CURSEFORGE_TOKEN") ?: 'CURSEFORGE_TOKEN_NOT_SET'
-
-    project {
-        id = "667417"
-        releaseType = "release"
-        changelog = "https://github.com/pcal43/fastback/releases/tag/${project.mod_version}"
-        changelogType = "markdown"
-        mod_version = project.mod_version
-        addGameVersion ((String) project.minecraft_version)
-        addGameVersion "Fabric"
-        mainArtifact("fabric/build/libs/${project.name}-forge-${project.version}.jar") //FIXME?
-        afterEvaluate {
-            uploadTask.dependsOn("remapJar")
-        }
-    }
-
-    options {
-        forgeGradleIntegration = false
-    }
-}
+**/

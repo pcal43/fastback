@@ -83,13 +83,13 @@ set +x
 #
 # Publish to modrinth
 #
-./gradlew --debug modrinth
+./gradlew modrinth
 
 
 #
 # Publish to curseforge
 #
-./gradlew --debug curseforge
+./gradlew curseforge
 
 
 #
