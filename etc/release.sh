@@ -75,8 +75,9 @@ git push
 #
 # Do github release
 #
-gh release create --generate-notes --title "${RELEASE_VERSION}" --notes "release ${RELEASE_VERSION}" ${RELEASE_VERSION}  "${BUILD_LIBS_DIR}/*"
-
+set -x
+gh release create --generate-notes --title "${RELEASE_VERSION}" --notes "release ${RELEASE_VERSION}" ${RELEASE_VERSION}  "${BUILD_LIBS_DIR}"/*
+set +x
 
 
 #
