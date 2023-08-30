@@ -7,7 +7,7 @@ import static java.util.Objects.requireNonNull;
 
 /**
  * @author pcal
- * @since 0.15.0
+ * @since 0.16.0
  */
 class Slf4jSystemLogger implements SystemLogger {
 
