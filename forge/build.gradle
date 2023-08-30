@@ -15,6 +15,9 @@ configurations {
     developmentForge.extendsFrom common
 }
 
+archivesBaseName = "${project.archives_base_name}-forge"
+version = project.mod_version
+group = project.maven_group
 
 dependencies {
     forge("net.minecraftforge:forge:${project.forge_version}")

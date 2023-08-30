@@ -2,7 +2,7 @@
 
 .PHONY: clean
 clean:
-	rm -rf build common/build fabric/build
+	rm -rf build common/build fabric/build forge/build
 
 
 .PHONY: jar
