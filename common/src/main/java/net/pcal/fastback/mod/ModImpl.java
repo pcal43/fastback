@@ -155,13 +155,6 @@ class ModImpl implements LifecycleListener, Mod {
     @Override
     public void onInitialize() {
         {
-            // initialize the /backup command
-            //final int requiredLevel =  fsp.isClient() ? 0 : 4;
-            //final LiteralArgumentBuilder<ServerCommandSource> backupCommand =
-            //        createBackupCommand(permName -> this.fsp.createPermissionsPredicate(permName, requiredLevel));
-            //fsp.registerCommand(backupCommand);
-        }
-        {
             final String gitVersion = getGitVersion();
             if (gitVersion == null) {
                 syslog().warn("git is not installed.");
