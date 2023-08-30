@@ -67,8 +67,8 @@ sourcesJar {
 }
 
 processResources {
-    inputs.property "version", rootProject.version
+    inputs.property "version", project.version
     filesMatching("fabric.mod.json") {
-        expand "version": rootProject.version
+        expand "version": project.version
     }
 }
