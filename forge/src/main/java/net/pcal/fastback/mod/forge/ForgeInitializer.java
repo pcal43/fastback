@@ -1,23 +1,9 @@
 package net.pcal.fastback.mod.forge;
 
-import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraftforge.client.event.RenderGuiOverlayEvent;
-import net.minecraftforge.client.event.ScreenEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.event.level.LevelEvent;
-import net.minecraftforge.event.server.ServerStartedEvent;
-import net.minecraftforge.event.server.ServerStoppingEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLDedicatedServerSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 
-import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.commands.Commands.createBackupCommand;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * @author pcal
@@ -26,60 +12,19 @@ import static net.pcal.fastback.commands.Commands.createBackupCommand;
 @Mod("fastback")
 final public class ForgeInitializer {
 
-    private BaseForgeProvider provider = null;
-
     public ForgeInitializer() {
-        final IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-        modEventBus.addListener(this::onClientStartupEvent);
-        modEventBus.addListener(this::onDedicatedServerStartupEvent);
-        MinecraftForge.EVENT_BUS.addListener(this::onServerStartupEvent);
-        MinecraftForge.EVENT_BUS.addListener(this::onServerStoppingEvent);
-        MinecraftForge.EVENT_BUS.addListener(this::onRegisterCommandEvent);
-        MinecraftForge.EVENT_BUS.addListener(this::onGuiOverlayEvent);
-        MinecraftForge.EVENT_BUS.addListener(this::onScreenRenderEvent);
-        MinecraftForge.EVENT_BUS.addListener(this::onLevelSaveEvent);
-    }
-
-    // ======================================================================
-    // Event handlers
-
-    private void onClientStartupEvent(FMLClientSetupEvent event) {
-        if (provider != null) throw new IllegalStateException();
-        provider = new ForgeClientProvider();
-        provider.onInitialize();
-    }
-
-    void onDedicatedServerStartupEvent(FMLDedicatedServerSetupEvent event) {
-        if (provider != null) throw new IllegalStateException();
-        provider = new ForgeDedicatedServerProvider();
-        provider.onInitialize();
-    }
-
-    void onServerStartupEvent(ServerStartedEvent event) {
-        requireNonNull(provider, "PROVIDER_SINGLETON was never set").onWorldStart(event.getServer());
-    }
-
-    void onServerStoppingEvent(ServerStoppingEvent event) {
-        requireNonNull(provider, "PROVIDER_SINGLETON was never set").onWorldStop();
-    }
-
-    private void onRegisterCommandEvent(RegisterCommandsEvent event) {
-        final CommandDispatcher<ServerCommandSource> commandDispatcher = event.getDispatcher();
-        final LiteralArgumentBuilder<ServerCommandSource> backupCommand =
-                createBackupCommand(permName -> x -> true);
-        commandDispatcher.register(backupCommand);
-    }
-
-    private void onLevelSaveEvent(LevelEvent.Save event) {
-        provider.onWorldSave();
-    }
-
-    private void onGuiOverlayEvent(RenderGuiOverlayEvent.Post event) {
-        provider.renderOverlayText(event.getGuiGraphics());
-    }
-
-    private void onScreenRenderEvent(ScreenEvent.Render.Post event) {
-        provider.renderOverlayText(event.getGuiGraphics());
+        try {
+            if (FMLEnvironment.dist.isDedicatedServer()) {
+                new ForgeCommonProvider();
+            } else if (FMLEnvironment.dist.isClient()) {
+                // Forge yells at us if we touch any client classes in a server.  So,
+                Class.forName("net.pcal.fastback.mod.forge.ForgeClientProvider").getConstructor().newInstance();
+            } else {
+                throw new IllegalStateException("where am i?  server or client?");
+            }
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                 NoSuchMethodException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
-

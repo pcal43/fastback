@@ -4,6 +4,12 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
+import net.minecraftforge.client.event.RenderGuiOverlayEvent;
+import net.minecraftforge.client.event.ScreenEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.pcal.fastback.logging.UserMessage;
 
 import static java.util.Objects.requireNonNull;
@@ -11,16 +17,17 @@ import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.mod.MinecraftProvider.messageToText;
 
 /**
+ * Handles client-specific tasks.
+ *
  * @author pcal
  * @since 0.16.0
  */
-final class ForgeClientProvider extends BaseForgeProvider {
+final class ForgeClientProvider extends ForgeCommonProvider {
 
     // ======================================================================
     // Constants
 
     private static final long TEXT_TIMEOUT = 10 * 1000;
-    private final MinecraftClient client;
 
     // ======================================================================
     // Fields
@@ -28,10 +35,33 @@ final class ForgeClientProvider extends BaseForgeProvider {
     //private MinecraftClient client = null;
     private Text hudText;
     private long hudTextTime;
+    private final MinecraftClient client;
 
-    ForgeClientProvider() {
+    public ForgeClientProvider() {
+        final IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        modEventBus.addListener(this::onClientStartupEvent);
+        MinecraftForge.EVENT_BUS.addListener(this::onGuiOverlayEvent);
+        MinecraftForge.EVENT_BUS.addListener(this::onScreenRenderEvent);
         this.client = requireNonNull(MinecraftClient.getInstance(), "MinecraftClient.getInstance() returned null");
     }
+
+    // ======================================================================
+    // Forge Event handlers
+
+    private void onClientStartupEvent(FMLClientSetupEvent event) {
+        this.onInitialize();
+    }
+
+    private void onGuiOverlayEvent(RenderGuiOverlayEvent.Post event) {
+        this.renderOverlayText(event.getGuiGraphics());
+    }
+
+    private void onScreenRenderEvent(ScreenEvent.Render.Post event) {
+        this.renderOverlayText(event.getGuiGraphics());
+    }
+
+    // ======================================================================
+    // MinecraftProvider implementation
 
     @Override
     public boolean isClient() {

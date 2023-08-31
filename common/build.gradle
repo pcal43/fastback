@@ -15,6 +15,7 @@ dependencies {
     testImplementation ("org.junit.jupiter:junit-jupiter-api:${project.junit_jupiter_version}") { transitive = false }
     testRuntimeOnly ("org.junit.jupiter:junit-jupiter-engine:${project.junit_jupiter_version}") { transitive = false }
     testRuntimeOnly ("org.apache.logging.log4j:log4j-core:${project.test_log4j_version}") { transitive = false }
+    testCompileOnly ('org.apiguardian:apiguardian-api:1.0.0')
 }
 
 
@@ -32,8 +33,10 @@ processResources {
         into "$buildDir/resources/main/data/fastback/lang"
     }
 }
-
-
-sourceSets.test {
-    resources.srcDirs = ["src/test/resources"]
+sourceSets {
+    test {
+        java {
+            srcDirs = [ "common/src/test"]  // Note @Peter's comment below
+        }
+    }
 }

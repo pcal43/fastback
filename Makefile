@@ -38,7 +38,9 @@ deps:
 
 .PHONY: inst
 inst:
-	rm ~/minecraft/instances/1.20.1-forge-dev/.minecraft/mods/*
+	rm -f ~/minecraft/instances/1.20.1-forge-dev/.minecraft/mods/fastback*
+	rm -f ~/minecraft/instances/1.20.1-fabric-dev/.minecraft/mods/fasback*
+	cp fabric/build/libs/fastback*-fabric.jar ~/minecraft/instances/1.20.1-fabric-dev/.minecraft/mods/
 	cp forge/build/libs/fastback*-forge.jar ~/minecraft/instances/1.20.1-forge-dev/.minecraft/mods/
 
 .PHONY: tvf

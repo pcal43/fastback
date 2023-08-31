@@ -89,7 +89,9 @@ public enum SchedulableAction {
     public static SchedulableAction forConfigValue(String configValue) {
         if (configValue == null) return null;
         for (SchedulableAction action : SchedulableAction.values()) {
-            if (action.configValue.equals(configValue)) return action;
+            if (action.configValue.equals(configValue)) {
+                return action == SchedulableAction.NONE ? null : action;
+            }
         }
         return null;
     }

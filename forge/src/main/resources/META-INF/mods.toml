@@ -5,11 +5,12 @@ license = "GPL2"
 
 [[mods]]
 modId = "fastback"
-version = "0.16.0+1.20.1-prerelease"
+version = "0.15.1+1.20.1-alpha
 displayName = "Fast Backups"
 authors = "pcal"
 description = '''
 Fast, incremental world backups powered by Git.
+https://pcal43.github.io/fastback/
 '''
 logoFile = "fastback-icon.png"
 
