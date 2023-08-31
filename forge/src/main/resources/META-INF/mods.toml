@@ -10,6 +10,7 @@ displayName = "Fast Backups"
 authors = "pcal"
 description = '''
 Fast, incremental world backups powered by Git.
+https://pcal43.github.io/fastback/
 '''
 logoFile = "fastback-icon.png"
 
