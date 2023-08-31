@@ -135,7 +135,7 @@ class ForgeCommonProvider implements MinecraftProvider {
 
     @Override
     public String getModVersion() {
-        return "0.16.0+FIXME";
+        return "0.15.2+1.20.1-alpha"; //FIXME
     }
 
     //FIXME!!
