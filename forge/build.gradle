@@ -104,7 +104,9 @@ processResources {
 modrinth {
     token = System.getenv("MODRINTH_TOKEN") ?: 'MODRINTH_TOKEN_NOT_SET'
     projectId = "fastback"
-    versionNumber = "${project.mod_version}-forge"
+    //versionNumber = "${project.mod_version}-forge"
+    versionNumber = "0.15.2-alpha+1.20.1-forge"
+
     versionType = "alpha"
     uploadFile = remapJar
     changelog = "<p><a href='https://github.com/pcal43/fastback/releases/tag/${project.mod_version}'>https://github.com/pcal43/fastback/releases/tag/${project.mod_version}</a></p>"
@@ -125,7 +127,8 @@ curseforge {
         releaseType = "alpha"
         changelog = "https://github.com/pcal43/fastback/releases/tag/${project.mod_version}"
         changelogType = "markdown"
-        mod_version = "${project.mod_version}-forge"
+        mod_version = "0.15.2-alpha+1.20.1-forge"
+//        mod_version = "${project.mod_version}-forge"
         addGameVersion ((String) project.minecraft_version)
         addGameVersion "Forge"
         mainArtifact(remapJar)
