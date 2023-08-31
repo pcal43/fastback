@@ -32,16 +32,10 @@ abstract class BaseForgeProvider implements MinecraftProvider {
     private MinecraftServer logicalServer;
     private LifecycleListener lifecycleListener = null;
     private Runnable autoSaveListener;
-    private boolean isWorldSaveEnabled;
 
     @Override
     public String getModVersion() {
         return "0.16.0+FIXME";
-    }
-
-    @Override
-    public void setWorldSaveEnabled(boolean enabled) {
-        this.isWorldSaveEnabled = enabled;
     }
 
     @Override
@@ -75,8 +69,7 @@ abstract class BaseForgeProvider implements MinecraftProvider {
     public Path getWorldDirectory() {
         if (this.logicalServer == null) throw new IllegalStateException("minecraftServer is null");
         final LevelStorage.Session session = logicalServer.session;
-        Path out = session.getWorldDir().toAbsolutePath().normalize();
-        return out;
+        return session.directory.path().toAbsolutePath().normalize();
     }
 
     @Override
