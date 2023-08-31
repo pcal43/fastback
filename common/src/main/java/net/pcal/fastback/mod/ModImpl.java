@@ -18,9 +18,6 @@
 package net.pcal.fastback.mod;
 
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.text.TextColor;
 import net.pcal.fastback.commands.SchedulableAction;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
@@ -35,7 +32,6 @@ import java.util.Map;
 
 import static java.nio.file.Files.createTempDirectory;
 import static java.util.Objects.requireNonNull;
-import static net.minecraft.text.Style.EMPTY;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
@@ -50,13 +46,13 @@ class ModImpl implements LifecycleListener, Mod {
     // ======================================================================
     // Fields
 
-    private final FrameworkServiceProvider fsp;
+    private final MinecraftProvider fsp;
     private Path tempRestoresDirectory = null;
 
     // ======================================================================
     // Construction
 
-    ModImpl(final FrameworkServiceProvider spi) {
+    ModImpl(final MinecraftProvider spi) {
         this.fsp = requireNonNull(spi);
         spi.setAutoSaveListener(new AutosaveListener());
     }
@@ -76,16 +72,12 @@ class ModImpl implements LifecycleListener, Mod {
 
     @Override
     public void sendChat(UserMessage message, ServerCommandSource scs) {
-        if (message.style() == ERROR) {
-            scs.sendError(messageToText(message));
-        } else {
-            scs.sendFeedback(() -> messageToText(message), false);
-        }
+        fsp.sendChat(message, scs);
     }
 
     @Override
     public void sendBroadcast(UserMessage message) {
-        this.fsp.sendBroadcast(messageToText(message));
+        this.fsp.sendBroadcast(message);
     }
 
     // ======================================================================
@@ -103,7 +95,7 @@ class ModImpl implements LifecycleListener, Mod {
 
     @Override
     public void setMessageScreenText(UserMessage message) {
-        this.fsp.setMessageScreenText(messageToText(message));
+        this.fsp.setMessageScreenText(message);
     }
 
     @Override
@@ -112,7 +104,7 @@ class ModImpl implements LifecycleListener, Mod {
             syslog().debug("null unexpectedly passed to setHudText, ignoring");
             this.clearHudText();
         } else {
-            this.fsp.setHudText(messageToText(message));
+            this.fsp.setHudText(message);
         }
     }
 
@@ -217,39 +209,4 @@ class ModImpl implements LifecycleListener, Mod {
     }
 
 
-    // ======================================================================
-    // Private
-
-    /**
-     * Convert an abstract UserMessage into a concrete Text object that Minecraft can display.
-     */
-    private static Text messageToText(final UserMessage m) {
-        final MutableText out;
-        if (m.localized() != null) {
-            out = Text.translatable(m.localized().key(), m.localized().params());
-        } else {
-            out = Text.literal(m.raw());
-        }
-        switch(m.style()) {
-            case ERROR -> {
-                out.setStyle(EMPTY.withColor(TextColor.parse("red")));
-            }
-            case WARNING -> {
-                out.setStyle(EMPTY.withColor(TextColor.parse("yellow")));
-            }
-            case JGIT -> {
-                out.setStyle(EMPTY.withColor(TextColor.parse("gray")));
-            }
-            case NATIVE_GIT -> {
-                out.setStyle(EMPTY.withColor(TextColor.parse("green")));
-            }
-            case BROADCAST -> {
-                out.setStyle(EMPTY.withItalic(true));
-            }
-            default -> {
-                out.setStyle(EMPTY.withColor(TextColor.parse("white")));
-            }
-        }
-        return out;
-    }
 }

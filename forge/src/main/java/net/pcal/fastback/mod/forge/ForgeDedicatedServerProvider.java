@@ -1,6 +1,7 @@
 package net.pcal.fastback.mod.forge;
 
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.DrawContext;
+import net.pcal.fastback.logging.UserMessage;
 
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 
@@ -16,8 +17,8 @@ class ForgeDedicatedServerProvider extends BaseForgeProvider {
     }
 
     @Override
-    public void setHudText(Text text) {
-        syslog().debug("[HUD] "+text.getString());
+    public void setHudText(UserMessage userMessage) {
+        //syslog().debug("[HUD] "+ userMessage.getString());
         //FIXME
     }
 
@@ -28,8 +29,13 @@ class ForgeDedicatedServerProvider extends BaseForgeProvider {
     }
 
     @Override
-    public void setMessageScreenText(Text text) {
-        syslog().debug("[SCREEN] "+text.getString());
+    public void setMessageScreenText(UserMessage userMessage) {
+        //syslog().debug("[SCREEN] "+ userMessage.getString());
         //FIXME
+    }
+
+    @Override
+    void renderOverlayText(DrawContext drawContext) {
+
     }
 }

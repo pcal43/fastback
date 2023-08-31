@@ -25,11 +25,13 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.MessageScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
+import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.fabric.mixins.ScreenAccessors;
 
 import java.nio.file.Path;
 
 import static net.pcal.fastback.logging.SystemLogger.syslog;
+import static net.pcal.fastback.mod.MinecraftProvider.messageToText;
 
 /**
  * @author pcal
@@ -74,11 +76,11 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
     }
 
     @Override
-    public void setHudText(Text text) {
-        if (text == null) {
+    public void setHudText(UserMessage userMessage) {
+        if (userMessage == null) {
             clearHudText();
         } else {
-            this.hudText = text; // so the hud renderer can find it
+            this.hudText = messageToText(userMessage); // so the hud renderer can find it
             this.hudTextTime = System.currentTimeMillis();
         }
     }
@@ -91,10 +93,10 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
     }
 
     @Override
-    public void setMessageScreenText(Text text) {
+    public void setMessageScreenText(UserMessage userMessage) {
         final Screen screen = client.currentScreen;
         if (screen instanceof MessageScreen) {
-            ((ScreenAccessors) screen).setTitle(text);
+            ((ScreenAccessors) screen).setTitle(messageToText(userMessage));
         }
     }
 

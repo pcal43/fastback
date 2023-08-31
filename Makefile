@@ -9,6 +9,7 @@ clean:
 jar:
 	./gradlew remapJar
 	ls -1 fabric/build/libs
+	ls -1 forge/build/libs
 
 test:
 	./gradlew test
@@ -33,3 +34,17 @@ pr:
 .PHONY: deps
 deps:
 	./gradlew -q dependencies --configuration runtimeClasspath
+
+
+.PHONY: inst
+inst:
+	rm ~/minecraft/instances/1.20.1-forge-dev/.minecraft/mods/*
+	cp forge/build/libs/fastback*-forge.jar ~/minecraft/instances/1.20.1-forge-dev/.minecraft/mods/
+
+.PHONY: tvf
+tvf:
+	jar -tvf forge/build/libs/fastback*-forge.jar
+
+.PHONY: tvfs
+tvfs:
+	jar -tvf forge/build/libs/fastback*-shadow.jar

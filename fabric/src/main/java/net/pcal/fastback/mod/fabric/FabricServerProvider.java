@@ -19,7 +19,7 @@
 package net.pcal.fastback.mod.fabric;
 
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.text.Text;
+import net.pcal.fastback.logging.UserMessage;
 
 import java.nio.file.Path;
 
@@ -40,7 +40,7 @@ public class FabricServerProvider extends BaseFabricProvider {
     }
 
     @Override
-    public void setHudText(Text text) {
+    public void setHudText(UserMessage userMessage) {
     }
 
     @Override
@@ -49,7 +49,7 @@ public class FabricServerProvider extends BaseFabricProvider {
     }
 
     @Override
-    public void setMessageScreenText(Text text) {
+    public void setMessageScreenText(UserMessage userMessage) {
 
     }
 

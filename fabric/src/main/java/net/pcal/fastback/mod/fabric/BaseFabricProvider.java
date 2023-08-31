@@ -26,17 +26,18 @@ import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModMetadata;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
 import net.minecraft.world.level.LevelInfo;
 import net.minecraft.world.level.storage.LevelStorage;
 import net.minecraft.world.level.storage.LevelSummary;
 import net.pcal.fastback.logging.Log4jLogger;
 import net.pcal.fastback.logging.SystemLogger;
-import net.pcal.fastback.mod.FrameworkServiceProvider;
+import net.pcal.fastback.logging.UserMessage;
+import net.pcal.fastback.mod.MinecraftProvider;
 import net.pcal.fastback.mod.LifecycleListener;
 import net.pcal.fastback.mod.fabric.mixins.ServerAccessors;
 import net.pcal.fastback.mod.fabric.mixins.SessionAccessors;
 import org.apache.logging.log4j.LogManager;
+import org.eclipse.jgit.transport.SshSessionFactory;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -49,12 +50,13 @@ import java.util.Optional;
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.commands.Commands.createBackupCommand;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
+import static net.pcal.fastback.mod.MinecraftProvider.*;
 
 /**
  * @author pcal
  * @since 0.1.0
  */
-abstract class BaseFabricProvider implements FrameworkServiceProvider, MixinGateway {
+abstract class BaseFabricProvider implements MinecraftProvider, MixinGateway {
 
     static final String MOD_ID = "fastback";
 
@@ -66,9 +68,9 @@ abstract class BaseFabricProvider implements FrameworkServiceProvider, MixinGate
     protected BaseFabricProvider() {}
 
     @Override
-    public void sendBroadcast(Text text) {
+    public void sendBroadcast(UserMessage userMessage) {
         if (this.minecraftServer != null && this.minecraftServer.isDedicated()) {
-            minecraftServer.getPlayerManager().broadcast(text, false);
+            minecraftServer.getPlayerManager().broadcast(messageToText(userMessage), false);
         }
     }
 
@@ -188,7 +190,7 @@ abstract class BaseFabricProvider implements FrameworkServiceProvider, MixinGate
      */
     LifecycleListener initialize() {
         SystemLogger.Singleton.register(new Log4jLogger(LogManager.getLogger(MOD_ID)));
-        final LifecycleListener lifecycle = FrameworkServiceProvider.register(this);
+        final LifecycleListener lifecycle = register(this);
         LiteralArgumentBuilder<ServerCommandSource> backupCommand = createBackupCommand(permName-> {
             final int requiredLevel = this.isClient() ? 0 : 4;
             return Permissions.require(permName, requiredLevel);

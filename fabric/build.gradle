@@ -17,11 +17,15 @@ configurations {
     developmentFabric.extendsFrom common
 }
 
-archivesBaseName = project.archives_base_name
-version = project.mod_version
+archivesBaseName = "${project.archives_base_name}"
+version = "${project.mod_version}-fabric"
 group = project.maven_group
 
+
+//OK THIS IS BASICALLY WORKING EXCEPT THAT THE SHADING IS NOT BEING APPLIED TO THE CLASSES FROM COMMON.
+//SO WTF GRADLE
 dependencies {
+
     common(project(path: ":common", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
 
@@ -36,9 +40,10 @@ dependencies {
     include runtimeOnly("com.googlecode.javaewah:JavaEWAH:${project.JavaEWAH_version}")  { transitive = false }
 
     // so jgit can do modern ssh
-    include runtimeOnly("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${project.jgit_version}") { transitive = false }
-    include runtimeOnly("org.apache.sshd:sshd-core:${project.apache_sshd_version}") { transitive = false }
-    include runtimeOnly("org.apache.sshd:sshd-common:${project.apache_sshd_version}") { transitive = false }
+    implementation("org.apache.sshd:sshd-core:${project.apache_sshd_version}") { transitive = false }
+    runtimeOnly("org.apache.sshd:sshd-common:${project.apache_sshd_version}") { transitive = false }
+
+
 
     // this enables ed25519 support in apache_sshd
     // https://github.com/apache/mina-sshd/blob/dfa109b7b535d64e8ee395ddd0419e7696fb24ee/docs/dependencies.md
@@ -87,7 +92,7 @@ modrinth {
     projectId = "fastback"
     versionNumber = "${project.mod_version}"
     versionType = "release"
-    uploadFile = remapJar //"fabric/build/libs/${project.name}-${project.version}.jar" //FIXME?
+    uploadFile = remapJar
     changelog = "<p><a href='https://github.com/pcal43/fastback/releases/tag/${project.mod_version}'>https://github.com/pcal43/fastback/releases/tag/${project.mod_version}</a></p>"
     gameVersions = ["${project.minecraft_version}"]
     loaders = ["fabric"]
