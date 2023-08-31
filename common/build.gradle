@@ -4,37 +4,17 @@ architectury {
     common("forge")
 }
 
-/**
-configurations {
-    // configuration that holds jars to include in the jar
-    extraLibs
-}
-**/
-
 dependencies {
-
-
     // "you can't include dependencies in common gradle projects"
 
     // JGit
     compileOnly("org.eclipse.jgit:org.eclipse.jgit:${project.jgit_version}") { transitive = false }
-    //runtimeOnly("com.googlecode.javaewah:JavaEWAH:${project.JavaEWAH_version}")  { transitive = false }
-    //runtimeOnly("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${project.jgit_version}") { transitive = false }
-    //runtimeOnly("org.apache.sshd:sshd-core:${project.apache_sshd_version}") { transitive = false }
-
-    // See note below on 'stripSshdFileSystem'
-    //runtimeOnly(files("${buildDir}/sshd-common-${project.apache_sshd_version}+no-fs.jar"))
-    //runtimeOnly("org.apache.sshd:sshd-common:${project.apache_sshd_version}") { transitive = false }
-
-    // Enables ed25519 support in apache_sshd
-    // https://github.com/apache/mina-sshd/blob/dfa109b7b535d64e8ee395ddd0419e7696fb24ee/docs/dependencies.md
-    //runtimeOnly("net.i2p.crypto:eddsa:${project.eddsa_version}") { transitive = false }
 
     // JUnit
-    testImplementation 'junit:junit:4.13.1' //KILL?
-    testImplementation "org.junit.jupiter:junit-jupiter-api:${project.junit_jupiter_version}"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${project.junit_jupiter_version}"
-    testRuntimeOnly "org.apache.logging.log4j:log4j-core:${project.test_log4j_version}"
+    testImplementation ('junit:junit:4.13.1') { transitive = false } //KILL?
+    testImplementation ("org.junit.jupiter:junit-jupiter-api:${project.junit_jupiter_version}") { transitive = false }
+    testRuntimeOnly ("org.junit.jupiter:junit-jupiter-engine:${project.junit_jupiter_version}") { transitive = false }
+    testRuntimeOnly ("org.apache.logging.log4j:log4j-core:${project.test_log4j_version}") { transitive = false }
 }
 
 
@@ -53,58 +33,7 @@ processResources {
     }
 }
 
+
 sourceSets.test {
     resources.srcDirs = ["src/test/resources"]
 }
-
-/**
-tasks.withType(JavaCompile).configureEach {
-    // Minecraft 1.18 (1.18-pre2) upwards uses Java 17.
-    it.options.release = 17
-}
-*/
-
-/**
-jar {
-    from("LICENSE") {
-        rename { "${it}_${project.archivesBaseName}"}
-    }
-}
-&&/
-
-/**
- * Workaround for running in Intellij.
- *
- * The issue seems to be that that jar has a FileSystemProvider that gets picked up because it's on the IJ path; in
- * the uberjar, it's ignored because its in the uberjar.  It registers a RootedFileSystem, the ctor of which tries
- * to create an slf4j logger, and that blows up for reasons that are not entirely clear (looks like classloading
- * shenanigans of some sort).
- *
- * The workaround here makes a copy of sshd-common-x.x.x.jar and strips out the FileSystemProvider.  The modified
- * jar is used on the classpath in Intellij; the original jar is still used in the final shipping product.  See
- * dependency declarations above.
- */
-/**
- SEEMS LIKE NO LONGER IS NECESSARY(?)
-
-tasks.register('stripSshdFileSystem') {
-    doLast {
-        mkdir "$buildDir"
-        copy {
-            from "${gradle.gradleUserHomeDir}/caches/fabric-loom/temp/modprocessing/sshd-common-${project.apache_sshd_version}.jar"
-            into "$buildDir/"
-            rename { String fileName ->
-                fileName.replace("sshd-common-${project.apache_sshd_version}.jar", "sshd-common-${project.apache_sshd_version}+no-fs.jar")
-            }
-        }
-
-        exec {
-            workingDir "${buildDir}"
-            executable 'zip'
-            args '-d', "sshd-common-${project.apache_sshd_version}+no-fs.jar", 'META-INF/services/java.nio.file.spi.FileSystemProvider'
-        }
-    }
-}
-
-classes { finalizedBy stripSshdFileSystem }
- **/

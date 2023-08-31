@@ -18,11 +18,18 @@
 
 package net.pcal.fastback.mod;
 
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextColor;
+import net.pcal.fastback.logging.UserMessage;
 
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
+
+import static net.minecraft.text.Style.EMPTY;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 
 /**
  * Services that must be provided by the underlying mod framework.  Currently, that means fabric only.
@@ -34,9 +41,9 @@ import java.util.Map;
  * @author pcal
  * @since 0.1.0
  */
-public interface FrameworkServiceProvider {
+public interface MinecraftProvider {
 
-    static LifecycleListener register(final FrameworkServiceProvider sp) {
+    static LifecycleListener register(final MinecraftProvider sp) {
         final ModImpl mod = new ModImpl(sp);
         Mod.Singleton.register(mod);
         return mod;
@@ -71,7 +78,7 @@ public interface FrameworkServiceProvider {
     /**
      * If on a server, broadcasts a message to all connected users.
      */
-    void sendBroadcast(Text text);
+    void sendBroadcast(UserMessage userMessage);
 
     /**
      * Enable or disable world saving.
@@ -87,7 +94,7 @@ public interface FrameworkServiceProvider {
      * Display ephemeral status text on the screen to the user,.  This could be part of the in-game HUD
      * or any other floating text, depending on what screen the user is on.  Has no effect if we're serverside.
      */
-    void setHudText(Text text);
+    void setHudText(UserMessage userMessage);
 
     /**
      * Remove text set by setHudText.
@@ -98,7 +105,7 @@ public interface FrameworkServiceProvider {
      * If we're clientside and a minecraft MessageScreen is being displayed (e.g., the 'saving' screen), set
      * the title of the screen.  Otherwise does nothing.
      */
-    void setMessageScreenText(Text text);
+    void setMessageScreenText(UserMessage userMessage);
 
     /**
      * Register a callback that should be called after an autosave completes.
@@ -114,4 +121,49 @@ public interface FrameworkServiceProvider {
      * @return paths to backup when mods-backup enabled.
      */
     Collection<Path> getModsBackupPaths();
+
+    /**
+     * Send a chat message to user.
+     */
+    default void sendChat(UserMessage message, ServerCommandSource scs) {
+        if (message.style() == ERROR) {
+            scs.sendError(messageToText(message));
+        } else {
+            scs.sendFeedback(() -> messageToText(message), false);
+        }
+    }
+
+    /**
+     * Utility class that implementing classes can use to perform a standard conversion of UserMessage to minecraft Text.
+     */
+    static Text messageToText(final UserMessage m) {
+        final MutableText out;
+        if (m.localized() != null) {
+            out = Text.translatable(m.localized().key(), m.localized().params());
+        } else {
+            out = Text.literal(m.raw());
+        }
+        switch(m.style()) {
+            case ERROR -> {
+                out.setStyle(EMPTY.withColor(TextColor.parse("red")));
+            }
+            case WARNING -> {
+                out.setStyle(EMPTY.withColor(TextColor.parse("yellow")));
+            }
+            case JGIT -> {
+                out.setStyle(EMPTY.withColor(TextColor.parse("gray")));
+            }
+            case NATIVE_GIT -> {
+                out.setStyle(EMPTY.withColor(TextColor.parse("green")));
+            }
+            case BROADCAST -> {
+                out.setStyle(EMPTY.withItalic(true));
+            }
+            default -> {
+                out.setStyle(EMPTY.withColor(TextColor.parse("white")));
+            }
+        }
+        return out;
+    }
+
 }

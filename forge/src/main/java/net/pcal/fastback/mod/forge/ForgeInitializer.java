@@ -3,8 +3,11 @@ package net.pcal.fastback.mod.forge;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraftforge.client.event.RenderGuiOverlayEvent;
+import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -16,25 +19,25 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.commands.Commands.createBackupCommand;
 
-
 /**
  * @author pcal
  * @since 0.16.0
  */
 @Mod("fastback")
-public class ForgeInitializer {
+final public class ForgeInitializer {
 
     private BaseForgeProvider provider = null;
 
     public ForgeInitializer() {
-        sanityTest();
-        // REVIEW this works but is it right?  I find the Forge event system somewhat vexing
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        final IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         modEventBus.addListener(this::onClientStartupEvent);
         modEventBus.addListener(this::onDedicatedServerStartupEvent);
         MinecraftForge.EVENT_BUS.addListener(this::onServerStartupEvent);
         MinecraftForge.EVENT_BUS.addListener(this::onServerStoppingEvent);
         MinecraftForge.EVENT_BUS.addListener(this::onRegisterCommandEvent);
+        MinecraftForge.EVENT_BUS.addListener(this::onGuiOverlayEvent);
+        MinecraftForge.EVENT_BUS.addListener(this::onScreenRenderEvent);
+        MinecraftForge.EVENT_BUS.addListener(this::onLevelSaveEvent);
     }
 
     // ======================================================================
@@ -60,25 +63,23 @@ public class ForgeInitializer {
         requireNonNull(provider, "PROVIDER_SINGLETON was never set").onWorldStop();
     }
 
-    void onRegisterCommandEvent(RegisterCommandsEvent event) {
+    private void onRegisterCommandEvent(RegisterCommandsEvent event) {
         final CommandDispatcher<ServerCommandSource> commandDispatcher = event.getDispatcher();
         final LiteralArgumentBuilder<ServerCommandSource> backupCommand =
                 createBackupCommand(permName -> x -> true);
         commandDispatcher.register(backupCommand);
     }
 
-    // ======================================================================
-    // Private
+    private void onLevelSaveEvent(LevelEvent.Save event) {
+        provider.onWorldSave();
+    }
 
-    /**
-     * Fail fast on basic classpath issues.
-     */
-    private void sanityTest() {
-        try {
-            Class.forName("org.eclipse.jgit.api.errors.GitAPIException");
-        } catch (final ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+    private void onGuiOverlayEvent(RenderGuiOverlayEvent.Post event) {
+        provider.renderOverlayText(event.getGuiGraphics());
+    }
+
+    private void onScreenRenderEvent(ScreenEvent.Render.Post event) {
+        provider.renderOverlayText(event.getGuiGraphics());
     }
 }
 

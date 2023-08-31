@@ -6,51 +6,46 @@ architectury {
     forge()
 }
 
+shadowJar {
+    //https://stackoverflow.com/questions/73286776/grpc-unsupportedaddresstypeexception-but-only-when-packaged-with-shadowjar
+    // This does in fact make service discovery work when packaged; still doesn't work in the IDE.  see SshHacks.
+    mergeServiceFiles()
+}
+
 configurations {
     common
     shadowCommon
-    shade
     compileClasspath.extendsFrom common
     runtimeClasspath.extendsFrom common
     developmentForge.extendsFrom common
 }
 
-archivesBaseName = "${project.archives_base_name}-forge"
-version = project.mod_version
+archivesBaseName = "${project.archives_base_name}"
+version = "${project.mod_version}-forge"
 group = project.maven_group
 
 dependencies {
-    forge("net.minecraftforge:forge:${project.forge_version}")
+    forge("net.minecraftforge:forge:${project.forge_version}") { transitive false }
+
+    // note to self: implementation, NOT include.  include does implicit jarjar
 
     common(project(path: ":common", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common", configuration: "transformProductionForge")) { transitive = false }
 
-    // This probably isn't right but it seems to work mostly.  Dynamic load of apache sshd is still busted.
-    // Cobbled this together from examples on github.  Basically no good docs explaining how to do this.
-    // Maybe we can use jarjar for this?  The docs make it sound even harder to do...
-    // https://github.com/minecraft-dev/MinecraftDev/blob/b3d07a201b96ee310cdcbee0246521a9206968e8/src/main/resources/fileTemplates/j2ee/architectury/architectury_forge_build.gradle.ft
-    // https://github.com/AlphaMode/Valkyrien-Skies-2/blob/main/forge/build.gradle
-    // https://github.com/architectury/architectury-loom/pull/64
-    //https://github.com/alexvasilkov/GradleGitDependenciesPlugin/issues/20
+    // FIXME? I still don't understand if I need to declare all of these things as forgeRuntimeLibrary.  It sort
+    // of seems like I do.
 
+    forgeRuntimeLibrary implementation("org.eclipse.jgit:org.eclipse.jgit:${project.jgit_version}") { transitive = false }
+    shadowCommon("org.eclipse.jgit:org.eclipse.jgit:${project.jgit_version}") { transitive = false }
 
-    forgeRuntimeLibrary(implementation(shade "org.eclipse.jgit:org.eclipse.jgit:${project.jgit_version}"))
-    forgeRuntimeLibrary(implementation(shade "org.eclipse.jgit:org.eclipse.jgit.ssh.jsch:${project.jgit_version}"))
-    // include at compile time so we can reference it statically and register with jgit by hand
-    implementation "org.eclipse.jgit:org.eclipse.jgit.ssh.jsch:${project.jgit_version}"
+    forgeRuntimeLibrary runtimeOnly("org.eclipse.jgit:org.eclipse.jgit.ssh.jsch:${project.jgit_version}") { transitive = false; }
+    shadowCommon("org.eclipse.jgit:org.eclipse.jgit.ssh.jsch:${project.jgit_version}") { transitive = false }
 
-    // ome serious thrashing trying to get mina to load
+    forgeRuntimeLibrary runtimeOnly('com.jcraft:jsch:0.1.55')
+    shadowCommon('com.jcraft:jsch:0.1.55')
 
-    // forgeRuntimeLibrary (implementation (shade "org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${project.jgit_version}"))
-    // implementation ( "org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${project.jgit_version}")
-    // forgeRuntimeLibrary (implementation (shade  ("org.apache.sshd:sshd-common:${project.apache_sshd_version}")))
-    // forgeRuntimeLibrary (implementation (shade ("org.apache.sshd:sshd-core:${project.apache_sshd_version}")))
-    // forgeRuntimeLibrary (implementation (shade ("org.apache.sshd:sshd-osgi:${project.apache_sshd_version}")))
-    // forgeRuntimeLibrary shade ("org.apache.sshd:sshd-mina:${project.apache_sshd_version}")
-    // forgeRuntimeLibrary (implementation (shade ("com.googlecode.javaewah:JavaEWAH:${project.JavaEWAH_version}")))
-    // forgeRuntimeLibrary (shade ("net.i2p.crypto:eddsa:${project.eddsa_version}"))
-    // implementation  ("net.i2p.crypto:eddsa:${project.eddsa_version}")
-
+    forgeRuntimeLibrary runtimeOnly("com.googlecode.javaewah:JavaEWAH:${project.JavaEWAH_version}")  { transitive = false }
+    shadowCommon  ("com.googlecode.javaewah:JavaEWAH:${project.JavaEWAH_version}")  { transitive = false }
 }
 
 processResources {
@@ -62,8 +57,17 @@ processResources {
 }
 
 shadowJar {
-    configurations = [project.configurations.shade]
-    // relocate 'org.apache', "net.pcal.fastback.relocated.org.apache"
+    configurations = [project.configurations.shadowCommon]
+    exclude('META-INF/maven/**')
+
+    // https://stackoverflow.com/questions/36659980/java-jar-classnotfoundexception-even-though-dependent-library-exists
+    // Forge has full control over loading the classes of a mod and it specifically checks the package information
+    // of every class it loads against a set of restricted package paths to protect its own dependencies from
+    // accidentally being overwritten by loading a different version of a similar dependency. In this case, Forge
+    // uses a few Apache libs, so it prevents the loading of classes from the org.apache package namespace.
+
+    relocate 'org/eclipse', 'net/pcal/fastback/shaded/org/eclipse'
+    relocate 'com/jcraft', 'net/pcal/fastback/shaded/com/jcraft'
     archiveClassifier = 'dev-shadow'
 }
 
@@ -74,6 +78,7 @@ remapJar {
 }
 
 jar {
+
     archiveClassifier = 'dev'
 }
 
@@ -85,7 +90,6 @@ sourcesJar {
 
 processResources {
     inputs.property "version", project.version
-
     filesMatching("META-INF/mods.toml") {
         expand "version": project.version
     }
