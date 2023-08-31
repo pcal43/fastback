@@ -195,6 +195,7 @@ class ModImpl implements LifecycleListener, Mod {
                         if (action != null) {
                             this.setMessageScreenText(localized("fastback.message.backing-up"));
                             action.getTask(repo, ulog).call();
+                            this.setMessageScreenText(localized("fastback.chat.backup-complete"));
                         }
                     }
                 } catch (Exception e) {
@@ -202,8 +203,6 @@ class ModImpl implements LifecycleListener, Mod {
                 }
             }
             syslog().debug("onWorldStop complete");
-        } finally {
-            this.clearHudText();
         }
     }
 

@@ -30,6 +30,7 @@ import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserLogger.ulog;
+import static net.pcal.fastback.logging.UserMessage.localized;
 import static net.pcal.fastback.logging.UserMessage.raw;
 import static net.pcal.fastback.mod.Mod.mod;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.WRITE;
@@ -73,9 +74,8 @@ enum FullCommand implements Command {
      * Workaround for https://github.com/pcal43/fastback/issues/112
      */
     static void saveWorldBeforeBackup(UserLogger ulog) throws IOException {
-        ulog.update(raw("Saving world before backup...")); //FIXME i18n
-        syslog().info("Saving before backup");
+        ulog.message(localized("fastback.chat.world-save"));
         mod().saveWorld();
-        syslog().info("Starting backup..."); //FIXME i18n
+        ulog.message(localized("fastback.message.backing-up"));
     }
 }
