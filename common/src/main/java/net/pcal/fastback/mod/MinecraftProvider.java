@@ -18,11 +18,6 @@
 
 package net.pcal.fastback.mod;
 
-import static java.nio.file.Files.createTempDirectory;
-import static java.util.Objects.requireNonNull;
-import static net.minecraft.text.Style.EMPTY;
-import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
-
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -32,6 +27,9 @@ import net.pcal.fastback.logging.UserMessage;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
+
+import static net.minecraft.text.Style.EMPTY;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 
 /**
  * Services that must be provided by the underlying mod framework.  Currently, that means fabric only.

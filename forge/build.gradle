@@ -59,6 +59,13 @@ processResources {
 shadowJar {
     configurations = [project.configurations.shadowCommon]
     exclude('META-INF/maven/**')
+
+    // https://stackoverflow.com/questions/36659980/java-jar-classnotfoundexception-even-though-dependent-library-exists
+    // Forge has full control over loading the classes of a mod and it specifically checks the package information
+    // of every class it loads against a set of restricted package paths to protect its own dependencies from
+    // accidentally being overwritten by loading a different version of a similar dependency. In this case, Forge
+    // uses a few Apache libs, so it prevents the loading of classes from the org.apache package namespace.
+
     relocate 'org/eclipse', 'net/pcal/fastback/shaded/org/eclipse'
     relocate 'com/jcraft', 'net/pcal/fastback/shaded/com/jcraft'
     archiveClassifier = 'dev-shadow'

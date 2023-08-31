@@ -4,22 +4,7 @@ architectury {
     common("forge")
 }
 
-/**
-configurations {
-    // configuration that holds jars to include in the jar
-    extraLibs
-}
-**/
-
 dependencies {
-
-
-
-    //In this case, the problem actually lies with MinecraftForge, not necessarily due to a bug but actually due to a protection that Forge implemented.
-
-            //https://stackoverflow.com/questions/36659980/java-jar-classnotfoundexception-even-though-dependent-library-exists
-            //Forge has full control over loading the classes of a mod and it specifically checks the package information of every class it loads against a set of restricted package paths to protect its own dependencies from accidentally being overwritten by loading a different version of a similar dependency. In this case, Forge uses a few Apache libs, so it prevents the loading of classes from the org.apache package namespace.
-
     // "you can't include dependencies in common gradle projects"
 
     // JGit
@@ -52,55 +37,3 @@ processResources {
 sourceSets.test {
     resources.srcDirs = ["src/test/resources"]
 }
-
-/**
-tasks.withType(JavaCompile).configureEach {
-    // Minecraft 1.18 (1.18-pre2) upwards uses Java 17.
-    it.options.release = 17
-}
-*/
-
-/**
-jar {
-    from("LICENSE") {
-        rename { "${it}_${project.archivesBaseName}"}
-    }
-}
-&&/
-
-/**
- * Workaround for running in Intellij.
- *
- * The issue seems to be that that jar has a FileSystemProvider that gets picked up because it's on the IJ path; in
- * the uberjar, it's ignored because its in the uberjar.  It registers a RootedFileSystem, the ctor of which tries
- * to create an slf4j logger, and that blows up for reasons that are not entirely clear (looks like classloading
- * shenanigans of some sort).
- *
- * The workaround here makes a copy of sshd-common-x.x.x.jar and strips out the FileSystemProvider.  The modified
- * jar is used on the classpath in Intellij; the original jar is still used in the final shipping product.  See
- * dependency declarations above.
- */
-/**
- SEEMS LIKE NO LONGER IS NECESSARY(?)
-
-tasks.register('stripSshdFileSystem') {
-    doLast {
-        mkdir "$buildDir"
-        copy {
-            from "${gradle.gradleUserHomeDir}/caches/fabric-loom/temp/modprocessing/sshd-common-${project.apache_sshd_version}.jar"
-            into "$buildDir/"
-            rename { String fileName ->
-                fileName.replace("sshd-common-${project.apache_sshd_version}.jar", "sshd-common-${project.apache_sshd_version}+no-fs.jar")
-            }
-        }
-
-        exec {
-            workingDir "${buildDir}"
-            executable 'zip'
-            args '-d', "sshd-common-${project.apache_sshd_version}+no-fs.jar", 'META-INF/services/java.nio.file.spi.FileSystemProvider'
-        }
-    }
-}
-
-classes { finalizedBy stripSshdFileSystem }
- **/

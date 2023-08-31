@@ -32,12 +32,11 @@ import net.minecraft.world.level.storage.LevelSummary;
 import net.pcal.fastback.logging.Log4jLogger;
 import net.pcal.fastback.logging.SystemLogger;
 import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.mod.MinecraftProvider;
 import net.pcal.fastback.mod.LifecycleListener;
+import net.pcal.fastback.mod.MinecraftProvider;
 import net.pcal.fastback.mod.fabric.mixins.ServerAccessors;
 import net.pcal.fastback.mod.fabric.mixins.SessionAccessors;
 import org.apache.logging.log4j.LogManager;
-import org.eclipse.jgit.transport.SshSessionFactory;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -50,7 +49,8 @@ import java.util.Optional;
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.commands.Commands.createBackupCommand;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
-import static net.pcal.fastback.mod.MinecraftProvider.*;
+import static net.pcal.fastback.mod.MinecraftProvider.messageToText;
+import static net.pcal.fastback.mod.MinecraftProvider.register;
 
 /**
  * @author pcal
