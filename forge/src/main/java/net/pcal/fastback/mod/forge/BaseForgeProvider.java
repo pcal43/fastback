@@ -2,6 +2,7 @@ package net.pcal.fastback.mod.forge;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.level.LevelInfo;
 import net.minecraft.world.level.storage.LevelStorage;
 import net.minecraft.world.level.storage.LevelSummary;
@@ -41,7 +42,9 @@ abstract class BaseForgeProvider implements MinecraftProvider {
 
     @Override
     public void setWorldSaveEnabled(boolean enabled) {
-        this.isWorldSaveEnabled = enabled;
+        for(ServerWorld world : logicalServer.getWorlds() ) {
+            world.savingDisabled = !enabled;
+        }
     }
 
     @Override
@@ -144,8 +147,9 @@ abstract class BaseForgeProvider implements MinecraftProvider {
         setLogicalServer(null);
     }
 
-    void onWorldSave() {
-        syslog().debug("onWorldSave");
+    //FIXME!!
+    void onAutoSaveComplete() {
+        syslog().debug("onAutoSaveComplete");
         this.autoSaveListener.run();
     }
 
