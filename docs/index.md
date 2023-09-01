@@ -7,7 +7,7 @@ nav_order: 1
 # FastBack
 *Fast, incremental Minecraft world backups powered by Git*
 
-Fastback is a Fabric Minecraft mod that backs up your world in incremental snapshots.  When it does a backup,
+Fastback is a Minecraft mod that backs up your world in incremental snapshots.  When it does a backup,
 it only saves the parts of your world that changed.  
 
 This means backups are fast.  It also means you can keep snapshots of your world without using up a lot
@@ -15,6 +15,7 @@ of disk space.
 
 ## Features
 
+* **Now with Forge support!**
 * Incrementally backup just the changed files
 * Faster, smaller backups than zipping
 * Back up locally
@@ -27,7 +28,7 @@ of disk space.
 * Broadcast server-wide notifications during backups 
 * LuckPerms support
 * Works on clients and dedicated servers
-* Works on Linux, Mac and Windows 
+* Works on Linux, Mac and Windows
 * ..all with easy-to-use minecraft commands
 
 
@@ -35,7 +36,7 @@ of disk space.
 * Support for restoring remote snapshots
 * Better management of remote snapshots
 * UI for managing backups from the title screen
-* Forge support (maybe)
+* ~~Forge support (maybe)~~
 
 ## Acknowledgements
 
