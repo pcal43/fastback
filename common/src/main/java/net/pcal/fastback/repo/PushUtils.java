@@ -87,13 +87,13 @@ abstract class PushUtils {
             if (conf.getBoolean(IS_UUID_CHECK_ENABLED)) {
                 boolean uuidCheckResult;
                 try {
-                    uuidCheckResult = jgit_doUuidCheck(repo, snapshotsPerWorld.keySet());
+                    uuidCheckResult = doWorldIdCheck(repo, snapshotsPerWorld.keySet());
                 } catch (final IOException e) {
                     syslog().error("Unexpected exception thrown during id check", e);
                     uuidCheckResult = false;
                 }
                 if (!uuidCheckResult) {
-                    final URIish remoteUri = jgit_getRemoteUri(repo.getJGit(), repo.getConfig().getString(REMOTE_NAME));
+                    final URIish remoteUri = getRemoteUri(repo.getJGit(), repo.getConfig().getString(REMOTE_NAME));
                     ulog.message(styledLocalized("fastback.chat.push-id-mismatch", ERROR, remoteUri));
                     syslog().error("Failing remote backup due to failed id check");
                     throw new IOException();
@@ -109,7 +109,7 @@ abstract class PushUtils {
                 final WorldId uuid = repo.getWorldId();
                 jgit_doSmartPush(repo, snapshotsPerWorld.get(uuid), sid.getBranchName(), conf, ulog);
             } else {
-                jgit_doNaivePush(jgit, sid.getBranchName(), conf, ulog);
+                jgit_doPush(jgit, sid.getBranchName(), conf, ulog);
             }
             syslog().info("Remote backup complete.");
         } catch (GitAPIException | InterruptedException e) {
@@ -130,6 +130,37 @@ abstract class PushUtils {
         syslog().debug("End native_push");
     }
 
+
+    private static void jgit_doPush(final Git jgit, final String branchNameToPush, final GitConfig conf, final UserLogger ulog) throws IOException {
+        final ProgressMonitor pm = new JGitIncrementalProgressMonitor(new JGitPushProgressMonitor(ulog), 100);
+        final String remoteName = conf.getString(REMOTE_NAME);
+        syslog().info("Doing simple push of " + branchNameToPush);
+        try {
+            jgit.push().setProgressMonitor(pm).setRemote(remoteName).
+                    setRefSpecs(new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
+        } catch (GitAPIException e) {
+            throw new IOException(e);
+        }
+    }
+
+    /**
+     * This is a probably-failed attempt at an optimization.  It is no longer the default behavior.
+     *
+     * The idea was to try to minimize re-pushing unchanged blobs by establishing a common merge history between the
+     * branch being pushed and one we already know is upstream Again, all snapshot branches are orphan branches, and
+     * git can't bother checking every single blob in unrelated branches when receiving a push.
+     *
+     * But it does do some of this when there is a related history, so the idea here is to create a temporary merge
+     * commit between a branch the server has and the new one it doesn't have, and to then let it figure out that most
+     * of the blobs in those commits are already present on the server.   Unfortunately, I think I may misunderstand
+     * how git behaves here - I think the deduplication is only at commit granularity, so this actually isn't doing
+     * anything except adding a lot of moving parts and problems like this one:
+     *
+     * https://github.com/pcal43/fastback/issues/267
+     *
+     * So, this is no longer enabled by default.  And really, if they're backing up a big world where this matters,
+     * you should just be using native git.
+     */
     private static void jgit_doSmartPush(final RepoImpl repo, List<SnapshotId> remoteSnapshots, final String branchNameToPush, final GitConfig conf, final UserLogger ulog) throws IOException {
         ulog.update(styledLocalized("fastback.chat.push-started", JGIT));
         try {
@@ -140,7 +171,7 @@ abstract class PushUtils {
             if (remoteSnapshots.isEmpty()) {
                 syslog().warn("** This appears to be the first time this world has been pushed.");
                 syslog().warn("** If the world is large, this may take some time.");
-                jgit_doNaivePush(jgit, branchNameToPush, conf, ulog);
+                jgit_doPush(jgit, branchNameToPush, conf, ulog);
                 return;
             } else {
                 final Collection<Ref> localBranchRefs = jgit.branchList().call();
@@ -151,7 +182,7 @@ abstract class PushUtils {
                 if (remoteSnapshots.isEmpty()) {
                     syslog().warn("No common snapshots found between local and remote.");
                     syslog().warn("Doing a full push.  This may take some time.");
-                    jgit_doNaivePush(jgit, branchNameToPush, conf, ulog);
+                    jgit_doPush(jgit, branchNameToPush, conf, ulog);
                     return;
                 } else {
                     Collections.sort(remoteSnapshots);
@@ -160,7 +191,7 @@ abstract class PushUtils {
                 }
             }
             // ok, we have a common snapshot that we can use to create a fake merge history.
-            final String tempBranchName = getTempBranchName(branchNameToPush);
+            final String tempBranchName = "temp/" + branchNameToPush;
             syslog().debug("Creating out temp branch " + tempBranchName);
             jgit.checkout().setCreateBranch(true).setName(tempBranchName).call();
             final ObjectId branchId = jgit.getRepository().resolve(latestCommonSnapshot.getBranchName());
@@ -205,19 +236,7 @@ abstract class PushUtils {
         }
     }
 
-    private static void jgit_doNaivePush(final Git jgit, final String branchNameToPush, final GitConfig conf, final UserLogger ulog) throws IOException {
-        final ProgressMonitor pm = new JGitIncrementalProgressMonitor(new JGitPushProgressMonitor(ulog), 100);
-        final String remoteName = conf.getString(REMOTE_NAME);
-        syslog().info("Doing naive push of " + branchNameToPush);
-        try {
-            jgit.push().setProgressMonitor(pm).setRemote(remoteName).
-                    setRefSpecs(new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
-        } catch (GitAPIException e) {
-            throw new IOException(e);
-        }
-    }
-
-    private static boolean jgit_doUuidCheck(RepoImpl repo, Set<WorldId> remoteWorldUuids) throws IOException {
+    private static boolean doWorldIdCheck(RepoImpl repo, Set<WorldId> remoteWorldUuids) throws IOException {
         final WorldId localUuid = repo.getWorldId();
         if (remoteWorldUuids.size() > 2) {
             syslog().warn("Remote has more than one world-id.  This is unusual. " + remoteWorldUuids);
@@ -234,11 +253,7 @@ abstract class PushUtils {
         return true;
     }
 
-    private static String getTempBranchName(String uniqueName) {
-        return "temp/" + uniqueName;
-    }
-
-    private static URIish jgit_getRemoteUri(Git jgit, String remoteName) throws IOException {
+    private static URIish getRemoteUri(Git jgit, String remoteName) throws IOException {
         requireNonNull(jgit);
         requireNonNull(remoteName);
         final List<RemoteConfig> remotes;
