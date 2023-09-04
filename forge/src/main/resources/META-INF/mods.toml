@@ -5,7 +5,7 @@ license = "GPL2"
 
 [[mods]]
 modId = "fastback"
-version = "0.15.1+1.20.1-alpha
+version = "0.15.1+1.20.1-alpha"
 displayName = "Fast Backups"
 authors = "pcal"
 description = '''
