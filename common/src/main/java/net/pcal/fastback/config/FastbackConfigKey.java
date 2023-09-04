@@ -37,7 +37,7 @@ public enum FastbackConfigKey implements GitConfigKey {
     IS_MODS_BACKUP_ENABLED("mods-backup-enabled", false),
     IS_REFLOG_DELETION_ENABLED(true),
     IS_REMOTE_TEMP_BRANCH_CLEANUP_ENABLED(true),
-    IS_SMART_PUSH_ENABLED(true),
+    IS_SMART_PUSH_ENABLED("smart-push-enabled", false),
     IS_TEMP_BRANCH_CLEANUP_ENABLED(true),
     IS_TRACKING_BRANCH_CLEANUP_ENABLED(true),
     IS_UUID_CHECK_ENABLED(true),
@@ -51,7 +51,7 @@ public enum FastbackConfigKey implements GitConfigKey {
 
     private final String  settingName;
     private final Boolean booleanDefault;
-    private final String stringDefault;
+    private final String  stringDefault;
     private final Integer intDefault;
 
     FastbackConfigKey(boolean booleanDefaultValue) {
