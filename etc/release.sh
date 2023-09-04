@@ -49,7 +49,8 @@ fi
 # Build release
 #
 
-BUILD_LIBS_DIR='fabric/build/libs'
+FABRIC_LIBS_DIR='fabric/build/libs'
+FORGE_LIBS_DIR='forge/build/libs'
 
 CURRENT_VERSION=$(sed -rn 's/^mod_version.*=[ ]*([^\n]+)$/\1/p' gradle.properties)
 echo "Current version is '$CURRENT_VERSION'"
@@ -64,7 +65,8 @@ sed "s/^mod_version =.*/mod_version = $RELEASE_VERSION/" gradle.properties > gra
 rm gradle.properties
 mv gradle.properties.temp gradle.properties
 
-rm -rf "${BUILD_LIBS_DIR}"
+rm -rf "${FABRIC_LIBS_DIR}"
+rm -rf "${FORGE_LIBS_DIR}"
 
 ./gradlew remapJar
 
@@ -76,7 +78,7 @@ git push
 # Do github release
 #
 set -x
-gh release create --generate-notes --title "${RELEASE_VERSION}" --notes "release ${RELEASE_VERSION}" ${RELEASE_VERSION}  "${BUILD_LIBS_DIR}"/*
+gh release create --generate-notes --title "${RELEASE_VERSION}" --notes "release ${RELEASE_VERSION}" ${RELEASE_VERSION}  "${FABRIC_LIBS_DIR}"/* "${FORGE_LIBS_DIR}"/*
 set +x
 
 
