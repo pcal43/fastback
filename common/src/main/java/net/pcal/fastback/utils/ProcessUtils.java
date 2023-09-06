@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
@@ -39,16 +40,30 @@ import static net.pcal.fastback.logging.SystemLogger.syslog;
 public class ProcessUtils {
 
     public static int doExec(String[] args, final Map<String, String> envOriginal, Consumer<String> stdoutSink, Consumer<String> stderrSink) throws IOException, InterruptedException {
+        return doExec(args, envOriginal, stdoutSink, stderrSink, true);
+    }
+
+    public static int doExec(final String[] args, final Map<String, String> envOriginal, final Consumer<String> stdoutSink, final Consumer<String> stderrSink, boolean throwOnNonZero) throws IOException, InterruptedException {
         syslog().debug("Executing " + String.join(" ", args));
         final Map<String, String> env = new HashMap<>(envOriginal);
         env.putAll(System.getenv());
+        final Consumer<String> stdout = line->{
+            syslog().trace(()->"[STDOUT] " + line);
+            stdoutSink.accept(line);
+        };
+        final Consumer<String> stderr = line->{
+            syslog().trace(()->"[STDERR] " + line);
+            stderrSink.accept(line);
+        };
         final List<String> envlist = new ArrayList<>();
         for (Map.Entry<String, String> entry : env.entrySet()) {
             envlist.add(entry.getKey() + "=" + entry.getValue());
         }
         final String[] enva = envlist.toArray(new String[0]);
         final Process p = Runtime.getRuntime().exec(args, enva);
-        return drainAndWait(p, new LineWriter(stdoutSink), new LineWriter(stderrSink));
+        int exit = drainAndWait(p, new LineWriter(stdout), new LineWriter(stderr));
+        if (exit != 0) throw new IOException("process exited with "+exit); //TODO probably should have bespoke exception types
+        return exit;
     }
 
     private static class LineWriter extends Writer {

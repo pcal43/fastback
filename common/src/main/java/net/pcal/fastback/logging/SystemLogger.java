@@ -18,6 +18,8 @@
 
 package net.pcal.fastback.logging;
 
+import java.util.function.Supplier;
+
 /**
  * Singleton logger instance that writes to the serverside console.
  *
@@ -45,6 +47,10 @@ public interface SystemLogger {
     void info(String message);
 
     void debug(String message);
+
+    default void trace(Supplier<String> message) {
+        debug(message.get()); //FIXME
+    }
 
     void debug(String message, Throwable t);
 
