@@ -21,6 +21,7 @@ package net.pcal.fastback.repo;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.SystemLogger;
 import net.pcal.fastback.utils.EnvironmentUtils;
+import net.pcal.fastback.utils.ProcessUtils.ExecException;
 import org.eclipse.jgit.api.Git;
 
 import java.io.IOException;
@@ -49,7 +50,7 @@ abstract class PreflightUtils {
      * Should be called prior to any heavy-lifting with git (e.g. commiting and pushing).  Ensures that
      * key files are all set correctly.
      */
-    static void doPreflight(RepoImpl repo) throws IOException {
+    static void doPreflight(RepoImpl repo) throws IOException, ExecException {
         final SystemLogger syslog = syslog();
         syslog.debug("Doing world maintenance");
         final Git jgit = repo.getJGit();
@@ -68,11 +69,7 @@ abstract class PreflightUtils {
                 writeResourceToFile("world/gitattributes-jgit", targetPath);
             }
         }
-        try {
-            updateNativeLfsInstallation(repo);
-        } catch (InterruptedException e) {
-            throw new IOException(e);
-        }
+        updateNativeLfsInstallation(repo);
     }
 
     // ======================================================================
@@ -81,14 +78,12 @@ abstract class PreflightUtils {
     /**
      * Ensures that git-lfs is installed or uninstalled in the worktree as appropriate.
      */
-    private static void updateNativeLfsInstallation(final Repo repo) throws IOException, InterruptedException {
+    private static void updateNativeLfsInstallation(final Repo repo) throws ExecException {
         if (EnvironmentUtils.isNativeGitInstalled()) {
             final boolean isNativeEnabled = repo.getConfig().getBoolean(IS_NATIVE_GIT_ENABLED);
             final String action = isNativeEnabled ? "install" : "uninstall";
             final String[] cmd = {"git", "-C", repo.getWorkTree().getAbsolutePath(), "lfs", action, "--local"};
-            doExec(cmd, Collections.emptyMap(), s -> {
-            }, s -> {
-            });
+            doExec(cmd, Collections.emptyMap(), s -> {}, s -> {});
         }
     }
 }

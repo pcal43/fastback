@@ -21,6 +21,7 @@ package net.pcal.fastback.repo;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.utils.FileUtils;
+import net.pcal.fastback.utils.ProcessUtils.ExecException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.internal.storage.file.GC;
@@ -61,23 +62,19 @@ import static org.eclipse.jgit.api.ListBranchCommand.ListMode.ALL;
  */
 abstract class ReclamationUtils {
 
-    static void doReclamation(RepoImpl repo, UserLogger ulog) throws IOException {
+    static void doReclamation(RepoImpl repo, UserLogger ulog) throws GitAPIException, ExecException {
         if (repo.getConfig().getBoolean(IS_NATIVE_GIT_ENABLED)) {
-            try {
-                native_doLfsPrune(repo, ulog);
-            } catch (InterruptedException e) {
-                throw new IOException(e);
-            }
+            native_doLfsPrune(repo, ulog);
         } else {
             try {
                 jgit_doGc(repo, ulog);
-            } catch (GitAPIException | ParseException e) {
-                throw new IOException(e);
+            } catch (ParseException | IOException e) {
+                throw new RuntimeException(e);
             }
         }
     }
 
-    private static void native_doLfsPrune(RepoImpl repo, UserLogger ulog) throws IOException, InterruptedException {
+    private static void native_doLfsPrune(RepoImpl repo, UserLogger ulog) throws ExecException {
         final File worktree = repo.getWorkTree();
         final String[] push = {"git", "-C", worktree.getAbsolutePath(), "-c", "lfs.pruneoffsetdays=999999", "lfs", "prune", "--verbose", "--no-verify-remote",};
         final Consumer<String> outputConsumer = line->ulog.update(styledRaw(line, NATIVE_GIT));
@@ -89,7 +86,7 @@ abstract class ReclamationUtils {
      * Runs git garbage collection.  Aggressively deletes reflogs, tracking branches and stray temporary branches
      * in an attempt to free up objects and reclaim disk space.
      */
-    private static void jgit_doGc(RepoImpl repo, UserLogger ulog) throws IOException, GitAPIException, ParseException {
+    private static void jgit_doGc(RepoImpl repo, UserLogger ulog) throws GitAPIException, ParseException, IOException {
         final File gitDir = repo.getJGit().getRepository().getDirectory();
         final GitConfig config = repo.getConfig();
         ulog.update(styledLocalized("fastback.hud.gc-percent", JGIT, 0));

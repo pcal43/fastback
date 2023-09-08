@@ -21,6 +21,7 @@ package net.pcal.fastback.repo;
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
+import net.pcal.fastback.utils.ProcessUtils.ExecException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
@@ -71,7 +72,8 @@ abstract class PushUtils {
         return branchName.startsWith("temp/");
     }
 
-    static void doPush(SnapshotId sid, RepoImpl repo, UserLogger ulog) throws IOException {
+    // TODO stop throwing IOE
+    static void doPush(SnapshotId sid, RepoImpl repo, UserLogger ulog) throws IOException, ExecException {
         try {
             final GitConfig conf = repo.getConfig();
             final String pushUrl = conf.getString(REMOTE_PUSH_URL);
@@ -102,7 +104,6 @@ abstract class PushUtils {
             syslog().debug("Pushing to " + pushUrl);
 
             PreflightUtils.doPreflight(repo);
-
             if (conf.getBoolean(IS_NATIVE_GIT_ENABLED)) {
                 native_doPush(repo, sid.getBranchName(), ulog);
             } else if (conf.getBoolean(IS_SMART_PUSH_ENABLED)) {
@@ -112,12 +113,12 @@ abstract class PushUtils {
                 jgit_doPush(jgit, sid.getBranchName(), conf, ulog);
             }
             syslog().info("Remote backup complete.");
-        } catch (GitAPIException | InterruptedException e) {
+        } catch (GitAPIException e) {
             throw new IOException(e);
         }
     }
 
-    private static void native_doPush(final Repo repo, final String branchNameToPush, final UserLogger log) throws IOException, InterruptedException {
+    private static void native_doPush(final Repo repo, final String branchNameToPush, final UserLogger log) throws ExecException {
         syslog().debug("Start native_push");
         log.update(styledLocalized("fastback.chat.push-started", NATIVE_GIT));
         final File worktree = repo.getWorkTree();
@@ -131,16 +132,12 @@ abstract class PushUtils {
     }
 
 
-    private static void jgit_doPush(final Git jgit, final String branchNameToPush, final GitConfig conf, final UserLogger ulog) throws IOException {
+    private static void jgit_doPush(final Git jgit, final String branchNameToPush, final GitConfig conf, final UserLogger ulog) throws GitAPIException {
         final ProgressMonitor pm = new JGitIncrementalProgressMonitor(new JGitPushProgressMonitor(ulog), 100);
         final String remoteName = conf.getString(REMOTE_NAME);
         syslog().info("Doing simple push of " + branchNameToPush);
-        try {
-            jgit.push().setProgressMonitor(pm).setRemote(remoteName).
-                    setRefSpecs(new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
-        } catch (GitAPIException e) {
-            throw new IOException(e);
-        }
+        jgit.push().setProgressMonitor(pm).setRemote(remoteName).
+                setRefSpecs(new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
     }
 
     /**

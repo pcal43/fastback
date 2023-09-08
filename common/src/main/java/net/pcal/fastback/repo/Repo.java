@@ -20,6 +20,7 @@ package net.pcal.fastback.repo;
 
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
+import net.pcal.fastback.utils.ProcessUtils.ExecException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
 
@@ -63,9 +64,9 @@ public interface Repo extends AutoCloseable {
 
     Collection<SnapshotId> doRemotePrune(UserLogger ulog) throws IOException;
 
-    void doGc(UserLogger ulog) throws IOException;
+    void doGc(UserLogger ulog);
 
-    void doPushSnapshot(SnapshotId sid, UserLogger ulog) throws IOException, ParseException;
+    void doPushSnapshot(SnapshotId sid, UserLogger ulog);
 
     Path doRestoreSnapshot(String uri, Path restoresDir, String worldName, SnapshotId sid, UserLogger ulog) throws IOException;
 
