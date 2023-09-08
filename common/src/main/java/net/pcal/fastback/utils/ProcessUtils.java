@@ -18,6 +18,9 @@
 
 package net.pcal.fastback.utils;
 
+import net.pcal.fastback.logging.UserLogger;
+import net.pcal.fastback.logging.UserMessage;
+
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -27,7 +30,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
@@ -39,31 +41,84 @@ import static net.pcal.fastback.logging.SystemLogger.syslog;
  */
 public class ProcessUtils {
 
-    public static int doExec(String[] args, final Map<String, String> envOriginal, Consumer<String> stdoutSink, Consumer<String> stderrSink) throws IOException, InterruptedException {
+    public static int doExec(String[] args, final Map<String, String> envOriginal, Consumer<String> stdoutSink, Consumer<String> stderrSink) throws ExecException {
         return doExec(args, envOriginal, stdoutSink, stderrSink, true);
     }
 
-    public static int doExec(final String[] args, final Map<String, String> envOriginal, final Consumer<String> stdoutSink, final Consumer<String> stderrSink, boolean throwOnNonZero) throws IOException, InterruptedException {
+    public static int doExec(final String[] args, final Map<String, String> envOriginal, final Consumer<String> stdoutSink, final Consumer<String> stderrSink, boolean throwOnNonZero) throws ExecException {
         syslog().debug("Executing " + String.join(" ", args));
         final Map<String, String> env = new HashMap<>(envOriginal);
         env.putAll(System.getenv());
+        // output a few values that are important for debugging; don't indiscriminately dump everything or someone's going
+        // to end up uploading a bunch of passwords into pastebin.
+        syslog().debug("PATH: " + env.get("PATH"));
+        syslog().debug("USER: " + env.get("USER"));
+        syslog().debug("HOME: " + env.get("HOME"));
+        final List<String> stderrBuffer = new ArrayList<>();
         final Consumer<String> stdout = line->{
-            syslog().trace(()->"[STDOUT] " + line);
+            syslog().debug("[STDOUT] " + line);
             stdoutSink.accept(line);
         };
         final Consumer<String> stderr = line->{
-            syslog().trace(()->"[STDERR] " + line);
+            syslog().debug("[STDERR] " + line);
             stderrSink.accept(line);
+            stderrBuffer.add(line);
         };
         final List<String> envlist = new ArrayList<>();
         for (Map.Entry<String, String> entry : env.entrySet()) {
             envlist.add(entry.getKey() + "=" + entry.getValue());
         }
         final String[] enva = envlist.toArray(new String[0]);
-        final Process p = Runtime.getRuntime().exec(args, enva);
-        int exit = drainAndWait(p, new LineWriter(stdout), new LineWriter(stderr));
-        if (exit != 0) throw new IOException("process exited with "+exit); //TODO probably should have bespoke exception types
+        final int exit;
+        try {
+            final Process p = Runtime.getRuntime().exec(args, enva);
+            exit = drainAndWait(p, new LineWriter(stdout), new LineWriter(stderr));
+        } catch (IOException | InterruptedException e) {
+            throw new ExecException(args, 0, stderrBuffer, e);
+        }
+        if (exit != 0) {
+            throw new ExecException(args, exit, stderrBuffer);
+        }
         return exit;
+    }
+
+    public static class ExecException extends Exception {
+        private final String[] args;
+        private final List<String> stderrLines;
+        private final int exitCode;
+
+        ExecException(String[] args, final int exitCode, final List<String> stdoutLines, Throwable nested) {
+            super("Failed to execute "+String.join(" ", args), nested);
+            this.args = requireNonNull(args);
+            this.exitCode = exitCode;
+            this.stderrLines = requireNonNull(stdoutLines);
+        }
+
+        ExecException(String[] args, final int exitCode, final List<String> stdoutLines) {
+            super("Failed to execute "+String.join(" ", args));
+            this.args = requireNonNull(args);
+            this.exitCode = exitCode;
+            this.stderrLines = requireNonNull(stdoutLines);
+        }
+
+        public List<String> getStderrLines() {
+            return this.stderrLines;
+        }
+
+        public int getExitCode() {
+            return this.exitCode;
+        }
+
+        public String getCommand() {
+            return String.join(" ", this.args);
+        }
+
+        public void report(UserLogger ulog) {
+            ulog.message(UserMessage.raw("Failed to execute a command.  See log for details."));
+            for(String line : this.stderrLines) {
+                ulog.message(UserMessage.raw(line));
+            }
+        }
     }
 
     private static class LineWriter extends Writer {

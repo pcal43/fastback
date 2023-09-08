@@ -21,6 +21,7 @@ package net.pcal.fastback.repo;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.utils.EnvironmentUtils;
+import net.pcal.fastback.utils.ProcessUtils.ExecException;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
@@ -61,7 +62,7 @@ import static net.pcal.fastback.utils.ProcessUtils.doExec;
  */
 abstract class CommitUtils {
 
-    public static SnapshotId doCommitSnapshot(final RepoImpl repo, final UserLogger ulog) throws IOException {
+    static SnapshotId doCommitSnapshot(final RepoImpl repo, final UserLogger ulog) throws IOException, ExecException {
         PreflightUtils.doPreflight(repo);
         final WorldId uuid = repo.getWorldId();
         final GitConfig conf = repo.getConfig();
@@ -115,25 +116,31 @@ abstract class CommitUtils {
         }
     }
 
-    private static void native_commit(final String newBranchName, final Repo repo, final UserLogger log) throws IOException, InterruptedException {
+    private static void native_commit(final String newBranchName, final Repo repo, final UserLogger ulog) throws IOException, InterruptedException {
         syslog().debug("Start native_commit");
-        log.update(styledLocalized("fastback.hud.local-saving", NATIVE_GIT));
+        ulog.update(styledLocalized("fastback.hud.local-saving", NATIVE_GIT));
         final File worktree = repo.getWorkTree();
         final Map<String, String> env = Map.of("GIT_LFS_FORCE_PROGRESS", "1");
-        final Consumer<String> outputConsumer = line -> log.update(styledRaw(line, NATIVE_GIT));
+        final Consumer<String> outputConsumer = line -> ulog.update(styledRaw(line, NATIVE_GIT));
         String[] checkout = {"git", "-C", worktree.getAbsolutePath(), "checkout", "--orphan", newBranchName};
-        doExec(checkout, env, outputConsumer, outputConsumer);
-        mod().setWorldSaveEnabled(false);
         try {
-            String[] add = {"git", "-C", worktree.getAbsolutePath(), "add", "-v", "."};
-            doExec(add, env, outputConsumer, outputConsumer);
-        } finally {
-            mod().setWorldSaveEnabled(true);
-            syslog().debug("World save re-enabled.");
-        }
-        {
-            String[] commit = {"git", "-C", worktree.getAbsolutePath(), "commit", "-m", newBranchName};
-            doExec(commit, env, outputConsumer, outputConsumer);
+            doExec(checkout, env, outputConsumer, outputConsumer);
+            mod().setWorldSaveEnabled(false);
+            try {
+                String[] add = {"git", "-C", worktree.getAbsolutePath(), "add", "-v", "."};
+                doExec(add, env, outputConsumer, outputConsumer);
+            } finally {
+                mod().setWorldSaveEnabled(true);
+                syslog().debug("World save re-enabled.");
+            }
+            {
+                String[] commit = {"git", "-C", worktree.getAbsolutePath(), "commit", "-m", newBranchName};
+                doExec(commit, env, outputConsumer, outputConsumer);
+            }
+        } catch (ExecException e) {
+            syslog().error(e);
+            e.report(ulog);
+            return;
         }
         syslog().debug("End native_commit");
     }

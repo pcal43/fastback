@@ -24,6 +24,7 @@ import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.repo.SnapshotIdUtils.SnapshotIdCodec;
 import net.pcal.fastback.repo.WorldIdUtils.WorldIdInfo;
 import net.pcal.fastback.utils.EnvironmentUtils;
+import net.pcal.fastback.utils.ProcessUtils.ExecException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
@@ -97,6 +98,12 @@ class RepoImpl implements Repo {
         try {
             newSid = CommitUtils.doCommitSnapshot(this, ulog);
         } catch(IOException ioe) {
+            syslog().error(ioe);
+            ulog.message(styledLocalized("fastback.chat.commit-failed", ERROR));
+            return;
+        } catch (ExecException e) {
+            syslog().error(e);
+            e.report(ulog);
             ulog.message(styledLocalized("fastback.chat.commit-failed", ERROR));
             return;
         }
@@ -105,6 +112,11 @@ class RepoImpl implements Repo {
         } catch(IOException ioe) {
             ulog.message(styledLocalized("fastback.chat.push-failed", ERROR));
             syslog().error(ioe);
+            return;
+        } catch(ExecException e) {
+            syslog().error(e);
+            e.report(ulog);
+            ulog.message(styledLocalized("fastback.chat.push-failed", ERROR));
             return;
         }
         ulog.message(localized("fastback.chat.backup-complete-elapsed", getDuration(start)));
@@ -123,12 +135,17 @@ class RepoImpl implements Repo {
             ulog.message(styledLocalized("fastback.chat.commit-failed", ERROR));
             syslog().error(ioe);
             return;
+        } catch (ExecException e) {
+            e.report(ulog);
+            ulog.message(styledLocalized("fastback.chat.commit-failed", ERROR));
+            syslog().error(e);
+            return;
         }
         ulog.message(localized("fastback.chat.backup-complete-elapsed", getDuration(start)));
     }
 
     @Override
-    public void doPushSnapshot(SnapshotId sid, final UserLogger ulog) throws IOException, ParseException {
+    public void doPushSnapshot(SnapshotId sid, final UserLogger ulog) {
         if (!this.getConfig().isSet(REMOTE_PUSH_URL)) {
             ulog.message(styledLocalized("No remote is configured.  Run set-remote <url>", ERROR)); //FIXME i18n
             return;
@@ -140,6 +157,11 @@ class RepoImpl implements Repo {
         } catch(IOException ioe) {
             ulog.message(styledLocalized("fastback.chat.commit-failed", ERROR));
             syslog().error(ioe);
+            return;
+        } catch(ExecException e) {
+            syslog().error(e);
+            e.report(ulog);
+            ulog.message(styledLocalized("fastback.chat.push-failed", ERROR));
             return;
         }
         ulog.message(UserMessage.localized("Successfully pushed " + sid.getShortName() + ".  Time elapsed: "+getDuration(start))); // FIXME i18n
@@ -157,9 +179,18 @@ class RepoImpl implements Repo {
     }
 
     @Override
-    public void doGc(final UserLogger ulog) throws IOException {
+    public void doGc(final UserLogger ulog)  {
         if (!doNativeCheck(ulog)) return;
-        ReclamationUtils.doReclamation(this, ulog);
+        try {
+            ReclamationUtils.doReclamation(this, ulog);
+        } catch (GitAPIException e) {
+            ulog.message(styledLocalized("Command failed.  Check log for details.", ERROR)); // FIXME i18n
+            syslog().error(e);
+        } catch (ExecException e) {
+            syslog().error(e);
+            e.report(ulog);
+            ulog.message(styledLocalized("Command failed.  Check log for details.", ERROR)); // FIXME i18n
+        }
     }
 
     @Override
