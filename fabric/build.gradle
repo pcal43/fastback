@@ -40,7 +40,7 @@ dependencies {
     include runtimeOnly("com.googlecode.javaewah:JavaEWAH:${project.JavaEWAH_version}")  { transitive = false }
 
     // so jgit can do modern ssh
-    implementation("org.apache.sshd:sshd-core:${project.apache_sshd_version}") { transitive = false }
+    include implementation("org.apache.sshd:sshd-core:${project.apache_sshd_version}") { transitive = false }
     runtimeOnly("org.apache.sshd:sshd-common:${project.apache_sshd_version}") { transitive = false }
 
 
