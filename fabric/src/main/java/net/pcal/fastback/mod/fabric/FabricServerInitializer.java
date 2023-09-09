@@ -56,6 +56,5 @@ public class FabricServerInitializer implements DedicatedServerModInitializer {
                     }
                 }
         );
-        lifecycle.onInitialize();
     }
 }

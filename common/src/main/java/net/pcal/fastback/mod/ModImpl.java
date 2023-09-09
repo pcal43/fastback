@@ -24,6 +24,7 @@ import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.RepoFactory;
+import org.eclipse.jgit.transport.SshSessionFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -160,6 +161,11 @@ class ModImpl implements LifecycleListener, Mod {
             } else {
                 syslog().info("git-lfs is installed: " + gitLfsVersion);
             }
+        }
+        if (SshSessionFactory.getInstance() == null) {
+            syslog().warn("An ssh provider was not initialized for jgit.  Operations on a remote repo over ssh will fail.");
+        } else {
+            syslog().info("SshSessionFactory: " + SshSessionFactory.getInstance().toString());
         }
         syslog().debug("onInitialize complete");
     }

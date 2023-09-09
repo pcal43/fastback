@@ -39,10 +39,18 @@ dependencies {
     //   https://download.eclipse.org/jgit/site/6.4.0.202211300538-r/dependencies.html
     include runtimeOnly("com.googlecode.javaewah:JavaEWAH:${project.JavaEWAH_version}")  { transitive = false }
 
-    // so jgit can do modern ssh
-    implementation("org.apache.sshd:sshd-core:${project.apache_sshd_version}") { transitive = false }
-    runtimeOnly("org.apache.sshd:sshd-common:${project.apache_sshd_version}") { transitive = false }
+    //
+    // So jgit can do modern ssh:
+    //
 
+    // https://mvnrepository.com/artifact/org.eclipse.jgit/org.eclipse.jgit.ssh.apache
+    include runtimeOnly("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${project.jgit_version}") { transitive = false }
+
+    // https://mvnrepository.com/artifact/org.apache.sshd/sshd-core
+    include runtimeOnly("org.apache.sshd:sshd-core:${project.apache_sshd_version}") { transitive = false }
+
+    // https://mvnrepository.com/artifact/org.apache.sshd/sshd-common
+    include runtimeOnly("org.apache.sshd:sshd-common:${project.apache_sshd_version}") { transitive = false }
 
 
     // this enables ed25519 support in apache_sshd
