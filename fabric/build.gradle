@@ -98,7 +98,7 @@ processResources {
 modrinth {
     token = System.getenv("MODRINTH_TOKEN") ?: 'MODRINTH_TOKEN_NOT_SET'
     projectId = "fastback"
-    versionNumber = "${project.mod_version}"
+    versionNumber = "${project.version}"
     versionType = "release"
     uploadFile = remapJar
     changelog = "<p><a href='https://github.com/pcal43/fastback/releases/tag/${project.mod_version}'>https://github.com/pcal43/fastback/releases/tag/${project.mod_version}</a></p>"
@@ -119,7 +119,7 @@ curseforge {
         releaseType = "release"
         changelog = "https://github.com/pcal43/fastback/releases/tag/${project.mod_version}"
         changelogType = "markdown"
-        mod_version = project.mod_version
+        mod_version = "${project.version}"
         addGameVersion ((String) project.minecraft_version)
         addGameVersion "Fabric"
         mainArtifact(remapJar)
