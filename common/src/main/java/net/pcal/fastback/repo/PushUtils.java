@@ -21,7 +21,7 @@ package net.pcal.fastback.repo;
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
-import net.pcal.fastback.utils.ProcessUtils.ExecException;
+import net.pcal.fastback.utils.ProcessException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
@@ -73,7 +73,7 @@ abstract class PushUtils {
     }
 
     // TODO stop throwing IOE
-    static void doPush(SnapshotId sid, RepoImpl repo, UserLogger ulog) throws IOException, ExecException {
+    static void doPush(SnapshotId sid, RepoImpl repo, UserLogger ulog) throws IOException, ProcessException {
         try {
             final GitConfig conf = repo.getConfig();
             final String pushUrl = conf.getString(REMOTE_PUSH_URL);
@@ -118,7 +118,7 @@ abstract class PushUtils {
         }
     }
 
-    private static void native_doPush(final Repo repo, final String branchNameToPush, final UserLogger log) throws ExecException {
+    private static void native_doPush(final Repo repo, final String branchNameToPush, final UserLogger log) throws ProcessException {
         syslog().debug("Start native_push");
         log.update(styledLocalized("fastback.chat.push-started", NATIVE_GIT));
         final File worktree = repo.getWorkTree();

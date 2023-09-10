@@ -18,6 +18,8 @@
 
 package net.pcal.fastback.logging;
 
+import net.pcal.fastback.utils.ProcessException;
+
 import static java.util.Objects.requireNonNull;
 
 public class Log4jLogger implements SystemLogger {
@@ -41,6 +43,9 @@ public class Log4jLogger implements SystemLogger {
 
     @Override
     public void error(String message, Throwable t) {
+        // In the case of process execution failure, ensure we always dump the output along with the stacktrace so
+        // we have a prayer of understanding what actually went wrong
+        if (t instanceof ProcessException pe) pe.writeProcessOutput(this::error);
         this.log4j.error(message, t);
     }
 
@@ -66,6 +71,9 @@ public class Log4jLogger implements SystemLogger {
     @Override
     public void debug(String message, Throwable t) {
         if (this.forceDebugEnabled) {
+            // In the case of process execution failure, ensure we always dump the output along with the stacktrace so
+            // we have a prayer of understanding what actually went wrong
+            if (t instanceof ProcessException pe) pe.writeProcessOutput(line-> this.log4j.info("[DEBUG] " + message));
             this.log4j.info("[DEBUG] " + message, t);
         } else {
             this.log4j.debug(message, t);

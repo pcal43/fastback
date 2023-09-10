@@ -18,9 +18,6 @@
 
 package net.pcal.fastback.utils;
 
-import net.pcal.fastback.logging.UserLogger;
-import net.pcal.fastback.logging.UserMessage;
-
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -41,11 +38,11 @@ import static net.pcal.fastback.logging.SystemLogger.syslog;
  */
 public class ProcessUtils {
 
-    public static int doExec(String[] args, final Map<String, String> envOriginal, Consumer<String> stdoutSink, Consumer<String> stderrSink) throws ExecException {
+    public static int doExec(String[] args, final Map<String, String> envOriginal, Consumer<String> stdoutSink, Consumer<String> stderrSink) throws ProcessException {
         return doExec(args, envOriginal, stdoutSink, stderrSink, true);
     }
 
-    public static int doExec(final String[] args, final Map<String, String> envOriginal, final Consumer<String> stdoutSink, final Consumer<String> stderrSink, boolean throwOnNonZero) throws ExecException {
+    public static int doExec(final String[] args, final Map<String, String> envOriginal, final Consumer<String> stdoutSink, final Consumer<String> stderrSink, boolean throwOnNonZero) throws ProcessException {
         syslog().debug("Executing " + String.join(" ", args));
         final Map<String, String> env = new HashMap<>(envOriginal);
         env.putAll(System.getenv());
@@ -75,62 +72,12 @@ public class ProcessUtils {
             final Process p = Runtime.getRuntime().exec(args, enva);
             exit = drainAndWait(p, new LineWriter(stdout), new LineWriter(stderr));
         } catch (IOException | InterruptedException e) {
-            throw new ExecException(args, 0, errorBuffer, e);
+            throw new ProcessException(args, 0, errorBuffer, e);
         }
         if (exit != 0) {
-            throw new ExecException(args, exit, errorBuffer);
+            throw new ProcessException(args, exit, errorBuffer);
         }
         return exit;
-    }
-
-    public static class ExecException extends Exception {
-        private final String[] args;
-        private final List<String> processOutput;
-        private final int exitCode;
-
-        ExecException(String[] args, final int exitCode, final List<String> processOutput, Throwable nested) {
-            super("Failed to execute: "+String.join(" ", args), nested);
-            this.args = requireNonNull(args);
-            this.exitCode = exitCode;
-            this.processOutput = requireNonNull(processOutput);
-        }
-
-        ExecException(String[] args, final int exitCode, final List<String> stdoutLines) {
-            super("Failed to execute: "+String.join(" ", args));
-            this.args = requireNonNull(args);
-            this.exitCode = exitCode;
-            this.processOutput = requireNonNull(stdoutLines);
-        }
-
-        @Override
-        public String getMessage() {
-            final StringBuilder out = new StringBuilder();
-            out.append(super.getMessage());
-            for(String line : processOutput) {
-                out.append(line);
-                out.append('\n');
-            }
-            return out.toString();
-        }
-
-        public List<String> getProcessOutput() {
-            return this.processOutput;
-        }
-
-        public int getExitCode() {
-            return this.exitCode;
-        }
-
-        public String getCommand() {
-            return String.join(" ", this.args);
-        }
-
-        public void report(UserLogger ulog) {
-            ulog.message(UserMessage.raw("Failed to execute a command.  See log for details."));
-            for(String line : this.processOutput) {
-                ulog.message(UserMessage.raw(line));
-            }
-        }
     }
 
     private static class LineWriter extends Writer {

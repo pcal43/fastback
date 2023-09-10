@@ -23,7 +23,7 @@ import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage.UserMessageStyle;
 import net.pcal.fastback.utils.FileUtils;
 import net.pcal.fastback.utils.ProcessUtils;
-import net.pcal.fastback.utils.ProcessUtils.ExecException;
+import net.pcal.fastback.utils.ProcessException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ProgressMonitor;
@@ -93,7 +93,7 @@ abstract class RestoreUtils {
         }
     }
 
-    private static void native_restoreSnapshot(final String branchName, final Path restoreTargetDir, final String repoUri, final UserLogger ulog) throws ExecException {
+    private static void native_restoreSnapshot(final String branchName, final Path restoreTargetDir, final String repoUri, final UserLogger ulog) throws ProcessException {
         final Map<String, String> env = Map.of("GIT_LFS_FORCE_PROGRESS", "1");
         final Consumer<String> outputConsumer = line -> ulog.update(styledRaw(line, NATIVE_GIT));
         final String restoreTargetDirStr = restoreTargetDir.toString();
