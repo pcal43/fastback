@@ -58,6 +58,7 @@ import static net.pcal.fastback.utils.EnvironmentUtils.getGitVersion;
 import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
 import static org.apache.commons.io.FileUtils.sizeOfDirectory;
 
+// TODO move this to Repo.doInfo
 enum InfoCommand implements Command {
 
     INSTANCE;

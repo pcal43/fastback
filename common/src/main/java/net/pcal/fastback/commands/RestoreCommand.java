@@ -23,17 +23,12 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
 import net.pcal.fastback.logging.UserLogger;
-import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.repo.SnapshotId;
-
-import java.nio.file.Path;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
-import static net.pcal.fastback.mod.Mod.mod;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.NONE;
 
 enum RestoreCommand implements Command {
@@ -59,10 +54,7 @@ enum RestoreCommand implements Command {
         try(final UserLogger ulog = UserLogger.ulog(cc)) {
             gitOp(NONE, ulog, repo -> {
                 final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);
-                final SnapshotId sid = repo.createSnapshotId(snapshotName);
-                final String uri = "file://" + mod().getWorldDirectory().toAbsolutePath();
-                final Path restoreDir = repo.doRestoreSnapshot(uri, repo.getRestoresDir(), mod().getWorldName(), sid, ulog);
-                ulog.message(UserMessage.localized("fastback.chat.restore-done", restoreDir));
+                repo.doRestoreLocalSnapshot(snapshotName, ulog);
             });
         }
         return SUCCESS;

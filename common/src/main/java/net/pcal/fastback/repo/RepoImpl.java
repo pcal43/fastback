@@ -34,7 +34,6 @@ import org.eclipse.jgit.util.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.ParseException;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
@@ -48,7 +47,6 @@ import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_MESSAGE;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_LOCK_CLEANUP_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.REMOTE_NAME;
-import static net.pcal.fastback.config.FastbackConfigKey.RESTORE_DIRECTORY;
 import static net.pcal.fastback.config.OtherConfigKey.REMOTE_PUSH_URL;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.BROADCAST;
@@ -194,10 +192,14 @@ class RepoImpl implements Repo {
     }
 
     @Override
-    public Path doRestoreSnapshot(String uri, Path restoresDir, String worldName, SnapshotId sid, UserLogger ulog) throws IOException {
-        return RestoreUtils.restoreSnapshot(uri, restoresDir, worldName, sid, ulog);
+    public void doRestoreLocalSnapshot(String snapshotName, UserLogger ulog) {
+        RestoreUtils.doRestoreLocalSnapshot(snapshotName, this, ulog);
     }
 
+    @Override
+    public void doRestoreRemoteSnapshot(String snapshotName, UserLogger ulog) {
+        RestoreUtils.doRestoreRemoteSnapshot(snapshotName, this, ulog);
+    }
 
     // ======================================================================
     // Other repo implementation
@@ -272,15 +274,6 @@ class RepoImpl implements Repo {
     @Override
     public void close() {
         this.getJGit().close();
-    }
-
-    @Override
-    public Path getRestoresDir() throws IOException {
-        if (getConfig().getString(RESTORE_DIRECTORY) != null) {
-            return Paths.get(getConfig().getString(RESTORE_DIRECTORY));
-        } else {
-            return mod().getDefaultRestoresDir();
-        }
     }
 
     @Override

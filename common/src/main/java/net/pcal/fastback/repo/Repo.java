@@ -20,13 +20,11 @@ package net.pcal.fastback.repo;
 
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
-import net.pcal.fastback.utils.ProcessUtils.ExecException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.text.ParseException;
 import java.util.Collection;
 import java.util.List;
@@ -40,21 +38,22 @@ import java.util.Set;
  */
 public interface Repo extends AutoCloseable {
 
-    GitConfig getConfig();
-
-    /**
-     * @return the UUID of the world.
-     * @throws java.io.FileNotFoundException if the world.id file is missing for some reason.
-     */
-    WorldId getWorldId() throws IOException;
-
-    File getDirectory() throws NoWorkTreeException;
-
-    File getWorkTree() throws NoWorkTreeException;
 
     Set<SnapshotId> getLocalSnapshots() throws IOException;
 
     Set<SnapshotId> getRemoteSnapshots() throws IOException;
+
+    // ======================================================================
+    // 'do' methods.
+    //
+    // By convention, methods prefixed with 'do' provide the 'guts' of a flow
+    // initiated by a cli command or scheduled action.  They're expected to handle
+    // everything: errors, user feedback.  A method prefixed with 'do' must return
+    // void and must not throw checked exceptions.
+    //
+    // q: should they also be responsible for thread management?  probably yes
+    // Obviously there are still some TODOs here to align with this convention.
+    //
 
     void doCommitAndPush(UserLogger ulog) throws IOException;
 
@@ -64,17 +63,36 @@ public interface Repo extends AutoCloseable {
 
     Collection<SnapshotId> doRemotePrune(UserLogger ulog) throws IOException;
 
+    void doRestoreLocalSnapshot(String snapshotName, UserLogger ulog);
+
+    void doRestoreRemoteSnapshot(String snapshotName, UserLogger ulog);
+
     void doGc(UserLogger ulog);
 
     void doPushSnapshot(SnapshotId sid, UserLogger ulog);
-
-    Path doRestoreSnapshot(String uri, Path restoresDir, String worldName, SnapshotId sid, UserLogger ulog) throws IOException;
 
     void deleteRemoteBranch(String remoteBranchName) throws IOException;
 
     void deleteLocalBranches(List<String> branchesToDelete) throws GitAPIException, IOException;
 
-    Path getRestoresDir() throws IOException;
 
+    // ======================================================================
+    // Any callers of these methods are doing too much; they need to be given a
+    // 'do' method instead
+
+    @Deprecated
     SnapshotId createSnapshotId(String date) throws IOException, ParseException;
+
+    @Deprecated
+    GitConfig getConfig();
+
+    @Deprecated
+    WorldId getWorldId() throws IOException;
+
+    @Deprecated
+    File getDirectory() throws NoWorkTreeException;
+
+    @Deprecated
+    File getWorkTree() throws NoWorkTreeException;
+
 }
