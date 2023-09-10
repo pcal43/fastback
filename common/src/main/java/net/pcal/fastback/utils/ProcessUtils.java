@@ -54,15 +54,16 @@ public class ProcessUtils {
         syslog().debug("PATH: " + env.get("PATH"));
         syslog().debug("USER: " + env.get("USER"));
         syslog().debug("HOME: " + env.get("HOME"));
-        final List<String> stderrBuffer = new ArrayList<>();
+        final List<String> errorBuffer = new ArrayList<>();
         final Consumer<String> stdout = line->{
             syslog().debug("[STDOUT] " + line);
             stdoutSink.accept(line);
+            errorBuffer.add("[STDOUT] " + line);
         };
         final Consumer<String> stderr = line->{
             syslog().debug("[STDERR] " + line);
             stderrSink.accept(line);
-            stderrBuffer.add(line);
+            errorBuffer.add("[STDERR] " + line);
         };
         final List<String> envlist = new ArrayList<>();
         for (Map.Entry<String, String> entry : env.entrySet()) {
@@ -74,35 +75,46 @@ public class ProcessUtils {
             final Process p = Runtime.getRuntime().exec(args, enva);
             exit = drainAndWait(p, new LineWriter(stdout), new LineWriter(stderr));
         } catch (IOException | InterruptedException e) {
-            throw new ExecException(args, 0, stderrBuffer, e);
+            throw new ExecException(args, 0, errorBuffer, e);
         }
         if (exit != 0) {
-            throw new ExecException(args, exit, stderrBuffer);
+            throw new ExecException(args, exit, errorBuffer);
         }
         return exit;
     }
 
     public static class ExecException extends Exception {
         private final String[] args;
-        private final List<String> stderrLines;
+        private final List<String> processOutput;
         private final int exitCode;
 
-        ExecException(String[] args, final int exitCode, final List<String> stdoutLines, Throwable nested) {
-            super("Failed to execute "+String.join(" ", args), nested);
+        ExecException(String[] args, final int exitCode, final List<String> processOutput, Throwable nested) {
+            super("Failed to execute: "+String.join(" ", args), nested);
             this.args = requireNonNull(args);
             this.exitCode = exitCode;
-            this.stderrLines = requireNonNull(stdoutLines);
+            this.processOutput = requireNonNull(processOutput);
         }
 
         ExecException(String[] args, final int exitCode, final List<String> stdoutLines) {
-            super("Failed to execute "+String.join(" ", args));
+            super("Failed to execute: "+String.join(" ", args));
             this.args = requireNonNull(args);
             this.exitCode = exitCode;
-            this.stderrLines = requireNonNull(stdoutLines);
+            this.processOutput = requireNonNull(stdoutLines);
         }
 
-        public List<String> getStderrLines() {
-            return this.stderrLines;
+        @Override
+        public String getMessage() {
+            final StringBuilder out = new StringBuilder();
+            out.append(super.getMessage());
+            for(String line : processOutput) {
+                out.append(line);
+                out.append('\n');
+            }
+            return out.toString();
+        }
+
+        public List<String> getProcessOutput() {
+            return this.processOutput;
         }
 
         public int getExitCode() {
@@ -115,7 +127,7 @@ public class ProcessUtils {
 
         public void report(UserLogger ulog) {
             ulog.message(UserMessage.raw("Failed to execute a command.  See log for details."));
-            for(String line : this.stderrLines) {
+            for(String line : this.processOutput) {
                 ulog.message(UserMessage.raw(line));
             }
         }
