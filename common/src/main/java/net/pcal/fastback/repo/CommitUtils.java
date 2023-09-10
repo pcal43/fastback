@@ -21,7 +21,7 @@ package net.pcal.fastback.repo;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.utils.EnvironmentUtils;
-import net.pcal.fastback.utils.ProcessUtils.ExecException;
+import net.pcal.fastback.utils.ProcessException;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
@@ -45,6 +45,7 @@ import java.util.function.Consumer;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_MODS_BACKUP_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.JGIT;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;
 import static net.pcal.fastback.logging.UserMessage.localized;
@@ -62,7 +63,7 @@ import static net.pcal.fastback.utils.ProcessUtils.doExec;
  */
 abstract class CommitUtils {
 
-    static SnapshotId doCommitSnapshot(final RepoImpl repo, final UserLogger ulog) throws IOException, ExecException {
+    static SnapshotId doCommitSnapshot(final RepoImpl repo, final UserLogger ulog) throws IOException, ProcessException {
         PreflightUtils.doPreflight(repo);
         final WorldId uuid = repo.getWorldId();
         final GitConfig conf = repo.getConfig();
@@ -137,9 +138,9 @@ abstract class CommitUtils {
                 String[] commit = {"git", "-C", worktree.getAbsolutePath(), "commit", "-m", newBranchName};
                 doExec(commit, env, outputConsumer, outputConsumer);
             }
-        } catch (ExecException e) {
+        } catch (ProcessException e) {
             syslog().error(e);
-            e.report(ulog);
+            ulog.message(styledRaw("fastback.chat.commit-failed", ERROR));
             return;
         }
         syslog().debug("End native_commit");

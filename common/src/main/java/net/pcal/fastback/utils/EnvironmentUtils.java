@@ -18,8 +18,6 @@
 
 package net.pcal.fastback.utils;
 
-import net.pcal.fastback.utils.ProcessUtils.ExecException;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -47,7 +45,7 @@ public class EnvironmentUtils {
         try {
             exit = doExec(cmd, Collections.emptyMap(), stdout::add, line -> {
             });
-        } catch (ExecException e) {
+        } catch (ProcessException e) {
             syslog().debug("Could not run " + String.join(" ", cmd), e);
             return null;
         }

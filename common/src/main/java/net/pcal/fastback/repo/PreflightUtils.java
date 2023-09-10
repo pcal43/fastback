@@ -21,7 +21,7 @@ package net.pcal.fastback.repo;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.SystemLogger;
 import net.pcal.fastback.utils.EnvironmentUtils;
-import net.pcal.fastback.utils.ProcessUtils.ExecException;
+import net.pcal.fastback.utils.ProcessException;
 import org.eclipse.jgit.api.Git;
 
 import java.io.IOException;
@@ -50,7 +50,7 @@ abstract class PreflightUtils {
      * Should be called prior to any heavy-lifting with git (e.g. commiting and pushing).  Ensures that
      * key files are all set correctly.
      */
-    static void doPreflight(RepoImpl repo) throws IOException, ExecException {
+    static void doPreflight(RepoImpl repo) throws IOException, ProcessException {
         final SystemLogger syslog = syslog();
         syslog.debug("Doing world maintenance");
         final Git jgit = repo.getJGit();
@@ -78,7 +78,7 @@ abstract class PreflightUtils {
     /**
      * Ensures that git-lfs is installed or uninstalled in the worktree as appropriate.
      */
-    private static void updateNativeLfsInstallation(final Repo repo) throws ExecException {
+    private static void updateNativeLfsInstallation(final Repo repo) throws ProcessException {
         if (EnvironmentUtils.isNativeGitInstalled()) {
             final boolean isNativeEnabled = repo.getConfig().getBoolean(IS_NATIVE_GIT_ENABLED);
             final String action = isNativeEnabled ? "install" : "uninstall";
