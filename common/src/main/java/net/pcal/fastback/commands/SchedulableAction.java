@@ -71,7 +71,7 @@ public enum SchedulableAction {
                 repo.doCommitAndPush(ulog);
                 final Collection<SnapshotId> pruned = repo.doLocalPrune(ulog);
                 if (pruned.size() > 0) {
-                    repo.doGc(ulog);
+                    repo.doCleanup(ulog);
                 }
                 return null;
             };

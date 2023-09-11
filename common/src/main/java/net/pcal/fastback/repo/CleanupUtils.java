@@ -60,9 +60,9 @@ import static org.eclipse.jgit.api.ListBranchCommand.ListMode.ALL;
  * @author pcal
  * @since 0.13.0
  */
-abstract class ReclamationUtils {
+abstract class CleanupUtils {
 
-    static void doReclamation(RepoImpl repo, UserLogger ulog) throws GitAPIException, ProcessException {
+    static void doCleanup(RepoImpl repo, UserLogger ulog) throws GitAPIException, ProcessException {
         if (repo.getConfig().getBoolean(IS_NATIVE_GIT_ENABLED)) {
             native_doLfsPrune(repo, ulog);
         } else {

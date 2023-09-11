@@ -173,10 +173,10 @@ class RepoImpl implements Repo {
     }
 
     @Override
-    public void doGc(final UserLogger ulog)  {
+    public void doCleanup(final UserLogger ulog)  {
         if (!doNativeCheck(ulog)) return;
         try {
-            ReclamationUtils.doReclamation(this, ulog);
+            CleanupUtils.doCleanup(this, ulog);
         } catch (GitAPIException e) {
             ulog.message(styledLocalized("Command failed.  Check log for details.", ERROR)); // FIXME i18n
             syslog().error(e);

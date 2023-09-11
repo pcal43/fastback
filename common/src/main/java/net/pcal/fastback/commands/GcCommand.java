@@ -55,7 +55,7 @@ enum GcCommand implements Command {
     private static int gc(CommandContext<ServerCommandSource> cc) {
         final UserLogger ulog = ulog(cc);
         gitOp(WRITE, ulog, repo -> {
-            repo.doGc(ulog);
+            repo.doCleanup(ulog);
             //log.chat(localized("fastback.chat.gc-done", byteCountToDisplaySize(gc.getBytesReclaimed())));
         });
         return SUCCESS;

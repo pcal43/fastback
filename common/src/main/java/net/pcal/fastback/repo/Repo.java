@@ -67,7 +67,7 @@ public interface Repo extends AutoCloseable {
 
     void doRestoreRemoteSnapshot(String snapshotName, UserLogger ulog);
 
-    void doGc(UserLogger ulog);
+    void doCleanup(UserLogger ulog);
 
     void doPushSnapshot(SnapshotId sid, UserLogger ulog);
 
