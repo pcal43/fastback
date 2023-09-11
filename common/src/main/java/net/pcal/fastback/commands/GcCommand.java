@@ -56,7 +56,6 @@ enum GcCommand implements Command {
         final UserLogger ulog = ulog(cc);
         gitOp(WRITE, ulog, repo -> {
             repo.doCleanup(ulog);
-            //log.chat(localized("fastback.chat.gc-done", byteCountToDisplaySize(gc.getBytesReclaimed())));
         });
         return SUCCESS;
     }

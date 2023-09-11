@@ -175,15 +175,7 @@ class RepoImpl implements Repo {
     @Override
     public void doCleanup(final UserLogger ulog)  {
         if (!doNativeCheck(ulog)) return;
-        try {
-            CleanupUtils.doCleanup(this, ulog);
-        } catch (GitAPIException e) {
-            ulog.message(styledLocalized("Command failed.  Check log for details.", ERROR)); // FIXME i18n
-            syslog().error(e);
-        } catch (ProcessException e) {
-            syslog().error(e);
-            ulog.message(styledLocalized("Command failed.  Check log for details.", ERROR)); // FIXME i18n
-        }
+        CleanupUtils.doCleanup(this, ulog);
     }
 
     @Override
@@ -247,7 +239,7 @@ class RepoImpl implements Repo {
     }
 
     @Override
-    public File getDirectory() throws NoWorkTreeException {
+    public File getDotGitDirectory() throws NoWorkTreeException {
         return this.jgit.getRepository().getDirectory();
     }
 

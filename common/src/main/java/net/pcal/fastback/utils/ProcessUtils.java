@@ -34,15 +34,28 @@ import static net.pcal.fastback.logging.SystemLogger.syslog;
 
 
 /**
+ * Utilities for executing external processes (meaning git and git-lfs).
  *
+ * @author pcal
+ * @since 0.15.0
  */
 public class ProcessUtils {
+
+    // ======================================================================
+    // Public
 
     public static int doExec(String[] args, final Map<String, String> envOriginal, Consumer<String> stdoutSink, Consumer<String> stderrSink) throws ProcessException {
         return doExec(args, envOriginal, stdoutSink, stderrSink, true);
     }
 
-    public static int doExec(final String[] args, final Map<String, String> envOriginal, final Consumer<String> stdoutSink, final Consumer<String> stderrSink, boolean throwOnNonZero) throws ProcessException {
+    public static int doExecNoThrow(String[] args, final Map<String, String> envOriginal, Consumer<String> stdoutSink, Consumer<String> stderrSink) throws ProcessException {
+        return doExec(args, envOriginal, stdoutSink, stderrSink, false);
+    }
+
+    // ======================================================================
+    // Private
+
+    private static int doExec(final String[] args, final Map<String, String> envOriginal, final Consumer<String> stdoutSink, final Consumer<String> stderrSink, boolean throwOnNonZero) throws ProcessException {
         syslog().debug("Executing " + String.join(" ", args));
         final Map<String, String> env = new HashMap<>(envOriginal);
         env.putAll(System.getenv());
@@ -74,7 +87,7 @@ public class ProcessUtils {
         } catch (IOException | InterruptedException e) {
             throw new ProcessException(args, 0, errorBuffer, e);
         }
-        if (exit != 0) {
+        if (throwOnNonZero && exit != 0) {
             throw new ProcessException(args, exit, errorBuffer);
         }
         return exit;

@@ -34,15 +34,16 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static java.util.Collections.*;
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_BRANCH_CLEANUP_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_REFLOG_DELETION_ENABLED;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.JGIT;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;
 import static net.pcal.fastback.logging.UserMessage.raw;
@@ -50,6 +51,7 @@ import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 import static net.pcal.fastback.logging.UserMessage.styledRaw;
 import static net.pcal.fastback.repo.PushUtils.isTempBranch;
 import static net.pcal.fastback.utils.ProcessUtils.doExec;
+import static net.pcal.fastback.utils.ProcessUtils.doExecNoThrow;
 import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
 import static org.apache.commons.io.FileUtils.sizeOfDirectory;
 import static org.eclipse.jgit.api.ListBranchCommand.ListMode.ALL;
@@ -62,31 +64,58 @@ import static org.eclipse.jgit.api.ListBranchCommand.ListMode.ALL;
  */
 abstract class CleanupUtils {
 
-    static void doCleanup(RepoImpl repo, UserLogger ulog) throws GitAPIException, ProcessException {
-        if (repo.getConfig().getBoolean(IS_NATIVE_GIT_ENABLED)) {
-            native_doLfsPrune(repo, ulog);
-        } else {
-            try {
-                jgit_doGc(repo, ulog);
-            } catch (ParseException | IOException e) {
-                throw new RuntimeException(e);
+    // ======================================================================
+    // Package private
+
+    /**
+     * Attempt to reclaim disk space and generally tidy up the repo.
+     */
+    static void doCleanup(RepoImpl repo, UserLogger ulog) {
+        try {
+            final long sizeBefore = sizeOfDirectory(repo.getDotGitDirectory());
+            if (repo.getConfig().getBoolean(IS_NATIVE_GIT_ENABLED)) {
+                native_doLfsPrune(repo, ulog);
+            } else {
+                jgit_doCleanup(repo, ulog);
             }
+            final long sizeAfter = sizeOfDirectory(repo.getDotGitDirectory());
+            ulog.message(raw("Cleanup complete. "+ byteCountToDisplaySize(sizeBefore-sizeAfter) + " reclaimed."));
+        } catch (Exception e) {
+            syslog().error(e);
+            ulog.message(styledRaw("Cleanup failed.  See log for details.", ERROR)); // FIXME i18n
         }
     }
 
-    private static void native_doLfsPrune(RepoImpl repo, UserLogger ulog) throws ProcessException {
+    static void native_doDedup(RepoImpl repo, UserLogger ulog) throws ProcessException {
+        syslog().debug("native_doLfsDedup");
         final File worktree = repo.getWorkTree();
-        final String[] push = {"git", "-C", worktree.getAbsolutePath(), "-c", "lfs.pruneoffsetdays=999999", "lfs", "prune", "--verbose", "--no-verify-remote",};
         final Consumer<String> outputConsumer = line->ulog.update(styledRaw(line, NATIVE_GIT));
-        doExec(push, Collections.emptyMap(), outputConsumer, outputConsumer);
+        // Run 'lfs dedup' to try to deduplicate on systems that support copy-on-write (Macs and some Linux machines).
+        // This currently is always going to fail because it requires a clean working tree
+        doExecNoThrow(new String[] {"git", "-C", worktree.getAbsolutePath(), "lfs", "dedup" },
+                emptyMap(), outputConsumer, outputConsumer);
+    }
+
+    // ======================================================================
+    // Private
+
+    private static void native_doLfsPrune(RepoImpl repo, UserLogger ulog) throws ProcessException {
         syslog().debug("native_doLfsPrune");
+        final File worktree = repo.getWorkTree();
+        final Consumer<String> outputConsumer = line->ulog.update(styledRaw(line, NATIVE_GIT));
+        // Prune unreferenced lfs blobs.  Note we don't want it to prune *any* referenced files, not matter how old;
+        // lfs assumes in the normal use case it could always re-download them from the upstream, but that's not
+        // a safe assumption for our use case.  Hence the ridiculous number off pruneoffsetdays.
+        doExec(new String[]
+                        {"git", "-C", worktree.getAbsolutePath(), "-c", "lfs.pruneoffsetdays=999999", "lfs", "prune", "--verbose", "--no-verify-remote",},
+                emptyMap(), outputConsumer, outputConsumer);
     }
 
     /**
      * Runs git garbage collection.  Aggressively deletes reflogs, tracking branches and stray temporary branches
      * in an attempt to free up objects and reclaim disk space.
      */
-    private static void jgit_doGc(RepoImpl repo, UserLogger ulog) throws GitAPIException, ParseException, IOException {
+    private static void jgit_doCleanup(RepoImpl repo, UserLogger ulog) throws GitAPIException, ParseException, IOException {
         final File gitDir = repo.getJGit().getRepository().getDirectory();
         final GitConfig config = repo.getConfig();
         ulog.update(styledLocalized("fastback.hud.gc-percent", JGIT, 0));
@@ -130,7 +159,7 @@ abstract class CleanupUtils {
         final PackConfig pc = new PackConfig();
         pc.setDeltaCompress(false);
         gc.setPackConfig(pc);
-        final ProgressMonitor pm = new JGitIncrementalProgressMonitor(new GcProgressMonitor(ulog), 100);
+        final ProgressMonitor pm = new JGitIncrementalProgressMonitor(new JgitGcProgressMonitor(ulog), 100);
         gc.setProgressMonitor(pm);
         syslog().debug("Starting garbage collection");
         gc.gc(); // TODO progress monitor
@@ -141,11 +170,11 @@ abstract class CleanupUtils {
         syslog().info("Backup size after gc: " + byteCountToDisplaySize(sizeAfterBytes));
     }
 
-    private static class GcProgressMonitor extends JGitPercentageProgressMonitor {
+    private static class JgitGcProgressMonitor extends JGitPercentageProgressMonitor {
 
         private final UserLogger ulog;
 
-        public GcProgressMonitor(UserLogger ulog) {
+        public JgitGcProgressMonitor(UserLogger ulog) {
             this.ulog = requireNonNull(ulog);
         }
 

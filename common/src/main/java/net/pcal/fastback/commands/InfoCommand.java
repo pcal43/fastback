@@ -92,7 +92,7 @@ enum InfoCommand implements Command {
                         final GitConfig conf = repo.getConfig();
                         ulog.message(UserMessage.localized("fastback.chat.info-uuid", repo.getWorldId()));
                         // FIXME? this could be implemented more efficiently
-                        final long backupSize = sizeOfDirectory(repo.getDirectory());
+                        final long backupSize = sizeOfDirectory(repo.getDotGitDirectory());
                         final long worldSize = sizeOfDirectory(repo.getWorkTree()) - backupSize;
                         ulog.message(UserMessage.localized("fastback.chat.info-world-size", byteCountToDisplaySize(worldSize)));
                         ulog.message(UserMessage.localized("fastback.chat.info-backup-size", byteCountToDisplaySize(backupSize)));

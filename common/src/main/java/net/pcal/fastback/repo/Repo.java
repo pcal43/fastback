@@ -90,7 +90,7 @@ public interface Repo extends AutoCloseable {
     WorldId getWorldId() throws IOException;
 
     @Deprecated
-    File getDirectory() throws NoWorkTreeException;
+    File getDotGitDirectory() throws NoWorkTreeException;
 
     @Deprecated
     File getWorkTree() throws NoWorkTreeException;
