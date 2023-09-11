@@ -262,7 +262,7 @@ enum SetCommand implements Command {
 
     /**
      * Register a 'set retention' command that tab completes with all the policies and the policy arguments.
-     * Broken out as a helper methods so this logic can be shared by set-retention and set-remote-retention.
+     * Broken out as a helper methods so this logic can be shared for retention-policy and remote-retention-policy.
      * <p>
      * FIXME? The command parsing here could be more user-friendly.  Not really clear how to implement
      * argument defaults.  Also a lot of noise from bugs like this: https://bugs.mojang.com/browse/MC-165562
@@ -288,11 +288,11 @@ enum SetCommand implements Command {
 
     /**
      * Does the work to encode a policy configuration and set it in git configuration.
-     * Broken out as a helper methods so this logic can be shared by set-retention and set-remote-retention.
+     * Broken out as a helper methods so this logic can be shared by set retention-policy and set remote-retention-policy.
      * <p>
      * TODO this should probably move to Repo.
      */
-    public static int setRetentionPolicy(final CommandContext<ServerCommandSource> cc,
+    private static int setRetentionPolicy(final CommandContext<ServerCommandSource> cc,
                                          final RetentionPolicyType rpt,
                                          final FastbackConfigKey confKey) {
         final UserLogger ulog = ulog(cc);
@@ -342,7 +342,4 @@ enum SetCommand implements Command {
         }
         return true;
     }
-
-
-
 }
