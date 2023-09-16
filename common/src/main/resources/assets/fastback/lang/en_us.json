@@ -76,7 +76,7 @@
   "fastback.chat.suggest-enable"                 : "Backups are disabled. To enable, run '/backup set-enable true'",
   "fastback.chat.thread-busy"                    : "Another backup task is currently running.  Please wait for it to finish and try again.",
   "fastback.chat.thread-waiting"                 : "Waiting for current backup tasks to complete...",
-  "fastback.chat.world-saveG"                     : "Saving world before backup...",
+  "fastback.chat.world-save"                     : "Saving world before backup...",
   "fastback.hud.local-saving"                    : "Saving local backup...",
   "fastback.hud.prune-started"                   : "Pruning...",
   "fastback.message.backing-up"                  : "Backing up...",
