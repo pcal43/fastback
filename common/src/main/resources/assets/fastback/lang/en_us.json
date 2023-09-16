@@ -57,7 +57,7 @@
   "fastback.chat.prune-no-default"               : "No default pruning policy configured.  Please run /backup set retention-policy",
   "fastback.chat.prune-suggest-gc"               : "Run /backup gc to reclaim disk space.",
   "fastback.chat.push-failed"                    : "Local backup succeeded but remote backup failed.  See log for details.",
-  "fastback.chat.push-started"                   : "Starting remote backup...",
+  "fastback.chat.push-started"                   : "Uploading backup to %s...",
   "fastback.chat.push-uuid-mismatch"             : "Remote at %s is a backup target for a different world.\nPlease configure a new remote for backing up this world.",
   "fastback.chat.remote-delete-done"             : "Deleted remote snapshot %s",
   "fastback.chat.remote-enabled"                 : "Enabled remote backups to:\n%s",

@@ -48,6 +48,7 @@ import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.JGIT;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NORMAL;
 import static net.pcal.fastback.logging.UserMessage.localized;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 import static net.pcal.fastback.logging.UserMessage.styledRaw;
@@ -68,7 +69,6 @@ abstract class CommitUtils {
         final WorldId uuid = repo.getWorldId();
         final GitConfig conf = repo.getConfig();
         final SnapshotId newSid = repo.getSidCodec().create(uuid);
-        ulog.message(localized("fastback.chat.commit-start", newSid.getShortName()));
         syslog().debug("start doCommitSnapshot for " + newSid);
         writeBackupProperties(repo);
 
@@ -79,8 +79,10 @@ abstract class CommitUtils {
         final String newBranchName = newSid.getBranchName();
         try {
             if (conf.getBoolean(IS_NATIVE_GIT_ENABLED)) {
+                ulog.message(styledLocalized("fastback.chat.commit-start", NATIVE_GIT, newSid.getShortName()));
                 native_commit(newBranchName, repo, ulog);
             } else {
+s                ulog.message(styledLocalized("fastback.chat.commit-start", NORMAL, newSid.getShortName()));
                 jgit_commit(newBranchName, repo.getJGit(), ulog);
             }
         } catch (GitAPIException | InterruptedException e) {
