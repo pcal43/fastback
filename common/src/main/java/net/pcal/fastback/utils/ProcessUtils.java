@@ -24,7 +24,6 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -34,7 +33,10 @@ import static net.pcal.fastback.logging.SystemLogger.syslog;
 
 
 /**
+ * Utilities for executing other processes (git, mainly).
  *
+ * @author pcal
+ * @since 0.15.0
  */
 public class ProcessUtils {
 
@@ -44,9 +46,9 @@ public class ProcessUtils {
 
     public static int doExec(final String[] args, final Map<String, String> envOriginal, final Consumer<String> stdoutSink, final Consumer<String> stderrSink, boolean throwOnNonZero) throws ProcessException {
         syslog().debug("Executing " + String.join(" ", args));
-        final Map<String, String> env = new HashMap<>(envOriginal);
-        env.putAll(System.getenv());
-        // output a few values that are important for debugging; don't indiscriminately dump everything or someone's going
+        final ProcessBuilder pb = new ProcessBuilder(args);
+        final Map<String, String> env = pb.environment();
+        // Output a few values that are important for debugging; don't indiscriminately dump everything or someone's going
         // to end up uploading a bunch of passwords into pastebin.
         syslog().debug("PATH: " + env.get("PATH"));
         syslog().debug("USER: " + env.get("USER"));
@@ -62,14 +64,9 @@ public class ProcessUtils {
             stderrSink.accept(line);
             errorBuffer.add("[STDERR] " + line);
         };
-        final List<String> envlist = new ArrayList<>();
-        for (Map.Entry<String, String> entry : env.entrySet()) {
-            envlist.add(entry.getKey() + "=" + entry.getValue());
-        }
-        final String[] enva = envlist.toArray(new String[0]);
         final int exit;
         try {
-            final Process p = Runtime.getRuntime().exec(args, enva);
+            final Process p = pb.start();
             exit = drainAndWait(p, new LineWriter(stdout), new LineWriter(stderr));
         } catch (IOException | InterruptedException e) {
             throw new ProcessException(args, 0, errorBuffer, e);
@@ -79,6 +76,9 @@ public class ProcessUtils {
         }
         return exit;
     }
+
+    // ======================================================================
+    // Private
 
     private static class LineWriter extends Writer {
 
@@ -90,7 +90,7 @@ public class ProcessUtils {
         }
 
         @Override
-        public void write(char[] cbuf, int off, int len) throws IOException {
+        public void write(char[] cbuf, int off, int len) {
             buffer.append(cbuf, off, len);
             outputLines();
         }
@@ -116,7 +116,7 @@ public class ProcessUtils {
         }
 
         @Override
-        public void flush() throws IOException {
+        public void flush() {
             outputLines();
             if (buffer.length() > 0) {
                 this.sink.accept(buffer.toString());
@@ -124,7 +124,7 @@ public class ProcessUtils {
         }
 
         @Override
-        public void close() throws IOException {
+        public void close() {
         }
     }
 
