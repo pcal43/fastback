@@ -56,6 +56,7 @@ import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.JGIT;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NORMAL;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 import static net.pcal.fastback.logging.UserMessage.styledRaw;
 import static net.pcal.fastback.utils.ProcessUtils.doExec;
@@ -102,14 +103,16 @@ abstract class PushUtils {
                 }
             }
             syslog().debug("Pushing to " + pushUrl);
-
             PreflightUtils.doPreflight(repo);
             if (conf.getBoolean(IS_NATIVE_GIT_ENABLED)) {
+                ulog.message(styledLocalized("fastback.chat.push-started", NATIVE_GIT, pushUrl));
                 native_doPush(repo, sid.getBranchName(), ulog);
             } else if (conf.getBoolean(IS_SMART_PUSH_ENABLED)) {
+                ulog.message(styledLocalized("fastback.chat.push-started", NORMAL, pushUrl));
                 final WorldId uuid = repo.getWorldId();
                 jgit_doSmartPush(repo, snapshotsPerWorld.get(uuid), sid.getBranchName(), conf, ulog);
             } else {
+                ulog.message(styledLocalized("fastback.chat.push-started", NORMAL, pushUrl));
                 jgit_doPush(jgit, sid.getBranchName(), conf, ulog);
             }
             syslog().info("Remote backup complete.");
@@ -120,7 +123,6 @@ abstract class PushUtils {
 
     private static void native_doPush(final Repo repo, final String branchNameToPush, final UserLogger log) throws ProcessException {
         syslog().debug("Start native_push");
-        log.update(styledLocalized("fastback.chat.push-started", NATIVE_GIT));
         final File worktree = repo.getWorkTree();
         final GitConfig conf = repo.getConfig();
         String remoteName = conf.getString(REMOTE_NAME);
@@ -130,7 +132,6 @@ abstract class PushUtils {
         doExec(push, env, outputConsumer, outputConsumer);
         syslog().debug("End native_push");
     }
-
 
     private static void jgit_doPush(final Git jgit, final String branchNameToPush, final GitConfig conf, final UserLogger ulog) throws GitAPIException {
         final ProgressMonitor pm = new JGitIncrementalProgressMonitor(new JGitPushProgressMonitor(ulog), 100);
