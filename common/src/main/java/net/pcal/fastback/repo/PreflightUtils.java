@@ -47,8 +47,8 @@ abstract class PreflightUtils {
     // Util methods
 
     /**
-     * Should be called prior to any heavy-lifting with git (e.g. commiting and pushing).  Ensures that
-     * key files are all set correctly.
+     * Should be called prior to any heavy-lifting with git (e.g. committing or pushing).  Ensures that
+     * key settings are all set correctly.
      */
     static void doPreflight(RepoImpl repo) throws IOException, ProcessException {
         final SystemLogger syslog = syslog();
