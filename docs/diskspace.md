@@ -25,10 +25,10 @@ from the last 3 days. All other snapshots will be removed.
 
 ## Changing How Snapshots are Retained
 
-You can change the rules for retaining snapshots by running `set-retention`:
+You can change the rules for retaining snapshots by running `set retention-policy`:
 
 ```
-/backup set-retention [policy] [arguments...]
+/backup set retention-policy [policy] [arguments...]
 ```
 
 Where `[policy]` is one of
@@ -38,7 +38,7 @@ Where `[policy]` is one of
 For example, to change the policy to keep the five most-recent snapshots, run:
 
 ```
-/backup set-retention fixed 5
+/backup set retention-policy fixed 5
 ```
 
 ## Collecting Garbage
