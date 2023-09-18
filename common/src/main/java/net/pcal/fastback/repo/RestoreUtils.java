@@ -76,6 +76,7 @@ abstract class RestoreUtils {
 
     private static void doRestoreSnapshot(final String snapshotNameToRestore, final String repoUri, final RepoImpl repo, final UserLogger ulog) {
         try {
+            PreflightUtils.doPreflight(repo);
             final GitConfig conf = repo.getConfig();
             final SnapshotId sid = repo.createSnapshotId(snapshotNameToRestore);
             final Path allRestoresDir = conf.isSet(RESTORE_DIRECTORY) ?
