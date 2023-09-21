@@ -64,7 +64,7 @@ import static net.pcal.fastback.utils.ProcessUtils.doExec;
  */
 abstract class CommitUtils {
 
-    static SnapshotId doCommitSnapshot(final RepoImpl repo, final UserLogger ulog) throws IOException, ProcessException {
+    static SnapshotId doCommitSnapshot(final RepoImpl repo, final UserLogger ulog) throws IOException, ProcessException, GitAPIException {
         PreflightUtils.doPreflight(repo);
         final WorldId uuid = repo.getWorldId();
         final GitConfig conf = repo.getConfig();
