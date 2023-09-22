@@ -95,24 +95,16 @@ class RepoImpl implements Repo {
         final SnapshotId newSid;
         try {
             newSid = CommitUtils.doCommitSnapshot(this, ulog);
-        } catch(IOException ioe) {
-            syslog().error(ioe);
-            ulog.message(styledLocalized("fastback.chat.commit-failed", ERROR));
-            return;
-        } catch (ProcessException e) {
+        } catch (IOException | GitAPIException | ProcessException e) {
             syslog().error(e);
             ulog.message(styledLocalized("fastback.chat.commit-failed", ERROR));
             return;
         }
         try {
             PushUtils.doPush(newSid, this, ulog);
-        } catch(IOException ioe) {
+        } catch (IOException | ProcessException e) {
             ulog.message(styledLocalized("fastback.chat.push-failed", ERROR));
-            syslog().error(ioe);
-            return;
-        } catch(ProcessException e) {
             syslog().error(e);
-            ulog.message(styledLocalized("fastback.chat.push-failed", ERROR));
             return;
         }
         ulog.message(localized("fastback.chat.backup-complete-elapsed", getDuration(start)));
@@ -127,11 +119,7 @@ class RepoImpl implements Repo {
         final SnapshotId newSid;
         try {
             newSid = CommitUtils.doCommitSnapshot(this, ulog);
-        } catch(IOException ioe) {
-            ulog.message(styledLocalized("fastback.chat.commit-failed", ERROR));
-            syslog().error(ioe);
-            return;
-        } catch (ProcessException e) {
+        } catch (IOException | ProcessException | GitAPIException e) {
             ulog.message(styledLocalized("fastback.chat.commit-failed", ERROR));
             syslog().error(e);
             return;
@@ -149,13 +137,9 @@ class RepoImpl implements Repo {
         final long start = System.currentTimeMillis();
         try {
             PushUtils.doPush(sid, this, ulog);
-        } catch(IOException ioe) {
+        } catch (IOException | ProcessException e) {
             ulog.message(styledLocalized("fastback.chat.commit-failed", ERROR));
-            syslog().error(ioe);
-            return;
-        } catch(ProcessException e) {
             syslog().error(e);
-            ulog.message(styledLocalized("fastback.chat.push-failed", ERROR));
             return;
         }
         ulog.message(UserMessage.localized("Successfully pushed " + sid.getShortName() + ".  Time elapsed: "+getDuration(start))); // FIXME i18n
@@ -177,12 +161,9 @@ class RepoImpl implements Repo {
         if (!doNativeCheck(ulog)) return;
         try {
             ReclamationUtils.doReclamation(this, ulog);
-        } catch (GitAPIException e) {
+        } catch (ProcessException | GitAPIException e) {
             ulog.message(styledLocalized("Command failed.  Check log for details.", ERROR)); // FIXME i18n
             syslog().error(e);
-        } catch (ProcessException e) {
-            syslog().error(e);
-            ulog.message(styledLocalized("Command failed.  Check log for details.", ERROR)); // FIXME i18n
         }
     }
 

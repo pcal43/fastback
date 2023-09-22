@@ -20,9 +20,10 @@ package net.pcal.fastback.repo;
 
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.SystemLogger;
-import net.pcal.fastback.utils.EnvironmentUtils;
 import net.pcal.fastback.utils.ProcessException;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.StoredConfig;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -50,7 +51,7 @@ abstract class PreflightUtils {
      * Should be called prior to any heavy-lifting with git (e.g. committing or pushing).  Ensures that
      * key settings are all set correctly.
      */
-    static void doPreflight(RepoImpl repo) throws IOException, ProcessException {
+    static void doPreflight(RepoImpl repo) throws IOException, ProcessException, GitAPIException {
         final SystemLogger syslog = syslog();
         syslog.debug("Doing world maintenance");
         final Git jgit = repo.getJGit();
@@ -78,12 +79,21 @@ abstract class PreflightUtils {
     /**
      * Ensures that git-lfs is installed or uninstalled in the worktree as appropriate.
      */
-    private static void updateNativeLfsInstallation(final Repo repo) throws ProcessException {
-        if (EnvironmentUtils.isNativeGitInstalled()) {
-            final boolean isNativeEnabled = repo.getConfig().getBoolean(IS_NATIVE_GIT_ENABLED);
-            final String action = isNativeEnabled ? "install" : "uninstall";
-            final String[] cmd = {"git", "-C", repo.getWorkTree().getAbsolutePath(), "lfs", action, "--local"};
+    private static void updateNativeLfsInstallation(final RepoImpl repo) throws ProcessException, GitAPIException {
+        if (repo.getConfig().getBoolean(IS_NATIVE_GIT_ENABLED)) {
+            final String[] cmd = {"git", "-C", repo.getWorkTree().getAbsolutePath(), "lfs", "install", "--local"};
             doExec(cmd, Collections.emptyMap(), s -> {}, s -> {});
+        } else {
+            try {
+                // jgit has builtin support for lfs, but it's weird not compatible with native lfs, so lets just
+                // try to avoid letting them use it.
+                StoredConfig jgitConfig = repo.getJGit().getRepository().getConfig();
+                jgitConfig.unsetSection("lfs", null);
+                jgitConfig.unsetSection("filter", "lfs");
+                jgitConfig.save();
+            } catch (Exception ohwell) {
+                syslog().debug(ohwell);
+            }
         }
     }
 }
