@@ -53,18 +53,18 @@ public class DailyRetentionPolicyTest {
     public void testDailyRetention() throws ParseException {
         final WorldId uuid = createWorldId(UUID.randomUUID().toString());
         long now = new Date().getTime();
-        final SnapshotId todayEvening = v1sid(uuid,  new Date(now + now % DAY_MILLIS - (4 * HOUR_MILLIS)));
-        final SnapshotId todayMorning = v1sid(uuid,  new Date(todayEvening.getDate().getTime() - (DAY_MILLIS / 2)));
-        final SnapshotId yesterdayA = v1sid(uuid,    new Date(todayEvening.getDate().getTime() - (DAY_MILLIS) - 30000));
-        final SnapshotId yesterdayB = v1sid(uuid,    new Date(todayEvening.getDate().getTime() - (DAY_MILLIS) - 20000));
-        final SnapshotId yesterdayC = v1sid(uuid,    new Date(todayEvening.getDate().getTime() - (DAY_MILLIS) - 10000));
+        final SnapshotId todayEvening = v1sid(uuid, new Date(now + now % DAY_MILLIS - (4 * HOUR_MILLIS)));
+        final SnapshotId todayMorning = v1sid(uuid, new Date(todayEvening.getDate().getTime() - (DAY_MILLIS / 2)));
+        final SnapshotId yesterdayA = v1sid(uuid, new Date(todayEvening.getDate().getTime() - (DAY_MILLIS) - 30000));
+        final SnapshotId yesterdayB = v1sid(uuid, new Date(todayEvening.getDate().getTime() - (DAY_MILLIS) - 20000));
+        final SnapshotId yesterdayC = v1sid(uuid, new Date(todayEvening.getDate().getTime() - (DAY_MILLIS) - 10000));
         final SnapshotId threeDaysAgoA = v1sid(uuid, new Date(todayEvening.getDate().getTime() - (3 * DAY_MILLIS) - 30000));
         final SnapshotId threeDaysAgoB = v1sid(uuid, new Date(todayEvening.getDate().getTime() - (3 * DAY_MILLIS) - 20000));
         final SnapshotId threeDaysAgoC = v1sid(uuid, new Date(todayEvening.getDate().getTime() - (3 * DAY_MILLIS) - 10000));
-        final SnapshotId lastWeek = v1sid(uuid,      new Date(todayEvening.getDate().getTime() - (7 * DAY_MILLIS)));
-        final SnapshotId lastYearA = v1sid(uuid,     new Date(todayEvening.getDate().getTime() - (373 * DAY_MILLIS) - 30000));
-        final SnapshotId lastYearB = v1sid(uuid,     new Date(todayEvening.getDate().getTime() - (373 * DAY_MILLIS) - 20000));
-        final SnapshotId lastYearC = v1sid(uuid,     new Date(todayEvening.getDate().getTime() - (373 * DAY_MILLIS) - 10000));
+        final SnapshotId lastWeek = v1sid(uuid, new Date(todayEvening.getDate().getTime() - (7 * DAY_MILLIS)));
+        final SnapshotId lastYearA = v1sid(uuid, new Date(todayEvening.getDate().getTime() - (373 * DAY_MILLIS) - 30000));
+        final SnapshotId lastYearB = v1sid(uuid, new Date(todayEvening.getDate().getTime() - (373 * DAY_MILLIS) - 20000));
+        final SnapshotId lastYearC = v1sid(uuid, new Date(todayEvening.getDate().getTime() - (373 * DAY_MILLIS) - 10000));
         final int GRACE_PERIOD = 2;
         TreeSet<SnapshotId> snapshots = new TreeSet<>(Set.of(
                 todayEvening, todayMorning,

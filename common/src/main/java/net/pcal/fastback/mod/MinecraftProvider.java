@@ -143,7 +143,7 @@ public interface MinecraftProvider {
         } else {
             out = Text.literal(m.raw());
         }
-        switch(m.style()) {
+        switch (m.style()) {
             case ERROR -> {
                 out.setStyle(EMPTY.withColor(TextColor.parse("red")));
             }

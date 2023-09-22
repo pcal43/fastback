@@ -1,7 +1,5 @@
 package net.pcal.fastback.utils;
 
-import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -17,12 +15,12 @@ public class ProcessException extends Exception {
     private final List<String> processOutput;
 
     ProcessException(String[] args, final int exitCode, final List<String> processOutput, Throwable nested) {
-        super("Exit "+exitCode+" when executing: " + String.join(" ", args), nested);
+        super("Exit " + exitCode + " when executing: " + String.join(" ", args), nested);
         this.processOutput = requireNonNull(processOutput);
     }
 
     ProcessException(String[] args, final int exitCode, final List<String> stdoutLines) {
-        super("Exit "+exitCode+" when executing: " + String.join(" ", args));
+        super("Exit " + exitCode + " when executing: " + String.join(" ", args));
         this.processOutput = requireNonNull(stdoutLines);
     }
 

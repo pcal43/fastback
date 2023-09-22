@@ -77,7 +77,7 @@ abstract class ReclamationUtils {
     private static void native_doLfsPrune(RepoImpl repo, UserLogger ulog) throws ProcessException {
         final File worktree = repo.getWorkTree();
         final String[] push = {"git", "-C", worktree.getAbsolutePath(), "-c", "lfs.pruneoffsetdays=999999", "lfs", "prune", "--verbose", "--no-verify-remote",};
-        final Consumer<String> outputConsumer = line->ulog.update(styledRaw(line, NATIVE_GIT));
+        final Consumer<String> outputConsumer = line -> ulog.update(styledRaw(line, NATIVE_GIT));
         doExec(push, Collections.emptyMap(), outputConsumer, outputConsumer);
         syslog().debug("native_doLfsPrune");
     }

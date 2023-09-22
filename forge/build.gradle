@@ -47,8 +47,8 @@ dependencies {
     forgeRuntimeLibrary runtimeOnly('com.jcraft:jsch:0.1.55')
     shadowCommon('com.jcraft:jsch:0.1.55')
 
-    forgeRuntimeLibrary runtimeOnly("com.googlecode.javaewah:JavaEWAH:${project.JavaEWAH_version}")  { transitive = false }
-    shadowCommon  ("com.googlecode.javaewah:JavaEWAH:${project.JavaEWAH_version}")  { transitive = false }
+    forgeRuntimeLibrary runtimeOnly("com.googlecode.javaewah:JavaEWAH:${project.JavaEWAH_version}") { transitive = false }
+    shadowCommon("com.googlecode.javaewah:JavaEWAH:${project.JavaEWAH_version}") { transitive = false }
 }
 
 processResources {
@@ -99,7 +99,6 @@ processResources {
 }
 
 
-
 // https://github.com/modrinth/minotaur
 modrinth {
     token = System.getenv("MODRINTH_TOKEN") ?: 'MODRINTH_TOKEN_NOT_SET'
@@ -126,7 +125,7 @@ curseforge {
         changelog = "https://github.com/pcal43/fastback/releases/tag/${project.mod_version}"
         changelogType = "markdown"
         mod_version = "${project.version}"
-        addGameVersion ((String) project.minecraft_version)
+        addGameVersion((String) project.minecraft_version)
         addGameVersion "Forge"
         mainArtifact(remapJar)
         afterEvaluate {

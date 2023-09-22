@@ -128,7 +128,7 @@ abstract class PushUtils {
         String remoteName = conf.getString(REMOTE_NAME);
         final String[] push = {"git", "-C", worktree.getAbsolutePath(), "-c", "push.autosetupremote=false", "push", "--progress", "--set-upstream", remoteName, branchNameToPush};
         final Map<String, String> env = Map.of("GIT_LFS_FORCE_PROGRESS", "1");
-        final Consumer<String> outputConsumer = line->log.update(styledRaw(line, NATIVE_GIT));
+        final Consumer<String> outputConsumer = line -> log.update(styledRaw(line, NATIVE_GIT));
         doExec(push, env, outputConsumer, outputConsumer);
         syslog().debug("End native_push");
     }
@@ -143,19 +143,19 @@ abstract class PushUtils {
 
     /**
      * This is a probably-failed attempt at an optimization.  It is no longer the default behavior.
-     *
+     * <p>
      * The idea was to try to minimize re-pushing unchanged blobs by establishing a common merge history between the
      * branch being pushed and one we already know is upstream Again, all snapshot branches are orphan branches, and
      * git can't bother checking every single blob in unrelated branches when receiving a push.
-     *
+     * <p>
      * But it does do some of this when there is a related history, so the idea here is to create a temporary merge
      * commit between a branch the server has and the new one it doesn't have, and to then let it figure out that most
      * of the blobs in those commits are already present on the server.   Unfortunately, I think I may misunderstand
      * how git behaves here - I think the deduplication is only at commit granularity, so this actually isn't doing
      * anything except adding a lot of moving parts and problems like this one:
-     *
+     * <p>
      * https://github.com/pcal43/fastback/issues/267
-     *
+     * <p>
      * So, this is no longer enabled by default.  And really, if they're backing up a big world where this matters,
      * you should just be using native git.
      */

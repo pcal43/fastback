@@ -89,7 +89,7 @@ enum HelpCommand implements Command {
     }
 
     static int generalHelp(final CommandContext<ServerCommandSource> cc) {
-        try(final UserLogger ulog = ulog(cc)) {
+        try (final UserLogger ulog = ulog(cc)) {
             StringWriter subcommands = null;
             for (final String available : getSubcommandNames(cc)) {
                 if (subcommands == null) {

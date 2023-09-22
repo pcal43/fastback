@@ -73,7 +73,7 @@ public class Log4jLogger implements SystemLogger {
         if (this.forceDebugEnabled) {
             // In the case of process execution failure, ensure we always dump the output along with the stacktrace so
             // we have a prayer of understanding what actually went wrong
-            if (t instanceof ProcessException pe) pe.writeProcessOutput(line-> this.log4j.info("[DEBUG] " + message));
+            if (t instanceof ProcessException pe) pe.writeProcessOutput(line -> this.log4j.info("[DEBUG] " + message));
             this.log4j.info("[DEBUG] " + message, t);
         } else {
             this.log4j.debug(message, t);

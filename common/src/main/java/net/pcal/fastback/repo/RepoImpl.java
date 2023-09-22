@@ -142,7 +142,7 @@ class RepoImpl implements Repo {
             syslog().error(e);
             return;
         }
-        ulog.message(UserMessage.localized("Successfully pushed " + sid.getShortName() + ".  Time elapsed: "+getDuration(start))); // FIXME i18n
+        ulog.message(UserMessage.localized("Successfully pushed " + sid.getShortName() + ".  Time elapsed: " + getDuration(start))); // FIXME i18n
     }
 
 
@@ -157,7 +157,7 @@ class RepoImpl implements Repo {
     }
 
     @Override
-    public void doGc(final UserLogger ulog)  {
+    public void doGc(final UserLogger ulog) {
         if (!doNativeCheck(ulog)) return;
         try {
             ReclamationUtils.doReclamation(this, ulog);

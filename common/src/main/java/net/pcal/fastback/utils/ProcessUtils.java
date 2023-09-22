@@ -54,12 +54,12 @@ public class ProcessUtils {
         syslog().debug("USER: " + env.get("USER"));
         syslog().debug("HOME: " + env.get("HOME"));
         final List<String> errorBuffer = new ArrayList<>();
-        final Consumer<String> stdout = line->{
+        final Consumer<String> stdout = line -> {
             syslog().debug("[STDOUT] " + line);
             stdoutSink.accept(line);
             errorBuffer.add("[STDOUT] " + line);
         };
-        final Consumer<String> stderr = line->{
+        final Consumer<String> stderr = line -> {
             syslog().debug("[STDERR] " + line);
             stderrSink.accept(line);
             errorBuffer.add("[STDERR] " + line);
