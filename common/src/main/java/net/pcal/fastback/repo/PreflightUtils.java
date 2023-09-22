@@ -20,13 +20,10 @@ package net.pcal.fastback.repo;
 
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.SystemLogger;
-import net.pcal.fastback.utils.EnvironmentUtils;
 import net.pcal.fastback.utils.ProcessException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.JGitInternalException;
 import org.eclipse.jgit.lib.StoredConfig;
-import org.eclipse.jgit.util.LfsFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -85,9 +82,7 @@ abstract class PreflightUtils {
     private static void updateNativeLfsInstallation(final RepoImpl repo) throws ProcessException, GitAPIException {
         if (repo.getConfig().getBoolean(IS_NATIVE_GIT_ENABLED)) {
             final String[] cmd = {"git", "-C", repo.getWorkTree().getAbsolutePath(), "lfs", "install", "--local"};
-            doExec(cmd, Collections.emptyMap(), s -> {
-            }, s -> {
-            });
+            doExec(cmd, Collections.emptyMap(), s -> {}, s -> {});
         } else {
             try {
                 // jgit has builtin support for lfs, but it's weird not compatible with native lfs, so lets just
@@ -96,7 +91,7 @@ abstract class PreflightUtils {
                 jgitConfig.unsetSection("lfs", null);
                 jgitConfig.unsetSection("filter", "lfs");
                 jgitConfig.save();
-            } catch(Exception ohwell) {
+            } catch (Exception ohwell) {
                 syslog().debug(ohwell);
             }
         }
