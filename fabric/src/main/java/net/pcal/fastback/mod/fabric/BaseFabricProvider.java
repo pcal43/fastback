@@ -65,7 +65,8 @@ abstract class BaseFabricProvider implements MinecraftProvider, MixinGateway {
 
     private boolean isWorldSaveEnabled = true;
 
-    protected BaseFabricProvider() {}
+    protected BaseFabricProvider() {
+    }
 
     @Override
     public void sendBroadcast(UserMessage userMessage) {
@@ -191,7 +192,7 @@ abstract class BaseFabricProvider implements MinecraftProvider, MixinGateway {
     LifecycleListener initialize() {
         SystemLogger.Singleton.register(new Log4jLogger(LogManager.getLogger(MOD_ID)));
         final LifecycleListener lifecycle = register(this);
-        LiteralArgumentBuilder<ServerCommandSource> backupCommand = createBackupCommand(permName-> {
+        LiteralArgumentBuilder<ServerCommandSource> backupCommand = createBackupCommand(permName -> {
             final int requiredLevel = this.isClient() ? 0 : 4;
             return Permissions.require(permName, requiredLevel);
         });

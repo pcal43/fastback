@@ -72,7 +72,8 @@ abstract class SnapshotIdUtils {
             @Override
             SnapshotId fromBranch(final String rawBranchName) throws ParseException {
                 final String[] segments = rawBranchName.split(SEP);
-                if (segments.length != 2) throw new ParseException("Wrong number of segments" + rawBranchName, segments.length);
+                if (segments.length != 2)
+                    throw new ParseException("Wrong number of segments" + rawBranchName, segments.length);
                 final WorldId worldId = new WorldIdImpl(segments[0]);
                 final Date date = DATE_FORMAT.parse(segments[1]);
                 final String shortName = DATE_FORMAT.format(date);

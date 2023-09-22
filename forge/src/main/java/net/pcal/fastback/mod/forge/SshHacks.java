@@ -9,7 +9,6 @@ import static net.pcal.fastback.logging.SystemLogger.syslog;
 public class SshHacks {
 
     /**
-     *
      * This is necessary because JGit looks for it's SshSessionFactory with java.util.ServiceLoader, and that
      * just doesn't seem to be something that Forge is willing to accommodate.
      */
@@ -21,14 +20,14 @@ public class SshHacks {
                     SshSessionFactory.setInstance((SshSessionFactory) Class.forName(clazz).getConstructor().newInstance());
                     // AFAICT this only happens in Intellij.  Something about shadowJar and relocate isn't working in dev environments.
                     // Seems fine in the launcher.
-                    syslog().warn("A SshSessionFactory was not located via java services; a "+clazz+" has been installed manually.  This is probably ok.");
+                    syslog().warn("A SshSessionFactory was not located via java services; a " + clazz + " has been installed manually.  This is probably ok.");
                 } catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
                          NoSuchMethodException | InvocationTargetException ohwell) {
                     syslog().error("Unable to manually set SshSessionFactory.  SSH connections will probably not work.", ohwell);
                 }
             }
             //
-        } catch(Error err) {
+        } catch (Error err) {
             syslog().error("WAT", err);
         }
     }
@@ -39,7 +38,6 @@ public class SshHacks {
     // working, but that brings us into a whole other world of classloading and shading pain.  Because
     // Forge excludes everything under org.apache.*?  Is that true?  Ugh, FIXME.
     // This all works perfectly fine with Fabric. :(
-
 
 
     //https://stackoverflow.com/questions/67767455/setting-ssh-keys-to-use-with-jgit-with-ssh-from-apache-sshd
@@ -79,15 +77,13 @@ public class SshHacks {
 
      .setServerKeyDatabase((h, s) -> new ServerKeyDatabase() {
 
-    @Override
-    public List<PublicKey> lookup(String connectAddress,
+    @Override public List<PublicKey> lookup(String connectAddress,
     InetSocketAddress remoteAddress,
     Configuration config) {
     return Collections.emptyList();
     }
 
-    @Override
-    public boolean accept(String connectAddress,
+    @Override public boolean accept(String connectAddress,
     InetSocketAddress remoteAddress,
     PublicKey serverKey, Configuration config,
     CredentialsProvider provider) {

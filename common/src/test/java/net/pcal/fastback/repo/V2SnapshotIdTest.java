@@ -52,7 +52,7 @@ public class V2SnapshotIdTest {
 
     @Test
     public void testWorldIdGeneration() {
-        for(int i=0; i<10000; i++) generateRandomWorldId(4);
+        for (int i = 0; i < 10000; i++) generateRandomWorldId(4);
     }
 
     @Test

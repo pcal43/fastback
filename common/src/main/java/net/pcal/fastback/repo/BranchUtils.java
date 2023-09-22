@@ -51,29 +51,29 @@ abstract class BranchUtils {
                 try {
                     sid = requireNonNull(codec.fromBranch(branchName));
                 } catch (ParseException pe) {
-                    syslog().error("Unexpected parse error, ignoring branch "+branchName, pe);
+                    syslog().error("Unexpected parse error, ignoring branch " + branchName, pe);
                     continue;
                 }
                 if (sid.getWorldId().equals(repo.getWorldId())) {
                     out.add(sid);
                 } else {
-                    syslog().debug("Ignoring branch from other world "+branchName);
+                    syslog().debug("Ignoring branch from other world " + branchName);
                 }
             } else {
-                syslog().debug("Ignoring unrecognized branch "+branchName);
+                syslog().debug("Ignoring unrecognized branch " + branchName);
             }
         }
         return out;
     }
 
     static String getBranchName(Ref fromBranchRef) {
-       final String REFS_HEADS = "refs/heads/";
-       final String name = fromBranchRef.getName();
-       if (name.startsWith(REFS_HEADS)) {
-           return name.substring(REFS_HEADS.length());
-       } else {
-           return null;
-       }
-   }
+        final String REFS_HEADS = "refs/heads/";
+        final String name = fromBranchRef.getName();
+        if (name.startsWith(REFS_HEADS)) {
+            return name.substring(REFS_HEADS.length());
+        } else {
+            return null;
+        }
+    }
 
 }

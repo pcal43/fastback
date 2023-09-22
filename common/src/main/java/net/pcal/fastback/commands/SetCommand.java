@@ -90,7 +90,7 @@ enum SetCommand implements Command {
         final LiteralArgumentBuilder<ServerCommandSource> sc = literal(COMMAND_NAME).
                 requires(subcommandPermission(COMMAND_NAME, pf)).
                 executes(cc -> missingArgument("key", cc));
-        registerBooleanConfigValue(IS_NATIVE_GIT_ENABLED,  sc);
+        registerBooleanConfigValue(IS_NATIVE_GIT_ENABLED, sc);
         registerBooleanConfigValue(IS_LOCK_CLEANUP_ENABLED, sc);
         registerBooleanConfigValue(IS_BACKUP_ENABLED, sc);
         registerBooleanConfigValue(IS_MODS_BACKUP_ENABLED, sc);
@@ -336,13 +336,12 @@ enum SetCommand implements Command {
             }
         }
         if (!repo.getLocalSnapshots().isEmpty()) {
-            user.message(styledRaw("You can't change " +IS_NATIVE_GIT_ENABLED.getSettingName()+" once you've " +
+            user.message(styledRaw("You can't change " + IS_NATIVE_GIT_ENABLED.getSettingName() + " once you've " +
                     "made a backup.  If you want to delete your current backups and start over, delete the .git directory in your world folder. ", ERROR));
             return false;
         }
         return true;
     }
-
 
 
 }
