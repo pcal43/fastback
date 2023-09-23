@@ -109,9 +109,7 @@ modrinth {
     changelog = "<p><a href='https://github.com/pcal43/fastback/releases/tag/${project.mod_version}'>https://github.com/pcal43/fastback/releases/tag/${project.mod_version}</a></p>"
     gameVersions = ["${project.minecraft_version}"]
     loaders = ["forge"]
-    dependencies {
-        required.project "fabric-api"
-    }
+    dependencies {}
 }
 
 
