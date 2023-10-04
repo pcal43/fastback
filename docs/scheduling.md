@@ -14,7 +14,7 @@ Backups can be run whenever the world shuts down (i.e., when exiting a single-pl
 shutting down a dedicated server). To do this,
 
 ```
-/backup set-shutdown-action [action]
+/backup set shutdown-action [action]
 ```
 
 Where `[action]` is one of
@@ -27,7 +27,7 @@ You can also set backups to run while the game is playing, immediately after the
 regular auto-saves that Minecraft performs every 5 minutes.  To do this,
 
 ```
-/backup set-autoback-action [action]
+/backup set autoback-action [action]
 ```
 
 Where `[action]` is one of the actions listed above.
@@ -36,7 +36,7 @@ If you don't want `autoback` backups to run every 5 minutes, you can schedule th
 run less-frequently:
 
 ```
-/backup set-autoback-wait [minutes]
+/backup set autoback-wait [minutes]
 ```
 
 This sets the minimum wait time between auto-backups.
