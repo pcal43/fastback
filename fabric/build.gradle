@@ -63,11 +63,6 @@ dependencies {
     // Server Translations
     //   https://github.com/NucleoidMC/Server-Translations
     include modImplementation("xyz.nucleoid:server-translations-api:${project.server_translations_version}") { transitive = false }
-
-    // Needed by Server Translations
-    //   https://github.com/NucleoidMC/packet-tweaker
-    include modRuntimeOnly("xyz.nucleoid:packet-tweaker:${project.packet_tweaker_version}") { transitive = false }
-
 }
 
 jar {
