@@ -22,6 +22,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
+import net.minecraft.util.Formatting;
 import net.pcal.fastback.logging.UserMessage;
 
 import java.nio.file.Path;
@@ -145,22 +146,22 @@ public interface MinecraftProvider {
         }
         switch (m.style()) {
             case ERROR -> {
-                out.setStyle(EMPTY.withColor(TextColor.parse("red")));
+                out.setStyle(EMPTY.withColor(TextColor.fromFormatting(Formatting.RED)));
             }
             case WARNING -> {
-                out.setStyle(EMPTY.withColor(TextColor.parse("yellow")));
+                out.setStyle(EMPTY.withColor(TextColor.fromFormatting(Formatting.YELLOW)));
             }
             case JGIT -> {
-                out.setStyle(EMPTY.withColor(TextColor.parse("gray")));
+                out.setStyle(EMPTY.withColor(TextColor.fromFormatting(Formatting.GRAY)));
             }
             case NATIVE_GIT -> {
-                out.setStyle(EMPTY.withColor(TextColor.parse("green")));
+                out.setStyle(EMPTY.withColor(TextColor.fromFormatting(Formatting.GREEN)));
             }
             case BROADCAST -> {
                 out.setStyle(EMPTY.withItalic(true));
             }
             default -> {
-                out.setStyle(EMPTY.withColor(TextColor.parse("white")));
+                out.setStyle(EMPTY.withColor(TextColor.fromFormatting(Formatting.WHITE)));
             }
         }
         return out;
