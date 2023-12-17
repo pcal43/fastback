@@ -112,7 +112,7 @@ abstract class BaseFabricProvider implements MinecraftProvider, MixinGateway {
     @Override
     public String getWorldName() {
         if (this.minecraftServer == null) throw new IllegalStateException();
-        return minecraftServer.getSaveProperties().getLevelName();
+        return this.minecraftServer.getSaveProperties().getLevelName();
     }
 
     /**
