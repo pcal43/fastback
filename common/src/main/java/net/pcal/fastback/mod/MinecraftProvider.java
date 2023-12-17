@@ -18,10 +18,11 @@
 
 package net.pcal.fastback.mod;
 
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextColor;
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.text.TextColor;
+import net.minecraft.util.Formatting;
 import net.pcal.fastback.logging.UserMessage;
 
 import java.nio.file.Path;
@@ -145,22 +146,16 @@ public interface MinecraftProvider {
         }
         switch (m.style()) {
             case ERROR -> {
-                out.setStyle(EMPTY.withColor(TextColor.parseColor("red")));
+                out.setStyle(EMPTY.withColor(TextColor.fromFormatting(Formatting.RED)));
             }
             case WARNING -> {
-                out.setStyle(EMPTY.withColor(TextColor.parseColor("yellow")));
+                out.setStyle(EMPTY.withColor(TextColor.fromFormatting(Formatting.YELLOW)));
             }
             case JGIT -> {
-                out.setStyle(EMPTY.withColor(TextColor.parseColor("gray")));
+                out.setStyle(EMPTY.withColor(TextColor.fromFormatting(Formatting.GRAY)));
             }
             case NATIVE_GIT -> {
-                out.setStyle(EMPTY.withColor(TextColor.parseColor("green")));
-            }
-            case BROADCAST -> {
-                out.setStyle(EMPTY.withItalic(true));
-            }
-            default -> {
-                out.setStyle(EMPTY.withColor(TextColor.parseColor("white")));
+                out.setStyle(EMPTY.withColor(TextColor.fromFormatting(Formatting.GREEN)));
             }
         }
         return out;
