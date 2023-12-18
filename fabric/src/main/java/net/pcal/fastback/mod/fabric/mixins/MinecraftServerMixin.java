@@ -41,8 +41,8 @@ public class MinecraftServerMixin {
      * Intercept the call to saveAll that triggers on autosave, pass it through and then send out notification that
      * the autosave is done.
      */
-    @Redirect(method = "tick(Ljava/util/function/BooleanSupplier;)V",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;saveAll(ZZZ)Z"))
+    @Redirect(method = "tickServer(Ljava/util/function/BooleanSupplier;)V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;saveEverything(ZZZ)Z"))
     public boolean fastback_saveAll(MinecraftServer instance, boolean suppressLogs, boolean flush, boolean force) {
         boolean result = instance.saveEverything(suppressLogs, flush, force);
         MixinGateway.get().autoSaveCompleted();
@@ -52,7 +52,7 @@ public class MinecraftServerMixin {
     /**
      * Intercept save so we can hard-disable saving during critical parts of the backup.
      */
-    @Inject(at = @At("HEAD"), method = "save(ZZZ)Z", cancellable = true)
+    @Inject(at = @At("HEAD"), method = "saveAllChunks(ZZZ)Z", cancellable = true)
     public void fastback_save(boolean suppressLogs, boolean flush, boolean force, CallbackInfoReturnable<Boolean> ci) {
         synchronized (this) {
             if (MixinGateway.get().isWorldSaveEnabled()) {
@@ -68,7 +68,7 @@ public class MinecraftServerMixin {
     /**
      * Intercept saveAll so we can hard-disable saving during critical parts of the backup.
      */
-    @Inject(at = @At("HEAD"), method = "saveAll(ZZZ)Z", cancellable = true)
+    @Inject(at = @At("HEAD"), method = "saveEverything(ZZZ)Z", cancellable = true)
     public void fastback_saveAll(boolean suppressLogs, boolean flush, boolean force, CallbackInfoReturnable<Boolean> ci) {
         synchronized (this) {
             if (MixinGateway.get().isWorldSaveEnabled()) {
