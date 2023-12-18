@@ -24,10 +24,9 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModMetadata;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.world.level.LevelInfo;
-import net.minecraft.world.level.storage.LevelStorage;
+import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.LevelSummary;
 import net.pcal.fastback.logging.Log4jLogger;
 import net.pcal.fastback.logging.SystemLogger;
@@ -70,8 +69,8 @@ abstract class BaseFabricProvider implements MinecraftProvider, MixinGateway {
 
     @Override
     public void sendBroadcast(UserMessage userMessage) {
-        if (this.minecraftServer != null && this.minecraftServer.isDedicated()) {
-            minecraftServer.getPlayerManager().broadcast(messageToText(userMessage), false);
+        if (this.minecraftServer != null && this.minecraftServer.isDedicatedServer()) {
+            minecraftServer.getPlayerList().broadcastSystemMessage(messageToText(userMessage), false);
         }
     }
 
@@ -93,7 +92,7 @@ abstract class BaseFabricProvider implements MinecraftProvider, MixinGateway {
     @Override
     public void saveWorld() {
         if (this.minecraftServer == null) throw new IllegalStateException();
-        this.minecraftServer.saveAll(false, true, true); // suppressLogs, flush, force
+        this.minecraftServer.saveEverything(false, true, true); // suppressLogs, flush, force
     }
 
     @Override
@@ -105,14 +104,14 @@ abstract class BaseFabricProvider implements MinecraftProvider, MixinGateway {
     @Override
     public Path getWorldDirectory() {
         if (this.minecraftServer == null) throw new IllegalStateException();
-        final LevelStorage.Session session = ((ServerAccessors) this.minecraftServer).getSession();
-        return ((SessionAccessors) session).getDirectory().path();
+        final LevelStorageSource.LevelStorageAccess session = ((ServerAccessors) this.minecraftServer).getStorageSource();
+        return ((SessionAccessors) session).getLevelDirectory().path();
     }
 
     @Override
     public String getWorldName() {
         if (this.minecraftServer == null) throw new IllegalStateException();
-        return this.minecraftServer.getSaveProperties().getLevelName();
+        return this.minecraftServer.getWorldData().getLevelName();
     }
 
     /**
@@ -121,9 +120,9 @@ abstract class BaseFabricProvider implements MinecraftProvider, MixinGateway {
     public void addBackupProperties(Map<String, String> props) {
         props.put("fastback-version", this.getModVersion());
         if (this.minecraftServer != null) {
-            props.put("minecraft-version", minecraftServer.getVersion());
-            props.put("minecraft-game-mode", String.valueOf(minecraftServer.getSaveProperties().getGameMode()));
-            props.put("minecraft-level-name", minecraftServer.getSaveProperties().getLevelName());
+            props.put("minecraft-version", minecraftServer.getServerVersion());
+            props.put("minecraft-game-mode", String.valueOf(minecraftServer.getWorldData().getGameType()));
+            props.put("minecraft-level-name", minecraftServer.getWorldData().getLevelName());
         }
         try {
             final Collection<ModContainer> mods = FabricLoader.getInstance().getAllMods();
@@ -187,7 +186,7 @@ abstract class BaseFabricProvider implements MinecraftProvider, MixinGateway {
     LifecycleListener initialize() {
         SystemLogger.Singleton.register(new Log4jLogger(LogManager.getLogger(MOD_ID)));
         final LifecycleListener lifecycle = register(this);
-        LiteralArgumentBuilder<ServerCommandSource> backupCommand = createBackupCommand(permName -> {
+        LiteralArgumentBuilder<CommandSourceStack> backupCommand = createBackupCommand(permName -> {
             final int requiredLevel = this.isClient() ? 0 : 4;
             return Permissions.require(permName, requiredLevel);
         });

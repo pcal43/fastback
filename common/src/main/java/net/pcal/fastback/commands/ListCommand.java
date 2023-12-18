@@ -20,7 +20,7 @@ package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.repo.SnapshotId;
@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.literal;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.gitOp;
@@ -45,7 +45,7 @@ enum ListCommand implements Command {
     private static final String COMMAND_NAME = "list";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, PermissionsFactory<ServerCommandSource> pf) {
+    public void register(final LiteralArgumentBuilder<CommandSourceStack> argb, PermissionsFactory<CommandSourceStack> pf) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(COMMAND_NAME, pf)).
@@ -53,7 +53,7 @@ enum ListCommand implements Command {
         );
     }
 
-    private int execute(final CommandContext<ServerCommandSource> cc) {
+    private int execute(final CommandContext<CommandSourceStack> cc) {
         try (final UserLogger ulog = UserLogger.ulog(cc)) {
             if (!rf().doInitCheck(mod().getWorldDirectory(), ulog)) return FAILURE;
             gitOp(NONE, ulog, repo -> {

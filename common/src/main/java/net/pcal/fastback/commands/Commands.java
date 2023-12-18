@@ -20,7 +20,7 @@ package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.repo.Repo;
@@ -43,9 +43,9 @@ public class Commands {
     static final int SUCCESS = 1;
 
 
-    public static LiteralArgumentBuilder<ServerCommandSource> createBackupCommand(final PermissionsFactory<ServerCommandSource> pf) {
+    public static LiteralArgumentBuilder<CommandSourceStack> createBackupCommand(final PermissionsFactory<CommandSourceStack> pf) {
 
-        final LiteralArgumentBuilder<ServerCommandSource> root = LiteralArgumentBuilder.<ServerCommandSource>literal("backup").
+        final LiteralArgumentBuilder<CommandSourceStack> root = LiteralArgumentBuilder.<CommandSourceStack>literal("backup").
                 requires(pf.require("fastback.command")).
                 executes(HelpCommand::generalHelp);
 
@@ -75,7 +75,7 @@ public class Commands {
 
     }
 
-    static Predicate<ServerCommandSource> subcommandPermission(String subcommandName, PermissionsFactory<ServerCommandSource> pf) {
+    static Predicate<CommandSourceStack> subcommandPermission(String subcommandName, PermissionsFactory<CommandSourceStack> pf) {
         final String permName = "fastback.command." + subcommandName;
         return pf.require(permName);
     }
@@ -95,7 +95,7 @@ public class Commands {
         }
     }
 
-    static int missingArgument(final String argName, final CommandContext<ServerCommandSource> cc) {
+    static int missingArgument(final String argName, final CommandContext<CommandSourceStack> cc) {
         return missingArgument(argName, UserLogger.ulog(cc));
     }
 

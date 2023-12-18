@@ -44,7 +44,7 @@ public class MinecraftServerMixin {
     @Redirect(method = "tick(Ljava/util/function/BooleanSupplier;)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;saveAll(ZZZ)Z"))
     public boolean fastback_saveAll(MinecraftServer instance, boolean suppressLogs, boolean flush, boolean force) {
-        boolean result = instance.saveAll(suppressLogs, flush, force);
+        boolean result = instance.saveEverything(suppressLogs, flush, force);
         MixinGateway.get().autoSaveCompleted();
         return result;
     }

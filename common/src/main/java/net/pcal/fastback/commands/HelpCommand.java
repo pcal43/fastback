@@ -24,7 +24,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 
@@ -34,8 +34,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import static net.minecraft.server.command.CommandManager.argument;
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.argument;
+import static net.minecraft.commands.Commands.literal;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
@@ -54,7 +54,7 @@ enum HelpCommand implements Command {
     private static final String ARGUMENT = "subcommand";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, PermissionsFactory<ServerCommandSource> pf) {
+    public void register(final LiteralArgumentBuilder<CommandSourceStack> argb, PermissionsFactory<CommandSourceStack> pf) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(COMMAND_NAME, pf)).
@@ -67,14 +67,14 @@ enum HelpCommand implements Command {
         );
     }
 
-    private static class HelpTopicSuggestions implements SuggestionProvider<ServerCommandSource> {
+    private static class HelpTopicSuggestions implements SuggestionProvider<CommandSourceStack> {
 
 
         HelpTopicSuggestions() {
         }
 
         @Override
-        public CompletableFuture<Suggestions> getSuggestions(final CommandContext<ServerCommandSource> cc,
+        public CompletableFuture<Suggestions> getSuggestions(final CommandContext<CommandSourceStack> cc,
                                                              final SuggestionsBuilder builder) {
             CompletableFuture<Suggestions> completableFuture = new CompletableFuture<>();
             getSubcommandNames(cc).forEach(builder::suggest);
@@ -88,7 +88,7 @@ enum HelpCommand implements Command {
         }
     }
 
-    static int generalHelp(final CommandContext<ServerCommandSource> cc) {
+    static int generalHelp(final CommandContext<CommandSourceStack> cc) {
         try (final UserLogger ulog = ulog(cc)) {
             StringWriter subcommands = null;
             for (final String available : getSubcommandNames(cc)) {
@@ -107,7 +107,7 @@ enum HelpCommand implements Command {
         }
     }
 
-    private int subcommandHelp(final CommandContext<ServerCommandSource> cc) {
+    private int subcommandHelp(final CommandContext<CommandSourceStack> cc) {
         try (final UserLogger ulog = ulog(cc)) {
             final String subcommand = cc.getLastChild().getArgument(ARGUMENT, String.class);
             for (String available : getSubcommandNames(cc)) {
@@ -122,7 +122,7 @@ enum HelpCommand implements Command {
         return FAILURE;
     }
 
-    private static List<String> getSubcommandNames(CommandContext<ServerCommandSource> cc) {
+    private static List<String> getSubcommandNames(CommandContext<CommandSourceStack> cc) {
         final List<String> out = new ArrayList<>();
         cc.getNodes().get(0).getNode().getChildren().forEach(node -> out.add(node.getName()));
         return out;

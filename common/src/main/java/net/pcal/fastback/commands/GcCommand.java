@@ -20,10 +20,10 @@ package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
 import net.pcal.fastback.logging.UserLogger;
 
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
@@ -44,7 +44,7 @@ enum GcCommand implements Command {
     private static final String COMMAND_NAME = "gc";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, PermissionsFactory<ServerCommandSource> pf) {
+    public void register(final LiteralArgumentBuilder<CommandSourceStack> argb, PermissionsFactory<CommandSourceStack> pf) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(COMMAND_NAME, pf)).
@@ -52,7 +52,7 @@ enum GcCommand implements Command {
         );
     }
 
-    private static int gc(CommandContext<ServerCommandSource> cc) {
+    private static int gc(CommandContext<CommandSourceStack> cc) {
         final UserLogger ulog = ulog(cc);
         gitOp(WRITE, ulog, repo -> {
             repo.doGc(ulog);

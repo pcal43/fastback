@@ -17,7 +17,7 @@
  */
 package net.pcal.fastback.mod;
 
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
 import net.pcal.fastback.commands.SchedulableAction;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
@@ -71,7 +71,7 @@ class ModImpl implements LifecycleListener, Mod {
     }
 
     @Override
-    public void sendChat(UserMessage message, ServerCommandSource scs) {
+    public void sendChat(UserMessage message, CommandSourceStack scs) {
         fsp.sendChat(message, scs);
     }
 
