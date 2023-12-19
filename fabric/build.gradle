@@ -52,7 +52,6 @@ dependencies {
     // https://mvnrepository.com/artifact/org.apache.sshd/sshd-common
     include runtimeOnly("org.apache.sshd:sshd-common:${project.apache_sshd_version}") { transitive = false }
 
-
     // this enables ed25519 support in apache_sshd
     // https://github.com/apache/mina-sshd/blob/dfa109b7b535d64e8ee395ddd0419e7696fb24ee/docs/dependencies.md
     include runtimeOnly("net.i2p.crypto:eddsa:${project.eddsa_version}") { transitive = false }
@@ -62,12 +61,7 @@ dependencies {
 
     // Server Translations
     //   https://github.com/NucleoidMC/Server-Translations
-    include modImplementation("xyz.nucleoid:server-translations-api:${project.server_translations_version}") { transitive = false }
-
-    // Needed by Server Translations
-    //   https://github.com/NucleoidMC/packet-tweaker
-    include modRuntimeOnly("xyz.nucleoid:packet-tweaker:${project.packet_tweaker_version}") { transitive = false }
-
+    modImplementation include("xyz.nucleoid:server-translations-api:${project.server_translations_version}")
 }
 
 jar {
