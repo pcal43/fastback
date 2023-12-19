@@ -18,8 +18,8 @@
 
 package net.pcal.fastback.mod.fabric.mixins;
 
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.gen.Accessor;
@@ -33,9 +33,9 @@ public interface ScreenAccessors {
 
     @Accessor
     @Mutable
-    Text getTitle();
+    Component getTitle();
 
     @Accessor
     @Mutable
-    void setTitle(Text text);
+    void setTitle(Component text);
 }

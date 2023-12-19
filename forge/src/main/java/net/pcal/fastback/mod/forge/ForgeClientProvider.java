@@ -1,9 +1,5 @@
 package net.pcal.fastback.mod.forge;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.Text;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -15,6 +11,11 @@ import net.pcal.fastback.logging.UserMessage;
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.mod.MinecraftProvider.messageToText;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 
 /**
  * Handles client-specific tasks.
@@ -33,16 +34,16 @@ final class ForgeClientProvider extends ForgeCommonProvider {
     // Fields
 
     //private MinecraftClient client = null;
-    private Text hudText;
+    private Component hudText;
     private long hudTextTime;
-    private final MinecraftClient client;
+    private final Minecraft client;
 
     public ForgeClientProvider() {
         final IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         modEventBus.addListener(this::onClientStartupEvent);
         MinecraftForge.EVENT_BUS.addListener(this::onGuiOverlayEvent);
         MinecraftForge.EVENT_BUS.addListener(this::onScreenRenderEvent);
-        this.client = requireNonNull(MinecraftClient.getInstance(), "MinecraftClient.getInstance() returned null");
+        this.client = requireNonNull(Minecraft.getInstance(), "MinecraftClient.getInstance() returned null");
     }
 
     // ======================================================================
@@ -87,14 +88,14 @@ final class ForgeClientProvider extends ForgeCommonProvider {
 
     @Override
     public void setMessageScreenText(UserMessage userMessage) {
-        final Text text = messageToText(userMessage);
+        final Component text = messageToText(userMessage);
         this.hudText = text;
-        final Screen screen = client.currentScreen;
+        final Screen screen = client.screen;
         if (screen != null) screen.title = text;
     }
 
     @Override
-    void renderOverlayText(final DrawContext drawContext) {
+    void renderOverlayText(final GuiGraphics drawContext) {
         if (this.hudText == null) return;
         // if (!this.client.options.getShowAutosaveIndicator().getValue()) return; FIXME
         if (System.currentTimeMillis() - this.hudTextTime > TEXT_TIMEOUT) {
@@ -104,7 +105,7 @@ final class ForgeClientProvider extends ForgeCommonProvider {
             return;
         }
         if (client != null) {
-            drawContext.drawTextWithShadow(this.client.textRenderer, this.hudText, 2, 2, 1);
+            drawContext.drawString(this.client.font, this.hudText, 2, 2, 1);
         }
     }
 }

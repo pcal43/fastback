@@ -21,7 +21,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.SnapshotId;
@@ -32,7 +32,7 @@ import java.util.concurrent.CompletableFuture;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.utils.Executor.ExecutionLock.NONE;
 
-abstract class SnapshotNameSuggestions implements SuggestionProvider<ServerCommandSource> {
+abstract class SnapshotNameSuggestions implements SuggestionProvider<CommandSourceStack> {
 
     static SnapshotNameSuggestions local() {
         return new SnapshotNameSuggestions() {
@@ -53,7 +53,7 @@ abstract class SnapshotNameSuggestions implements SuggestionProvider<ServerComma
     }
 
     @Override
-    public CompletableFuture<Suggestions> getSuggestions(final CommandContext<ServerCommandSource> cc,
+    public CompletableFuture<Suggestions> getSuggestions(final CommandContext<CommandSourceStack> cc,
                                                          final SuggestionsBuilder builder) {
         CompletableFuture<Suggestions> completableFuture = new CompletableFuture<>();
         try (final UserLogger ulog = UserLogger.ulog(cc)) {

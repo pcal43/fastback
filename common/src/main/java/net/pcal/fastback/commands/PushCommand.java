@@ -21,12 +21,12 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.repo.SnapshotId;
 
-import static net.minecraft.server.command.CommandManager.argument;
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.argument;
+import static net.minecraft.commands.Commands.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.getArgumentNicely;
 import static net.pcal.fastback.commands.Commands.gitOp;
@@ -46,7 +46,7 @@ enum PushCommand implements Command {
     private static final String ARGUMENT = "snapshot-date";
 
     @Override
-    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, PermissionsFactory<ServerCommandSource> pf) {
+    public void register(LiteralArgumentBuilder<CommandSourceStack> argb, PermissionsFactory<CommandSourceStack> pf) {
         argb.then(literal(COMMAND_NAME).
                 requires(subcommandPermission(COMMAND_NAME, pf)).then(
                         argument(ARGUMENT, StringArgumentType.string()).
@@ -56,7 +56,7 @@ enum PushCommand implements Command {
         );
     }
 
-    private static int execute(CommandContext<ServerCommandSource> cc) {
+    private static int execute(CommandContext<CommandSourceStack> cc) {
         final UserLogger log = UserLogger.ulog(cc);
         gitOp(NONE, log, repo -> {
             final String snapshotName = getArgumentNicely(ARGUMENT, String.class, cc.getLastChild(), log);

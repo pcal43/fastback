@@ -18,7 +18,7 @@
 
 package net.pcal.fastback.mod.fabric;
 
-import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.GuiGraphics;
 
 /**
  * Singleton 'gateway' that mixin code goes through to call back into the mod.
@@ -36,7 +36,7 @@ public interface MixinGateway {
 
     void autoSaveCompleted();
 
-    void renderMessageScreen(DrawContext drawContext, float tickDelta);
+    void renderMessageScreen(GuiGraphics drawContext, float tickDelta);
 
     class Singleton {
         private static MixinGateway INSTANCE = null;

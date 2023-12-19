@@ -19,10 +19,10 @@
 package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
 import net.pcal.fastback.logging.UserLogger;
 
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.literal;
 import static net.pcal.fastback.commands.Commands.FAILURE;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.gitOp;
@@ -47,7 +47,7 @@ enum LocalCommand implements Command {
     private static final String COMMAND_NAME = "local";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, PermissionsFactory<ServerCommandSource> pf) {
+    public void register(final LiteralArgumentBuilder<CommandSourceStack> argb, PermissionsFactory<CommandSourceStack> pf) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(COMMAND_NAME, pf)).
@@ -55,7 +55,7 @@ enum LocalCommand implements Command {
         );
     }
 
-    private static int run(ServerCommandSource scs) {
+    private static int run(CommandSourceStack scs) {
         try (final UserLogger ulog = ulog(scs)) {
             if (!rf().doInitCheck(mod().getWorldDirectory(), ulog)) return FAILURE;
             try {

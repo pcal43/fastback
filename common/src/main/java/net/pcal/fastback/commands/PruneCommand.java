@@ -19,14 +19,14 @@
 package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.repo.SnapshotId;
 
 import java.util.Collection;
 
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
@@ -46,7 +46,7 @@ enum PruneCommand implements Command {
     private static final String COMMAND_NAME = "prune";
 
     @Override
-    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, PermissionsFactory<ServerCommandSource> pf) {
+    public void register(LiteralArgumentBuilder<CommandSourceStack> argb, PermissionsFactory<CommandSourceStack> pf) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(COMMAND_NAME, pf)).
@@ -54,7 +54,7 @@ enum PruneCommand implements Command {
         );
     }
 
-    private static int prune(final ServerCommandSource scs) {
+    private static int prune(final CommandSourceStack scs) {
         final UserLogger ulog = ulog(scs);
         gitOp(WRITE, ulog, repo -> {
             final Collection<SnapshotId> pruned = repo.doLocalPrune(ulog);

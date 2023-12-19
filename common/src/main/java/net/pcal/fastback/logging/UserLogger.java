@@ -19,7 +19,7 @@
 package net.pcal.fastback.logging;
 
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
 
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
@@ -60,11 +60,11 @@ public interface UserLogger extends AutoCloseable {
         internalError();
     }
 
-    static UserLogger ulog(final CommandContext<ServerCommandSource> cc) {
+    static UserLogger ulog(final CommandContext<CommandSourceStack> cc) {
         return new CommandLogger(cc.getSource());
     }
 
-    static UserLogger ulog(final ServerCommandSource scs) {
+    static UserLogger ulog(final CommandSourceStack scs) {
         return new CommandLogger(scs);
     }
 

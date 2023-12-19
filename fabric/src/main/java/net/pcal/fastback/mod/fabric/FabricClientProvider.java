@@ -20,11 +20,11 @@ package net.pcal.fastback.mod.fabric;
 
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.MessageScreen;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.GenericDirtMessageScreen;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.fabric.mixins.ScreenAccessors;
 
@@ -47,14 +47,14 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
     // ======================================================================
     // Fields
 
-    private MinecraftClient client = null;
-    private Text hudText;
+    private Minecraft client = null;
+    private Component hudText;
     private long hudTextTime;
 
     // ====================================================================
     // Public methods
 
-    public void setMinecraftClient(MinecraftClient client) {
+    public void setMinecraftClient(Minecraft client) {
         if ((this.client == null) == (client == null)) throw new IllegalStateException();
         this.client = client;
     }
@@ -63,7 +63,7 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
     // MixinGateway implementation
 
     @Override
-    public void renderMessageScreen(DrawContext drawContext, float tickDelta) {
+    public void renderMessageScreen(GuiGraphics drawContext, float tickDelta) {
         onHudRender(drawContext, tickDelta);
     }
 
@@ -94,8 +94,8 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
 
     @Override
     public void setMessageScreenText(UserMessage userMessage) {
-        final Screen screen = client.currentScreen;
-        if (screen instanceof MessageScreen) {
+        final Screen screen = client.screen;
+        if (screen instanceof GenericDirtMessageScreen) {
             ((ScreenAccessors) screen).setTitle(messageToText(userMessage));
         }
     }
@@ -109,15 +109,15 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
     // HudRenderCallback implementation
 
     @Override
-    public void onHudRender(DrawContext drawContext, float tickDelta) {
+    public void onHudRender(GuiGraphics drawContext, float tickDelta) {
         if (this.hudText == null) return;
-        if (!this.client.options.getShowAutosaveIndicator().getValue()) return;
+        if (!this.client.options.showAutosaveIndicator().get()) return;
         if (System.currentTimeMillis() - this.hudTextTime > TEXT_TIMEOUT) {
             // Don't leave it sitting up there forever if we fail to call clearHudText()
             this.hudText = null;
             syslog().debug("hud text timed out.  somebody forgot to clean up");
             return;
         }
-        drawContext.drawTextWithShadow(this.client.textRenderer, this.hudText, 2, 2, 1);
+        drawContext.drawString(this.client.font, this.hudText, 2, 2, 1);
     }
 }

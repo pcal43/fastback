@@ -21,11 +21,11 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
 import net.pcal.fastback.logging.UserLogger;
 
-import static net.minecraft.server.command.CommandManager.argument;
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.argument;
+import static net.minecraft.commands.Commands.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
@@ -39,7 +39,7 @@ enum RestoreCommand implements Command {
     private static final String ARGUMENT = "snapshot";
 
     @Override
-    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, PermissionsFactory<ServerCommandSource> pf) {
+    public void register(LiteralArgumentBuilder<CommandSourceStack> argb, PermissionsFactory<CommandSourceStack> pf) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(COMMAND_NAME, pf)).then(
@@ -50,7 +50,7 @@ enum RestoreCommand implements Command {
         );
     }
 
-    private static int restore(final CommandContext<ServerCommandSource> cc) {
+    private static int restore(final CommandContext<CommandSourceStack> cc) {
         try (final UserLogger ulog = UserLogger.ulog(cc)) {
             gitOp(NONE, ulog, repo -> {
                 final String snapshotName = cc.getLastChild().getArgument(ARGUMENT, String.class);

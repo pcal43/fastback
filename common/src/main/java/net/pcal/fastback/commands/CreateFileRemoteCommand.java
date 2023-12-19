@@ -21,7 +21,7 @@ package net.pcal.fastback.commands;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
@@ -30,8 +30,8 @@ import org.eclipse.jgit.lib.StoredConfig;
 
 import java.nio.file.Path;
 
-import static net.minecraft.server.command.CommandManager.argument;
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.argument;
+import static net.minecraft.commands.Commands.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.missingArgument;
@@ -51,7 +51,7 @@ enum CreateFileRemoteCommand implements Command {
     private static final String ARGUMENT = "file-path";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, PermissionsFactory<ServerCommandSource> pf) {
+    public void register(final LiteralArgumentBuilder<CommandSourceStack> argb, PermissionsFactory<CommandSourceStack> pf) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(COMMAND_NAME, pf)).
@@ -62,7 +62,7 @@ enum CreateFileRemoteCommand implements Command {
         );
     }
 
-    private static int setFileRemote(final CommandContext<ServerCommandSource> cc) {
+    private static int setFileRemote(final CommandContext<CommandSourceStack> cc) {
         final UserLogger ulog = UserLogger.ulog(cc);
         gitOp(NONE, ulog, repo -> {
             final String targetPath = cc.getArgument(ARGUMENT, String.class);

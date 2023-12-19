@@ -2,12 +2,12 @@ package net.pcal.fastback.mod.forge;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.level.LevelInfo;
-import net.minecraft.world.level.storage.LevelStorage;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.LevelSettings;
+import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.LevelSummary;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
@@ -72,8 +72,8 @@ class ForgeCommonProvider implements MinecraftProvider {
     }
 
     private void onRegisterCommandEvent(RegisterCommandsEvent event) {
-        final CommandDispatcher<ServerCommandSource> commandDispatcher = event.getDispatcher();
-        final LiteralArgumentBuilder<ServerCommandSource> backupCommand =
+        final CommandDispatcher<CommandSourceStack> commandDispatcher = event.getDispatcher();
+        final LiteralArgumentBuilder<CommandSourceStack> backupCommand =
                 createBackupCommand(permName -> x -> true);
         commandDispatcher.register(backupCommand);
     }
@@ -130,7 +130,7 @@ class ForgeCommonProvider implements MinecraftProvider {
     public void setMessageScreenText(UserMessage userMessage) {
     }
 
-    void renderOverlayText(DrawContext drawContext) {
+    void renderOverlayText(GuiGraphics drawContext) {
     }
 
     @Override
@@ -147,28 +147,28 @@ class ForgeCommonProvider implements MinecraftProvider {
     @Override
     public Path getWorldDirectory() {
         if (this.logicalServer == null) throw new IllegalStateException("minecraftServer is null");
-        final LevelStorage.Session session = logicalServer.session;
+        final LevelStorageSource.LevelStorageAccess session = logicalServer.storageSource;
         Path out = session.getWorldDir().toAbsolutePath().normalize();
         return out;
     }
 
     @Override
     public void setWorldSaveEnabled(boolean enabled) {
-        for (ServerWorld world : logicalServer.getWorlds()) {
-            world.savingDisabled = !enabled;
+        for (ServerLevel world : logicalServer.getAllLevels()) {
+            world.noSave = !enabled;
         }
     }
 
     @Override
     public void saveWorld() {
         if (this.logicalServer == null) throw new IllegalStateException();
-        this.logicalServer.saveAll(false, true, true); // suppressLogs, flush, force
+        this.logicalServer.saveEverything(false, true, true); // suppressLogs, flush, force
     }
 
     @Override
     public void sendBroadcast(UserMessage userMessage) {
-        if (this.logicalServer != null && this.logicalServer.isDedicated()) {
-            logicalServer.getPlayerManager().broadcast(messageToText(userMessage), false);
+        if (this.logicalServer != null && this.logicalServer.isDedicatedServer()) {
+            logicalServer.getPlayerList().broadcastSystemMessage(messageToText(userMessage), false);
         }
     }
 
@@ -180,7 +180,7 @@ class ForgeCommonProvider implements MinecraftProvider {
     @Override
     public Path getSavesDir() {
         if (this.isClient()) {
-            return logicalServer.getRunDirectory().toPath().resolve("saves");
+            return logicalServer.getServerDirectory().toPath().resolve("saves");
         } else {
             return null;
         }
@@ -188,11 +188,11 @@ class ForgeCommonProvider implements MinecraftProvider {
 
     @Override
     public String getWorldName() {
-        final LevelSummary ls = this.logicalServer.session.getLevelSummary();
+        final LevelSummary ls = this.logicalServer.storageSource.getSummary();
         if (ls == null) return null;
-        final LevelInfo li = ls.getLevelInfo();
+        final LevelSettings li = ls.getSettings();
         if (li == null) return null;
-        return li.getLevelName();
+        return li.levelName();
     }
 
     /**
@@ -202,9 +202,9 @@ class ForgeCommonProvider implements MinecraftProvider {
     public void addBackupProperties(Map<String, String> props) {
         props.put("fastback-version", this.getModVersion());
         if (this.logicalServer != null) {
-            props.put("minecraft-version", logicalServer.getVersion());
-            props.put("minecraft-game-mode", String.valueOf(logicalServer.getSaveProperties().getGameMode()));
-            props.put("minecraft-level-name", logicalServer.getSaveProperties().getLevelName());
+            props.put("minecraft-version", logicalServer.getServerVersion());
+            props.put("minecraft-game-mode", String.valueOf(logicalServer.getWorldData().getGameType()));
+            props.put("minecraft-level-name", logicalServer.getWorldData().getLevelName());
         }
     }
 

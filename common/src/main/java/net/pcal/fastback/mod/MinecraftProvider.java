@@ -18,17 +18,17 @@
 
 package net.pcal.fastback.mod;
 
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.text.TextColor;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextColor;
 import net.pcal.fastback.logging.UserMessage;
 
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
 
-import static net.minecraft.text.Style.EMPTY;
+import static net.minecraft.network.chat.Style.EMPTY;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 
 /**
@@ -125,42 +125,42 @@ public interface MinecraftProvider {
     /**
      * Send a chat message to user.
      */
-    default void sendChat(UserMessage message, ServerCommandSource scs) {
+    default void sendChat(UserMessage message, CommandSourceStack scs) {
         if (message.style() == ERROR) {
-            scs.sendError(messageToText(message));
+            scs.sendFailure(messageToText(message));
         } else {
-            scs.sendFeedback(() -> messageToText(message), false);
+            scs.sendSuccess(() -> messageToText(message), false);
         }
     }
 
     /**
      * Utility class that implementing classes can use to perform a standard conversion of UserMessage to minecraft Text.
      */
-    static Text messageToText(final UserMessage m) {
-        final MutableText out;
+    static Component messageToText(final UserMessage m) {
+        final MutableComponent out;
         if (m.localized() != null) {
-            out = Text.translatable(m.localized().key(), m.localized().params());
+            out = Component.translatable(m.localized().key(), m.localized().params());
         } else {
-            out = Text.literal(m.raw());
+            out = Component.literal(m.raw());
         }
         switch (m.style()) {
             case ERROR -> {
-                out.setStyle(EMPTY.withColor(TextColor.parse("red")));
+                out.setStyle(EMPTY.withColor(TextColor.parseColor("red")));
             }
             case WARNING -> {
-                out.setStyle(EMPTY.withColor(TextColor.parse("yellow")));
+                out.setStyle(EMPTY.withColor(TextColor.parseColor("yellow")));
             }
             case JGIT -> {
-                out.setStyle(EMPTY.withColor(TextColor.parse("gray")));
+                out.setStyle(EMPTY.withColor(TextColor.parseColor("gray")));
             }
             case NATIVE_GIT -> {
-                out.setStyle(EMPTY.withColor(TextColor.parse("green")));
+                out.setStyle(EMPTY.withColor(TextColor.parseColor("green")));
             }
             case BROADCAST -> {
                 out.setStyle(EMPTY.withItalic(true));
             }
             default -> {
-                out.setStyle(EMPTY.withColor(TextColor.parse("white")));
+                out.setStyle(EMPTY.withColor(TextColor.parseColor("white")));
             }
         }
         return out;

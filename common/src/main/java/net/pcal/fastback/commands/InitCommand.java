@@ -20,14 +20,14 @@ package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.repo.RepoFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
 
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.logging.UserLogger.ulog;
@@ -46,7 +46,7 @@ enum InitCommand implements Command {
     private static final String COMMAND_NAME = "init";
 
     @Override
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, PermissionsFactory<ServerCommandSource> pf) {
+    public void register(final LiteralArgumentBuilder<CommandSourceStack> argb, PermissionsFactory<CommandSourceStack> pf) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(COMMAND_NAME, pf)).
@@ -54,7 +54,7 @@ enum InitCommand implements Command {
         );
     }
 
-    private static int init(final CommandContext<ServerCommandSource> cc) {
+    private static int init(final CommandContext<CommandSourceStack> cc) {
         try (final UserLogger ulog = ulog(cc)) {
             executor().execute(NONE, ulog, () -> {
                         final Path worldSaveDir = mod().getWorldDirectory();

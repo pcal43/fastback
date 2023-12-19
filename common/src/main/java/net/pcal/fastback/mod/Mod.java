@@ -18,7 +18,7 @@
 
 package net.pcal.fastback.mod;
 
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
 import net.pcal.fastback.logging.UserMessage;
 
 import java.io.IOException;
@@ -68,7 +68,7 @@ public interface Mod {
     /**
      * Send a chat message to user.
      */
-    void sendChat(UserMessage message, ServerCommandSource scs);
+    void sendChat(UserMessage message, CommandSourceStack scs);
 
     /**
      * If on a dedicated server, broadcast a message to the chat window of all connected users.

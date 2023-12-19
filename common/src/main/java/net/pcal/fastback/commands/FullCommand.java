@@ -19,12 +19,12 @@
 package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
 import net.pcal.fastback.logging.UserLogger;
 
 import java.io.IOException;
 
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.gitOp;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
@@ -46,7 +46,7 @@ enum FullCommand implements Command {
 
     private static final String COMMAND_NAME = "full";
 
-    public void register(final LiteralArgumentBuilder<ServerCommandSource> argb, PermissionsFactory<ServerCommandSource> pf) {
+    public void register(final LiteralArgumentBuilder<CommandSourceStack> argb, PermissionsFactory<CommandSourceStack> pf) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(COMMAND_NAME, pf)).
@@ -54,7 +54,7 @@ enum FullCommand implements Command {
         );
     }
 
-    public static int run(ServerCommandSource scs) {
+    public static int run(CommandSourceStack scs) {
         final UserLogger ulog = ulog(scs);
         try {
             saveWorldBeforeBackup(ulog);

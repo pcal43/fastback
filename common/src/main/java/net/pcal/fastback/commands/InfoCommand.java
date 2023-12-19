@@ -19,8 +19,8 @@
 package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.UserLogger;
@@ -34,7 +34,7 @@ import net.pcal.fastback.utils.EnvironmentUtils;
 import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.literal;
 import static net.pcal.fastback.commands.Commands.SUCCESS;
 import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.config.FastbackConfigKey.AUTOBACK_ACTION;
@@ -66,7 +66,7 @@ enum InfoCommand implements Command {
     private static final String COMMAND_NAME = "info";
 
     @Override
-    public void register(LiteralArgumentBuilder<ServerCommandSource> argb, PermissionsFactory<ServerCommandSource> pf) {
+    public void register(LiteralArgumentBuilder<CommandSourceStack> argb, PermissionsFactory<CommandSourceStack> pf) {
         argb.then(
                 literal(COMMAND_NAME).
                         requires(subcommandPermission(COMMAND_NAME, pf)).
@@ -74,11 +74,11 @@ enum InfoCommand implements Command {
         );
     }
 
-    private static int info(final ServerCommandSource scs) {
+    private static int info(final CommandSourceStack scs) {
         requireNonNull(scs);
         try (final UserLogger ulog = ulog(scs)) {
             try {
-                final Text notInstalled = Text.translatable("fastback.values.not-installed");
+                final Component notInstalled = Component.translatable("fastback.values.not-installed");
                 ulog.message(UserMessage.localized("fastback.chat.info-header"));
                 ulog.message(UserMessage.localized("fastback.chat.info-fastback-version", mod().getModVersion()));
                 ulog.message(raw("native git installed: " + EnvironmentUtils.isNativeGitInstalled())); //fixme i18n
