@@ -6,9 +6,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.storage.LevelStorageSource;
-import net.minecraft.world.level.storage.LevelSummary;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
@@ -188,11 +186,7 @@ class ForgeCommonProvider implements MinecraftProvider {
 
     @Override
     public String getWorldName() {
-        final LevelSummary ls = this.logicalServer.storageSource.getSummary();
-        if (ls == null) return null;
-        final LevelSettings li = ls.getSettings();
-        if (li == null) return null;
-        return li.levelName();
+        return this.logicalServer.getWorldData().getLevelName();
     }
 
     /**
