@@ -94,6 +94,7 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
 
     @Override
     public void setMessageScreenText(UserMessage userMessage) {
+        if (this.client == null) return;
         final Screen screen = client.screen;
         if (screen instanceof GenericDirtMessageScreen) {
             ((ScreenAccessors) screen).setTitle(messageToText(userMessage));
@@ -110,6 +111,7 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
 
     @Override
     public void onHudRender(GuiGraphics drawContext, float tickDelta) {
+        if (this.client == null) return;
         if (this.hudText == null) return;
         if (!this.client.options.showAutosaveIndicator().get()) return;
         if (System.currentTimeMillis() - this.hudTextTime > TEXT_TIMEOUT) {
