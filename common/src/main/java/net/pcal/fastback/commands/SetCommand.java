@@ -55,7 +55,6 @@ import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_MESSAGE;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_LOCK_CLEANUP_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_MODS_BACKUP_ENABLED;
-import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.LOCAL_RETENTION_POLICY;
 import static net.pcal.fastback.config.FastbackConfigKey.REMOTE_RETENTION_POLICY;
 import static net.pcal.fastback.config.FastbackConfigKey.RESTORE_DIRECTORY;
@@ -63,10 +62,8 @@ import static net.pcal.fastback.config.FastbackConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.config.OtherConfigKey.REMOTE_PUSH_URL;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserLogger.ulog;
-import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.logging.UserMessage.localized;
 import static net.pcal.fastback.logging.UserMessage.raw;
-import static net.pcal.fastback.logging.UserMessage.styledRaw;
 import static net.pcal.fastback.mod.Mod.mod;
 import static net.pcal.fastback.repo.RepoFactory.rf;
 
@@ -90,7 +87,6 @@ enum SetCommand implements Command {
         final LiteralArgumentBuilder<CommandSourceStack> sc = literal(COMMAND_NAME).
                 requires(subcommandPermission(COMMAND_NAME, pf)).
                 executes(cc -> missingArgument("key", cc));
-        registerBooleanConfigValue(IS_NATIVE_GIT_ENABLED, sc);
         registerBooleanConfigValue(IS_LOCK_CLEANUP_ENABLED, sc);
         registerBooleanConfigValue(IS_BACKUP_ENABLED, sc);
         registerBooleanConfigValue(IS_MODS_BACKUP_ENABLED, sc);
@@ -138,9 +134,6 @@ enum SetCommand implements Command {
                     if (current == newValue) {
                         ulog.message(raw("No change.")); // FIXME i18n
                     } else {
-                        if (key == IS_NATIVE_GIT_ENABLED) {
-                            if (!validateNativeGitChange(newValue, repo, ulog)) return FAILURE;
-                        }
                         repo.getConfig().updater().set(key, newValue).save();
                         ulog.message(raw(key.getDisplayName() + " = " + newValue));
                     }
@@ -321,27 +314,4 @@ enum SetCommand implements Command {
             return FAILURE;
         }
     }
-
-    // ======================================================================
-    // Special validations
-
-    /**
-     * FIXME i18n
-     */
-    private static boolean validateNativeGitChange(final boolean newValue, final Repo repo, final UserLogger user) throws IOException {
-        if (newValue) {
-            if (!EnvironmentUtils.isNativeGitInstalled()) {
-                user.message(styledRaw("Native git is not installed on your machine.  Please install it and try again.", ERROR)); //FIXME i18n
-                return false;
-            }
-        }
-        if (!repo.getLocalSnapshots().isEmpty()) {
-            user.message(styledRaw("You can't change " + IS_NATIVE_GIT_ENABLED.getSettingName() + " once you've " +
-                    "made a backup.  If you want to delete your current backups and start over, delete the .git directory in your world folder. ", ERROR));
-            return false;
-        }
-        return true;
-    }
-
-
 }

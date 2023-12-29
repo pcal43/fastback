@@ -20,7 +20,6 @@ package net.pcal.fastback.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.network.chat.Component;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.UserLogger;
@@ -29,21 +28,18 @@ import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;
 import net.pcal.fastback.retention.RetentionPolicyType;
-import net.pcal.fastback.utils.EnvironmentUtils;
 
 import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.commands.Commands.literal;
-import static net.pcal.fastback.commands.Commands.SUCCESS;
-import static net.pcal.fastback.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.commands.Commands.*;
 import static net.pcal.fastback.config.FastbackConfigKey.AUTOBACK_ACTION;
 import static net.pcal.fastback.config.FastbackConfigKey.AUTOBACK_WAIT_MINUTES;
 import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_MESSAGE;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_MODS_BACKUP_ENABLED;
-import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.LOCAL_RETENTION_POLICY;
 import static net.pcal.fastback.config.FastbackConfigKey.REMOTE_RETENTION_POLICY;
 import static net.pcal.fastback.config.FastbackConfigKey.RESTORE_DIRECTORY;
@@ -53,8 +49,7 @@ import static net.pcal.fastback.logging.UserLogger.ulog;
 import static net.pcal.fastback.logging.UserMessage.raw;
 import static net.pcal.fastback.mod.Mod.mod;
 import static net.pcal.fastback.repo.RepoFactory.rf;
-import static net.pcal.fastback.utils.EnvironmentUtils.getGitLfsVersion;
-import static net.pcal.fastback.utils.EnvironmentUtils.getGitVersion;
+import static net.pcal.fastback.utils.EnvironmentUtils.*;
 import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
 import static org.apache.commons.io.FileUtils.sizeOfDirectory;
 
@@ -78,18 +73,15 @@ enum InfoCommand implements Command {
         requireNonNull(scs);
         try (final UserLogger ulog = ulog(scs)) {
             try {
-                final Component notInstalled = Component.translatable("fastback.values.not-installed");
                 ulog.message(UserMessage.localized("fastback.chat.info-header"));
                 ulog.message(UserMessage.localized("fastback.chat.info-fastback-version", mod().getModVersion()));
-                ulog.message(raw("native git installed: " + EnvironmentUtils.isNativeGitInstalled())); //fixme i18n
-                final String gitVersion = getGitVersion();
-                ulog.message(UserMessage.localized("fastback.chat.info-native-git-version", gitVersion != null ? gitVersion : notInstalled));
-                final String gitLfsVersion = getGitLfsVersion();
-                ulog.message(UserMessage.localized("fastback.chat.info-native-git-lfs-version", gitLfsVersion != null ? gitLfsVersion : notInstalled));
-
-                if (rf().isGitRepo(mod().getWorldDirectory())) {
+                if (!rf().isGitRepo(mod().getWorldDirectory())) {
+                    // If they haven't yet run 'backup init', make sure they've installed native.
+                    if (!isNativeOk(true, ulog, true)) return FAILURE;
+                } else {
                     try (final Repo repo = rf().load(mod().getWorldDirectory())) {
                         final GitConfig conf = repo.getConfig();
+                        if (!isNativeOk(conf, ulog, true)) return FAILURE;
                         ulog.message(UserMessage.localized("fastback.chat.info-uuid", repo.getWorldId()));
                         // FIXME? this could be implemented more efficiently
                         final long backupSize = sizeOfDirectory(repo.getDirectory());
@@ -100,7 +92,6 @@ enum InfoCommand implements Command {
                         show(IS_BACKUP_ENABLED, conf::getBoolean, ulog);
                         show(REMOTE_PUSH_URL, conf::getString, ulog);
                         show(RESTORE_DIRECTORY, conf::getString, ulog);
-                        show(IS_NATIVE_GIT_ENABLED, conf::getBoolean, ulog);
                         show(AUTOBACK_WAIT_MINUTES, conf::getInt, ulog);
                         show(IS_MODS_BACKUP_ENABLED, conf::getBoolean, ulog);
                         show(BROADCAST_ENABLED, conf::getBoolean, ulog);

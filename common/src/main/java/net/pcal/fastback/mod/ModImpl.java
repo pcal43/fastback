@@ -170,7 +170,6 @@ class ModImpl implements LifecycleListener, Mod {
         syslog().debug("onInitialize complete");
     }
 
-
     /**
      * Must be called when a world is starting (in either a dedicated or client-embedded server).
      */

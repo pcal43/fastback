@@ -25,8 +25,10 @@ import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.RepoFactory;
+import net.pcal.fastback.utils.EnvironmentUtils;
 import net.pcal.fastback.utils.Executor.ExecutionLock;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.function.Predicate;
 
@@ -35,6 +37,7 @@ import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 import static net.pcal.fastback.mod.Mod.mod;
+import static net.pcal.fastback.utils.EnvironmentUtils.isNativeOk;
 import static net.pcal.fastback.utils.Executor.executor;
 
 public class Commands {
@@ -114,11 +117,14 @@ public class Commands {
                 final Path worldSaveDir = mod().getWorldDirectory();
                 final RepoFactory rf = RepoFactory.rf();
                 if (!rf.isGitRepo(worldSaveDir)) { // FIXME this is not the right place for these checks
+                    // If they haven't yet run 'backup init', make sure they've installed native.
+                    if (!isNativeOk(true, ulog, true)) return;
                     ulog.message(styledLocalized("fastback.chat.not-enabled", ERROR));
                     return;
                 }
                 try (final Repo repo = rf.load(worldSaveDir)) {
                     final GitConfig repoConfig = repo.getConfig();
+                    if (!isNativeOk(repoConfig, ulog, false)) return;
                     if (!repoConfig.getBoolean(IS_BACKUP_ENABLED)) {
                         ulog.message(styledLocalized("fastback.chat.not-enabled", ERROR));
                     } else {

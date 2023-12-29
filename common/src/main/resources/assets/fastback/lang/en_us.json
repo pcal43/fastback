@@ -43,6 +43,7 @@
   "fastback.chat.info-native-git"                : "native-git: %s",
   "fastback.chat.info-native-git-version"        : "   git: %s",
   "fastback.chat.info-native-git-lfs-version"    : "   git-lfs: %s",
+  "fastback.chat.info-native-not-installed"      : "git and/or git-lfs could not be located on your PATH:\n%s\n\nBackup operations cannot be performed until you install native git.  Please see https://pcal43.github.io/fastback/native-git.html for more information.",
   "fastback.chat.info-remote-url"                : "Remote URL: %s",
   "fastback.chat.info-shutdown-action"           : "Shutdown action: %s",
   "fastback.chat.info-uuid"                      : "Backup UUID: %s",

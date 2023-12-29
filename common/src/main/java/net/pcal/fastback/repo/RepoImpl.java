@@ -45,7 +45,6 @@ import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_MESSAGE;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_LOCK_CLEANUP_ENABLED;
-import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.REMOTE_NAME;
 import static net.pcal.fastback.config.OtherConfigKey.REMOTE_PUSH_URL;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
@@ -56,6 +55,7 @@ import static net.pcal.fastback.logging.UserMessage.localized;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 import static net.pcal.fastback.logging.UserMessage.styledRaw;
 import static net.pcal.fastback.mod.Mod.mod;
+import static net.pcal.fastback.utils.EnvironmentUtils.isNativeOk;
 import static org.eclipse.jgit.util.FileUtils.RETRY;
 
 /**
@@ -88,7 +88,7 @@ class RepoImpl implements Repo {
 
     @Override
     public void doCommitAndPush(final UserLogger ulog) {
-        if (!doNativeCheck(ulog)) return;
+        if (isNativeOk(this.getConfig(), ulog, false)) return;
         checkIndexLock(ulog);
         broadcastBackupNotice();
         final long start = System.currentTimeMillis();
@@ -112,7 +112,7 @@ class RepoImpl implements Repo {
 
     @Override
     public void doCommitSnapshot(final UserLogger ulog) {
-        if (!doNativeCheck(ulog)) return;
+        if (isNativeOk(this.getConfig(), ulog, false)) return;
         checkIndexLock(ulog);
         broadcastBackupNotice();
         final long start = System.currentTimeMillis();
@@ -133,7 +133,7 @@ class RepoImpl implements Repo {
             ulog.message(styledLocalized("No remote is configured.  Run set-remote <url>", ERROR)); //FIXME i18n
             return;
         }
-        if (!doNativeCheck(ulog)) return;
+        if (isNativeOk(this.getConfig(), ulog, false)) return;
         final long start = System.currentTimeMillis();
         try {
             PushUtils.doPush(sid, this, ulog);
@@ -158,7 +158,7 @@ class RepoImpl implements Repo {
 
     @Override
     public void doGc(final UserLogger ulog) {
-        if (!doNativeCheck(ulog)) return;
+        if (isNativeOk(this.getConfig(), ulog, false)) return;
         try {
             ReclamationUtils.doReclamation(this, ulog);
         } catch (ProcessException | GitAPIException e) {
@@ -325,16 +325,5 @@ class RepoImpl implements Repo {
             m = styledLocalized("fastback.broadcast.message", BROADCAST);
         }
         mod().sendBroadcast(m);
-    }
-
-    private boolean doNativeCheck(UserLogger ulog) {
-        final GitConfig config = this.getConfig();
-        if (config.getBoolean(IS_NATIVE_GIT_ENABLED)) {
-            if (!EnvironmentUtils.isNativeGitInstalled()) {
-                ulog.message(styledRaw("Unable to backup: native mode enabled but git is not installed.", ERROR));
-                return false;
-            }
-        }
-        return true;
     }
 }
