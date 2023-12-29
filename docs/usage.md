@@ -9,6 +9,8 @@ nav_order: 10
 FastBack adds a custom `/backup` command that is used for all backup operations.  To get detailed help about
 using it, just type.
 
+**IMPORTANT:** Fastback requires that you have [native git and git-lfs](native-git.md) installed.
+
 ```
 /backup help
 ```

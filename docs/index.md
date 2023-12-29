@@ -13,6 +13,8 @@ it only saves the parts of your world that changed.
 This means backups are fast.  It also means you can keep snapshots of your world without using up a lot
 of disk space.
 
+**IMPORTANT:** Fastback requires that you have [native git and git-lfs](native-git.md) installed.
+
 ## Features
 
 * **Now with Forge support!**

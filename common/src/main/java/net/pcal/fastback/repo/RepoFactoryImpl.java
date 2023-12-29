@@ -20,7 +20,6 @@ package net.pcal.fastback.repo;
 
 import net.pcal.fastback.config.GitConfig.Updater;
 import net.pcal.fastback.logging.UserLogger;
-import net.pcal.fastback.utils.EnvironmentUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
@@ -31,13 +30,12 @@ import java.nio.file.Path;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.OtherConfigKey.COMMIT_SIGNING_ENABLED;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
-import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
-import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;
-import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.WARNING;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.*;
 import static net.pcal.fastback.logging.UserMessage.raw;
 import static net.pcal.fastback.logging.UserMessage.styledRaw;
 import static net.pcal.fastback.repo.WorldIdUtils.createWorldId;
 import static net.pcal.fastback.repo.WorldIdUtils.ensureWorldHasId;
+import static net.pcal.fastback.utils.EnvironmentUtils.isNativeOk;
 
 /**
  * @author pcal
@@ -52,20 +50,14 @@ class RepoFactoryImpl implements RepoFactory {
             ulog.message(styledRaw("Backups already initialized.", WARNING)); // FIXME i18n
             return;
         }
+        // If they haven't yet run 'backup init', make sure they've installed native.
+        if (!isNativeOk(true, ulog, true)) throw new IOException();
         try (final Git jgit = Git.init().setDirectory(worldSaveDir.toFile()).call()) {
             createWorldId(worldSaveDir);
             Repo repo = new RepoImpl(jgit);
             final Updater updater = repo.getConfig().updater();
             updater.set(COMMIT_SIGNING_ENABLED, false); // because some people have it set globally
-            if (EnvironmentUtils.isNativeGitInstalled()) {
-                ulog.message(styledRaw("Native git detected.", NATIVE_GIT)); // FIXME i18n
-                updater.set(IS_NATIVE_GIT_ENABLED, true);
-            } else {
-                ulog.message(styledRaw("Native git not installed on your system.", WARNING)); // FIXME i18n
-                ulog.message(raw("Native git is not required but it makes Fastback *much* faster.  You are strongly encouraged to install it *before* doing your first backup."));
-                ulog.message(raw("For more information, see https://pcal43.github.io/fastback/native-git.html"));
-                updater.set(IS_NATIVE_GIT_ENABLED, false);
-            }
+            updater.set(IS_NATIVE_GIT_ENABLED, true);
             updater.save();
             ulog.message(raw("Backups initialized.  Run '/backup local' to do your first backup.  '/backup help' for more options."));
         } catch (GitAPIException e) {
