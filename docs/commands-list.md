@@ -28,7 +28,6 @@
 | `set broadcast-enabled` _NEW_!    | Whether to send a server-wide notice when a backup is starting.                          |
 | `set broadcast-message`_NEW_!     | Customized server-wide notice message.                                                   |
 | `set lock-cleanup-enabled` _NEW_! | Automatic cleanup of orphaned `index.lock` files.  Be careful!                           |
-| `set native-git-enabled` _NEW_!   | Whether to enable native git support.  Recommended!                                      |
 | `set force-debug-enabled` _NEW_!  | Enable verbose debugging output to the console.  Useful if you're running into problems. |
 
 
