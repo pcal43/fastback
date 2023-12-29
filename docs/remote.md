@@ -20,7 +20,7 @@ If you have a git server already running (GitHub, for example), all you need to 
 
 Then, with your world running in Minecraft, type
 ```
-/backup set-remote ssh://192.168.0.99/mygitserver/myworld
+/backup set remote-url ssh://192.168.0.99/mygitserver/myworld
 ```
 
 ### Configuring remote backups to a file remote
@@ -39,7 +39,7 @@ If you ever need to reattach a world to an existing file remote, you can use the
 For the example above, that would be
 
 ```
-/backup set-remote file:///path/to/network/volume/minecraft-backups/myworld
+/backup set remote-url file:///path/to/network/volume/minecraft-backups/myworld
 ```
 
 
