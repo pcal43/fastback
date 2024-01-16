@@ -112,7 +112,7 @@ class RepoImpl implements Repo {
 
     @Override
     public void doCommitSnapshot(final UserLogger ulog) {
-        if (isNativeOk(this.getConfig(), ulog, false)) return;
+        if (!isNativeOk(this.getConfig(), ulog, false)) return;
         checkIndexLock(ulog);
         broadcastBackupNotice();
         final long start = System.currentTimeMillis();
