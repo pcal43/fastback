@@ -41,7 +41,7 @@ public class EnvironmentUtils {
     }
 
     public static String getGitLfsVersion() {
-        return execForVersion(new String[]{"git-lfs", "--version"});
+        return execForVersion(new String[]{"git", "lfs", "--version"});
     }
 
     /**
