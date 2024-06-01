@@ -21,7 +21,6 @@ package net.pcal.fastback.utils;
 import net.minecraft.network.chat.Component;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
-import net.pcal.fastback.logging.UserMessage;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,26 +54,25 @@ public class EnvironmentUtils {
      * @return true if native git is installed correctly, or if this is a legacy jgit-based backup.
      */
     public static boolean isNativeOk(boolean isNativeGitEnabled, UserLogger ulog, boolean verbose) {
-        if (isNativeGitEnabled) {
+        if (isNativeGitEnabled) { // default is true; false is undocumented and deprecated
             final Component notInstalled = Component.translatable("fastback.values.not-installed");
             final String gitVersion = getGitVersion();
             final String gitLfsVersion = getGitLfsVersion();
-            final boolean isNativeInstalled = (gitVersion != null && gitLfsVersion != null);
-            if (verbose || !isNativeInstalled) {
-                ulog.message(localized("fastback.chat.info-native-git-version", gitVersion != null ? gitVersion : notInstalled));
-                ulog.message(localized("fastback.chat.info-native-git-lfs-version", gitLfsVersion != null ? gitLfsVersion : notInstalled));
+            if (verbose) {
+                ulog.message(localized("fastback.chat.native-info",
+                        gitVersion != null ? gitVersion : notInstalled,
+                        gitLfsVersion != null ? gitLfsVersion : notInstalled));
             }
-            if (!isNativeInstalled) {
-                final String path = System.getenv("PATH");
-                ulog.message(styledLocalized("fastback.chat.info-native-not-installed", ERROR, path));
+            if (gitVersion == null) {
+                ulog.message(styledLocalized("fastback.chat.native-git-not-installed", ERROR, System.getenv("PATH")));
                 return false;
-            } else if (verbose) {
-                ulog.message(styledLocalized("fastback.chat.info-native-installed", NATIVE_GIT));
+            }
+            if (gitLfsVersion == null) {
+                ulog.message(styledLocalized("fastback.chat.native-lfs-not-installed", ERROR, System.getenv("PATH")));
+                return false;
             }
         } else {
-            if (verbose) {
-                ulog.message(styledLocalized("fastback.chat.info-native-disabled", WARNING));
-            }
+            if (verbose) ulog.message(styledLocalized("fastback.chat.native-disabled", WARNING));
         }
         return true;
     }
@@ -91,6 +89,4 @@ public class EnvironmentUtils {
         }
         return exit == 0 ? stdout.get(0) : null;
     }
-
-
 }

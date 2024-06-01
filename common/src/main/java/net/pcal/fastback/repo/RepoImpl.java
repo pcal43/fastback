@@ -88,7 +88,7 @@ class RepoImpl implements Repo {
 
     @Override
     public void doCommitAndPush(final UserLogger ulog) {
-        if (isNativeOk(this.getConfig(), ulog, false)) return;
+        if (!isNativeOk(this.getConfig(), ulog, false)) return;
         checkIndexLock(ulog);
         broadcastBackupNotice();
         final long start = System.currentTimeMillis();
@@ -133,7 +133,7 @@ class RepoImpl implements Repo {
             ulog.message(styledLocalized("fastback.chat.remote-no-url", ERROR));
             return;
         }
-        if (isNativeOk(this.getConfig(), ulog, false)) return;
+        if (!isNativeOk(this.getConfig(), ulog, false)) return;
         final long start = System.currentTimeMillis();
         try {
             PushUtils.doPush(sid, this, ulog);
@@ -158,7 +158,7 @@ class RepoImpl implements Repo {
 
     @Override
     public void doGc(final UserLogger ulog) {
-        if (isNativeOk(this.getConfig(), ulog, false)) return;
+        if (!isNativeOk(this.getConfig(), ulog, false)) return;
         try {
             ReclamationUtils.doReclamation(this, ulog);
         } catch (ProcessException | GitAPIException e) {
