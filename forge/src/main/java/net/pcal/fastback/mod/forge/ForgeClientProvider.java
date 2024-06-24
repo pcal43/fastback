@@ -1,6 +1,6 @@
 package net.pcal.fastback.mod.forge;
 
-import net.minecraftforge.client.event.RenderGuiOverlayEvent;
+import net.minecraftforge.client.event.CustomizeGuiOverlayEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -53,7 +53,7 @@ final class ForgeClientProvider extends ForgeCommonProvider {
         this.onInitialize();
     }
 
-    private void onGuiOverlayEvent(RenderGuiOverlayEvent.Post event) {
+    private void onGuiOverlayEvent(CustomizeGuiOverlayEvent event) {
         this.renderOverlayText(event.getGuiGraphics());
     }
 

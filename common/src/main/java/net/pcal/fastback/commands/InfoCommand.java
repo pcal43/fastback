@@ -82,7 +82,7 @@ enum InfoCommand implements Command {
                     try (final Repo repo = rf().load(mod().getWorldDirectory())) {
                         final GitConfig conf = repo.getConfig();
                         if (!isNativeOk(conf, ulog, true)) return FAILURE;
-                        ulog.message(UserMessage.localized("fastback.chat.info-uuid", repo.getWorldId()));
+                        ulog.message(UserMessage.localized("fastback.chat.info-uuid", repo.getWorldId().toString()));
                         // FIXME? this could be implemented more efficiently
                         final long backupSize = sizeOfDirectory(repo.getDirectory());
                         final long worldSize = sizeOfDirectory(repo.getWorkTree()) - backupSize;
