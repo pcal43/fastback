@@ -50,7 +50,10 @@ fi
 #
 
 FABRIC_LIBS_DIR='fabric/build/libs'
-FORGE_LIBS_DIR='forge/build/libs'
+
+# NOTE: Forge is no longer supported and the build has been disabled
+# See: https://github.com/pcal43/fastback/issues/333
+# FORGE_LIBS_DIR='forge/build/libs'
 
 CURRENT_VERSION=$(sed -rn 's/^mod_version.*=[ ]*([^\n]+)$/\1/p' gradle.properties)
 echo "Current version is '$CURRENT_VERSION'"
@@ -66,7 +69,10 @@ rm gradle.properties
 mv gradle.properties.temp gradle.properties
 
 rm -rf "${FABRIC_LIBS_DIR}"
-rm -rf "${FORGE_LIBS_DIR}"
+
+# NOTE: Forge is no longer supported and the build has been disabled
+# See: https://github.com/pcal43/fastback/issues/333
+# rm -rf "${FORGE_LIBS_DIR}"
 
 ./gradlew remapJar
 
@@ -78,7 +84,7 @@ git push
 # Do github release
 #
 set -x
-gh release create --generate-notes --title "${RELEASE_VERSION}" --notes "release ${RELEASE_VERSION}" ${RELEASE_VERSION}  "${FABRIC_LIBS_DIR}"/* "${FORGE_LIBS_DIR}"/*
+gh release create --generate-notes --title "${RELEASE_VERSION}" --notes "release ${RELEASE_VERSION}" ${RELEASE_VERSION}  "${FABRIC_LIBS_DIR}"/*   # "${FORGE_LIBS_DIR}"/*
 set +x
 
 

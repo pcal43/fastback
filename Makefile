@@ -9,7 +9,7 @@ clean:
 jar:
 	./gradlew remapJar
 	ls -1 fabric/build/libs
-	ls -1 forge/build/libs
+#	ls -1 forge/build/libs
 
 test:
 	./gradlew test
@@ -38,15 +38,15 @@ deps:
 
 .PHONY: inst
 inst:
-	rm -f ~/minecraft/instances/1.20.1-forge-dev/.minecraft/mods/fastback*
+#	rm -f ~/minecraft/instances/1.20.1-forge-dev/.minecraft/mods/fastback*
 	rm -f ~/minecraft/instances/1.20.1-fabric-dev/.minecraft/mods/fasback*
 	cp fabric/build/libs/fastback*-fabric.jar ~/minecraft/instances/1.20.1-fabric-dev/.minecraft/mods/
-	cp forge/build/libs/fastback*-forge.jar ~/minecraft/instances/1.20.1-forge-dev/.minecraft/mods/
+#	cp forge/build/libs/fastback*-forge.jar ~/minecraft/instances/1.20.1-forge-dev/.minecraft/mods/
 
 .PHONY: tvf
 tvf:
-	jar -tvf forge/build/libs/fastback*-forge.jar
+#	jar -tvf forge/build/libs/fastback*-forge.jar
 
 .PHONY: tvfs
 tvfs:
-	jar -tvf forge/build/libs/fastback*-shadow.jar
+#	jar -tvf forge/build/libs/fastback*-shadow.jar

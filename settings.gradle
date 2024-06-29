@@ -6,20 +6,22 @@ pluginManagement {
             url = "https://maven.fabricmc.net/"
         }
         maven {
-            name = "Forge"
-            url = "https://maven.minecraftforge.net/"
-        }
-        maven {
             name = "Architectury"
             url = "https://maven.architectury.dev/"
         }
         //mavenCentral()
         gradlePluginPortal()
+        // NOTE: Forge is no longer supported and the build has been disabled
+        // See: https://github.com/pcal43/fastback/issues/333
+        // maven {
+        //    name = 'NeoForged'
+        //    url = 'https://maven.neoforged.net/releases'
+        //}
+        // architectury-loom still demands this for some reason
         maven {
-            name = 'NeoForged'
-            url = 'https://maven.neoforged.net/releases'
+            name = "Forge"
+            url = "https://maven.minecraftforge.net/"
         }
-
     }
 }
 
@@ -27,4 +29,7 @@ rootProject.name = "fastback"
 
 include(":common")
 include(":fabric")
-include(":forge")
+
+// NOTE: Forge is no longer supported and the build has been disabled
+// See: https://github.com/pcal43/fastback/issues/333
+// include(":forge")
