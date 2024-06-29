@@ -18,7 +18,7 @@
 package net.pcal.fastback.mod.fabric.mixins;
 
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.GenericDirtMessageScreen;
+import net.minecraft.client.gui.screens.GenericMessageScreen;
 import net.pcal.fastback.mod.fabric.MixinGateway;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -31,10 +31,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * @author pcal
  * @since 0.14.0
  */
-@Mixin(GenericDirtMessageScreen.class)
+@Mixin(GenericMessageScreen.class)
 public class MessageScreenMixin {
 
-    @Inject(method = "render", at = @At("TAIL"))
+    @Inject(method = "renderBackground", at = @At("TAIL"))
     public void fastback_render(GuiGraphics context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         MixinGateway.get().renderMessageScreen(context, delta);
     }

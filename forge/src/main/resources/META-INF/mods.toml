@@ -5,7 +5,7 @@ license = "GPL2"
 
 [[mods]]
 modId = "fastback"
-version = "0.15.3+1.20.4-prerelease"
+version = "0.17.4+1.20.6-prerelease"
 displayName = "Fast Backups"
 authors = "pcal"
 description = '''
@@ -24,6 +24,6 @@ side = "CLIENT"
 [[dependencies.fastback]]
 modId = "minecraft"
 mandatory = true
-versionRange = "1.20.4"
+versionRange = "1.20.6"
 ordering = "NONE"
 side = "CLIENT"

@@ -22,7 +22,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.GenericDirtMessageScreen;
+import net.minecraft.client.gui.screens.GenericMessageScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.pcal.fastback.logging.UserMessage;
@@ -96,7 +96,7 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
     public void setMessageScreenText(UserMessage userMessage) {
         if (this.client == null) return;
         final Screen screen = client.screen;
-        if (screen instanceof GenericDirtMessageScreen) {
+        if (screen instanceof GenericMessageScreen) {
             ((ScreenAccessors) screen).setTitle(messageToText(userMessage));
         }
     }
