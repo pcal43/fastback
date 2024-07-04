@@ -69,16 +69,12 @@ public enum SchedulableAction {
         public Callable<Void> getTask(final Repo repo, final UserLogger ulog) {
             return () -> {
                 repo.doCommitAndPush(ulog);
-                final Collection<SnapshotId> pruned = repo.doLocalPrune(ulog);
-                if (pruned.size() > 0) {
-                    repo.doGc(ulog);
-                }
+                repo.doLocalPrune(ulog);
+                repo.doGc(ulog);
                 return null;
             };
         }
     };
-
-    public static final SchedulableAction DEFAULT_SHUTDOWN_ACTION = FULL;
 
     public static SchedulableAction forConfigValue(final GitConfig c, final FastbackConfigKey key) {
         String configValue = c.getString(key);
