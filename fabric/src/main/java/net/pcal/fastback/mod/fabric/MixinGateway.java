@@ -36,7 +36,7 @@ public interface MixinGateway {
 
     void autoSaveCompleted();
 
-    void renderMessageScreen(GuiGraphics drawContext, float tickDelta);
+    void renderMessageScreen(GuiGraphics drawContext);
 
     class Singleton {
         private static MixinGateway INSTANCE = null;

@@ -54,7 +54,7 @@ public class FabricServerProvider extends BaseFabricProvider {
     }
 
     @Override
-    public void renderMessageScreen(GuiGraphics drawContext, float tickDelta) {
+    public void renderMessageScreen(GuiGraphics drawContext) {
 
     }
 }

@@ -64,8 +64,8 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
     // MixinGateway implementation
 
     @Override
-    public void renderMessageScreen(GuiGraphics drawContext, float tickDelta) {
-        onHudRender(drawContext, null);
+    public void renderMessageScreen(GuiGraphics guiGraphics) {
+        renderHud(guiGraphics);
     }
 
     // ====================================================================
@@ -112,6 +112,13 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
 
     @Override
     public void onHudRender(GuiGraphics drawContext, DeltaTracker tickDelta) {
+        renderHud(drawContext);
+    }
+
+    // ====================================================================
+    // Private
+
+    private void renderHud(GuiGraphics guiGraphics) {
         if (this.client == null) return;
         if (this.hudText == null) return;
         if (!this.client.options.showAutosaveIndicator().get()) return;
@@ -121,6 +128,6 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
             syslog().debug("hud text timed out.  somebody forgot to clean up");
             return;
         }
-        drawContext.drawString(this.client.font, this.hudText, 2, 2, 1);
+        guiGraphics.drawString(this.client.font, this.hudText, 2, 2, 1);
     }
 }

@@ -36,6 +36,6 @@ public class MessageScreenMixin {
 
     @Inject(method = "renderBackground", at = @At("TAIL"))
     public void fastback_render(GuiGraphics context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
-        MixinGateway.get().renderMessageScreen(context, delta);
+        MixinGateway.get().renderMessageScreen(context);
     }
 }
