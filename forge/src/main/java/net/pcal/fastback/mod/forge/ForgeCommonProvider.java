@@ -178,7 +178,7 @@ class ForgeCommonProvider implements MinecraftProvider {
     @Override
     public Path getSavesDir() {
         if (this.isClient()) {
-            return logicalServer.getServerDirectory().toPath().resolve("saves");
+            return logicalServer.getServerDirectory().resolve("saves");
         } else {
             return null;
         }

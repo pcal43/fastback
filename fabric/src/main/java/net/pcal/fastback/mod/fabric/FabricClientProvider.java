@@ -24,6 +24,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.GenericMessageScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.network.chat.Component;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.fabric.mixins.ScreenAccessors;
@@ -64,7 +65,7 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
 
     @Override
     public void renderMessageScreen(GuiGraphics drawContext, float tickDelta) {
-        onHudRender(drawContext, tickDelta);
+        onHudRender(drawContext, null);
     }
 
     // ====================================================================
@@ -110,7 +111,7 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
     // HudRenderCallback implementation
 
     @Override
-    public void onHudRender(GuiGraphics drawContext, float tickDelta) {
+    public void onHudRender(GuiGraphics drawContext, DeltaTracker tickDelta) {
         if (this.client == null) return;
         if (this.hudText == null) return;
         if (!this.client.options.showAutosaveIndicator().get()) return;
