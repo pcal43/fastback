@@ -13,8 +13,8 @@ As of version `0.17.1`, Fastback **requires** that you have native `git` and `gi
 Installing git is highly dependent on your platform but there are tons of resources on the web describing how to do it. 
 Here are some good places to start:
 
-* Installing [git](https://github.com/git-lfs/git-lfs/wiki/Installation)
-* Installing [git-lfs](https://docs.github.com/en/repositories/working-with-files/managing-large-files/installing-git-large-file-storage)
+* Installing [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+* Installing [git-lfs](https://github.com/git-lfs/git-lfs?tab=readme-ov-file#installing)
 
 Note that both git and git-lfs must be available on the `PATH` of the Minecraft process.
 
