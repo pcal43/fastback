@@ -141,7 +141,7 @@ abstract class CommitUtils {
             }
         } catch (ProcessException e) {
             syslog().error(e);
-            ulog.message(styledRaw("fastback.chat.commit-failed", ERROR));
+            ulog.message(styledLocalized("fastback.chat.commit-failed", ERROR));
             return;
         }
         syslog().debug("End native_commit");
