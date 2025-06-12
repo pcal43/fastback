@@ -77,7 +77,7 @@ public class ProcessUtils {
         } catch (IOException | InterruptedException e) {
             throw new ProcessException(args, 0, errorBuffer, e);
         }
-        if (exit != 0) {
+        if (exit != 0 && throwOnNonZero) {
             throw new ProcessException(args, exit, errorBuffer);
         }
         return exit;
