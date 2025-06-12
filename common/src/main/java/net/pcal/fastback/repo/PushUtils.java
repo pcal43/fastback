@@ -147,7 +147,7 @@ abstract class PushUtils {
     }
 
     static Collection<String> native_lsRemote(final Repo repo, final String remote, final boolean heads, final boolean tags) throws ProcessException {
-        List<String> command = new ArrayList<>(asList("git", "-C", repo.getWorkTree().getAbsolutePath(), "ls-remote"));
+        List<String> command = new ArrayList<>(asList("git", "ls-remote"));
         addIf(command, heads, "--branches");
         addIf(command, tags, "--tags");
         command.add(remote);
@@ -163,7 +163,8 @@ abstract class PushUtils {
                     }
                 },
                 unused -> {},
-                false
+                true,
+                repo.getWorkTree()
         );
         return result;
     }
