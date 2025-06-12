@@ -163,7 +163,7 @@ abstract class PushUtils {
                     }
                 },
                 unused -> {},
-                true,
+                false,
                 repo.getWorkTree()
         );
         return result;
