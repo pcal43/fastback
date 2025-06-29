@@ -38,10 +38,10 @@ import static net.pcal.fastback.logging.SystemLogger.syslog;
 public class ProcessUtils {
 
     public static int doExec(String[] args, final Map<String, String> envOriginal, Consumer<String> stdoutSink, Consumer<String> stderrSink) throws ProcessException {
-        return doExec(args, envOriginal, stdoutSink, stderrSink, true, null);
+        return doExec(args, envOriginal, stdoutSink, stderrSink, true);
     }
 
-    public static int doExec(final String[] args, final Map<String, String> envOriginal, final Consumer<String> stdoutSink, final Consumer<String> stderrSink, boolean throwOnNonZero, File workDir) throws ProcessException {
+    public static int doExec(final String[] args, final Map<String, String> envOriginal, final Consumer<String> stdoutSink, final Consumer<String> stderrSink, boolean throwOnNonZero) throws ProcessException {
         syslog().debug("Executing " + String.join(" ", args));
         final ProcessBuilder pb = new ProcessBuilder(args);
         final Map<String, String> env = pb.environment();
@@ -67,8 +67,6 @@ public class ProcessUtils {
             stderrSink.accept(line);
             errorBuffer.add("[STDERR] " + line);
         };
-        syslog().debug("WORKDIR: " + (workDir != null ? workDir.getAbsolutePath() : null));
-        pb.directory(workDir);
         final int exit;
         try {
             final Process p = pb.start();

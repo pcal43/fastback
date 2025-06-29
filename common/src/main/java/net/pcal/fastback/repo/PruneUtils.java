@@ -65,8 +65,8 @@ abstract class PruneUtils {
     }
 
     static void native_deleteRemoteBranch(final RepoImpl repo, String remoteBranchName) throws ProcessException {
-        String[] command = {"git", "push", repo.getConfig().getString(REMOTE_NAME), "--delete", remoteBranchName};
-        ProcessUtils.doExec(command, Collections.emptyMap(), nop(), nop(), true, repo.getWorkTree());
+        String[] command = {"git", "-C", repo.getWorkTree().getAbsolutePath(), "push", repo.getConfig().getString(REMOTE_NAME), "--delete", remoteBranchName};
+        ProcessUtils.doExec(command, Collections.emptyMap(), nop(), nop(), true);
     }
 
     static void jgit_deleteRemoteBranch(final RepoImpl repo, String remoteBranchName) throws GitAPIException {
