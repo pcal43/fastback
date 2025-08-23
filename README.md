@@ -31,7 +31,7 @@ of disk space.
 * Support for restoring remote snapshots
 * Better management of remote snapshots
 * UI for managing backups from the title screen
-* ~~Forge support (maybe)~~
+* ~~Forge support~~ ([#333](https://github.com/pcal43/fastback/issues/333): Currently not supported; but **willing to accept contributions!**)
 
 ## Acknowledgements
 
