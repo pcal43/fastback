@@ -38,6 +38,7 @@ import org.eclipse.jgit.transport.URIish;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -58,7 +59,6 @@ import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NORMAL;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 import static net.pcal.fastback.logging.UserMessage.styledRaw;
-import static net.pcal.fastback.utils.CollectionUtils.addIf;
 import static net.pcal.fastback.utils.ProcessUtils.doExec;
 
 /**
@@ -74,6 +74,7 @@ abstract class PushUtils {
     }
 
     // TODO stop throwing IOE
+    // TODO stop passing repo
     static void doPush(SnapshotId sid, RepoImpl repo, UserLogger ulog) throws IOException, ProcessException {
         try {
             final GitConfig conf = repo.getConfig();
@@ -86,9 +87,9 @@ abstract class PushUtils {
             final Collection<String> remoteBranchRefs;
             final String remoteName = conf.getString(REMOTE_NAME);
             if (conf.getBoolean(IS_NATIVE_GIT_ENABLED)) {
-                remoteBranchRefs = native_lsRemote(repo, remoteName, true, false);
+                remoteBranchRefs = native_lsRemote(repo.getWorkTree().toPath(), remoteName, true, false);
             } else {
-                remoteBranchRefs = jgit_lsRemote(repo, remoteName, true, false);
+                remoteBranchRefs = jgit_lsRemote(repo.getJGit(), remoteName, true, false);
             }
             final ListMultimap<WorldId, SnapshotId> snapshotsPerWorld =
                     SnapshotIdUtils.getSnapshotsPerWorld(remoteBranchRefs, repo.getSidCodec());
@@ -126,6 +127,7 @@ abstract class PushUtils {
         }
     }
 
+    // TODO stop passing repo
     private static void native_doPush(final Repo repo, final String branchNameToPush, final UserLogger log) throws ProcessException {
         syslog().debug("Start native_push");
         final File worktree = repo.getWorkTree();
@@ -146,13 +148,13 @@ abstract class PushUtils {
                 setRefSpecs(new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
     }
 
-    static Collection<String> native_lsRemote(final Repo repo, final String remote, final boolean heads, final boolean tags) throws ProcessException {
-        List<String> command = new ArrayList<>(asList("git", "-C", repo.getWorkTree().getAbsolutePath(), "ls-remote"));
-        addIf(command, heads, "--branches");
-        addIf(command, tags, "--tags");
+    static Collection<String> native_lsRemote(final Path worktree, final String remote, final boolean heads, final boolean tags) throws ProcessException {
+        final List<String> command = new ArrayList<>(asList("git", "-C", worktree.toAbsolutePath().toString(), "ls-remote"));
+        if (heads) command.add("--branches");
+        if (tags) command.add("--tags");
         command.add(remote);
 
-        List<String> result = new ArrayList<>();
+        final List<String> result = new ArrayList<>();
         ProcessUtils.doExec(
                 command.toArray(String[]::new),
                 Map.of(),
@@ -168,8 +170,7 @@ abstract class PushUtils {
         return result;
     }
 
-    static Collection<String> jgit_lsRemote(final RepoImpl repo, final String remote, final boolean heads, final boolean tags) throws GitAPIException {
-        Git jgit = repo.getJGit();
+    static Collection<String> jgit_lsRemote(final Git jgit, final String remote, final boolean heads, final boolean tags) throws GitAPIException {
         return jgit.lsRemote().setHeads(heads).setTags(tags).setRemote(remote).call()
                 .stream().map(Ref::getName).toList();
     }
@@ -267,6 +268,7 @@ abstract class PushUtils {
         }
     }
 
+    // TODO stop passing repo
     private static boolean doWorldIdCheck(RepoImpl repo, Set<WorldId> remoteWorldUuids) throws IOException {
         final WorldId localUuid = repo.getWorldId();
         if (remoteWorldUuids.size() > 2) {

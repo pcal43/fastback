@@ -23,7 +23,6 @@ import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.repo.SnapshotIdUtils.SnapshotIdCodec;
 import net.pcal.fastback.repo.WorldIdUtils.WorldIdInfo;
-import net.pcal.fastback.utils.EnvironmentUtils;
 import net.pcal.fastback.utils.ProcessException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -42,7 +41,11 @@ import java.util.List;
 import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.config.FastbackConfigKey.*;
+import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_ENABLED;
+import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_MESSAGE;
+import static net.pcal.fastback.config.FastbackConfigKey.IS_LOCK_CLEANUP_ENABLED;
+import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
+import static net.pcal.fastback.config.FastbackConfigKey.REMOTE_NAME;
 import static net.pcal.fastback.config.OtherConfigKey.REMOTE_PUSH_URL;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.BROADCAST;
@@ -207,9 +210,9 @@ class RepoImpl implements Repo {
         final JGitSupplier<Collection<String>> refProvider = () -> {
             try {
                 if (conf.getBoolean(IS_NATIVE_GIT_ENABLED)) {
-                    return native_lsRemote(this, remoteName, true, false);
+                    return native_lsRemote(this.getWorkTree().toPath(), remoteName, true, false);
                 } else {
-                    return jgit_lsRemote(this, remoteName, true, false);
+                    return jgit_lsRemote(this.jgit, remoteName, true, false);
                 }
             } catch (GitAPIException | ProcessException e) {
                 throw new IOException(e);
