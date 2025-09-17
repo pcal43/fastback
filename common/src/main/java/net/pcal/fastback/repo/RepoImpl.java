@@ -55,6 +55,8 @@ import static net.pcal.fastback.logging.UserMessage.localized;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 import static net.pcal.fastback.logging.UserMessage.styledRaw;
 import static net.pcal.fastback.mod.Mod.mod;
+import static net.pcal.fastback.repo.PushUtils.jgit_lsRemote;
+import static net.pcal.fastback.repo.PushUtils.native_lsRemote;
 import static net.pcal.fastback.utils.EnvironmentUtils.isNativeOk;
 import static org.eclipse.jgit.util.FileUtils.RETRY;
 
@@ -187,9 +189,9 @@ class RepoImpl implements Repo {
 
     @Override
     public Set<SnapshotId> getLocalSnapshots() throws IOException {
-        final JGitSupplier<Collection<Ref>> refProvider = () -> {
+        final JGitSupplier<Collection<String>> refProvider = () -> {
             try {
-                return jgit.branchList().call();
+                return jgit.branchList().call().stream().map(Ref::getName).toList();
             } catch (GitAPIException e) {
                 throw new IOException(e);
             }
@@ -205,10 +207,14 @@ class RepoImpl implements Repo {
     public Set<SnapshotId> getRemoteSnapshots() throws IOException {
         final GitConfig conf = GitConfig.load(jgit);
         final String remoteName = conf.getString(REMOTE_NAME);
-        final JGitSupplier<Collection<Ref>> refProvider = () -> {
+        final JGitSupplier<Collection<String>> refProvider = () -> {
             try {
-                return jgit.lsRemote().setRemote(remoteName).setHeads(true).call();
-            } catch (GitAPIException e) {
+                if (conf.getBoolean(IS_NATIVE_GIT_ENABLED)) {
+                    return native_lsRemote(this, remoteName, true, false);
+                } else {
+                    return jgit_lsRemote(this, remoteName, true, false);
+                }
+            } catch (GitAPIException | ProcessException e) {
                 throw new IOException(e);
             }
         };

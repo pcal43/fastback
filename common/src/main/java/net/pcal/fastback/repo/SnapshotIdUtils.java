@@ -21,7 +21,6 @@ package net.pcal.fastback.repo;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import net.pcal.fastback.repo.WorldIdUtils.WorldIdImpl;
-import org.eclipse.jgit.lib.Ref;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -32,9 +31,9 @@ import static net.pcal.fastback.logging.SystemLogger.syslog;
 
 abstract class SnapshotIdUtils {
 
-    static ListMultimap<WorldId, SnapshotId> getSnapshotsPerWorld(Iterable<Ref> refs, SnapshotIdCodec codec) {
+    static ListMultimap<WorldId, SnapshotId> getSnapshotsPerWorld(Iterable<String> refs, SnapshotIdCodec codec) {
         final ListMultimap<WorldId, SnapshotId> out = ArrayListMultimap.create();
-        for (final Ref ref : refs) {
+        for (final String ref : refs) {
             final String branchName = BranchUtils.getBranchName(ref);
             if (branchName == null) continue;
             try {

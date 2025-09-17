@@ -40,11 +40,11 @@ abstract class BranchUtils {
     /**
      * Get the snapshots for this repo.  Snapshot branches for worlds other than the Repo's are ignored.
      */
-    static Set<SnapshotId> listSnapshots(RepoImpl repo, JGitSupplier<Collection<Ref>> refProvider) throws GitAPIException, IOException {
-        final Collection<Ref> refs = refProvider.get();
+    static Set<SnapshotId> listSnapshots(RepoImpl repo, JGitSupplier<Collection<String>> refProvider) throws GitAPIException, IOException {
+        final Collection<String> refs = refProvider.get();
         final SnapshotIdCodec codec = repo.getSidCodec();
         final Set<SnapshotId> out = new HashSet<>();
-        for (final Ref ref : refs) {
+        for (final String ref : refs) {
             String branchName = getBranchName(ref);
             if (repo.getSidCodec().isSnapshotBranchName(repo.getWorldId(), branchName)) {
                 final SnapshotId sid;
@@ -67,8 +67,11 @@ abstract class BranchUtils {
     }
 
     static String getBranchName(Ref fromBranchRef) {
+        return getBranchName(fromBranchRef.getName());
+    }
+
+    static String getBranchName(String name) {
         final String REFS_HEADS = "refs/heads/";
-        final String name = fromBranchRef.getName();
         if (name.startsWith(REFS_HEADS)) {
             return name.substring(REFS_HEADS.length());
         } else {

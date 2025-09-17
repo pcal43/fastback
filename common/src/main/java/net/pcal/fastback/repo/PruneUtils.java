@@ -25,6 +25,8 @@ import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;
 import net.pcal.fastback.retention.RetentionPolicyType;
+import net.pcal.fastback.utils.ProcessException;
+import net.pcal.fastback.utils.ProcessUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.transport.RefSpec;
 
@@ -35,11 +37,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import static net.pcal.fastback.config.FastbackConfigKey.LOCAL_RETENTION_POLICY;
-import static net.pcal.fastback.config.FastbackConfigKey.REMOTE_NAME;
+import static net.pcal.fastback.config.FastbackConfigKey.*;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
+import static org.apache.commons.lang3.function.Consumers.nop;
 
 /**
  * Utils for pruning and deleting snapshot branches.
@@ -50,14 +52,28 @@ import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 abstract class PruneUtils {
 
     static void deleteRemoteBranch(final RepoImpl repo, String remoteBranchName) throws IOException {
+        GitConfig config = repo.getConfig();
+        try {
+            if (config.getBoolean(IS_NATIVE_GIT_ENABLED)) {
+                native_deleteRemoteBranch(repo, remoteBranchName);
+            } else {
+                jgit_deleteRemoteBranch(repo, remoteBranchName);
+            }
+        } catch (GitAPIException | ProcessException e) {
+            throw new IOException(e);
+        }
+    }
+
+    static void native_deleteRemoteBranch(final RepoImpl repo, String remoteBranchName) throws ProcessException {
+        String[] command = {"git", "-C", repo.getWorkTree().getAbsolutePath(), "push", repo.getConfig().getString(REMOTE_NAME), "--delete", remoteBranchName};
+        ProcessUtils.doExec(command, Collections.emptyMap(), nop(), nop(), true);
+    }
+
+    static void jgit_deleteRemoteBranch(final RepoImpl repo, String remoteBranchName) throws GitAPIException {
         RefSpec refSpec = new RefSpec()
                 .setSource(null)
                 .setDestination("refs/heads/" + remoteBranchName);
-        try {
-            repo.getJGit().push().setRefSpecs(refSpec).setRemote(repo.getConfig().getString(REMOTE_NAME)).call();
-        } catch (GitAPIException e) {
-            throw new IOException(e);
-        }
+        repo.getJGit().push().setRefSpecs(refSpec).setRemote(remoteBranchName).call();
     }
 
     static void deleteLocalBranches(final RepoImpl repo, List<String> branchNames) throws IOException {

@@ -23,6 +23,7 @@ import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.utils.ProcessException;
+import net.pcal.fastback.utils.ProcessUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
@@ -37,13 +38,10 @@ import org.eclipse.jgit.transport.URIish;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
+import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.config.FastbackConfigKey.IS_REMOTE_TEMP_BRANCH_CLEANUP_ENABLED;
@@ -60,6 +58,7 @@ import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NATIVE_GIT;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.NORMAL;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 import static net.pcal.fastback.logging.UserMessage.styledRaw;
+import static net.pcal.fastback.utils.CollectionUtils.addIf;
 import static net.pcal.fastback.utils.ProcessUtils.doExec;
 
 /**
@@ -84,8 +83,13 @@ abstract class PushUtils {
                 return;
             }
             final Git jgit = repo.getJGit();
-            final Collection<Ref> remoteBranchRefs = jgit.lsRemote().setHeads(true).setTags(false).
-                    setRemote(conf.getString(REMOTE_NAME)).call();
+            final Collection<String> remoteBranchRefs;
+            final String remoteName = conf.getString(REMOTE_NAME);
+            if (conf.getBoolean(IS_NATIVE_GIT_ENABLED)) {
+                remoteBranchRefs = native_lsRemote(repo, remoteName, true, false);
+            } else {
+                remoteBranchRefs = jgit_lsRemote(repo, remoteName, true, false);
+            }
             final ListMultimap<WorldId, SnapshotId> snapshotsPerWorld =
                     SnapshotIdUtils.getSnapshotsPerWorld(remoteBranchRefs, repo.getSidCodec());
             if (conf.getBoolean(IS_UUID_CHECK_ENABLED)) {
@@ -142,6 +146,34 @@ abstract class PushUtils {
                 setRefSpecs(new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
     }
 
+    static Collection<String> native_lsRemote(final Repo repo, final String remote, final boolean heads, final boolean tags) throws ProcessException {
+        List<String> command = new ArrayList<>(asList("git", "-C", repo.getWorkTree().getAbsolutePath(), "ls-remote"));
+        addIf(command, heads, "--branches");
+        addIf(command, tags, "--tags");
+        command.add(remote);
+
+        List<String> result = new ArrayList<>();
+        ProcessUtils.doExec(
+                command.toArray(String[]::new),
+                Map.of(),
+                line -> {
+                    if (!line.isEmpty()) {
+                        String refName = line.split("\t")[1];
+                        result.add(refName);
+                    }
+                },
+                unused -> {},
+                false
+        );
+        return result;
+    }
+
+    static Collection<String> jgit_lsRemote(final RepoImpl repo, final String remote, final boolean heads, final boolean tags) throws GitAPIException {
+        Git jgit = repo.getJGit();
+        return jgit.lsRemote().setHeads(heads).setTags(tags).setRemote(remote).call()
+                .stream().map(Ref::getName).toList();
+    }
+
     /**
      * This is a probably-failed attempt at an optimization.  It is no longer the default behavior.
      * <p>
@@ -175,7 +207,7 @@ abstract class PushUtils {
             } else {
                 final Collection<Ref> localBranchRefs = jgit.branchList().call();
                 final ListMultimap<WorldId, SnapshotId> localSnapshotsPerWorld =
-                        SnapshotIdUtils.getSnapshotsPerWorld(localBranchRefs, repo.getSidCodec());
+                        SnapshotIdUtils.getSnapshotsPerWorld(localBranchRefs.stream().map(Ref::getName).toList(), repo.getSidCodec());
                 final List<SnapshotId> localSnapshots = localSnapshotsPerWorld.get(worldUuid);
                 remoteSnapshots.retainAll(localSnapshots);
                 if (remoteSnapshots.isEmpty()) {
