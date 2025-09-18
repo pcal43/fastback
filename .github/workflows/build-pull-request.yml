@@ -17,9 +17,10 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
+          # Releases are not published with github actions, so I'm less concerned about cache poisoning
           cache-read-only: false
 
-      # Optional: aggressively cache Gradle home and build dirs
+      # Aggressively cache Gradle home and build dirs
       - name: Cache Gradle dependencies
         uses: actions/cache@v4
         with:
