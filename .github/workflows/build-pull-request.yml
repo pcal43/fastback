@@ -1,5 +1,3 @@
-# Used when building external pull requests
-# We don't want to publish build artifacts or expose our other caches to possibly untrusted code
 name: build-pull-request
 
 on: [ pull_request ]
@@ -16,10 +14,30 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Setup Gradle
+      - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          cache-read-only: true
+          cache-read-only: false
+
+      # Optional: aggressively cache Gradle home and build dirs
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Cache build outputs
+        uses: actions/cache@v4
+        with:
+          path: |
+            **/build
+          key: ${{ runner.os }}-build-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-build-
 
       - name: Execute Gradle build
         run: ./gradlew build
