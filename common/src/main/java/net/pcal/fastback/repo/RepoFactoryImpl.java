@@ -19,7 +19,6 @@
 package net.pcal.fastback.repo;
 
 import net.pcal.fastback.config.GitConfig.Updater;
-import net.pcal.fastback.config.GitConfigKey;
 import net.pcal.fastback.logging.UserLogger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
