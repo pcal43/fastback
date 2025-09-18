@@ -210,9 +210,9 @@ class RepoImpl implements Repo {
         final JGitSupplier<Collection<String>> refProvider = () -> {
             try {
                 if (conf.getBoolean(IS_NATIVE_GIT_ENABLED)) {
-                    return native_lsRemote(this.getWorkTree().toPath(), remoteName, true, false);
+                    return native_lsRemote(this.getWorkTree().toPath(), remoteName);
                 } else {
-                    return jgit_lsRemote(this.jgit, remoteName, true, false);
+                    return jgit_lsRemote(this.jgit, remoteName);
                 }
             } catch (GitAPIException | ProcessException e) {
                 throw new IOException(e);

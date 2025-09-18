@@ -92,9 +92,9 @@ abstract class PushUtils {
             final Collection<String> remoteBranchRefs;
             final String remoteName = conf.getString(REMOTE_NAME);
             if (conf.getBoolean(IS_NATIVE_GIT_ENABLED)) {
-                remoteBranchRefs = native_lsRemote(repo.getWorkTree().toPath(), remoteName, true, false);
+                remoteBranchRefs = native_lsRemote(repo.getWorkTree().toPath(), remoteName);
             } else {
-                remoteBranchRefs = jgit_lsRemote(repo.getJGit(), remoteName, true, false);
+                remoteBranchRefs = jgit_lsRemote(repo.getJGit(), remoteName);
             }
             final ListMultimap<WorldId, SnapshotId> snapshotsPerWorld =
                     SnapshotIdUtils.getSnapshotsPerWorld(remoteBranchRefs, repo.getSidCodec());
@@ -153,12 +153,9 @@ abstract class PushUtils {
                 setRefSpecs(new RefSpec(branchNameToPush + ":" + branchNameToPush)).call();
     }
 
-    static Collection<String> native_lsRemote(final Path worktree, final String remote, final boolean heads, final boolean tags) throws ProcessException {
-        final List<String> command = new ArrayList<>(asList("git", "-C", worktree.toAbsolutePath().toString(), "ls-remote"));
-        if (heads) command.add("--branches");
-        if (tags) command.add("--tags");
-        command.add(remote);
-
+    static Collection<String> native_lsRemote(final Path worktree, final String remoteName) throws ProcessException {
+        final List<String> command = new ArrayList<>(asList("git", "-C",
+                worktree.toAbsolutePath().toString(), "ls-remote",  "--heads", remoteName));
         final List<String> result = new ArrayList<>();
         ProcessUtils.doExec(
                 command.toArray(String[]::new),
@@ -175,8 +172,8 @@ abstract class PushUtils {
         return result;
     }
 
-    static Collection<String> jgit_lsRemote(final Git jgit, final String remote, final boolean heads, final boolean tags) throws GitAPIException {
-        return jgit.lsRemote().setHeads(heads).setTags(tags).setRemote(remote).call()
+    static Collection<String> jgit_lsRemote(final Git jgit, final String remoteName) throws GitAPIException {
+        return jgit.lsRemote().setHeads(true).setTags(false).setRemote(remoteName).call()
                 .stream().map(Ref::getName).toList();
     }
 
