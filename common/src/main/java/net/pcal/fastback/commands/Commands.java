@@ -25,10 +25,8 @@ import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.repo.Repo;
 import net.pcal.fastback.repo.RepoFactory;
-import net.pcal.fastback.utils.EnvironmentUtils;
 import net.pcal.fastback.utils.Executor.ExecutionLock;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.function.Predicate;
 

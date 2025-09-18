@@ -22,9 +22,7 @@ import net.pcal.fastback.config.FastbackConfigKey;
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
 import net.pcal.fastback.repo.Repo;
-import net.pcal.fastback.repo.SnapshotId;
 
-import java.util.Collection;
 import java.util.concurrent.Callable;
 
 import static java.util.Objects.requireNonNull;

@@ -28,9 +28,10 @@ import java.util.List;
 
 import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
-import static net.pcal.fastback.logging.UserMessage.*;
-import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.*;
-import static net.pcal.fastback.logging.UserMessage.styledRaw;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
+import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.WARNING;
+import static net.pcal.fastback.logging.UserMessage.localized;
+import static net.pcal.fastback.logging.UserMessage.styledLocalized;
 import static net.pcal.fastback.utils.ProcessUtils.doExec;
 
 public class EnvironmentUtils {

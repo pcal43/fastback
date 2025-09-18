@@ -18,10 +18,10 @@
 
 package net.pcal.fastback.logging;
 
+import net.minecraft.commands.CommandSourceStack;
+
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.mod.Mod.mod;
-
-import net.minecraft.commands.CommandSourceStack;
 
 /**
  * Handles messages in the context of a command executed by the user in the console or chat box.

@@ -32,9 +32,7 @@ import net.pcal.fastback.repo.RepoFactory;
 import net.pcal.fastback.retention.RetentionPolicy;
 import net.pcal.fastback.retention.RetentionPolicyCodec;
 import net.pcal.fastback.retention.RetentionPolicyType;
-import net.pcal.fastback.utils.EnvironmentUtils;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;

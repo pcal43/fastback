@@ -20,7 +20,6 @@ package net.pcal.fastback.repo;
 
 import net.pcal.fastback.config.GitConfig;
 import net.pcal.fastback.logging.UserLogger;
-import net.pcal.fastback.utils.ProcessException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
 

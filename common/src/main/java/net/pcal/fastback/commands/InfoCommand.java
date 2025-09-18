@@ -33,7 +33,9 @@ import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraft.commands.Commands.literal;
-import static net.pcal.fastback.commands.Commands.*;
+import static net.pcal.fastback.commands.Commands.FAILURE;
+import static net.pcal.fastback.commands.Commands.SUCCESS;
+import static net.pcal.fastback.commands.Commands.subcommandPermission;
 import static net.pcal.fastback.config.FastbackConfigKey.AUTOBACK_ACTION;
 import static net.pcal.fastback.config.FastbackConfigKey.AUTOBACK_WAIT_MINUTES;
 import static net.pcal.fastback.config.FastbackConfigKey.BROADCAST_ENABLED;
@@ -49,7 +51,7 @@ import static net.pcal.fastback.logging.UserLogger.ulog;
 import static net.pcal.fastback.logging.UserMessage.raw;
 import static net.pcal.fastback.mod.Mod.mod;
 import static net.pcal.fastback.repo.RepoFactory.rf;
-import static net.pcal.fastback.utils.EnvironmentUtils.*;
+import static net.pcal.fastback.utils.EnvironmentUtils.isNativeOk;
 import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
 import static org.apache.commons.io.FileUtils.sizeOfDirectory;
 
