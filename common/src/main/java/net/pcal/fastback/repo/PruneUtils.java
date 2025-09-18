@@ -37,7 +37,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import static net.pcal.fastback.config.FastbackConfigKey.*;
+import static net.pcal.fastback.config.FastbackConfigKey.IS_NATIVE_GIT_ENABLED;
+import static net.pcal.fastback.config.FastbackConfigKey.LOCAL_RETENTION_POLICY;
+import static net.pcal.fastback.config.FastbackConfigKey.REMOTE_NAME;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.logging.UserMessage.styledLocalized;
