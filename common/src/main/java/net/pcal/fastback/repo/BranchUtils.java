@@ -20,7 +20,6 @@ package net.pcal.fastback.repo;
 
 import net.pcal.fastback.repo.SnapshotIdUtils.SnapshotIdCodec;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Ref;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -64,10 +63,6 @@ abstract class BranchUtils {
             }
         }
         return out;
-    }
-
-    static String getBranchName(Ref fromBranchRef) {
-        return getBranchName(fromBranchRef.getName());
     }
 
     static String getBranchName(String name) {

@@ -105,7 +105,7 @@ abstract class ReclamationUtils {
         if (config.getBoolean(IS_BRANCH_CLEANUP_ENABLED)) {
             final List<String> branchesToDelete = new ArrayList<>();
             for (final Ref ref : repo.getJGit().branchList().setListMode(ALL).call()) {
-                final String branchName = BranchUtils.getBranchName(ref);
+                final String branchName = BranchUtils.getBranchName(ref.getName());
                 if (branchName == null) {
                     syslog().warn("Non-branch ref returned by branchList: " + ref);
                 } else if (isTempBranch(branchName)) {
