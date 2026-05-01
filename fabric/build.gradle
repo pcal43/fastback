@@ -17,7 +17,9 @@ configurations {
     developmentFabric.extendsFrom common
 }
 
-archivesBaseName = "${project.archives_base_name}"
+base {
+    archivesName = "${project.archives_base_name}"
+}
 version = "${project.mod_version}-fabric"
 group = project.maven_group
 
