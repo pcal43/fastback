@@ -17,13 +17,14 @@
  */
 package net.pcal.fastback.mod.fabric.mixins;
 
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.GenericMessageScreen;
-import net.pcal.fastback.mod.fabric.MixinGateway;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.GenericMessageScreen;
+import net.pcal.fastback.mod.fabric.MixinGateway;
 
 /**
  * Implements a callback that lets us render extra text on MessageScreens (i.e., exit/saving screen).
@@ -35,7 +36,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MessageScreenMixin {
 
     @Inject(method = "renderBackground", at = @At("TAIL"))
-    public void fastback_render(GuiGraphics context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+    public void fastback_render(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         MixinGateway.get().renderMessageScreen(context);
     }
 }

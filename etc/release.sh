@@ -74,7 +74,7 @@ rm -rf "${FABRIC_LIBS_DIR}"
 # See: https://github.com/pcal43/fastback/issues/333
 # rm -rf "${FORGE_LIBS_DIR}"
 
-./gradlew remapJar
+./gradlew :fabric:jar
 
 git commit -am "*** Release ${RELEASE_VERSION} ***"
 #git tag "${RELEASE_VERSION}"

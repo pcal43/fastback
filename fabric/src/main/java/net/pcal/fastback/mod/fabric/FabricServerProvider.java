@@ -18,10 +18,10 @@
 
 package net.pcal.fastback.mod.fabric;
 
-import net.minecraft.client.gui.GuiGraphics;
-import net.pcal.fastback.logging.UserMessage;
-
 import java.nio.file.Path;
+
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.pcal.fastback.logging.UserMessage;
 
 /**
  * @author pcal
@@ -54,7 +54,7 @@ public class FabricServerProvider extends BaseFabricProvider {
     }
 
     @Override
-    public void renderMessageScreen(GuiGraphics drawContext) {
+    public void renderMessageScreen(GuiGraphicsExtractor drawContext) {
 
     }
 }

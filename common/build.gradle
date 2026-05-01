@@ -1,5 +1,7 @@
 
-architectury {
+// Fabric 26.1+ uses the new unobfuscated Fabric Loom setup.
+
+ architectury {
     common("fabric")
     // NOTE: Forge is no longer supported and the build has been disabled
     // See: https://github.com/pcal43/fastback/issues/333

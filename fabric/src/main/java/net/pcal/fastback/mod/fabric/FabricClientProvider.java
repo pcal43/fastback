@@ -18,27 +18,25 @@
 
 package net.pcal.fastback.mod.fabric;
 
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import java.nio.file.Path;
+
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.GenericMessageScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.mod.fabric.mixins.ScreenAccessors;
-
-import java.nio.file.Path;
-
 import static net.pcal.fastback.logging.SystemLogger.syslog;
+import net.pcal.fastback.logging.UserMessage;
 import static net.pcal.fastback.mod.MinecraftProvider.messageToText;
+import net.pcal.fastback.mod.fabric.mixins.ScreenAccessors;
 
 /**
  * @author pcal
  * @since 0.1.0
  */
-final class FabricClientProvider extends BaseFabricProvider implements HudRenderCallback {
+final class FabricClientProvider extends BaseFabricProvider {
 
     // ======================================================================
     // Constants
@@ -64,7 +62,7 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
     // MixinGateway implementation
 
     @Override
-    public void renderMessageScreen(GuiGraphics guiGraphics) {
+    public void renderMessageScreen(GuiGraphicsExtractor guiGraphics) {
         renderHud(guiGraphics);
     }
 
@@ -108,26 +106,24 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
     }
 
     // ====================================================================
-    // HudRenderCallback implementation
+    // HudElementRegistry callback
 
-    @Override
-    public void onHudRender(GuiGraphics drawContext, DeltaTracker tickDelta) {
+    public void renderHud(GuiGraphicsExtractor drawContext, DeltaTracker tickDelta) {
         renderHud(drawContext);
     }
 
     // ====================================================================
     // Private
 
-    private void renderHud(GuiGraphics guiGraphics) {
+    private void renderHud(GuiGraphicsExtractor guiGraphics) {
         if (this.client == null) return;
         if (this.hudText == null) return;
         if (!this.client.options.showAutosaveIndicator().get()) return;
         if (System.currentTimeMillis() - this.hudTextTime > TEXT_TIMEOUT) {
-            // Don't leave it sitting up there forever if we fail to call clearHudText()
             this.hudText = null;
             syslog().debug("hud text timed out.  somebody forgot to clean up");
             return;
         }
-        guiGraphics.drawString(this.client.font, this.hudText, 2, 2, 1);
+        guiGraphics.text(this.client.font, this.hudText, 2, 2, 0xFFFFFF, false);
     }
 }

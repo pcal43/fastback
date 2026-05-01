@@ -7,7 +7,7 @@ clean:
 
 .PHONY: jar
 jar:
-	./gradlew remapJar
+	./gradlew :fabric:jar
 	ls -1 fabric/build/libs
 #	ls -1 forge/build/libs
 

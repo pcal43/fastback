@@ -1,6 +1,8 @@
+// for changes to bring to Minecraft 26.1.2, see https://github.com/architectury/architectury-loom/issues/328
+
 plugins {
-    id "architectury-plugin" version "3.4-SNAPSHOT"
-    id "dev.architectury.loom" version "1.13-SNAPSHOT" apply false
+    id "architectury-plugin" version "3.5-SNAPSHOT"
+    id "dev.architectury.loom-no-remap" version "${loom_version}" apply false
 }
 
 architectury {
@@ -10,14 +12,19 @@ architectury {
 subprojects {
     apply plugin: "java-library"
 
-    java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+    java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+
+    tasks.withType(JavaCompile).configureEach {
+    options.release = 25
+    }
+
     compileJava.options.encoding = compileTestJava.options.encoding = javadoc.options.encoding = "UTF-8"
 
     repositories {
         mavenCentral()
-        maven { url 'https://maven.fabricmc.net/' }
-        maven { url 'https://maven.nucleoid.xyz' }
-        maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+        maven { url = uri('https://maven.fabricmc.net/') }
+        maven { url = uri('https://maven.nucleoid.xyz') }
+        maven { url = uri('https://oss.sonatype.org/content/repositories/snapshots') }
     }
 
     java {
@@ -27,10 +34,9 @@ subprojects {
 
 configure(subprojects) {
     apply plugin: "architectury-plugin"
-    apply plugin: "dev.architectury.loom"
+    apply plugin: "dev.architectury.loom-no-remap"
 
     dependencies {
         minecraft "com.mojang:minecraft:${project.minecraft_version}"
-        mappings loom.officialMojangMappings()
     }
 }

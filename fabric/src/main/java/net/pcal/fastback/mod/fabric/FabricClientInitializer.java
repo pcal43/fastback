@@ -20,8 +20,9 @@ package net.pcal.fastback.mod.fabric;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.minecraft.resources.Identifier;
 import net.pcal.fastback.logging.Log4jLogger;
 import net.pcal.fastback.logging.SystemLogger;
 import net.pcal.fastback.mod.LifecycleListener;
@@ -47,7 +48,10 @@ public class FabricClientInitializer implements ClientModInitializer {
         ClientLifecycleEvents.CLIENT_STARTED.register(
                 minecraftClient -> {
                     clientProvider.setMinecraftClient(minecraftClient);
-                    HudRenderCallback.EVENT.register(clientProvider);
+                    HudElementRegistry.addLast(
+                            Identifier.fromNamespaceAndPath(MOD_ID, "hud"),
+                            clientProvider::renderHud
+                    );
                 }
         );
         ClientLifecycleEvents.CLIENT_STOPPING.register(
