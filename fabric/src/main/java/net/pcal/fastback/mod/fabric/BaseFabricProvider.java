@@ -18,7 +18,19 @@
 
 package net.pcal.fastback.mod.fabric;
 
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import static java.util.Objects.requireNonNull;
+import java.util.Optional;
+
+import org.apache.logging.log4j.LogManager;
+
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.loader.api.FabricLoader;
@@ -27,28 +39,17 @@ import net.fabricmc.loader.api.metadata.ModMetadata;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelStorageSource;
+import static net.pcal.fastback.commands.Commands.createBackupCommand;
 import net.pcal.fastback.logging.Log4jLogger;
 import net.pcal.fastback.logging.SystemLogger;
+import static net.pcal.fastback.logging.SystemLogger.syslog;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.LifecycleListener;
 import net.pcal.fastback.mod.MinecraftProvider;
-import net.pcal.fastback.mod.fabric.mixins.ServerAccessors;
-import net.pcal.fastback.mod.fabric.mixins.SessionAccessors;
-import org.apache.logging.log4j.LogManager;
-
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import static java.util.Objects.requireNonNull;
-import static net.pcal.fastback.commands.Commands.createBackupCommand;
-import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.mod.MinecraftProvider.messageToText;
 import static net.pcal.fastback.mod.MinecraftProvider.register;
+import net.pcal.fastback.mod.fabric.mixins.ServerAccessors;
+import net.pcal.fastback.mod.fabric.mixins.SessionAccessors;
 
 /**
  * @author pcal
@@ -146,7 +147,7 @@ abstract class BaseFabricProvider implements MinecraftProvider, MixinGateway {
         final List<Path> out = new ArrayList<>();
         final FabricLoader fl = FabricLoader.getInstance();
         final Path gameDir = fl.getGameDir();
-        out.add(gameDir.resolve("options.txt´"));
+        out.add(gameDir.resolve("options.txt")); // Was named "options.txt'", assuming the ' was a typo?
         out.add(gameDir.resolve("mods"));
         out.add(gameDir.resolve("config"));
         out.add(gameDir.resolve("resourcepacks"));
