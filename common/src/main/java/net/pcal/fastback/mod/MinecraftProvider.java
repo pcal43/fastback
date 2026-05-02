@@ -18,12 +18,6 @@
 
 package net.pcal.fastback.mod;
 
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextColor;
-import net.pcal.fastback.logging.UserMessage;
-
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
@@ -32,7 +26,12 @@ import static net.minecraft.ChatFormatting.GRAY;
 import static net.minecraft.ChatFormatting.GREEN;
 import static net.minecraft.ChatFormatting.RED;
 import static net.minecraft.ChatFormatting.YELLOW;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import static net.minecraft.network.chat.Style.EMPTY;
+import net.minecraft.network.chat.TextColor;
+import net.pcal.fastback.logging.UserMessage;
 import static net.pcal.fastback.logging.UserMessage.UserMessageStyle.ERROR;
 
 /**
@@ -143,7 +142,10 @@ public interface MinecraftProvider {
     static Component messageToText(final UserMessage m) {
         final MutableComponent out;
         if (m.localized() != null) {
-            out = Component.translatable(m.localized().key(), m.localized().params());
+            out = Component.translatable(
+                m.localized().key(),
+                messageParamsToComponentArgs(m.localized().params())
+            );
         } else {
             out = Component.literal(m.raw());
         }
@@ -159,6 +161,21 @@ public interface MinecraftProvider {
             }
             case NATIVE_GIT -> {
                 out.setStyle(EMPTY.withColor(TextColor.fromLegacyFormat(GREEN)));
+            }
+        }
+        return out;
+    }
+
+    private static Object[] messageParamsToComponentArgs(final Object[] params) {
+        if (params == null) return new Object[0];
+
+        final Object[] out = new Object[params.length];
+        for (int i = 0; i < params.length; i++) {
+            final Object param = params[i];
+            if (param instanceof Component) {
+                out[i] = param;
+            } else {
+                out[i] = String.valueOf(param);
             }
         }
         return out;
