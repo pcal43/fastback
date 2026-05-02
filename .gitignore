@@ -11,6 +11,10 @@ build/
 out/
 classes/
 
+**/build/
+**/.gradle/
+**/run/
+
 # eclipse
 
 *.launch
@@ -28,6 +32,7 @@ classes/
 .classpath
 .project
 */bin
+.idea/
 
 # macos
 
@@ -39,3 +44,8 @@ run/
 logs/
 
 .architectury-transformer/
+
+# Logs and local environment
+*.log
+.env
+
