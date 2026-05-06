@@ -1,44 +1,58 @@
+plugins {
+	id 'fabric-loom'
+}
 
-architectury {
-    common("fabric")
-    // NOTE: Forge is no longer supported and the build has been disabled
-    // See: https://github.com/pcal43/fastback/issues/333
-    //common("forge")
+version = project.mod_version
+group = project.maven_group
+
+repositories {
+	maven { url = "https://maven.fabricmc.net/" }
+	maven { url = "https://repo.spongepowered.org/maven/" }
+	mavenCentral()
 }
 
 dependencies {
-    // "you can't include dependencies in common gradle projects"
+	// Minecraft classes with Mojang mappings - needed for compilation
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings loom.officialMojangMappings()
 
-    // JGit
-    compileOnly("org.eclipse.jgit:org.eclipse.jgit:${project.jgit_version}") { transitive = false }
+	// Mixin annotations - using version from gradle.properties for consistency
+	compileOnly "org.spongepowered:mixin:${project.spongepowered_version}"
+	annotationProcessor "org.spongepowered:mixin:${project.spongepowered_version}:processor"
 
-    // JUnit
-    testImplementation ('junit:junit:4.13.1') { transitive = false } //KILL?
-    testImplementation ("org.junit.jupiter:junit-jupiter-api:${project.junit_jupiter_version}") { transitive = false }
-    testRuntimeOnly ("org.junit.jupiter:junit-jupiter-engine:${project.junit_jupiter_version}") { transitive = false }
-    testRuntimeOnly ("org.apache.logging.log4j:log4j-core:${project.test_log4j_version}") { transitive = false }
-    testCompileOnly ('org.apiguardian:apiguardian-api:1.0.0')
+	testImplementation "org.junit.jupiter:junit-jupiter-api:${project.junit_version}"
+	testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${project.junit_version}"
 }
 
-
-test {
-    useJUnitPlatform()
+loom {
+	// Configure loom to not create run configurations for the common module
+	// since it's not meant to run standalone
+	runs {
+		// No run configurations needed for common module
+	}
+	
+	// Configure mixin refmap
+	mixin {
+		defaultRefmapName = "mobfilter-common-refmap.json"
+	}
 }
 
-processResources {
-    inputs.property "version", project.version
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 21
+	options.encoding = "UTF-8"
+}
 
-    // localizations need to be under data for server-translations-api
-    // TODO move to fabric?
-    copy {
-        from "$projectDir/src/main/resources/assets/fastback/lang"
-        into "$buildDir/resources/main/data/fastback/lang"
-    }
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+	withSourcesJar()
 }
-sourceSets {
-    test {
-        java {
-            srcDirs = [ "common/src/test"]  // Note @Peter's comment below
-        }
-    }
+
+// Don't remap the common jar - the loader-specific modules will handle that
+jar {
+	from("LICENSE") {
+		rename { "${it}_${project.archives_base_name_common}"}
+	}
 }
+

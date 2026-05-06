@@ -1,36 +1,410 @@
 plugins {
-    id "architectury-plugin" version "3.4-SNAPSHOT"
-    id "dev.architectury.loom" version "1.13-SNAPSHOT" apply false
+	id 'fabric-loom' version '1.14-SNAPSHOT' apply false
+	id 'net.neoforged.moddev' version '2.0.116' apply false
+	id 'com.modrinth.minotaur' version '2.+' apply false
+	id 'net.darkhax.curseforgegradle' version '1.1.25' apply false
 }
 
-architectury {
-    minecraft = project.minecraft_version
+version = project.mod_version
+group = project.maven_group
+
+// ============================================================================
+// Release Tasks
+// ============================================================================
+
+/**
+ * Validates that the working directory is clean and on the main branch
+ */
+tasks.register('validateRelease') {
+	group = 'release'
+	description = 'Validates that the environment is ready for a release'
+
+    doFirst {
+        if (!System.getenv("CURSEFORGE_TOKEN")) {
+            throw new GradleException("CURSEFORGE_TOKEN environment variable not set")
+        }
+		if (!System.getenv("MODRINTH_TOKEN")) {
+			throw new GradleException("MODRINTH_TOKEN environment variable not set")
+		}
+    }
+
+	doLast {
+		// Check git status
+		def gitStatus = 'git status --porcelain'.execute().text.trim()
+		if (!gitStatus.isEmpty()) {
+			throw new GradleException("Working directory not clean, cannot release:\n${gitStatus}")
+		}
+		
+		// Check branch
+		def currentBranch = 'git rev-parse --abbrev-ref HEAD'.execute().text.trim()
+		if (currentBranch != 'main') {
+			throw new GradleException("Releases must be performed on main. Currently on '${currentBranch}'")
+		}
+		
+		println "✓ Working directory is clean"
+		println "✓ On main branch"
+	}
 }
 
-subprojects {
-    apply plugin: "java-library"
+/**
+ * Removes the -prerelease suffix from mod_version in gradle.properties
+ */
+tasks.register('prepareReleaseVersion') {
+	group = 'release'
+	description = 'Removes -prerelease suffix from mod_version'
 
-    java.toolchain.languageVersion = JavaLanguageVersion.of(21)
-    compileJava.options.encoding = compileTestJava.options.encoding = javadoc.options.encoding = "UTF-8"
-
-    repositories {
-        mavenCentral()
-        maven { url 'https://maven.fabricmc.net/' }
-        maven { url 'https://maven.nucleoid.xyz' }
-        maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
-    }
-
-    java {
-        withSourcesJar()
-    }
+	doLast {
+		def propsFile = file('gradle.properties')
+		def content = propsFile.text
+		
+		// Extract current version using regex
+		def matcher = content =~ /(?m)^mod_version\s*=\s*(.+)$/
+		if (!matcher.find()) {
+			throw new GradleException("Could not find mod_version in gradle.properties")
+		}
+		
+		def currentVersion = matcher.group(1).trim()
+		println "Current version: ${currentVersion}"
+		
+		if (!currentVersion.contains('-prerelease')) {
+			throw new GradleException("Current version is not a prerelease: ${currentVersion}")
+		}
+		
+		def releaseVersion = currentVersion.replace('-prerelease', '')
+		println "Release version: ${releaseVersion}"
+		
+		// Replace the line in the file, preserving everything else
+		def updatedContent = content.replaceAll(
+			/(?m)^mod_version\s*=\s*.+$/,
+			"mod_version = ${releaseVersion}"
+		)
+		
+		propsFile.text = updatedContent
+		
+		println "✓ Updated gradle.properties to version ${releaseVersion}"
+		
+		// Store for later tasks
+		project.ext.releaseVersion = releaseVersion
+	}
 }
 
-configure(subprojects) {
-    apply plugin: "architectury-plugin"
-    apply plugin: "dev.architectury.loom"
+/**
+ * Commits the version change to git
+ */
+tasks.register('commitReleaseVersion') {
+	group = 'release'
+	description = 'Commits the release version to git'
+	
+	doLast {
+		def releaseVersion = project.ext.releaseVersion
+		
+		// Stage and commit
+		def addResult = ["git", "add", "gradle.properties"].execute()
+		def addOutput = new StringBuilder()
+		def addError = new StringBuilder()
+		addResult.consumeProcessOutput(addOutput, addError)
+		addResult.waitFor()
+		if (addResult.exitValue() != 0) {
+			throw new GradleException("Failed to stage gradle.properties: ${addError}")
+		}
+		
+		def commitResult = ["git", "commit", "-m", "*** Release ${releaseVersion} ***"].execute()
+		def commitOutput = new StringBuilder()
+		def commitError = new StringBuilder()
+		commitResult.consumeProcessOutput(commitOutput, commitError)
+		commitResult.waitFor()
+		if (commitResult.exitValue() != 0) {
+			throw new GradleException("Failed to commit release version:\n${commitOutput}\n${commitError}")
+		}
+		
+		println "✓ Committed release version ${releaseVersion}"
+	}
+}
 
-    dependencies {
-        minecraft "com.mojang:minecraft:${project.minecraft_version}"
-        mappings loom.officialMojangMappings()
-    }
+/**
+ * Builds the release jars for both Fabric and NeoForge
+ * Runs as separate Gradle invocation to pick up updated gradle.properties
+ */
+tasks.register('buildReleaseJars') {
+	group = 'release'
+	description = 'Builds Fabric and NeoForge release jars'
+	
+	doLast {
+		def releaseVersion = project.ext.releaseVersion
+		
+		println "Building release jars with version ${releaseVersion}..."
+		
+		// Run Gradle as subprocess to pick up updated gradle.properties
+		// Clean first to remove any cached artifacts with old version
+		def gradleCmd = [
+			'./gradlew',
+			'clean',
+			':fabric:build',
+			':neoforge:build',
+			'--console=plain'
+		]
+		
+		def buildProcess = gradleCmd.execute()
+		buildProcess.waitForProcessOutput(System.out, System.err)
+		
+		if (buildProcess.exitValue() != 0) {
+			throw new GradleException("Failed to build release jars")
+		}
+		
+		println "✓ Built release jars:"
+		println "  - fabric/build/libs/${project.archives_base_name_fabric}-${releaseVersion}.jar"
+		println "  - neoforge/build/libs/${project.archives_base_name_neoforge}-${releaseVersion}.jar"
+	}
+}
+
+/**
+ * Pushes changes and creates a GitHub release
+ */
+tasks.register('publishGitHub') {
+	group = 'release'
+	description = 'Pushes to git and creates GitHub release'
+	
+	doLast {
+		def releaseVersion = project.ext.releaseVersion
+		
+		// Push commits
+		println "Pushing to origin..."
+		def pushResult = ["git", "push"].execute()
+		pushResult.waitForProcessOutput(System.out, System.err)
+		if (pushResult.exitValue() != 0) {
+			throw new GradleException("Failed to push to git")
+		}
+		
+		// Create GitHub release
+		println "Creating GitHub release ${releaseVersion}..."
+		def currentBranch = 'git branch --show-current'.execute().text.trim()
+		
+		def fabricJar = file("fabric/build/libs/${project.archives_base_name_fabric}-${releaseVersion}.jar")
+		def neoforgeJar = file("neoforge/build/libs/${project.archives_base_name_neoforge}-${releaseVersion}.jar")
+
+		if (!fabricJar.exists()) throw new GradleException("Fabric release jar not found at ${fabricJar}")
+		if (!neoforgeJar.exists()) throw new GradleException("NeoForge release jar not found at ${neoforgeJar}")
+
+		def ghCmd = [
+			'gh', 'release', 'create',
+			'--target', currentBranch,
+			'--generate-notes',
+			'--title', releaseVersion,
+			'--notes', "release ${releaseVersion}",
+			releaseVersion,
+			fabricJar.absolutePath,
+			neoforgeJar.absolutePath
+		]
+		
+		def ghResult = ghCmd.execute()
+		ghResult.waitForProcessOutput(System.out, System.err)
+		if (ghResult.exitValue() != 0) {
+			throw new GradleException("Failed to create GitHub release")
+		}
+		
+		println "✓ Created GitHub release ${releaseVersion}"
+	}
+}
+
+/**
+ * Publishes to CurseForge for both Fabric and NeoForge
+ * Runs as separate Gradle invocation to use updated gradle.properties
+ */
+tasks.register('publishCurseForge') {
+	group = 'release'
+	description = 'Publishes to CurseForge'
+
+	doLast {
+		println "Publishing to CurseForge..."
+
+		def releaseVersion = project.ext.releaseVersion
+		def gradleCmd = [
+			'./gradlew',
+			':fabric:publishCurseforge',
+			':neoforge:publishCurseforge',
+			'--console=plain'
+		]
+
+		def publishProcess = gradleCmd.execute()
+		publishProcess.waitForProcessOutput(System.out, System.err)
+
+		if (publishProcess.exitValue() != 0) {
+			throw new GradleException("Failed to publish to CurseForge")
+		}
+
+		println "✓ Published to CurseForge"
+	}
+}
+
+/**
+ * Publishes to Modrinth for both Fabric and NeoForge
+ * Runs as separate Gradle invocation to use updated gradle.properties
+ */
+tasks.register('publishModrinth') {
+	group = 'release'
+	description = 'Publishes to Modrinth'
+
+	doLast {
+		println "Publishing to Modrinth..."
+
+		def releaseVersion = project.ext.releaseVersion
+		def gradleCmd = [
+				'./gradlew',
+				':fabric:modrinth',
+				':neoforge:modrinth',
+				'--console=plain'
+		]
+
+		def publishProcess = gradleCmd.execute()
+		publishProcess.waitForProcessOutput(System.out, System.err)
+
+		if (publishProcess.exitValue() != 0) {
+			throw new GradleException("Failed to publish to Modrinth")
+		}
+
+		println "✓ Published to Modrinth"
+	}
+}
+
+/**
+ * Increments version and adds -prerelease suffix for next development cycle
+ */
+tasks.register('bumpVersion') {
+	group = 'release'
+	description = 'Increments version and adds -prerelease suffix'
+	
+	doLast {
+		def propsFile = file('gradle.properties')
+		def content = propsFile.text
+		
+		// Extract current version using regex
+		def matcher = content =~ /(?m)^mod_version\s*=\s*(.+)$/
+		if (!matcher.find()) {
+			throw new GradleException("Could not find mod_version in gradle.properties")
+		}
+		
+		def releaseVersion = matcher.group(1).trim()
+		println "Previous release version: ${releaseVersion}"
+		
+		// Parse the version: "0.23.0+1.21.10" -> major.minor.patch + buildMetadata
+		def versionParts = releaseVersion.split('\\+')
+		def semver = versionParts[0].split('\\.')
+		def buildMetadata = versionParts.length > 1 ? versionParts[1] : ''
+		
+		// Increment patch version
+		def major = semver[0]
+		def minor = semver[1]
+		def patch = (semver[2] as Integer) + 1
+		
+		def nextVersion = "${major}.${minor}.${patch}+${buildMetadata}-prerelease"
+		println "Next version: ${nextVersion}"
+		
+		// Replace the line in the file, preserving everything else
+		def updatedContent = content.replaceAll(
+			/(?m)^mod_version\s*=\s*.+$/,
+			"mod_version = ${nextVersion}"
+		)
+		
+		propsFile.text = updatedContent
+		
+		println "✓ Updated gradle.properties to version ${nextVersion}"
+		
+		// Store for later tasks
+		project.ext.nextVersion = nextVersion
+	}
+}
+
+/**
+ * Commits and pushes the version bump
+ */
+tasks.register('commitVersionBump') {
+	group = 'release'
+	description = 'Commits and pushes the version bump'
+	
+	doLast {
+		def nextVersion = project.ext.nextVersion
+		
+		// Commit and push
+		def addResult = ["git", "add", "gradle.properties"].execute()
+		def addOutput = new StringBuilder()
+		def addError = new StringBuilder()
+		addResult.consumeProcessOutput(addOutput, addError)
+		addResult.waitFor()
+		if (addResult.exitValue() != 0) {
+			throw new GradleException("Failed to stage gradle.properties: ${addError}")
+		}
+		
+		def commitResult = ["git", "commit", "-m", "Prepare for next version ${nextVersion}"].execute()
+		def commitOutput = new StringBuilder()
+		def commitError = new StringBuilder()
+		commitResult.consumeProcessOutput(commitOutput, commitError)
+		commitResult.waitFor()
+		if (commitResult.exitValue() != 0) {
+			throw new GradleException("Failed to commit version bump:\n${commitOutput}\n${commitError}")
+		}
+		
+		def pushResult = ["git", "push"].execute()
+		pushResult.waitForProcessOutput(System.out, System.err)
+		if (pushResult.exitValue() != 0) {
+			throw new GradleException("Failed to push version bump")
+		}
+		
+		println "✓ Committed and pushed version bump to ${nextVersion}"
+	}
+}
+
+/**
+ * Complete release workflow
+ * 
+ * Executes tasks in this order:
+ *   1. validateRelease      - Check git status
+ *   2. prepareReleaseVersion - Remove -prerelease suffix
+ *   3. commitReleaseVersion - Commit version change
+ *   4. buildReleaseJars     - Build both loaders
+ *   5. publishGitHub        - Push and create GitHub release
+ *   6. publishCurseForge    - Publish to CurseForge
+ *   7. publishModrinth      - Publish to Modrinth
+ *   8. bumpVersion          - Increment version, add -prerelease
+ *   9. commitVersionBump    - Commit and push next version
+ */
+tasks.register('release') {
+	group = 'release'
+	description = 'Complete release: GitHub, CurseForge, Modrinth, and version bump'
+	
+	// All tasks that need to run
+	dependsOn validateRelease, 
+	          prepareReleaseVersion, 
+	          commitReleaseVersion, 
+	          buildReleaseJars, 
+	          publishGitHub, 
+	          publishCurseForge, 
+	          publishModrinth, 
+	          bumpVersion, 
+	          commitVersionBump
+	
+	// Execution order
+	prepareReleaseVersion.mustRunAfter validateRelease
+	commitReleaseVersion.mustRunAfter prepareReleaseVersion
+	buildReleaseJars.mustRunAfter commitReleaseVersion
+	publishGitHub.mustRunAfter buildReleaseJars
+	publishCurseForge.mustRunAfter publishGitHub
+	publishModrinth.mustRunAfter publishCurseForge
+	bumpVersion.mustRunAfter publishModrinth
+	commitVersionBump.mustRunAfter bumpVersion
+	
+	doFirst {
+		println ""
+		println "╔════════════════════════════════════════════════════════════╗"
+		println "║                   Starting Release Process                 ║"
+		println "╚════════════════════════════════════════════════════════════╝"
+		println ""
+	}
+	
+	doLast {
+		println ""
+		println "╔════════════════════════════════════════════════════════════╗"
+		println "║                   Release Complete! 🎉                     ║"
+		println "╚════════════════════════════════════════════════════════════╝"
+		println ""
+	}
 }

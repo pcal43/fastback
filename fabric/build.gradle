@@ -1,128 +1,146 @@
 plugins {
-    id "com.modrinth.minotaur" version "2.8.7"
-    id "com.matthewprenger.cursegradle" version "1.4.0"
+	id 'fabric-loom'
+	id 'com.modrinth.minotaur'
+	id 'net.darkhax.curseforgegradle' version '1.1.25'
 }
 
-architectury {
-    platformSetupLoomIde()
-    fabric()
+base {
+	archivesName = project.archives_base_name_fabric
+}
+
+version = project.mod_version
+group = project.maven_group
+
+repositories {
+	maven { url = 'https://maven.fabricmc.net/' }
+	maven { url = "https://repo.spongepowered.org/maven/" }
+	mavenCentral()
 }
 
 configurations {
-    common
-    shadowCommon
-
-    compileClasspath.extendsFrom common
-    runtimeClasspath.extendsFrom common
-    developmentFabric.extendsFrom common
+	// Create a configuration for the common module that won't be included in dev
+	commonDev
 }
 
-archivesBaseName = "${project.archives_base_name}"
-version = "${project.mod_version}-fabric"
-group = project.maven_group
-
-
-//OK THIS IS BASICALLY WORKING EXCEPT THAT THE SHADING IS NOT BEING APPLIED TO THE CLASSES FROM COMMON.
-//SO WTF GRADLE
 dependencies {
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings loom.officialMojangMappings()
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    common(project(path: ":common", configuration: "namedElements")) { transitive false }
-    shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
-
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-
-    // jgit
-    include implementation("org.eclipse.jgit:org.eclipse.jgit:${project.jgit_version}") { transitive = false }
-
-    // jgit needs this
-    //   https://download.eclipse.org/jgit/site/6.4.0.202211300538-r/dependencies.html
-    include runtimeOnly("com.googlecode.javaewah:JavaEWAH:${project.JavaEWAH_version}")  { transitive = false }
-
-    //
-    // So jgit can do modern ssh:
-    //
-
-    // https://mvnrepository.com/artifact/org.eclipse.jgit/org.eclipse.jgit.ssh.apache
-    include runtimeOnly("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${project.jgit_version}") { transitive = false }
-
-    // https://mvnrepository.com/artifact/org.apache.sshd/sshd-core
-    include runtimeOnly("org.apache.sshd:sshd-core:${project.apache_sshd_version}") { transitive = false }
-
-    // https://mvnrepository.com/artifact/org.apache.sshd/sshd-common
-    include runtimeOnly("org.apache.sshd:sshd-common:${project.apache_sshd_version}") { transitive = false }
-
-    // this enables ed25519 support in apache_sshd
-    // https://github.com/apache/mina-sshd/blob/dfa109b7b535d64e8ee395ddd0419e7696fb24ee/docs/dependencies.md
-    include runtimeOnly("net.i2p.crypto:eddsa:${project.eddsa_version}") { transitive = false }
-
-    // fabric-permissions-api (luckperms support)
-    include modImplementation("me.lucko:fabric-permissions-api:${project.fabric_permissions_version}") { transitive = false }
-
-    // Server Translations
-    //   https://github.com/NucleoidMC/Server-Translations
-    modImplementation include("xyz.nucleoid:server-translations-api:${project.server_translations_version}")
-}
-
-jar {
-    dependsOn configurations.shadowCommon
-    from {
-        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-        configurations.shadowCommon.collect {
-            zipTree(it)
-        }
-    }
-}
-
-sourcesJar {
-    def commonSources = project(":common").sourcesJar
-    dependsOn commonSources
-    from commonSources.archiveFile.map { zipTree(it) }
+	// Depend on the common module
+	// For compilation and dev runtime - uses dev jar with proper mappings
+	implementation project(":common")
+	
+	// DON'T use include - we're merging the classes directly in the jar task instead
+	// This ensures they get remapped together with the fabric module classes
 }
 
 processResources {
-    inputs.property "version", project.version
-    filesMatching("fabric.mod.json") {
-        expand "version": project.version
-    }
+	inputs.property "version", project.version
+
+	filesMatching("fabric.mod.json") {
+		expand "version": project.version
+	}
+}
+
+sourceSets {
+	main {
+		// Add common module sources to fabric's main sourceSet
+		// This ensures they're compiled and remapped together
+		java {
+			srcDir project(":common").file("src/main/java")
+		}
+		resources {
+			srcDir project(":common").file("src/main/resources")
+		}
+	}
+	test {
+		resources.srcDirs = ["src/test/resources"]
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 21
+}
+
+loom {
+	runs {
+		client {
+			client()
+			setConfigName("Fabric Client")
+			ideConfigGenerated(true)
+			runDir("run")
+		}
+		server {
+			server()
+			setConfigName("Fabric Server")
+			ideConfigGenerated(true)
+			runDir("run")
+		}
+	}
+	
+	mixin {
+		defaultRefmapName = "mobfilter-refmap.json"
+	}
+	
+	// Common sources are now part of main sourceSet
+	mods {
+		"mobfilter" {
+			sourceSet sourceSets.main
+		}
+	}
+}
+
+java {
+	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+	// if it is present.
+	// If you remove this line, sources will not be generated.
+	withSourcesJar()
+}
+
+jar {
+	from("LICENSE") {
+		rename { "${it}_${project.archives_base_name_fabric}"}
+	}
+	// Common sources are now part of main sourceSet, so they're automatically included
 }
 
 
-// https://github.com/modrinth/minotaur
+
+
+// Publishing configuration
 modrinth {
-    token = System.getenv("MODRINTH_TOKEN") ?: 'MODRINTH_TOKEN_NOT_SET'
-    projectId = "fastback"
-    versionNumber = "${project.version}"
-    versionType = "release"
-    uploadFile = remapJar
-    changelog = "<p><a href='https://github.com/pcal43/fastback/releases/tag/${project.mod_version}'>https://github.com/pcal43/fastback/releases/tag/${project.mod_version}</a></p>"
-    gameVersions = ["${project.minecraft_version}"]
-    loaders = ["fabric"]
-    dependencies {
-        required.project "fabric-api"
-    }
+	token = System.getenv("MODRINTH_TOKEN")
+	projectId = "${project.modrinth_projectId}"
+	versionNumber = project.mod_version
+	versionType = "release"
+	uploadFile = remapJar
+	changelog = "<p><a href='${project.github_projectUrl}/releases/tag/${project.mod_version}'>${project.github_projectUrl}/releases/tag/${project.mod_version}</a></p>"
+	gameVersions = ["${project.minecraft_version}"]
+	loaders = ["fabric"]
+	dependencies {
+		required.project "fabric-api"
+	}
 }
 
+import net.darkhax.curseforgegradle.TaskPublishCurseForge
 
-// https://github.com/matthewprenger/CurseGradle
-curseforge {
-    apiKey = System.getenv("CURSEFORGE_TOKEN") ?: 'CURSEFORGE_TOKEN_NOT_SET'
+tasks.register('publishCurseForge', TaskPublishCurseForge) {
+	// API Key from environment or fallback
+	apiToken = System.getenv("CURSEFORGE_TOKEN") ?: 'CURSEFORGE_TOKEN NOT_SET'
 
-    project {
-        id = "667417"
-        releaseType = "release"
-        changelog = "https://github.com/pcal43/fastback/releases/tag/${project.mod_version}"
-        changelogType = "markdown"
-        mod_version = "${project.version}"
-        addGameVersion ((String) project.minecraft_version)
-        addGameVersion "Fabric"
-        mainArtifact(remapJar)
-        afterEvaluate {
-            uploadTask.dependsOn("remapJar")
-        }
-    }
+	// Configure the main artifact
+	// The plugin automatically detects Fabric & Java version from your Loom setup
+	def mainFile = upload(project.curseforge_projectId, remapJar)
 
-    options {
-        forgeGradleIntegration = false
-    }
+	mainFile.releaseType = "release"
+	mainFile.changelog = "${project.github_projectUrl}/releases/tag/${project.mod_version}"
+	mainFile.changelogType = "markdown"
+
+	mainFile.addGameVersion(project.minecraft_version)
+	mainFile.addModLoader("Fabric")
+
+	// Ensure remapJar is finished before this runs
+	dependsOn(remapJar)
 }
