@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
-package net.pcal.fastback.mod.fabric.mixins;
+package net.pcal.fastback.mixins;
 
 import net.minecraft.server.MinecraftServer;
 import net.pcal.fastback.mod.fabric.MixinGateway;

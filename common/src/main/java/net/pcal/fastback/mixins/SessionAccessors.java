@@ -16,26 +16,18 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.mod.fabric.mixins;
+package net.pcal.fastback.mixins;
 
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.storage.LevelStorageSource;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 /**
  * @author pcal
- * @since 0.0.11
+ * @since 0.0.1
  */
-@Mixin(Screen.class)
-public interface ScreenAccessors {
-
+@Mixin(LevelStorageSource.LevelStorageAccess.class)
+public interface SessionAccessors {
     @Accessor
-    @Mutable
-    Component getTitle();
-
-    @Accessor
-    @Mutable
-    void setTitle(Component text);
+    LevelStorageSource.LevelDirectory getLevelDirectory();
 }

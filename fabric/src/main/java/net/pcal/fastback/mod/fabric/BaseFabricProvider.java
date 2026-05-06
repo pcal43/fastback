@@ -27,13 +27,14 @@ import net.fabricmc.loader.api.metadata.ModMetadata;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelStorageSource;
+import net.pcal.fastback.MixinGateway;
 import net.pcal.fastback.logging.Log4jLogger;
 import net.pcal.fastback.logging.SystemLogger;
 import net.pcal.fastback.logging.UserMessage;
 import net.pcal.fastback.mod.LifecycleListener;
 import net.pcal.fastback.mod.MinecraftProvider;
-import net.pcal.fastback.mod.fabric.mixins.ServerAccessors;
-import net.pcal.fastback.mod.fabric.mixins.SessionAccessors;
+import net.pcal.fastback.mixins.ServerAccessors;
+import net.pcal.fastback.mixins.SessionAccessors;
 import org.apache.logging.log4j.LogManager;
 
 import java.nio.file.Path;

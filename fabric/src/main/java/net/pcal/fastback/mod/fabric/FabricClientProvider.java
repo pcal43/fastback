@@ -27,7 +27,7 @@ import net.minecraft.client.gui.screens.GenericMessageScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.pcal.fastback.logging.UserMessage;
-import net.pcal.fastback.mod.fabric.mixins.ScreenAccessors;
+import net.pcal.fastback.mixins.ScreenAccessors;
 
 import java.nio.file.Path;
 

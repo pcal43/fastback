@@ -5,23 +5,8 @@ pluginManagement {
             name = "Fabric"
             url = "https://maven.fabricmc.net/"
         }
-        maven {
-            name = "Architectury"
-            url = "https://maven.architectury.dev/"
-        }
-        //mavenCentral()
+        mavenCentral()
         gradlePluginPortal()
-        // NOTE: Forge is no longer supported and the build has been disabled
-        // See: https://github.com/pcal43/fastback/issues/333
-        // maven {
-        //    name = 'NeoForged'
-        //    url = 'https://maven.neoforged.net/releases'
-        //}
-        // architectury-loom still demands this for some reason
-        maven {
-            name = "Forge"
-            url = "https://maven.minecraftforge.net/"
-        }
     }
 }
 

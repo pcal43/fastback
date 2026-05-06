@@ -16,8 +16,9 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.mod.fabric.mixins;
+package net.pcal.fastback.mixins;
 
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
@@ -26,8 +27,12 @@ import org.spongepowered.asm.mixin.gen.Accessor;
  * @author pcal
  * @since 0.0.1
  */
-@Mixin(LevelStorageSource.LevelStorageAccess.class)
-public interface SessionAccessors {
+@Mixin(MinecraftServer.class)
+public interface ServerAccessors {
+
     @Accessor
-    LevelStorageSource.LevelDirectory getLevelDirectory();
+    int getTickCount();
+
+    @Accessor
+    LevelStorageSource.LevelStorageAccess getStorageSource();
 }

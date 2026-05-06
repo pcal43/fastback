@@ -16,33 +16,26 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.pcal.fastback.mod.fabric;
+package net.pcal.fastback.mixins;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mutable;
+import org.spongepowered.asm.mixin.gen.Accessor;
 
 /**
- * Singleton 'gateway' that mixin code goes through to call back into the mod.
- *
  * @author pcal
- * @since 0.13.1
+ * @since 0.0.11
  */
-public interface MixinGateway {
+@Mixin(Screen.class)
+public interface ScreenAccessors {
 
-    static MixinGateway get() {
-        return Singleton.INSTANCE;
-    }
+    @Accessor
+    @Mutable
+    Component getTitle();
 
-    boolean isWorldSaveEnabled();
-
-    void autoSaveCompleted();
-
-    void renderMessageScreen(GuiGraphics drawContext);
-
-    class Singleton {
-        private static MixinGateway INSTANCE = null;
-
-        public static void register(MixinGateway gateway) {
-            Singleton.INSTANCE = gateway;
-        }
-    }
+    @Accessor
+    @Mutable
+    void setTitle(Component text);
 }
