@@ -31,7 +31,7 @@ dependencies {
 	include("com.googlecode.javaewah:JavaEWAH:${project.JavaEWAH_version}") { transitive = false }
 	include("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${project.jgit_version}") { transitive = false }
 	include("org.apache.sshd:sshd-core:${project.apache_sshd_version}") { transitive = false }
-	include("org.apache.sshd:sshd-common:${project.apache_sshd_version}") { transitive = false }
+	// sshd-common is included via the patched jar task below (strips FileSystemProvider service)
 	include("net.i2p.crypto:eddsa:${project.eddsa_version}") { transitive = false }
 }
 
@@ -118,4 +118,40 @@ tasks.register('publishCurseForge', TaskPublishCurseForge) {
 
 	// Ensure jar is finished before this runs
 	dependsOn(jar)
+}
+
+// sshd-common registers RootedFileSystemProvider as a java.nio.file.spi.FileSystemProvider
+// via META-INF/services. When Fabric's jar loader scans nested JARs, Java's ServiceLoader
+// instantiates it immediately, triggering slf4j init against Minecraft's classloader and
+// causing a ClassCastException. Strip that service entry from the jar before bundling.
+def patchedSshdCommonDir = layout.buildDirectory.dir("patchedSshdCommon")
+
+configurations {
+    sshdCommonOriginal
+}
+
+dependencies {
+    sshdCommonOriginal("org.apache.sshd:sshd-common:${project.apache_sshd_version}") { transitive = false }
+}
+
+tasks.register('patchSshdCommon', Zip) {
+    dependsOn configurations.sshdCommonOriginal
+
+    def originalJar = configurations.sshdCommonOriginal.resolvedConfiguration.resolvedArtifacts
+        .find { it.name == 'sshd-common' }.file
+
+    from(zipTree(originalJar)) {
+        exclude 'META-INF/services/java.nio.file.spi.FileSystemProvider'
+    }
+
+    archiveFileName = "sshd-common-${project.apache_sshd_version}-patched.jar"
+    destinationDirectory = patchedSshdCommonDir
+}
+
+// Include the patched sshd-common jar in the final mod jar
+tasks.named('jar').configure {
+    dependsOn patchSshdCommon
+    from(patchedSshdCommonDir) {
+        into 'META-INF/jars/'
+    }
 }
