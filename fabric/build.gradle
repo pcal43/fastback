@@ -58,7 +58,7 @@ project.afterEvaluate {
 
 loom {
 	mixin {
-		defaultRefmapName = "splitscreen.refmap.json"
+		defaultRefmapName = "fastback.refmap.json"
 	}
 	runs {
 		client {
