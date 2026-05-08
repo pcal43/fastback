@@ -58,7 +58,7 @@ loom {
 
 	// Configure mixin refmap
 	mixin {
-		defaultRefmapName = "mobfilter-common-refmap.json"
+		defaultRefmapName = "fastback-common-refmap.json"
 	}
 }
 
