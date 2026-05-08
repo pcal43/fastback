@@ -13,6 +13,16 @@ pluginManagement {
     }
 }
 
+dependencyResolutionManagement {
+    repositories {
+        maven { url = 'https://maven.fabricmc.net/' }
+        maven { url = 'https://repo.spongepowered.org/maven/' }
+        maven { url = 'https://maven.neoforged.net/' }
+        maven { url = 'https://maven.nucleoid.xyz/' }
+        mavenCentral()
+    }
+}
+
 rootProject.name = 'mobfilter'
 include 'common'
 include 'fabric'

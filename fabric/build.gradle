@@ -1,7 +1,7 @@
 plugins {
 	id 'fabric-loom'
 	id 'com.modrinth.minotaur'
-	id 'net.darkhax.curseforgegradle' version '1.1.25'
+	id 'net.darkhax.curseforgegradle'
 }
 
 base {
@@ -11,16 +11,6 @@ base {
 version = project.mod_version
 group = project.maven_group
 
-repositories {
-	maven { url = 'https://maven.fabricmc.net/' }
-	maven { url = "https://repo.spongepowered.org/maven/" }
-	mavenCentral()
-}
-
-configurations {
-	// Create a configuration for the common module that won't be included in dev
-	commonDev
-}
 
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -28,12 +18,22 @@ dependencies {
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	// Depend on the common module
-	// For compilation and dev runtime - uses dev jar with proper mappings
-	implementation project(":common")
-	
-	// DON'T use include - we're merging the classes directly in the jar task instead
-	// This ensures they get remapped together with the fabric module classes
+}
+
+jar {
+    dependsOn configurations.shadowCommon
+    from {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        configurations.shadowCommon.collect {
+            zipTree(it)
+        }
+    }
+}
+
+sourcesJar {
+    def commonSources = project(":common").sourcesJar
+    dependsOn commonSources
+    from commonSources.archiveFile.map { zipTree(it) }
 }
 
 processResources {

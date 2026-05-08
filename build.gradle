@@ -1,8 +1,8 @@
 plugins {
-	id 'fabric-loom' version '1.14-SNAPSHOT' apply false
-	id 'net.neoforged.moddev' version '2.0.116' apply false
-	id 'com.modrinth.minotaur' version '2.+' apply false
-	id 'net.darkhax.curseforgegradle' version '1.1.25' apply false
+	id 'fabric-loom' version "${fabric_loom_version}" apply false
+	id 'net.neoforged.moddev' version "${neoforge_moddev_version}" apply false
+	id 'com.modrinth.minotaur' version "${minotaur_plugin_version}" apply false
+	id 'net.darkhax.curseforgegradle' version "${curseforgegradle_plugin_version}" apply false
 }
 
 version = project.mod_version
