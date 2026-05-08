@@ -48,8 +48,36 @@ dependencies {
 	modImplementation("xyz.nucleoid:server-translations-api:${project.server_translations_version}")
 }
 
+
 loom {
+	// Configure loom to not create run configurations for the common module
+	// since it's not meant to run standalone
 	runs {
 		// No run configurations needed for common module
 	}
+
+	// Configure mixin refmap
+	mixin {
+		defaultRefmapName = "mobfilter-common-refmap.json"
+	}
 }
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 21
+	options.encoding = "UTF-8"
+}
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(project.java_version)
+	}
+	withSourcesJar()
+}
+
+// Don't remap the common jar - the loader-specific modules will handle that
+jar {
+	from("LICENSE") {
+		rename { "${it}_${project.archives_base_name_common}"}
+	}
+}
+

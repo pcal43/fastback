@@ -49,17 +49,24 @@ processResources {
 	}
 }
 
-project.afterEvaluate {
-	sourceSets.named('main').configure { sourceSet ->
-		sourceSet.java.srcDir(project(":common").file("src/main/java"))
-		sourceSet.resources.srcDir(project(":common").file("src/main/resources"))
+sourceSets {
+	main {
+		// Add common module sources to fabric's main sourceSet
+		// This ensures they're compiled and remapped together
+		java {
+			srcDir project(":common").file("src/main/java")
+		}
+		resources {
+			srcDir project(":common").file("src/main/resources")
+		}
+	}
+	test {
+		resources.srcDirs = ["src/test/resources"]
 	}
 }
 
+
 loom {
-	mixin {
-		defaultRefmapName = "fastback.refmap.json"
-	}
 	runs {
 		client {
 			client()
@@ -74,13 +81,24 @@ loom {
 			runDir("run")
 		}
 	}
+
+	mixin {
+		defaultRefmapName = "fastback.refmap.json"
+	}
+
+	mods {
+		"fastback" {
+			sourceSet sourceSets.main
+		}
+	}
 }
 
 jar {
 	// copy LICENSE from the repo root and rename it to avoid conflicts with other mods
 	from("LICENSE") {
-		rename { "${it}_${archivesName}"}
+		rename { "${it}_${project.archives_base_name_fabric}"}
 	}
+	// Common sources are now part of main sourceSet, so they're automatically included
 }
 
 // Publishing configuration
@@ -148,10 +166,11 @@ tasks.register('patchSshdCommon', Zip) {
     destinationDirectory = patchedSshdCommonDir
 }
 
-// Include the patched sshd-common jar in the final mod jar
-tasks.named('jar').configure {
-    dependsOn patchSshdCommon
-    from(patchedSshdCommonDir) {
-        into 'META-INF/jars/'
-    }
+// Use Loom's include() so the patched jar is properly registered in fabric.mod.json
+dependencies {
+    include(files(patchedSshdCommonDir.map { it.file("sshd-common-${project.apache_sshd_version}-patched.jar") }))
+}
+
+tasks.named('processIncludeJars').configure {
+    dependsOn tasks.named('patchSshdCommon')
 }
