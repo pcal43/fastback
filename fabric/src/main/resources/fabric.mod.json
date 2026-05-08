@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "fastback",
-  "version": "${version}",
+  "version": "${mod_version}",
   "name": "FastBack",
   "description": "Fast, incremental world backups powered by git",
   "authors": ["pcal.net"],
@@ -25,10 +25,10 @@
     "fastback.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.16.4",
-    "fabric": "*",
-    "minecraft": "1.21.x",
-    "java": ">=21"
+    "fabricloader": ">=${fabric_loader_version}",
+    "minecraft": ">=${minecraft_version}",
+    "java": ">=${java_version}"
   },
   "conflicts": {}
 }
+
