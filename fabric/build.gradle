@@ -1,61 +1,53 @@
 plugins {
-	id 'fabric-loom'
+	id 'java'
+	id 'net.fabricmc.fabric-loom'
 	id 'com.modrinth.minotaur'
 	id 'net.darkhax.curseforgegradle'
 }
 
 base {
-	archivesName = project.archives_base_name_fabric
+	archivesName = "${project.archives_base_name}-fabric-${project.mod_version}"
 }
 
-version = project.mod_version
-group = project.maven_group
-
 repositories {
+	mavenCentral()
     maven { url = 'https://maven.fabricmc.net/' }
     maven { url = 'https://repo.spongepowered.org/maven/' }
     maven { url = 'https://maven.nucleoid.xyz/' }
-    mavenCentral()
 }
 
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings loom.officialMojangMappings()
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-
+	implementation "net.fabricmc:fabric-loader:${project.fabric_loader_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+	implementation project(":common")
 }
-
 
 processResources {
-	inputs.property "version", project.version
-
+	// Substitute the mod version into fabric.mod.json
+	inputs.property "mod_version", mod_version
+	inputs.property "minecraft_version", minecraft_version
+	inputs.property "java_version", java_version
+	inputs.property "fabric_loader_version", fabric_loader_version
 	filesMatching("fabric.mod.json") {
-		expand "version": project.version
+		expand "mod_version": mod_version,
+				"minecraft_version": minecraft_version,
+				"java_version": java_version,
+				"fabric_loader_version": fabric_loader_version
 	}
 }
 
-sourceSets {
-	main {
-		// Add common module sources to fabric's main sourceSet
-		// This ensures they're compiled and remapped together
-		java {
-			srcDir project(":common").file("src/main/java")
-		}
-		resources {
-			srcDir project(":common").file("src/main/resources")
-		}
+project.afterEvaluate {
+	sourceSets.named('main').configure { sourceSet ->
+		sourceSet.java.srcDir(project(":common").file("src/main/java"))
+		sourceSet.resources.srcDir(project(":common").file("src/main/resources"))
 	}
-	test {
-		resources.srcDirs = ["src/test/resources"]
-	}
-}
-
-tasks.withType(JavaCompile).configureEach {
-	it.options.release = 21
 }
 
 loom {
+	mixin {
+		defaultRefmapName = "splitscreen.refmap.json"
+	}
 	runs {
 		client {
 			client()
@@ -70,45 +62,25 @@ loom {
 			runDir("run")
 		}
 	}
-	
-	mixin {
-		defaultRefmapName = "mobfilter-refmap.json"
-	}
-	
-	// Common sources are now part of main sourceSet
-	mods {
-		"mobfilter" {
-			sourceSet sourceSets.main
-		}
-	}
-}
-
-java {
-	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-	// if it is present.
-	// If you remove this line, sources will not be generated.
-	withSourcesJar()
 }
 
 jar {
+	// copy LICENSE from the repo root and rename it to avoid conflicts with other mods
 	from("LICENSE") {
-		rename { "${it}_${project.archives_base_name_fabric}"}
+		rename { "${it}_${archivesName}"}
 	}
-	// Common sources are now part of main sourceSet, so they're automatically included
 }
-
-
-
 
 // Publishing configuration
 modrinth {
 	token = System.getenv("MODRINTH_TOKEN")
-	projectId = "${project.modrinth_projectId}"
+	projectId = project.modrinth_projectId
 	versionNumber = project.mod_version
+	versionName = "${project.mod_version} (fabric)"
 	versionType = "release"
-	uploadFile = remapJar
+	uploadFile = jar
 	changelog = "<p><a href='${project.github_projectUrl}/releases/tag/${project.mod_version}'>${project.github_projectUrl}/releases/tag/${project.mod_version}</a></p>"
-	gameVersions = ["${project.minecraft_version}"]
+	gameVersions = [ project.minecraft_version ]
 	loaders = ["fabric"]
 	dependencies {
 		required.project "fabric-api"
@@ -123,7 +95,7 @@ tasks.register('publishCurseForge', TaskPublishCurseForge) {
 
 	// Configure the main artifact
 	// The plugin automatically detects Fabric & Java version from your Loom setup
-	def mainFile = upload(project.curseforge_projectId, remapJar)
+	def mainFile = upload(project.curseforge_projectId, jar)
 
 	mainFile.releaseType = "release"
 	mainFile.changelog = "${project.github_projectUrl}/releases/tag/${project.mod_version}"
@@ -132,6 +104,6 @@ tasks.register('publishCurseForge', TaskPublishCurseForge) {
 	mainFile.addGameVersion(project.minecraft_version)
 	mainFile.addModLoader("Fabric")
 
-	// Ensure remapJar is finished before this runs
-	dependsOn(remapJar)
+	// Ensure jar is finished before this runs
+	dependsOn(jar)
 }
