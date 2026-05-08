@@ -26,38 +26,26 @@ dependencies {
 
 
 	// jgit
-	include("org.eclipse.jgit:org.eclipse.jgit:${project.jgit_version}") { transitive = false }
 	api("org.eclipse.jgit:org.eclipse.jgit:${project.jgit_version}") { transitive = false }
 
 	// jgit needs this
-	include("com.googlecode.javaewah:JavaEWAH:${project.JavaEWAH_version}") { transitive = false }
 	runtimeOnly("com.googlecode.javaewah:JavaEWAH:${project.JavaEWAH_version}") { transitive = false }
 
 	//
 	// So jgit can do modern ssh:
 	//
 
-	// https://mvnrepository.com/artifact/org.eclipse.jgit/org.eclipse.jgit.ssh.apache
-	include("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${project.jgit_version}") { transitive = false }
 	runtimeOnly("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${project.jgit_version}") { transitive = false }
-
-	// https://mvnrepository.com/artifact/org.apache.sshd/sshd-core
-	include("org.apache.sshd:sshd-core:${project.apache_sshd_version}") { transitive = false }
 	runtimeOnly("org.apache.sshd:sshd-core:${project.apache_sshd_version}") { transitive = false }
-
-	// https://mvnrepository.com/artifact/org.apache.sshd/sshd-common
-	include("org.apache.sshd:sshd-common:${project.apache_sshd_version}") { transitive = false }
 	runtimeOnly("org.apache.sshd:sshd-common:${project.apache_sshd_version}") { transitive = false }
 
 	// this enables ed25519 support in apache_sshd
 	// https://github.com/apache/mina-sshd/blob/dfa109b7b535d64e8ee395ddd0419e7696fb24ee/docs/dependencies.md
-	include("net.i2p.crypto:eddsa:${project.eddsa_version}") { transitive = false }
 	runtimeOnly("net.i2p.crypto:eddsa:${project.eddsa_version}") { transitive = false }
 
 	// Server Translations
-	include("me.lucko:fabric-permissions-api:${project.fabric_permissions_version}") { transitive = false }
 	modImplementation("me.lucko:fabric-permissions-api:${project.fabric_permissions_version}") { transitive = false }
-	modImplementation include("xyz.nucleoid:server-translations-api:${project.server_translations_version}")
+	modImplementation("xyz.nucleoid:server-translations-api:${project.server_translations_version}")
 }
 
 loom {
