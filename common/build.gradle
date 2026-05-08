@@ -15,6 +15,7 @@ repositories {
 dependencies {
 	// Minecraft classes with Mojang mappings - needed for compilation
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings loom.officialMojangMappings()
 
 	// Mixin annotations - using version from gradle.properties for consistency
 	compileOnly "org.spongepowered:mixin:${project.spongepowered_version}"
