@@ -31,11 +31,11 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(Screen.class)
 public interface ScreenAccessors {
 
-    @Accessor
+    @Accessor(remap = false)
     @Mutable
     Component getTitle();
 
-    @Accessor
+    @Accessor(remap = false)
     @Mutable
     void setTitle(Component text);
 }

@@ -30,9 +30,9 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(MinecraftServer.class)
 public interface ServerAccessors {
 
-    @Accessor
+    @Accessor(remap = false)
     int getTickCount();
 
-    @Accessor
+    @Accessor(remap = false)
     LevelStorageSource.LevelStorageAccess getStorageSource();
 }

@@ -28,6 +28,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
  */
 @Mixin(LevelStorageSource.LevelStorageAccess.class)
 public interface SessionAccessors {
-    @Accessor
+    @Accessor(remap = false)
     LevelStorageSource.LevelDirectory getLevelDirectory();
 }
