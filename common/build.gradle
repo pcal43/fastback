@@ -44,8 +44,8 @@ dependencies {
 	runtimeOnly("net.i2p.crypto:eddsa:${project.eddsa_version}") { transitive = false }
 
 	// Server Translations
-	modImplementation("me.lucko:fabric-permissions-api:${project.fabric_permissions_version}") { transitive = false }
-	modImplementation("xyz.nucleoid:server-translations-api:${project.server_translations_version}")
+	runtimeOnly("me.lucko:fabric-permissions-api:${project.fabric_permissions_version}") { transitive = false }
+	runtimeOnly("xyz.nucleoid:server-translations-api:${project.server_translations_version}")
 }
 
 
