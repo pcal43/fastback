@@ -11,6 +11,12 @@ base {
 version = project.mod_version
 group = project.maven_group
 
+repositories {
+    maven { url = 'https://maven.fabricmc.net/' }
+    maven { url = 'https://repo.spongepowered.org/maven/' }
+    maven { url = 'https://maven.nucleoid.xyz/' }
+    mavenCentral()
+}
 
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -20,21 +26,6 @@ dependencies {
 
 }
 
-jar {
-    dependsOn configurations.shadowCommon
-    from {
-        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-        configurations.shadowCommon.collect {
-            zipTree(it)
-        }
-    }
-}
-
-sourcesJar {
-    def commonSources = project(":common").sourcesJar
-    dependsOn commonSources
-    from commonSources.archiveFile.map { zipTree(it) }
-}
 
 processResources {
 	inputs.property "version", project.version
