@@ -24,7 +24,7 @@ dependencies {
 	implementation project(":common")
 
     modImplementation("me.lucko:fabric-permissions-api:${project.fabric_permissions_version}") { transitive = false }
-    modImplementation("xyz.nucleoid:server-translations-api:${project.server_translations_version}") { transitive = false }
+    modImplementation("xyz.nucleoid:server-translations-api:${project.server_translations_version}")
 
 	// jgit and dependencies - nested into the mod jar here (common is not a mod jar)
     modImplementation("org.eclipse.jgit:org.eclipse.jgit:${project.jgit_version}") { transitive = false }
@@ -167,10 +167,24 @@ tasks.register('patchSshdCommon', Zip) {
 }
 
 // Use Loom's include() so the patched jar is properly registered in fabric.mod.json
+// Ensure the patched jar is also placed on the dev run classpath so the runtime uses the stripped copy.
+def patchedSshdCommonJar = files(patchedSshdCommonDir.map { it.file("sshd-common-${project.apache_sshd_version}-patched.jar") })
+
 dependencies {
-    include(files(patchedSshdCommonDir.map { it.file("sshd-common-${project.apache_sshd_version}-patched.jar") }))
+    modImplementation(patchedSshdCommonJar)
+    include(patchedSshdCommonJar)
+}
+
+// Ensure the patched jar is created before compilation and include processing so Loom sees it
+tasks.named('compileJava').configure {
+    dependsOn tasks.named('patchSshdCommon')
 }
 
 tasks.named('processIncludeJars').configure {
+    dependsOn tasks.named('patchSshdCommon')
+}
+
+// Ensure generateRemapClasspath runs after the patched jar is produced so Loom's validation passes
+tasks.named('generateRemapClasspath').configure {
     dependsOn tasks.named('patchSshdCommon')
 }
