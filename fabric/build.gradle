@@ -10,31 +10,39 @@ base {
 
 repositories {
 	mavenCentral()
-    maven { url = 'https://maven.fabricmc.net/' }
-    maven { url = 'https://repo.spongepowered.org/maven/' }
-    maven { url = 'https://maven.nucleoid.xyz/' }
+	maven { url = 'https://maven.fabricmc.net/' }
+	maven { url = 'https://repo.spongepowered.org/maven/' }
+	maven { url = 'https://maven.nucleoid.xyz/' }
+}
+
+configurations {
+	sshdCommonOriginal
 }
 
 dependencies {
 	minecraft "com.mojang:minecraft:${minecraft_version}"
 	mappings loom.officialMojangMappings()
-    modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+	modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
 
-    modImplementation("me.lucko:fabric-permissions-api:${fabric_permissions_version}") { transitive = false }
-    modImplementation("xyz.nucleoid:server-translations-api:${server_translations_version}")
+	modImplementation("me.lucko:fabric-permissions-api:${fabric_permissions_version}") { transitive = false }
+	modImplementation("xyz.nucleoid:server-translations-api:${server_translations_version}")
 
-	// jgit and dependencies - nested into the mod jar here (common is not a mod jar)
-    modImplementation("org.eclipse.jgit:org.eclipse.jgit:${jgit_version}") { transitive = false }
-    modImplementation("com.googlecode.javaewah:JavaEWAH:${JavaEWAH_version}") { transitive = false }
-    modImplementation("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${jgit_version}") { transitive = false }
-    modImplementation("org.apache.sshd:sshd-core:${apache_sshd_version}") { transitive = false }
-	// sshd-common is included via the patched jar task below (strips FileSystemProvider service)
-    modImplementation("net.i2p.crypto:eddsa:${eddsa_version}") { transitive = false }
+	// jgit and dependencies
+	modImplementation("org.eclipse.jgit:org.eclipse.jgit:${jgit_version}") { transitive = false }
+	modImplementation("com.googlecode.javaewah:JavaEWAH:${JavaEWAH_version}") { transitive = false }
+	modImplementation("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${jgit_version}") { transitive = false }
+	modImplementation("org.apache.sshd:sshd-core:${apache_sshd_version}") { transitive = false }
+	modImplementation("org.apache.sshd:sshd-common:${apache_sshd_version}") { transitive = false }
+	modImplementation("net.i2p.crypto:eddsa:${eddsa_version}") { transitive = false }
+
+	// sshd-common is also merged directly into the distributable jar (see jar task below)
+	// with the FileSystemProvider service entry stripped to prevent a ClassCastException
+	// when the jar is nested inside another mod's JiJ bundle
+	sshdCommonOriginal("org.apache.sshd:sshd-common:${apache_sshd_version}") { transitive = false }
 }
 
 processResources {
-	// Substitute the mod version into fabric.mod.json
 	inputs.property "mod_version", mod_version
 	inputs.property "minecraft_version", minecraft_version
 	inputs.property "java_version", java_version
@@ -49,17 +57,10 @@ processResources {
 
 sourceSets {
 	main {
-		// Add common module sources to fabric's main sourceSet
-		// This ensures they're compiled and remapped together
-		java {
-			srcDir project(":common").file("src/main/java")
-		}
-		resources {
-			srcDir project(":common").file("src/main/resources")
-		}
+		java { srcDir project(":common").file("src/main/java") }
+		resources { srcDir project(":common").file("src/main/resources") }
 	}
 }
-
 
 loom {
 	runs {
@@ -76,11 +77,9 @@ loom {
 			runDir("run")
 		}
 	}
-
 	mixin {
 		defaultRefmapName = "fastback-refmap.json"
 	}
-
 	mods {
 		"fastback" {
 			sourceSet sourceSets.main
@@ -89,10 +88,16 @@ loom {
 }
 
 jar {
-	// copy LICENSE from the repo root and rename it to avoid conflicts with other mods
 	from("LICENSE") {
-		rename { "${it}_${project.archives_base_name}"}
+		rename { "${it}_${project.archives_base_name}" }
 	}
+	// Merge sshd-common directly, stripping the FileSystemProvider service entry
+	// that causes a ClassCastException when Fabric's jar loader scans nested JARs
+	from(configurations.sshdCommonOriginal.collect {
+		zipTree(it).matching {
+			exclude 'META-INF/services/java.nio.file.spi.FileSystemProvider'
+		}
+	})
 }
 
 // Publishing configuration
@@ -104,7 +109,7 @@ modrinth {
 	versionType = "release"
 	uploadFile = remapJar
 	changelog = "<p><a href='${github_projectUrl}/releases/tag/${mod_version}'>${github_projectUrl}/releases/tag/${mod_version}</a></p>"
-	gameVersions = [ minecraft_version ]
+	gameVersions = [minecraft_version]
 	loaders = ["fabric"]
 	dependencies {
 		required.project "fabric-api"
@@ -114,71 +119,12 @@ modrinth {
 import net.darkhax.curseforgegradle.TaskPublishCurseForge
 
 tasks.register('publishCurseForge', TaskPublishCurseForge) {
-	// API Key from environment or fallback
 	apiToken = System.getenv("CURSEFORGE_TOKEN") ?: 'CURSEFORGE_TOKEN NOT_SET'
-
-	// Configure the main artifact
-	// The plugin automatically detects Fabric & Java version from your Loom setup
 	def mainFile = upload(curseforge_projectId, remapJar)
-
 	mainFile.releaseType = "release"
 	mainFile.changelog = "${github_projectUrl}/releases/tag/${mod_version}"
 	mainFile.changelogType = "markdown"
-
 	mainFile.addGameVersion(minecraft_version)
 	mainFile.addModLoader("Fabric")
-
-	// Ensure jar is finished before this runs
 	dependsOn(remapJar)
-}
-
-// sshd-common registers RootedFileSystemProvider as a java.nio.file.spi.FileSystemProvider
-// via META-INF/services. When Fabric's jar loader scans nested JARs, Java's ServiceLoader
-// instantiates it immediately, triggering slf4j init against Minecraft's classloader and
-// causing a ClassCastException. Strip that service entry from the jar before bundling.
-def patchedSshdCommonDir = layout.buildDirectory.dir("patchedSshdCommon")
-
-configurations {
-    sshdCommonOriginal
-}
-
-dependencies {
-    sshdCommonOriginal("org.apache.sshd:sshd-common:${apache_sshd_version}") { transitive = false }
-}
-
-tasks.register('patchSshdCommon', Zip) {
-    dependsOn configurations.sshdCommonOriginal
-
-    def originalJar = configurations.sshdCommonOriginal.resolvedConfiguration.resolvedArtifacts
-        .find { it.name == 'sshd-common' }.file
-
-    from(zipTree(originalJar)) {
-        exclude 'META-INF/services/java.nio.file.spi.FileSystemProvider'
-    }
-
-    archiveFileName = "sshd-common-${apache_sshd_version}-patched.jar"
-    destinationDirectory = patchedSshdCommonDir
-}
-
-// Use Loom's include() so the patched jar is properly registered in fabric.mod.json
-// Ensure the patched jar is also placed on the dev run classpath so the runtime uses the stripped copy.
-def patchedSshdCommonJar = files(patchedSshdCommonDir.map { it.file("sshd-common-${apache_sshd_version}-patched.jar") })
-
-dependencies {
-    modImplementation(patchedSshdCommonJar)
-    include(patchedSshdCommonJar)
-}
-
-// Ensure the patched jar is created before compilation and include processing so Loom sees it
-tasks.named('compileJava').configure {
-    dependsOn tasks.named('patchSshdCommon')
-}
-
-tasks.named('processIncludeJars').configure {
-    dependsOn tasks.named('patchSshdCommon')
-}
-
-// Ensure generateRemapClasspath runs after the patched jar is produced so Loom's validation passes
-tasks.named('generateRemapClasspath').configure {
-    dependsOn tasks.named('patchSshdCommon')
 }
