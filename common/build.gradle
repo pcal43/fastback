@@ -10,35 +10,34 @@ repositories {
 }
 
 dependencies {
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	minecraft "com.mojang:minecraft:${minecraft_version}"
 	mappings loom.officialMojangMappings()
 
-	compileOnly "org.spongepowered:mixin:${project.spongepowered_version}"
-	annotationProcessor "org.spongepowered:mixin:${project.spongepowered_version}:processor"
+	compileOnly "org.spongepowered:mixin:${spongepowered_version}"
+	annotationProcessor "org.spongepowered:mixin:${spongepowered_version}:processor"
 
-	testImplementation "org.junit.jupiter:junit-jupiter-api:${project.junit_version}"
-	testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${project.junit_version}"
+	testImplementation "org.junit.jupiter:junit-jupiter-api:${junit_version}"
+	testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junit_version}"
 
 	// jgit
-	api("org.eclipse.jgit:org.eclipse.jgit:${project.jgit_version}") { transitive = false }
+	api("org.eclipse.jgit:org.eclipse.jgit:${jgit_version}") { transitive = false }
 
 	// jgit needs this
-	runtimeOnly("com.googlecode.javaewah:JavaEWAH:${project.JavaEWAH_version}") { transitive = false }
+	runtimeOnly("com.googlecode.javaewah:JavaEWAH:${JavaEWAH_version}") { transitive = false }
 
 	// So jgit can do modern ssh:
 	// sshd-common is NOT listed here - the fabric module provides a patched version that strips the
 	// FileSystemProvider service entry to prevent a ClassCastException during Fabric's jar scanning.
-	runtimeOnly("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${project.jgit_version}") { transitive = false }
-	runtimeOnly("org.apache.sshd:sshd-core:${project.apache_sshd_version}") { transitive = false }
+	runtimeOnly("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${jgit_version}") { transitive = false }
+	runtimeOnly("org.apache.sshd:sshd-core:${apache_sshd_version}") { transitive = false }
 
 	// this enables ed25519 support in apache_sshd
 	// https://github.com/apache/mina-sshd/blob/dfa109b7b535d64e8ee395ddd0419e7696fb24ee/docs/dependencies.md
 	runtimeOnly("net.i2p.crypto:eddsa:${project.eddsa_version}") { transitive = false }
 
-	runtimeOnly("me.lucko:fabric-permissions-api:${project.fabric_permissions_version}") { transitive = false }
-	runtimeOnly("xyz.nucleoid:server-translations-api:${project.server_translations_version}")
+	runtimeOnly("me.lucko:fabric-permissions-api:${fabric_permissions_version}") { transitive = false }
+	runtimeOnly("xyz.nucleoid:server-translations-api:${server_translations_version}")
 }
-
 
 loom {
 	// Configure loom to not create run configurations for the common module
@@ -46,28 +45,10 @@ loom {
 	runs {
 		// No run configurations needed for common module
 	}
-
-	// Configure mixin refmap
-	mixin {
-		defaultRefmapName = "fastback-common-refmap.json"
-	}
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 21
+	it.options.release = java_version
 	options.encoding = "UTF-8"
 }
 
-java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(project.java_version)
-	}
-	withSourcesJar()
-}
-
-// Don't remap the common jar - the loader-specific modules will handle that
-jar {
-	from("LICENSE") {
-		rename { "${it}_${project.archives_base_name_common}"}
-	}
-}
