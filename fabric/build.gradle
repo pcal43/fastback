@@ -23,8 +23,8 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 	implementation project(":common")
 
-    modImplementation modImplementation("me.lucko:fabric-permissions-api:${project.fabric_permissions_version}") { transitive = false }
-    modImplementation modImplementation("xyz.nucleoid:server-translations-api:${project.server_translations_version}")
+    modImplementation("me.lucko:fabric-permissions-api:${project.fabric_permissions_version}") { transitive = false }
+    modImplementation("xyz.nucleoid:server-translations-api:${project.server_translations_version}") { transitive = false }
 
 	// jgit and dependencies - nested into the mod jar here (common is not a mod jar)
     modImplementation("org.eclipse.jgit:org.eclipse.jgit:${project.jgit_version}") { transitive = false }
