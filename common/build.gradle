@@ -40,15 +40,5 @@ dependencies {
 }
 
 loom {
-	// Configure loom to not create run configurations for the common module
-	// since it's not meant to run standalone
-	runs {
-		// No run configurations needed for common module
-	}
+	runs {}
 }
-
-tasks.withType(JavaCompile).configureEach {
-	it.options.release = java_version
-	options.encoding = "UTF-8"
-}
-

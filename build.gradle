@@ -8,6 +8,13 @@ plugins {
 version = project.mod_version
 group = project.maven_group
 
+subprojects {
+	tasks.withType(JavaCompile).configureEach {
+		it.options.release = project.java_version as Integer
+		options.encoding = "UTF-8"
+	}
+}
+
 // ============================================================================
 // Release Tasks
 // ============================================================================
