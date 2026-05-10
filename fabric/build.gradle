@@ -15,10 +15,6 @@ repositories {
 	maven { url = 'https://maven.nucleoid.xyz/' }
 }
 
-configurations {
-	sshdCommonOriginal
-}
-
 dependencies {
 	minecraft "com.mojang:minecraft:${minecraft_version}"
 	mappings loom.officialMojangMappings()
@@ -26,20 +22,29 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
 
 	modImplementation("me.lucko:fabric-permissions-api:${fabric_permissions_version}") { transitive = false }
+	include("me.lucko:fabric-permissions-api:${fabric_permissions_version}") { transitive = false }
+
 	modImplementation("xyz.nucleoid:server-translations-api:${server_translations_version}") { transitive = false }
+	include("xyz.nucleoid:server-translations-api:${server_translations_version}") { transitive = false }
 
 	// jgit and dependencies
 	modImplementation("org.eclipse.jgit:org.eclipse.jgit:${jgit_version}") { transitive = false }
-	modImplementation("com.googlecode.javaewah:JavaEWAH:${JavaEWAH_version}") { transitive = false }
-	modImplementation("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${jgit_version}") { transitive = false }
-	modImplementation("org.apache.sshd:sshd-core:${apache_sshd_version}") { transitive = false }
-	modImplementation("org.apache.sshd:sshd-common:${apache_sshd_version}") { transitive = false }
-	modImplementation("net.i2p.crypto:eddsa:${eddsa_version}") { transitive = false }
+	include("org.eclipse.jgit:org.eclipse.jgit:${jgit_version}") { transitive = false }
 
-	// sshd-common is also merged directly into the distributable jar (see jar task below)
-	// with the FileSystemProvider service entry stripped to prevent a ClassCastException
-	// when the jar is nested inside another mod's JiJ bundle
-	sshdCommonOriginal("org.apache.sshd:sshd-common:${apache_sshd_version}") { transitive = false }
+	modImplementation("com.googlecode.javaewah:JavaEWAH:${JavaEWAH_version}") { transitive = false }
+	include("com.googlecode.javaewah:JavaEWAH:${JavaEWAH_version}") { transitive = false }
+
+	modImplementation("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${jgit_version}") { transitive = false }
+	include("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${jgit_version}") { transitive = false }
+
+	modImplementation("org.apache.sshd:sshd-core:${apache_sshd_version}") { transitive = false }
+	include("org.apache.sshd:sshd-core:${apache_sshd_version}") { transitive = false }
+
+	modImplementation("org.apache.sshd:sshd-common:${apache_sshd_version}") { transitive = false }
+	include("org.apache.sshd:sshd-common:${apache_sshd_version}") { transitive = false }
+
+	modImplementation("net.i2p.crypto:eddsa:${eddsa_version}") { transitive = false }
+	include("net.i2p.crypto:eddsa:${eddsa_version}") { transitive = false }
 }
 
 processResources {
@@ -91,13 +96,6 @@ jar {
 	from("LICENSE") {
 		rename { "${it}_${project.archives_base_name}" }
 	}
-	// Merge sshd-common directly, stripping the FileSystemProvider service entry
-	// that causes a ClassCastException when Fabric's jar loader scans nested JARs
-	from(configurations.sshdCommonOriginal.collect {
-		zipTree(it).matching {
-			exclude 'META-INF/services/java.nio.file.spi.FileSystemProvider'
-		}
-	})
 }
 
 // Publishing configuration
