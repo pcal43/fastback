@@ -1,5 +1,4 @@
 plugins {
-	id 'java'
 	id 'fabric-loom'
 	id 'com.modrinth.minotaur'
 	id 'net.darkhax.curseforgegradle'
@@ -17,21 +16,21 @@ repositories {
 }
 
 dependencies {
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	minecraft "com.mojang:minecraft:${minecraft_version}"
 	mappings loom.officialMojangMappings()
-    modImplementation "net.fabricmc:fabric-loader:${project.fabric_loader_version}"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
 
-    modImplementation("me.lucko:fabric-permissions-api:${project.fabric_permissions_version}") { transitive = false }
-    modImplementation("xyz.nucleoid:server-translations-api:${project.server_translations_version}")
+    modImplementation("me.lucko:fabric-permissions-api:${fabric_permissions_version}") { transitive = false }
+    modImplementation("xyz.nucleoid:server-translations-api:${server_translations_version}")
 
 	// jgit and dependencies - nested into the mod jar here (common is not a mod jar)
-    modImplementation("org.eclipse.jgit:org.eclipse.jgit:${project.jgit_version}") { transitive = false }
-    modImplementation("com.googlecode.javaewah:JavaEWAH:${project.JavaEWAH_version}") { transitive = false }
-    modImplementation("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${project.jgit_version}") { transitive = false }
-    modImplementation("org.apache.sshd:sshd-core:${project.apache_sshd_version}") { transitive = false }
+    modImplementation("org.eclipse.jgit:org.eclipse.jgit:${jgit_version}") { transitive = false }
+    modImplementation("com.googlecode.javaewah:JavaEWAH:${JavaEWAH_version}") { transitive = false }
+    modImplementation("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${jgit_version}") { transitive = false }
+    modImplementation("org.apache.sshd:sshd-core:${apache_sshd_version}") { transitive = false }
 	// sshd-common is included via the patched jar task below (strips FileSystemProvider service)
-    modImplementation("net.i2p.crypto:eddsa:${project.eddsa_version}") { transitive = false }
+    modImplementation("net.i2p.crypto:eddsa:${eddsa_version}") { transitive = false }
 }
 
 processResources {
@@ -58,9 +57,6 @@ sourceSets {
 		resources {
 			srcDir project(":common").file("src/main/resources")
 		}
-	}
-	test {
-		resources.srcDirs = ["src/test/resources"]
 	}
 }
 
@@ -95,21 +91,20 @@ loom {
 jar {
 	// copy LICENSE from the repo root and rename it to avoid conflicts with other mods
 	from("LICENSE") {
-		rename { "${it}_${project.archives_base_name_fabric}"}
+		rename { "${it}_${project.archives_base_name}"}
 	}
-	// Common sources are now part of main sourceSet, so they're automatically included
 }
 
 // Publishing configuration
 modrinth {
 	token = System.getenv("MODRINTH_TOKEN")
-	projectId = project.modrinth_projectId
-	versionNumber = project.mod_version
-	versionName = "${project.mod_version} (fabric)"
+	projectId = modrinth_projectId
+	versionNumber = mod_version
+	versionName = "${mod_version} (fabric)"
 	versionType = "release"
 	uploadFile = remapJar
-	changelog = "<p><a href='${project.github_projectUrl}/releases/tag/${project.mod_version}'>${project.github_projectUrl}/releases/tag/${project.mod_version}</a></p>"
-	gameVersions = [ project.minecraft_version ]
+	changelog = "<p><a href='${github_projectUrl}/releases/tag/${mod_version}'>${github_projectUrl}/releases/tag/${mod_version}</a></p>"
+	gameVersions = [ minecraft_version ]
 	loaders = ["fabric"]
 	dependencies {
 		required.project "fabric-api"
@@ -124,13 +119,13 @@ tasks.register('publishCurseForge', TaskPublishCurseForge) {
 
 	// Configure the main artifact
 	// The plugin automatically detects Fabric & Java version from your Loom setup
-	def mainFile = upload(project.curseforge_projectId, jar)
+	def mainFile = upload(curseforge_projectId, remapJar)
 
 	mainFile.releaseType = "release"
-	mainFile.changelog = "${project.github_projectUrl}/releases/tag/${project.mod_version}"
+	mainFile.changelog = "${github_projectUrl}/releases/tag/${mod_version}"
 	mainFile.changelogType = "markdown"
 
-	mainFile.addGameVersion(project.minecraft_version)
+	mainFile.addGameVersion(minecraft_version)
 	mainFile.addModLoader("Fabric")
 
 	// Ensure jar is finished before this runs
@@ -148,7 +143,7 @@ configurations {
 }
 
 dependencies {
-    sshdCommonOriginal("org.apache.sshd:sshd-common:${project.apache_sshd_version}") { transitive = false }
+    sshdCommonOriginal("org.apache.sshd:sshd-common:${apache_sshd_version}") { transitive = false }
 }
 
 tasks.register('patchSshdCommon', Zip) {
@@ -161,13 +156,13 @@ tasks.register('patchSshdCommon', Zip) {
         exclude 'META-INF/services/java.nio.file.spi.FileSystemProvider'
     }
 
-    archiveFileName = "sshd-common-${project.apache_sshd_version}-patched.jar"
+    archiveFileName = "sshd-common-${apache_sshd_version}-patched.jar"
     destinationDirectory = patchedSshdCommonDir
 }
 
 // Use Loom's include() so the patched jar is properly registered in fabric.mod.json
 // Ensure the patched jar is also placed on the dev run classpath so the runtime uses the stripped copy.
-def patchedSshdCommonJar = files(patchedSshdCommonDir.map { it.file("sshd-common-${project.apache_sshd_version}-patched.jar") })
+def patchedSshdCommonJar = files(patchedSshdCommonDir.map { it.file("sshd-common-${apache_sshd_version}-patched.jar") })
 
 dependencies {
     modImplementation(patchedSshdCommonJar)
