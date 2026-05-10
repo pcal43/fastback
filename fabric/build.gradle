@@ -26,7 +26,7 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
 
 	modImplementation("me.lucko:fabric-permissions-api:${fabric_permissions_version}") { transitive = false }
-	modImplementation("xyz.nucleoid:server-translations-api:${server_translations_version}")
+	modImplementation("xyz.nucleoid:server-translations-api:${server_translations_version}") { transitive = false }
 
 	// jgit and dependencies
 	modImplementation("org.eclipse.jgit:org.eclipse.jgit:${jgit_version}") { transitive = false }
@@ -48,7 +48,7 @@ processResources {
 	inputs.property "java_version", java_version
 	inputs.property "fabric_loader_version", fabric_loader_version
 	filesMatching("fabric.mod.json") {
-		expand "mod_version": mod_version,
+		expand  "mod_version": mod_version,
 				"minecraft_version": minecraft_version,
 				"java_version": java_version,
 				"fabric_loader_version": fabric_loader_version
