@@ -18,7 +18,7 @@
 package net.pcal.fastback.common.mixins;
 
 import net.minecraft.server.MinecraftServer;
-import net.pcal.fastback.common.MixinGateway;
+import net.pcal.fastback.common.mod.MixinGateway;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

@@ -18,6 +18,7 @@
 
 package net.pcal.fastback.common.mod;
 
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
 import net.pcal.fastback.common.logging.UserMessage;
@@ -44,6 +45,8 @@ public interface Mod {
         return SingletonHolder.INSTANCE;
     }
 
+    void renderHud(GuiGraphics drawContext);
+
     class SingletonHolder {
         private static Mod INSTANCE = null;
 
@@ -60,15 +63,15 @@ public interface Mod {
     /**
      * Initializes the mod for a dedicated server. Call once at startup.
      */
-    static Mod initializeForDedicatedServer(LoaderHelper loaderHelper, MinecraftServer minecraftServer) {
-        return ModImpl.initialize(loaderHelper, minecraftServer, null);
+    static Mod initializeForDedicatedServer(LoaderHelper loaderHelper) {
+        return ModImpl.initialize(loaderHelper, null);
     }
 
     /**
      * Initializes the mod for a client (integrated or dedicated-server-from-client). Call once at startup.
      */
-    static Mod initializeForClient(LoaderHelper loaderHelper, MinecraftServer minecraftServer, ClientHelper clientHelper) {
-        return ModImpl.initialize(loaderHelper,  minecraftServer, clientHelper);
+    static Mod initializeForClient(LoaderHelper loaderHelper, ClientHelper clientHelper) {
+        return ModImpl.initialize(loaderHelper, clientHelper);
     }
 
     /**
@@ -136,12 +139,15 @@ public interface Mod {
      */
     void addBackupProperties(Map<String, String> props);
 
+    /**
+     *
+     */
     void onWorldStart(MinecraftServer server);
 
     /**
      * Must be called when a world is stopping to ensure we run a backup.
      */
-    void onWorldStop();
+    void onWorldStop(MinecraftServer minecraftServer);
 
 
 }

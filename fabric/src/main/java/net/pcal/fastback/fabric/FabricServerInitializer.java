@@ -20,7 +20,6 @@ package net.pcal.fastback.fabric;
 
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.pcal.fastback.common.mod.LoaderLifecycleListener;
 import net.pcal.fastback.common.mod.Mod;
 
 /**
@@ -33,15 +32,16 @@ public class FabricServerInitializer implements DedicatedServerModInitializer {
 
     @Override
     public void onInitializeServer() {
-        final FabricServerProvider serverProvider = new FabricServerProvider();
-        final LoaderLifecycleListener lifecycle = Mod.initializeForDedicatedServer(serverProvider);
         FabricLoaderHelper.registerBackupCommand(false);
 
         ServerLifecycleEvents.SERVER_STARTING.register(
-                minecraftServer -> lifecycle.onDedicatedServerStart(minecraftServer)
-        );
+                minecraftServer -> {
+                    Mod.initializeForDedicatedServer(new FabricLoaderHelper());
+                    Mod.mod().onWorldStart(minecraftServer);
+        });
+
         ServerLifecycleEvents.SERVER_STOPPED.register(
-                minecraftServer -> lifecycle.onWorldStop()
+                minecraftServer -> Mod.mod().onWorldStop(minecraftServer)
         );
     }
 }

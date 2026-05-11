@@ -85,9 +85,6 @@ public final class ClientHelper {
         renderHud(guiGraphics);
     }
 
-    // ======================================================================
-    // HUD rendering
-
     public void renderHud(GuiGraphics guiGraphics) {
         if (this.client == null) return;
         if (this.hudText == null) return;

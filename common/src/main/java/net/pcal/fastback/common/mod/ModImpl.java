@@ -21,7 +21,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelStorageSource;
-import net.pcal.fastback.common.MixinGateway;
 import net.pcal.fastback.common.commands.SchedulableAction;
 import net.pcal.fastback.common.config.GitConfig;
 import net.pcal.fastback.common.logging.Log4jLogger;
@@ -60,8 +59,8 @@ class ModImpl implements Mod, MixinGateway {
 
     private final LoaderHelper loaderHelper;
     private final ClientHelper clientHelper; // null on a dedicated server
-    private final MinecraftServer minecraftServer;
     private final Runnable autoSaveListener;
+    private MinecraftServer minecraftServer = null; // currently open world
     private boolean isWorldSaveEnabled = true;
     private Path tempRestoresDirectory = null;
 
@@ -75,34 +74,33 @@ class ModImpl implements Mod, MixinGateway {
      * @param clientHelper client-specific services, or null on a dedicated server
      * @return the LifecycleListener the loader should hold on to
      */
-    public static Mod initialize(LoaderHelper loaderHelper, MinecraftServer minecraftServer, ClientHelper clientHelper) {
+    public static Mod initialize(final LoaderHelper loaderHelper, final ClientHelper clientHelper) {
         SystemLogger.Singleton.register(new Log4jLogger(LogManager.getLogger(MOD_ID)));
-        final ModImpl mod = new ModImpl(loaderHelper, minecraftServer, clientHelper);
+        final ModImpl mod = new ModImpl(loaderHelper, clientHelper);
         SingletonHolder.register(mod);
         MixinGateway.Singleton.register(mod);
         mod.onInitialize();
         return mod;
     }
 
-    private ModImpl(LoaderHelper loaderHelper, MinecraftServer minecraftServer, ClientHelper clientHelper) {
+    private ModImpl(LoaderHelper loaderHelper, ClientHelper clientHelper) {
         this.loaderHelper = requireNonNull(loaderHelper);
-        this.minecraftServer = requireNonNull(minecraftServer);
         this.clientHelper = clientHelper; // nullable — null means dedicated server
         this.autoSaveListener = new AutosaveListener();
     }
 
     // ======================================================================
-    // LifecycleListener implementation
-
+    // Mod implementation
 
     @Override
-    public void onWorldStart(final MinecraftServer server) {
+    public void onWorldStart(final MinecraftServer minecraftServer) {
+        this.minecraftServer = requireNonNull(minecraftServer);
         executor().start();
         syslog().debug("onWorldStart complete");
     }
 
     @Override
-    public void onWorldStop() {
+    public void onWorldStop(final MinecraftServer minecraftServer) {
         try (final UserLogger ulog = UserLogger.forShutdown()) {
             final Path worldSaveDir = this.getWorldDirectory();
             if (executor().getActiveCount() > 0) {
@@ -128,10 +126,8 @@ class ModImpl implements Mod, MixinGateway {
             }
             syslog().debug("onWorldStop complete");
         }
+        this.minecraftServer = null;
     }
-
-    // ======================================================================
-    // Mod implementation
 
     @Override
     public Path getDefaultRestoresDir() throws IOException {
@@ -246,8 +242,20 @@ class ModImpl implements Mod, MixinGateway {
 
     @Override
     public void renderMessageScreen(GuiGraphics drawContext) {
-        if (this.clientHelper != null)
+        if (this.clientHelper != null) {
             this.clientHelper.renderMessageScreen(drawContext);
+        } else {
+            syslog().warn("renderMessageScreen called when clientHelper not set.");
+        }
+    }
+
+    @Override
+    public void renderHud(GuiGraphics drawContext) {
+        if (this.clientHelper != null) {
+            this.clientHelper.renderHud(drawContext);
+        } else {
+            syslog().warn("renderHud called when clientHelper not set.");
+        }
     }
 
     // ======================================================================
