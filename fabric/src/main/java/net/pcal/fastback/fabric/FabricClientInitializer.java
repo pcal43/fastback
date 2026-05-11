@@ -29,7 +29,6 @@ import org.apache.logging.log4j.LogManager;
 
 import static net.pcal.fastback.fabric.BaseFabricProvider.MOD_ID;
 
-
 /**
  * Initializer that runs in a client.
  *

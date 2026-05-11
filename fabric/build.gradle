@@ -45,6 +45,8 @@ dependencies {
 
 	modImplementation("net.i2p.crypto:eddsa:${eddsa_version}") { transitive = false }
 	include("net.i2p.crypto:eddsa:${eddsa_version}") { transitive = false }
+
+	compileOnly project(':common')
 }
 
 processResources {

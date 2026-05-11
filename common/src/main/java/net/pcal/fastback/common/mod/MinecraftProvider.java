@@ -22,125 +22,64 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextColor;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.level.storage.LevelStorageSource;
+import net.pcal.fastback.common.MixinGateway;
+import net.pcal.fastback.common.logging.Log4jLogger;
+import net.pcal.fastback.common.logging.SystemLogger;
 import net.pcal.fastback.common.logging.UserMessage;
+import net.pcal.fastback.common.mixins.ServerAccessors;
+import net.pcal.fastback.common.mixins.SessionAccessors;
+import org.apache.logging.log4j.LogManager;
 
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
 
+import static java.util.Objects.requireNonNull;
 import static net.minecraft.ChatFormatting.GRAY;
 import static net.minecraft.ChatFormatting.GREEN;
 import static net.minecraft.ChatFormatting.RED;
 import static net.minecraft.ChatFormatting.YELLOW;
 import static net.minecraft.network.chat.Style.EMPTY;
+import static net.pcal.fastback.common.logging.SystemLogger.syslog;
 import static net.pcal.fastback.common.logging.UserMessage.UserMessageStyle.ERROR;
 
 /**
- * Services that must be provided by the underlying mod framework.  Currently, that means fabric only.
+ * Services that must be provided by the underlying mod framework.
  * <p>
- * But abstracting it away like this ensures that it would be relatively straightforward to support other
- * frameworks if there's ever a desire or need for that.  If you're interested in helping port Fastback
- * to (say) Forge, this is the place to start.
+ * Loader-agnostic implementations live here. Each loader subclass overrides only what
+ * differs: {@link #getModVersion()}, {@link #getModsBackupPaths()}, and
+ * {@link #addBackupProperties(Map)} (for the loader-specific mod list), plus command
+ * registration inside {@link #initialize()}.
  *
  * @author pcal
  * @since 0.1.0
  */
-public interface MinecraftProvider {
+public abstract class MinecraftProvider implements MixinGateway {
 
-    static LifecycleListener register(final MinecraftProvider sp) {
+    // ======================================================================
+    // Constants
+
+    public static final String MOD_ID = "fastback";
+
+    // ======================================================================
+    // Fields
+
+    private MinecraftServer minecraftServer;
+    private Runnable autoSaveListener;
+    private boolean isWorldSaveEnabled = true;
+
+    // ======================================================================
+    // Static helpers
+
+    public static LifecycleListener register(final MinecraftProvider sp) {
         final ModImpl mod = new ModImpl(sp);
         Mod.Singleton.register(mod);
         return mod;
     }
 
-    /**
-     * @return the version of the fastback mod.
-     */
-    String getModVersion();
-
-    /**
-     * @return path to the 'saves' directory on a minecraft client, or null if we're on a server.
-     */
-    Path getSavesDir();
-
-    /**
-     * @return path to the directory of the current world, or null if no world is loaded.
-     */
-    Path getWorldDirectory();
-
-
-    /**
-     * @return the name of the current world, or null if no world is loaded.
-     */
-    String getWorldName();
-
-    /**
-     * @return true if we're clientside.
-     */
-    boolean isClient();
-
-    /**
-     * If on a server, broadcasts a message to all connected users.
-     */
-    void sendBroadcast(UserMessage userMessage);
-
-    /**
-     * Enable or disable world saving.
-     */
-    void setWorldSaveEnabled(boolean enabled);
-
-    /**
-     * Force a world save to start now.  Called when a manual backup is performed.
-     */
-    void saveWorld();
-
-    /**
-     * Display ephemeral status text on the screen to the user,.  This could be part of the in-game HUD
-     * or any other floating text, depending on what screen the user is on.  Has no effect if we're serverside.
-     */
-    void setHudText(UserMessage userMessage);
-
-    /**
-     * Remove text set by setHudText.
-     */
-    void clearHudText();
-
-    /**
-     * If we're clientside and a minecraft MessageScreen is being displayed (e.g., the 'saving' screen), set
-     * the title of the screen.  Otherwise does nothing.
-     */
-    void setMessageScreenText(UserMessage userMessage);
-
-    /**
-     * Register a callback that should be called after an autosave completes.
-     */
-    void setAutoSaveListener(Runnable runnable);
-
-    /**
-     * Add some interesting properties to record in backup.properties.
-     */
-    void addBackupProperties(Map<String, String> props);
-
-    /**
-     * @return paths to backup when mods-backup enabled.
-     */
-    Collection<Path> getModsBackupPaths();
-
-    /**
-     * Send a chat message to user.
-     */
-    default void sendChat(UserMessage message, CommandSourceStack scs) {
-        if (message.style() == ERROR) {
-            scs.sendFailure(messageToText(message));
-        } else {
-            scs.sendSuccess(() -> messageToText(message), false);
-        }
-    }
-
-    /**
-     * Utility class that implementing classes can use to perform a standard conversion of UserMessage to minecraft Text.
-     */
-    static Component messageToText(final UserMessage m) {
+    public static Component messageToText(final UserMessage m) {
         final MutableComponent out;
         if (m.localized() != null) {
             out = Component.translatable(m.localized().key(), m.localized().params());
@@ -148,20 +87,143 @@ public interface MinecraftProvider {
             out = Component.literal(m.raw());
         }
         switch (m.style()) {
-            case ERROR -> {
-                out.setStyle(EMPTY.withColor(TextColor.fromLegacyFormat(RED)));
-            }
-            case WARNING -> {
-                out.setStyle(EMPTY.withColor(TextColor.fromLegacyFormat(YELLOW)));
-            }
-            case JGIT -> {
-                out.setStyle(EMPTY.withColor(TextColor.fromLegacyFormat(GRAY)));
-            }
-            case NATIVE_GIT -> {
-                out.setStyle(EMPTY.withColor(TextColor.fromLegacyFormat(GREEN)));
-            }
+            case ERROR -> out.setStyle(EMPTY.withColor(TextColor.fromLegacyFormat(RED)));
+            case WARNING -> out.setStyle(EMPTY.withColor(TextColor.fromLegacyFormat(YELLOW)));
+            case JGIT -> out.setStyle(EMPTY.withColor(TextColor.fromLegacyFormat(GRAY)));
+            case NATIVE_GIT -> out.setStyle(EMPTY.withColor(TextColor.fromLegacyFormat(GREEN)));
         }
         return out;
     }
 
+    // ======================================================================
+    // Abstract methods — must be implemented by each loader subclass
+
+    /** @return the version of the fastback mod. */
+    public abstract String getModVersion();
+
+    /** @return path to the 'saves' directory on a minecraft client, or null if on a server. */
+    public abstract Path getSavesDir();
+
+    /** @return true if we're clientside. */
+    public abstract boolean isClient();
+
+    /** Display ephemeral status text on screen. Has no effect serverside. */
+    public abstract void setHudText(UserMessage userMessage);
+
+    /** Remove text set by setHudText. */
+    public abstract void clearHudText();
+
+    /**
+     * If a minecraft MessageScreen is being displayed, set its title.
+     * Otherwise does nothing.
+     */
+    public abstract void setMessageScreenText(UserMessage userMessage);
+
+    /** @return paths to backup when mods-backup is enabled. */
+    public abstract Collection<Path> getModsBackupPaths();
+
+    // ======================================================================
+    // Shared implementations
+
+    public void sendBroadcast(UserMessage userMessage) {
+        if (this.minecraftServer != null && this.minecraftServer.isDedicatedServer()) {
+            minecraftServer.getPlayerList().broadcastSystemMessage(messageToText(userMessage), false);
+        }
+    }
+
+    public void setWorldSaveEnabled(boolean enabled) {
+        this.isWorldSaveEnabled = enabled;
+    }
+
+    public void saveWorld() {
+        if (this.minecraftServer == null) throw new IllegalStateException();
+        this.minecraftServer.saveEverything(false, true, true);
+    }
+
+    public void setAutoSaveListener(Runnable runnable) {
+        if (this.autoSaveListener != null) throw new IllegalStateException();
+        this.autoSaveListener = requireNonNull(runnable);
+    }
+
+    public Path getWorldDirectory() {
+        if (this.minecraftServer == null) throw new IllegalStateException();
+        final LevelStorageSource.LevelStorageAccess session =
+                ((ServerAccessors) this.minecraftServer).getStorageSource();
+        return ((SessionAccessors) session).getLevelDirectory().path();
+    }
+
+    public String getWorldName() {
+        if (this.minecraftServer == null) throw new IllegalStateException();
+        return this.minecraftServer.getWorldData().getLevelName();
+    }
+
+    /**
+     * Adds the minecraft-* and fastback-version properties shared by all loaders.
+     * Subclasses should call {@code super.addBackupProperties(props)} and then append
+     * their own loader-specific mod list.
+     */
+    public void addBackupProperties(Map<String, String> props) {
+        props.put("fastback-version", this.getModVersion());
+        if (this.minecraftServer != null) {
+            props.put("minecraft-version", minecraftServer.getServerVersion());
+            props.put("minecraft-game-mode", String.valueOf(minecraftServer.getWorldData().getGameType()));
+            props.put("minecraft-level-name", minecraftServer.getWorldData().getLevelName());
+        }
+    }
+
+    public void sendChat(UserMessage message, CommandSourceStack scs) {
+        if (message.style() == ERROR) {
+            scs.sendFailure(messageToText(message));
+        } else {
+            scs.sendSuccess(() -> messageToText(message), false);
+        }
+    }
+
+    // ======================================================================
+    // MixinGateway shared implementations
+
+    @Override
+    public boolean isWorldSaveEnabled() {
+        return this.isWorldSaveEnabled;
+    }
+
+    @Override
+    public void autoSaveCompleted() {
+        if (this.autoSaveListener != null) {
+            this.autoSaveListener.run();
+        } else {
+            syslog().warn("Autosave just happened but, unexpectedly, no one is listening.");
+        }
+    }
+
+    // ======================================================================
+    // Shared initialization
+
+    /**
+     * Performs loader-agnostic initialization: registers the system logger, the
+     * {@link MinecraftProvider} singleton, and the {@link MixinGateway} singleton,
+     * then fires {@link LifecycleListener#onInitialize()}.
+     * <p>
+     * Subclasses should call {@code super.initialize()} and then add loader-specific
+     * setup (e.g. command registration).
+     */
+    protected LifecycleListener initialize() {
+        SystemLogger.Singleton.register(new Log4jLogger(LogManager.getLogger(MOD_ID)));
+        final LifecycleListener lifecycle = register(this);
+        MixinGateway.Singleton.register(this);
+        lifecycle.onInitialize();
+        return lifecycle;
+    }
+
+    // ======================================================================
+    // Lifecycle helpers for subclasses
+
+    public void setMinecraftServer(MinecraftServer serverOrNull) {
+        if ((serverOrNull == null) == (this.minecraftServer == null)) throw new IllegalStateException();
+        this.minecraftServer = serverOrNull;
+    }
+
+    protected MinecraftServer getMinecraftServer() {
+        return this.minecraftServer;
+    }
 }
