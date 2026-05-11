@@ -1,4 +1,4 @@
-package net.pcal.fastback.mod.neoforge;
+package net.pcal.fastback.neoforge;
 
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
@@ -10,7 +10,7 @@ import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.pcal.fastback.mod.LifecycleListener;
 
-import static net.pcal.fastback.mod.neoforge.BaseNeoForgeProvider.MOD_ID;
+import static net.pcal.fastback.neoforge.BaseNeoForgeProvider.MOD_ID;
 
 /**
  * NeoForge mod entry point. Handles both dedicated server and client environments.

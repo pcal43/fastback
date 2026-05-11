@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
-package net.pcal.fastback.mod.neoforge;
+package net.pcal.fastback.neoforge;
 import net.minecraft.client.gui.GuiGraphics;
 import net.pcal.fastback.logging.UserMessage;
 import java.nio.file.Path;
