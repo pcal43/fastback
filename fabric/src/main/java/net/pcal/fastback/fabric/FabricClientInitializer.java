@@ -19,9 +19,10 @@
 package net.pcal.fastback.fabric;
 
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.minecraft.client.Minecraft;
+import net.pcal.fastback.common.mod.ClientHelper;
 import net.pcal.fastback.common.mod.LifecycleListener;
 import net.pcal.fastback.common.mod.Mod;
 
@@ -35,29 +36,18 @@ public class FabricClientInitializer implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        final FabricClientProvider clientProvider = new FabricClientProvider();
+        final ClientHelper clientHelper = new ClientHelper(Minecraft.getInstance());
         final FabricServerProvider loaderHelper = new FabricServerProvider();
-        final LifecycleListener lifecycle = Mod.initializeClient(loaderHelper, clientProvider);
+        final LifecycleListener lifecycle = Mod.initializeClient(loaderHelper, clientHelper);
         BaseFabricProvider.registerBackupCommand(true);
 
-        ClientLifecycleEvents.CLIENT_STARTED.register(
-                minecraftClient -> {
-                    clientProvider.setMinecraftClient(minecraftClient);
-                    HudRenderCallback.EVENT.register(clientProvider);
-                }
-        );
-        ClientLifecycleEvents.CLIENT_STOPPING.register(
-                minecraftClient -> clientProvider.setMinecraftClient(null)
-        );
+        HudRenderCallback.EVENT.register((guiGraphics, tickDelta) -> clientHelper.renderHud(guiGraphics));
+
         ServerLifecycleEvents.SERVER_STARTING.register(
-                minecraftServer -> {
-                    lifecycle.onWorldStart(minecraftServer);
-                }
+                minecraftServer -> lifecycle.onWorldStart(minecraftServer)
         );
         ServerLifecycleEvents.SERVER_STOPPED.register(
-                minecraftServer -> {
-                    lifecycle.onWorldStop();
-                }
+                minecraftServer -> lifecycle.onWorldStop()
         );
     }
 }

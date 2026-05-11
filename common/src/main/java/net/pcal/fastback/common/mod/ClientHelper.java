@@ -36,7 +36,7 @@ import static net.pcal.fastback.common.mod.UserMessageUtil.messageToText;
  * @author pcal
  * @since 0.2.0
  */
-public abstract class ClientHelper {
+public final class ClientHelper {
 
     // ======================================================================
     // Constants
@@ -46,15 +46,14 @@ public abstract class ClientHelper {
     // ======================================================================
     // Fields
 
-    private Minecraft client = null;
+    private final Minecraft client;
     private Component hudText;
     private long hudTextTime;
 
     // ======================================================================
-    // Lifecycle — called by the loader initializer
+    // Constructor
 
-    public void setMinecraftClient(Minecraft client) {
-        if ((this.client == null) == (client == null)) throw new IllegalStateException();
+    public ClientHelper(Minecraft client) {
         this.client = client;
     }
 
@@ -87,9 +86,9 @@ public abstract class ClientHelper {
     }
 
     // ======================================================================
-    // Protected — for use by subclass HUD callbacks
+    // HUD rendering
 
-    protected void renderHud(GuiGraphics guiGraphics) {
+    public void renderHud(GuiGraphics guiGraphics) {
         if (this.client == null) return;
         if (this.hudText == null) return;
         if (!this.client.options.showAutosaveIndicator().get()) return;
