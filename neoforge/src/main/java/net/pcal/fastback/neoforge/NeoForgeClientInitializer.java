@@ -16,6 +16,7 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 package net.pcal.fastback.neoforge;
+
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -23,6 +24,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.pcal.fastback.mod.LifecycleListener;
+
 /**
  * Client-side NeoForge initialization. Kept separate from NeoForgeModInitializer
  * so that client-only classes are not classloaded on a dedicated server.

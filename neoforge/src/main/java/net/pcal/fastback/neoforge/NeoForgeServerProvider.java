@@ -16,27 +16,35 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 package net.pcal.fastback.neoforge;
+
 import net.minecraft.client.gui.GuiGraphics;
 import net.pcal.fastback.logging.UserMessage;
+
 import java.nio.file.Path;
+
 public class NeoForgeServerProvider extends BaseNeoForgeProvider {
     @Override
     public boolean isClient() {
         return false;
     }
+
     @Override
     public Path getSavesDir() {
         return null;
     }
+
     @Override
     public void setHudText(UserMessage userMessage) {
     }
+
     @Override
     public void clearHudText() {
     }
+
     @Override
     public void setMessageScreenText(UserMessage userMessage) {
     }
+
     @Override
     public void renderMessageScreen(GuiGraphics guiGraphics) {
     }

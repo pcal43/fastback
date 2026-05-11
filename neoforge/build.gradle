@@ -1,110 +1,110 @@
 plugins {
-	id 'net.neoforged.moddev'
-	id 'com.modrinth.minotaur'
-	id 'net.darkhax.curseforgegradle'
+    id 'net.neoforged.moddev'
+    id 'com.modrinth.minotaur'
+    id 'net.darkhax.curseforgegradle'
 }
 
 base {
-	archivesName = "${project.archives_base_name}-neoforge-${project.mod_version}"
+    archivesName = "${project.archives_base_name}-neoforge-${project.mod_version}"
 }
 
 repositories {
-	mavenCentral()
-	maven { url = 'https://maven.neoforged.net/' }
+    mavenCentral()
+    maven { url = 'https://maven.neoforged.net/' }
 }
 
 dependencies {
-	// jgit and dependencies
-	implementation("org.eclipse.jgit:org.eclipse.jgit:${jgit_version}") { transitive = false }
-	jarJar("org.eclipse.jgit:org.eclipse.jgit:${jgit_version}") { transitive = false }
+    // jgit and dependencies
+    implementation("org.eclipse.jgit:org.eclipse.jgit:${jgit_version}") { transitive = false }
+    jarJar("org.eclipse.jgit:org.eclipse.jgit:${jgit_version}") { transitive = false }
 
-	implementation("com.googlecode.javaewah:JavaEWAH:${JavaEWAH_version}") { transitive = false }
-	jarJar("com.googlecode.javaewah:JavaEWAH:${JavaEWAH_version}") { transitive = false }
+    implementation("com.googlecode.javaewah:JavaEWAH:${JavaEWAH_version}") { transitive = false }
+    jarJar("com.googlecode.javaewah:JavaEWAH:${JavaEWAH_version}") { transitive = false }
 
-	implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${jgit_version}") { transitive = false }
-	jarJar("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${jgit_version}") { transitive = false }
+    implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${jgit_version}") { transitive = false }
+    jarJar("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${jgit_version}") { transitive = false }
 
-	implementation("org.apache.sshd:sshd-core:${apache_sshd_version}") { transitive = false }
-	jarJar("org.apache.sshd:sshd-core:${apache_sshd_version}") { transitive = false }
+    implementation("org.apache.sshd:sshd-core:${apache_sshd_version}") { transitive = false }
+    jarJar("org.apache.sshd:sshd-core:${apache_sshd_version}") { transitive = false }
 
-	implementation("org.apache.sshd:sshd-common:${apache_sshd_version}") { transitive = false }
-	jarJar("org.apache.sshd:sshd-common:${apache_sshd_version}") { transitive = false }
+    implementation("org.apache.sshd:sshd-common:${apache_sshd_version}") { transitive = false }
+    jarJar("org.apache.sshd:sshd-common:${apache_sshd_version}") { transitive = false }
 
-	implementation("net.i2p.crypto:eddsa:${eddsa_version}") { transitive = false }
-	jarJar("net.i2p.crypto:eddsa:${eddsa_version}") { transitive = false }
+    implementation("net.i2p.crypto:eddsa:${eddsa_version}") { transitive = false }
+    jarJar("net.i2p.crypto:eddsa:${eddsa_version}") { transitive = false }
 }
 
 neoForge {
-	version = "${neoforge_version}"
+    version = "${neoforge_version}"
 
-	runs {
-		client {
-			client()
-			ideName = "NeoForge Client"
-			gameDirectory = project.file("run")
-		}
-		server {
-			server()
-			ideName = "NeoForge Server"
-			gameDirectory = project.file("run")
-		}
-	}
+    runs {
+        client {
+            client()
+            ideName = "NeoForge Client"
+            gameDirectory = project.file("run")
+        }
+        server {
+            server()
+            ideName = "NeoForge Server"
+            gameDirectory = project.file("run")
+        }
+    }
 
-	mods {
-		fastback {
-			sourceSet sourceSets.main
-		}
-	}
+    mods {
+        fastback {
+            sourceSet sourceSets.main
+        }
+    }
 }
 
 sourceSets {
-	main {
-		java { srcDir project(":common").file("src/main/java") }
-		resources { srcDir project(":common").file("src/main/resources") }
-	}
+    main {
+        java { srcDir project(":common").file("src/main/java") }
+        resources { srcDir project(":common").file("src/main/resources") }
+    }
 }
 
 processResources {
-	inputs.property "mod_version", mod_version
-	filesMatching("META-INF/neoforge.mods.toml") {
-		filter { line -> line.replace('@mod_version@', mod_version) }
-	}
+    inputs.property "mod_version", mod_version
+    filesMatching("META-INF/neoforge.mods.toml") {
+        filter { line -> line.replace('@mod_version@', mod_version) }
+    }
 }
 
 jar {
-	from("LICENSE") {
-		rename { "${it}_${project.archives_base_name}" }
-	}
-	manifest {
-		attributes([
-				'MixinConfigs': 'fastback.mixins.json'
-		])
-	}
+    from("LICENSE") {
+        rename { "${it}_${project.archives_base_name}" }
+    }
+    manifest {
+        attributes([
+                'MixinConfigs': 'fastback.mixins.json'
+        ])
+    }
 }
 
 // Publishing configuration
 modrinth {
-	token = System.getenv("MODRINTH_TOKEN")
-	projectId = modrinth_projectId
-	versionNumber = mod_version
-	versionName = "${mod_version} (neoforge)"
-	versionType = "release"
-	uploadFile = jar
-	changelog = "<p><a href='${github_projectUrl}/releases/tag/${mod_version}'>${github_projectUrl}/releases/tag/${mod_version}</a></p>"
-	gameVersions = [minecraft_version]
-	loaders = ["neoforge"]
+    token = System.getenv("MODRINTH_TOKEN")
+    projectId = modrinth_projectId
+    versionNumber = mod_version
+    versionName = "${mod_version} (neoforge)"
+    versionType = "release"
+    uploadFile = jar
+    changelog = "<p><a href='${github_projectUrl}/releases/tag/${mod_version}'>${github_projectUrl}/releases/tag/${mod_version}</a></p>"
+    gameVersions = [minecraft_version]
+    loaders = ["neoforge"]
 }
 
 import net.darkhax.curseforgegradle.TaskPublishCurseForge
 
 tasks.register('publishCurseForge', TaskPublishCurseForge) {
-	apiToken = System.getenv("CURSEFORGE_TOKEN") ?: 'CURSEFORGE_TOKEN NOT_SET'
-	def mainFile = upload(curseforge_projectId, jar)
-	mainFile.releaseType = "release"
-	mainFile.changelog = "${github_projectUrl}/releases/tag/${mod_version}"
-	mainFile.changelogType = "markdown"
-	mainFile.addGameVersion(minecraft_version)
-	mainFile.addModLoader("NeoForge")
-	dependsOn(jar)
+    apiToken = System.getenv("CURSEFORGE_TOKEN") ?: 'CURSEFORGE_TOKEN NOT_SET'
+    def mainFile = upload(curseforge_projectId, jar)
+    mainFile.releaseType = "release"
+    mainFile.changelog = "${github_projectUrl}/releases/tag/${mod_version}"
+    mainFile.changelogType = "markdown"
+    mainFile.addGameVersion(minecraft_version)
+    mainFile.addModLoader("NeoForge")
+    dependsOn(jar)
 }
 

@@ -16,6 +16,7 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 package net.pcal.fastback.neoforge;
+
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
@@ -32,16 +33,19 @@ import net.pcal.fastback.mixins.SessionAccessors;
 import net.pcal.fastback.mod.LifecycleListener;
 import net.pcal.fastback.mod.MinecraftProvider;
 import org.apache.logging.log4j.LogManager;
+
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
 import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.commands.Commands.createBackupCommand;
 import static net.pcal.fastback.logging.SystemLogger.syslog;
 import static net.pcal.fastback.mod.MinecraftProvider.register;
+
 /**
  * Base NeoForge implementation of MinecraftProvider and MixinGateway.
  *
@@ -52,45 +56,54 @@ abstract class BaseNeoForgeProvider implements MinecraftProvider, MixinGateway {
     private MinecraftServer minecraftServer;
     private Runnable autoSaveListener;
     private boolean isWorldSaveEnabled = true;
+
     protected BaseNeoForgeProvider() {
     }
+
     @Override
     public void sendBroadcast(UserMessage userMessage) {
         if (this.minecraftServer != null && this.minecraftServer.isDedicatedServer()) {
             minecraftServer.getPlayerList().broadcastSystemMessage(MinecraftProvider.messageToText(userMessage), false);
         }
     }
+
     @Override
     public String getModVersion() {
         return ModList.get().getModContainerById(MOD_ID)
                 .map(c -> c.getModInfo().getVersion().toString())
                 .orElseThrow(() -> new IllegalStateException("Could not find mod container for " + MOD_ID));
     }
+
     @Override
     public void setWorldSaveEnabled(boolean enabled) {
         this.isWorldSaveEnabled = enabled;
     }
+
     @Override
     public void saveWorld() {
         if (this.minecraftServer == null) throw new IllegalStateException();
         this.minecraftServer.saveEverything(false, true, true);
     }
+
     @Override
     public void setAutoSaveListener(Runnable runnable) {
         if (this.autoSaveListener != null) throw new IllegalStateException();
         this.autoSaveListener = requireNonNull(runnable);
     }
+
     @Override
     public Path getWorldDirectory() {
         if (this.minecraftServer == null) throw new IllegalStateException();
         final LevelStorageSource.LevelStorageAccess session = ((ServerAccessors) this.minecraftServer).getStorageSource();
         return ((SessionAccessors) session).getLevelDirectory().path();
     }
+
     @Override
     public String getWorldName() {
         if (this.minecraftServer == null) throw new IllegalStateException();
         return this.minecraftServer.getWorldData().getLevelName();
     }
+
     @Override
     public void addBackupProperties(Map<String, String> props) {
         props.put("fastback-version", this.getModVersion());
@@ -105,12 +118,14 @@ abstract class BaseNeoForgeProvider implements MinecraftProvider, MixinGateway {
                     modList.add(info.getModId() + ':' + info.getVersion()));
             Collections.sort(modList);
             final StringBuilder modListProp = new StringBuilder();
-            for (final String mod : modList) modListProp.append(mod).append(", ");
+            for (final String mod : modList)
+                modListProp.append(mod).append(", ");
             props.put("neoforge-mods", modListProp.toString());
         } catch (Exception ohwell) {
             syslog().error(ohwell);
         }
     }
+
     @Override
     public Collection<Path> getModsBackupPaths() {
         final Path gameDir = FMLPaths.GAMEDIR.get();
@@ -121,12 +136,14 @@ abstract class BaseNeoForgeProvider implements MinecraftProvider, MixinGateway {
         out.add(gameDir.resolve("resourcepacks"));
         return out;
     }
+
     // ======================================================================
     // MixinGateway implementation
     @Override
     public boolean isWorldSaveEnabled() {
         return this.isWorldSaveEnabled;
     }
+
     @Override
     public void autoSaveCompleted() {
         if (this.autoSaveListener != null) {
@@ -135,12 +152,15 @@ abstract class BaseNeoForgeProvider implements MinecraftProvider, MixinGateway {
             syslog().warn("Autosave just happened but, unexpectedly, no one is listening.");
         }
     }
+
     // ======================================================================
     // Package private
     void setMinecraftServer(MinecraftServer serverOrNull) {
-        if ((serverOrNull == null) == (this.minecraftServer == null)) throw new IllegalStateException();
+        if ((serverOrNull == null) == (this.minecraftServer == null))
+            throw new IllegalStateException();
         this.minecraftServer = serverOrNull;
     }
+
     void onRegisterCommands(RegisterCommandsEvent event) {
         final int requiredLevel = this.isClient() ? 0 : 4;
         LiteralArgumentBuilder<CommandSourceStack> backupCommand = createBackupCommand(
@@ -149,6 +169,7 @@ abstract class BaseNeoForgeProvider implements MinecraftProvider, MixinGateway {
         event.getDispatcher().register(backupCommand);
         syslog().debug("registered backup command");
     }
+
     LifecycleListener initialize() {
         SystemLogger.Singleton.register(new Log4jLogger(LogManager.getLogger(MOD_ID)));
         final LifecycleListener lifecycle = register(this);
