@@ -23,7 +23,6 @@ import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
-import net.fabricmc.loader.api.metadata.ModEnvironment;
 import net.fabricmc.api.EnvType;
 import net.minecraft.commands.CommandSourceStack;
 import net.pcal.fastback.common.mod.LoaderHelper;
@@ -37,7 +36,6 @@ import java.util.Map;
 
 import static net.pcal.fastback.common.commands.Commands.createBackupCommand;
 import static net.pcal.fastback.common.logging.SystemLogger.syslog;
-import static net.pcal.fastback.common.mod.LoaderHelper.MOD_ID;
 
 /**
  * Base Fabric implementation of {@link LoaderHelper}. Provides mod version and
@@ -46,7 +44,7 @@ import static net.pcal.fastback.common.mod.LoaderHelper.MOD_ID;
  * @author pcal
  * @since 0.1.0
  */
-abstract class BaseFabricProvider implements LoaderHelper {
+class FabricLoaderHelper implements LoaderHelper {
 
     @Override
     public String getModVersion() {

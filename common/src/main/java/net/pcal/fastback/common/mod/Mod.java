@@ -19,6 +19,7 @@
 package net.pcal.fastback.common.mod;
 
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.MinecraftServer;
 import net.pcal.fastback.common.logging.UserMessage;
 
 import java.io.IOException;
@@ -36,22 +37,38 @@ import static java.util.Objects.requireNonNull;
  */
 public interface Mod {
 
+    // ======================================================================
+    // Singleton
+
     static Mod mod() {
-        return Singleton.INSTANCE;
+        return SingletonHolder.INSTANCE;
     }
+
+    class SingletonHolder {
+        private static Mod INSTANCE = null;
+
+        public static void register(Mod mod) {
+            requireNonNull(mod);
+            if (INSTANCE != null) throw new IllegalStateException();
+            SingletonHolder.INSTANCE = mod;
+        }
+    }
+
+    // ======================================================================
+    // Public methods
 
     /**
      * Initializes the mod for a dedicated server. Call once at startup.
      */
-    static LifecycleListener initializeServer(LoaderHelper loaderHelper) {
-        return ModImpl.initialize(loaderHelper, null);
+    static Mod initializeForDedicatedServer(LoaderHelper loaderHelper, MinecraftServer minecraftServer) {
+        return ModImpl.initialize(loaderHelper, minecraftServer, null);
     }
 
     /**
      * Initializes the mod for a client (integrated or dedicated-server-from-client). Call once at startup.
      */
-    static LifecycleListener initializeClient(LoaderHelper loaderHelper, ClientHelper clientHelper) {
-        return ModImpl.initialize(loaderHelper, clientHelper);
+    static Mod initializeForClient(LoaderHelper loaderHelper, MinecraftServer minecraftServer, ClientHelper clientHelper) {
+        return ModImpl.initialize(loaderHelper,  minecraftServer, clientHelper);
     }
 
     /**
@@ -119,13 +136,12 @@ public interface Mod {
      */
     void addBackupProperties(Map<String, String> props);
 
-    class Singleton {
-        private static Mod INSTANCE = null;
+    void onWorldStart(MinecraftServer server);
 
-        public static void register(Mod mod) {
-            requireNonNull(mod);
-            if (INSTANCE != null) throw new IllegalStateException();
-            Singleton.INSTANCE = mod;
-        }
-    }
+    /**
+     * Must be called when a world is stopping to ensure we run a backup.
+     */
+    void onWorldStop();
+
+
 }

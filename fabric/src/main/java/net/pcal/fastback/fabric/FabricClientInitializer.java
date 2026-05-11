@@ -23,7 +23,6 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.client.Minecraft;
 import net.pcal.fastback.common.mod.ClientHelper;
-import net.pcal.fastback.common.mod.LifecycleListener;
 import net.pcal.fastback.common.mod.Mod;
 
 /**
@@ -37,17 +36,15 @@ public class FabricClientInitializer implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         final ClientHelper clientHelper = new ClientHelper(Minecraft.getInstance());
-        final FabricServerProvider loaderHelper = new FabricServerProvider();
-        final LifecycleListener lifecycle = Mod.initializeClient(loaderHelper, clientHelper);
-        BaseFabricProvider.registerBackupCommand(true);
+        FabricLoaderHelper.registerBackupCommand(true);
 
         HudRenderCallback.EVENT.register((guiGraphics, tickDelta) -> clientHelper.renderHud(guiGraphics));
 
         ServerLifecycleEvents.SERVER_STARTING.register(
-                minecraftServer -> lifecycle.onWorldStart(minecraftServer)
+                minecraftServer -> Mod.initializeForDedicatedServer(new FabricLoaderHelper(), minecraftServer)
         );
         ServerLifecycleEvents.SERVER_STOPPED.register(
-                minecraftServer -> lifecycle.onWorldStop()
+                minecraftServer -> Mod.mod().onWorldStop()
         );
     }
 }

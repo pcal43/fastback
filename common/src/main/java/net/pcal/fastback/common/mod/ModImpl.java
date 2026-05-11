@@ -53,14 +53,14 @@ import static net.pcal.fastback.common.utils.EnvironmentUtils.getGitLfsVersion;
 import static net.pcal.fastback.common.utils.EnvironmentUtils.getGitVersion;
 import static net.pcal.fastback.common.utils.Executor.executor;
 
-class ModImpl implements LifecycleListener, Mod, MixinGateway {
+class ModImpl implements Mod, MixinGateway {
 
     // ======================================================================
     // Fields
 
     private final LoaderHelper loaderHelper;
     private final ClientHelper clientHelper; // null on a dedicated server
-    private MinecraftServer minecraftServer;
+    private final MinecraftServer minecraftServer;
     private final Runnable autoSaveListener;
     private boolean isWorldSaveEnabled = true;
     private Path tempRestoresDirectory = null;
@@ -75,17 +75,18 @@ class ModImpl implements LifecycleListener, Mod, MixinGateway {
      * @param clientHelper client-specific services, or null on a dedicated server
      * @return the LifecycleListener the loader should hold on to
      */
-    public static LifecycleListener initialize(LoaderHelper loaderHelper, ClientHelper clientHelper) {
+    public static Mod initialize(LoaderHelper loaderHelper, MinecraftServer minecraftServer, ClientHelper clientHelper) {
         SystemLogger.Singleton.register(new Log4jLogger(LogManager.getLogger(MOD_ID)));
-        final ModImpl mod = new ModImpl(loaderHelper, clientHelper);
-        Mod.Singleton.register(mod);
+        final ModImpl mod = new ModImpl(loaderHelper, minecraftServer, clientHelper);
+        SingletonHolder.register(mod);
         MixinGateway.Singleton.register(mod);
         mod.onInitialize();
         return mod;
     }
 
-    private ModImpl(LoaderHelper loaderHelper, ClientHelper clientHelper) {
+    private ModImpl(LoaderHelper loaderHelper, MinecraftServer minecraftServer, ClientHelper clientHelper) {
         this.loaderHelper = requireNonNull(loaderHelper);
+        this.minecraftServer = requireNonNull(minecraftServer);
         this.clientHelper = clientHelper; // nullable — null means dedicated server
         this.autoSaveListener = new AutosaveListener();
     }
@@ -93,36 +94,9 @@ class ModImpl implements LifecycleListener, Mod, MixinGateway {
     // ======================================================================
     // LifecycleListener implementation
 
-    @Override
-    public void setMinecraftServer(MinecraftServer serverOrNull) {
-        if ((serverOrNull == null) == (this.minecraftServer == null)) throw new IllegalStateException();
-        this.minecraftServer = serverOrNull;
-    }
 
     @Override
-    public void onInitialize() {
-        final String gitVersion = getGitVersion();
-        if (gitVersion == null) {
-            syslog().warn("git is not installed.");
-        } else {
-            syslog().info("git is installed: " + gitVersion);
-        }
-        final String gitLfsVersion = getGitLfsVersion();
-        if (gitLfsVersion == null) {
-            syslog().warn("git-lfs is not installed.");
-        } else {
-            syslog().info("git-lfs is installed: " + gitLfsVersion);
-        }
-        if (SshSessionFactory.getInstance() == null) {
-            syslog().warn("An ssh provider was not initialized for jgit.  Operations on a remote repo over ssh will fail.");
-        } else {
-            syslog().info("SshSessionFactory: " + SshSessionFactory.getInstance());
-        }
-        syslog().debug("onInitialize complete");
-    }
-
-    @Override
-    public void onWorldStart() {
+    public void onWorldStart(final MinecraftServer server) {
         executor().start();
         syslog().debug("onWorldStart complete");
     }
@@ -219,7 +193,8 @@ class ModImpl implements LifecycleListener, Mod, MixinGateway {
 
     @Override
     public void setMessageScreenText(UserMessage message) {
-        if (this.clientHelper != null) this.clientHelper.setMessageScreenText(message);
+        if (this.clientHelper != null)
+            this.clientHelper.setMessageScreenText(message);
     }
 
     @Override
@@ -271,6 +246,31 @@ class ModImpl implements LifecycleListener, Mod, MixinGateway {
 
     @Override
     public void renderMessageScreen(GuiGraphics drawContext) {
-        if (this.clientHelper != null) this.clientHelper.renderMessageScreen(drawContext);
+        if (this.clientHelper != null)
+            this.clientHelper.renderMessageScreen(drawContext);
+    }
+
+    // ======================================================================
+    // Private methods
+
+    private void onInitialize() {
+        final String gitVersion = getGitVersion();
+        if (gitVersion == null) {
+            syslog().warn("git is not installed.");
+        } else {
+            syslog().info("git is installed: " + gitVersion);
+        }
+        final String gitLfsVersion = getGitLfsVersion();
+        if (gitLfsVersion == null) {
+            syslog().warn("git-lfs is not installed.");
+        } else {
+            syslog().info("git-lfs is installed: " + gitLfsVersion);
+        }
+        if (SshSessionFactory.getInstance() == null) {
+            syslog().warn("An ssh provider was not initialized for jgit.  Operations on a remote repo over ssh will fail.");
+        } else {
+            syslog().info("SshSessionFactory: " + SshSessionFactory.getInstance());
+        }
+        syslog().debug("onInitialize complete");
     }
 }
