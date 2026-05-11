@@ -162,10 +162,8 @@ class ModImpl implements LifecycleListener, Mod, MixinGateway {
 
     @Override
     public Path getDefaultRestoresDir() throws IOException {
-        if (this.clientHelper != null) {
-            final Path savesDir = this.clientHelper.getSavesDir();
-            if (savesDir != null) return savesDir;
-        }
+        Path savesDir = this.loaderHelper.getSavesDir();
+        if (savesDir != null) return savesDir;
         if (tempRestoresDirectory == null) {
             tempRestoresDirectory = createTempDirectory("fastback-restore");
         }
@@ -252,8 +250,7 @@ class ModImpl implements LifecycleListener, Mod, MixinGateway {
 
     @Override
     public Collection<Path> getModsBackupPaths() {
-        if (this.clientHelper == null) return Collections.emptyList();
-        return this.clientHelper.getModsBackupPaths();
+        return this.loaderHelper.getModsBackupPaths();
     }
 
     // ======================================================================

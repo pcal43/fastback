@@ -18,43 +18,91 @@
 
 package net.pcal.fastback.common.mod;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.GenericMessageScreen;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 import net.pcal.fastback.common.logging.UserMessage;
+import net.pcal.fastback.common.mixins.ScreenAccessors;
 
 import java.nio.file.Path;
 import java.util.Collection;
 
+import static net.pcal.fastback.common.logging.SystemLogger.syslog;
+import static net.pcal.fastback.common.mod.UserMessageUtil.messageToText;
+
 /**
- * Client-only helper services. Only present when running on a client (integrated or dedicated
- * server never provides this). ModImpl holds a nullable reference; null means we are on a
- * dedicated server.
+ * Client-only helper services. Holds vanilla Minecraft client state and provides
+ * concrete implementations for HUD and message screen management.
+ * Loader-specific subclasses supply only {@link #getSavesDir()} and
+ * {@link #getModsBackupPaths()}.
  *
  * @author pcal
  * @since 0.2.0
  */
-public interface ClientHelper {
+public abstract class ClientHelper {
 
-    /** @return path to the 'saves' directory. */
-    Path getSavesDir();
+    // ======================================================================
+    // Constants
 
-    /** @return paths that should be included when mods-backup is enabled. */
-    Collection<Path> getModsBackupPaths();
+    private static final long TEXT_TIMEOUT = 10 * 1000;
 
-    /** Display ephemeral status text on the HUD. */
-    void setHudText(UserMessage userMessage);
+    // ======================================================================
+    // Fields
 
-    /** Remove text previously set by {@link #setHudText}. */
-    void clearHudText();
+    private Minecraft client = null;
+    private Component hudText;
+    private long hudTextTime;
 
-    /**
-     * If a MessageScreen is currently displayed, update its title text.
-     * Otherwise does nothing.
-     */
-    void setMessageScreenText(UserMessage userMessage);
+    // ======================================================================
+    // Lifecycle — called by the loader initializer
 
-    /**
-     * Called by the mixin when a MessageScreen render pass occurs.
-     * Used to render the HUD overlay on top of it.
-     */
-    void renderMessageScreen(GuiGraphics drawContext);
+    public void setMinecraftClient(Minecraft client) {
+        if ((this.client == null) == (client == null)) throw new IllegalStateException();
+        this.client = client;
+    }
+
+    // ======================================================================
+    // Concrete — vanilla Minecraft implementations
+
+    public void setHudText(UserMessage userMessage) {
+        if (userMessage == null) {
+            clearHudText();
+        } else {
+            this.hudText = messageToText(userMessage);
+            this.hudTextTime = System.currentTimeMillis();
+        }
+    }
+
+    public void clearHudText() {
+        this.hudText = null;
+    }
+
+    public void setMessageScreenText(UserMessage userMessage) {
+        if (this.client == null) return;
+        final Screen screen = client.screen;
+        if (screen instanceof GenericMessageScreen) {
+            ((ScreenAccessors) screen).setTitle(messageToText(userMessage));
+        }
+    }
+
+    public void renderMessageScreen(GuiGraphics guiGraphics) {
+        renderHud(guiGraphics);
+    }
+
+    // ======================================================================
+    // Protected — for use by subclass HUD callbacks
+
+    protected void renderHud(GuiGraphics guiGraphics) {
+        if (this.client == null) return;
+        if (this.hudText == null) return;
+        if (!this.client.options.showAutosaveIndicator().get()) return;
+        if (System.currentTimeMillis() - this.hudTextTime > TEXT_TIMEOUT) {
+            this.hudText = null;
+            syslog().debug("hud text timed out.  somebody forgot to clean up");
+            return;
+        }
+        guiGraphics.drawString(this.client.font, this.hudText, 2, 2, 1);
+    }
 }

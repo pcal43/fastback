@@ -23,10 +23,14 @@ import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
+import net.fabricmc.loader.api.metadata.ModEnvironment;
+import net.fabricmc.api.EnvType;
 import net.minecraft.commands.CommandSourceStack;
 import net.pcal.fastback.common.mod.LoaderHelper;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +69,25 @@ abstract class BaseFabricProvider implements LoaderHelper {
         } catch (Exception ohwell) {
             syslog().error(ohwell);
         }
+    }
+
+    @Override
+    public Path getSavesDir() {
+        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
+            return FabricLoader.getInstance().getGameDir().resolve("saves");
+        }
+        return null;
+    }
+
+    @Override
+    public Collection<Path> getModsBackupPaths() {
+        final Path gameDir = FabricLoader.getInstance().getGameDir();
+        final List<Path> out = new ArrayList<>();
+        out.add(gameDir.resolve("options.txt"));
+        out.add(gameDir.resolve("mods"));
+        out.add(gameDir.resolve("config"));
+        out.add(gameDir.resolve("resourcepacks"));
+        return out;
     }
 
     /**

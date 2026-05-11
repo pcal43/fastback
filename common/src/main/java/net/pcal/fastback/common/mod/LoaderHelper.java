@@ -18,6 +18,8 @@
 
 package net.pcal.fastback.common.mod;
 
+import java.nio.file.Path;
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -40,5 +42,14 @@ public interface LoaderHelper {
      * properties map. Common minecraft-* and fastback-version entries are added by ModImpl.
      */
     void addLoaderBackupProperties(Map<String, String> props);
-}
 
+    /**
+     * @return path to the client 'saves' directory, or null on a dedicated server.
+     */
+    Path getSavesDir();
+
+    /**
+     * @return paths that should be included when mods-backup is enabled.
+     */
+    Collection<Path> getModsBackupPaths();
+}
