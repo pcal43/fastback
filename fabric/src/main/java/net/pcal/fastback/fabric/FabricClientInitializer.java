@@ -19,6 +19,7 @@
 package net.pcal.fastback.fabric;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.client.Minecraft;
@@ -35,11 +36,14 @@ public class FabricClientInitializer implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        final ClientHelper clientHelper = new ClientHelper(Minecraft.getInstance());
         FabricLoaderHelper.registerBackupCommand(true);
 
-        HudRenderCallback.EVENT.register((guiGraphics, tickDelta) -> clientHelper.renderHud(guiGraphics));
-
+        ClientLifecycleEvents.CLIENT_STARTED.register(
+                minecraftClient -> {
+                    Mod.initializeForClient(new FabricLoaderHelper(),minecraftClient.getMinecraftServer(), new ClientHelper(Minecraft.getInstance()));
+                    HudRenderCallback.EVENT.register(clientHelper);
+                }
+        );
         ServerLifecycleEvents.SERVER_STARTING.register(
                 minecraftServer -> Mod.initializeForDedicatedServer(new FabricLoaderHelper(), minecraftServer)
         );
