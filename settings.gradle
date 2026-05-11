@@ -10,4 +10,4 @@ pluginManagement {
 rootProject.name = 'fastback'
 include 'common'
 include 'fabric'
-//include 'neoforge'
+include 'neoforge'

@@ -1,0 +1,25 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+license = "GPL-2"
+
+[[mods]]
+modId = "fastback"
+version = "@mod_version@"
+displayName = "FastBack"
+description = "Fast, incremental world backups powered by git"
+logoFile = "fastback-icon.png"
+
+[[dependencies.fastback]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.fastback]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21,)"
+ordering = "NONE"
+side = "BOTH"
+
