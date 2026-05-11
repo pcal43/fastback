@@ -26,17 +26,12 @@ import net.minecraft.network.chat.Component;
 import net.pcal.fastback.common.logging.UserMessage;
 import net.pcal.fastback.common.mixins.ScreenAccessors;
 
-import java.nio.file.Path;
-import java.util.Collection;
-
 import static net.pcal.fastback.common.logging.SystemLogger.syslog;
 import static net.pcal.fastback.common.mod.UserMessageUtil.messageToText;
 
 /**
  * Client-only helper services. Holds vanilla Minecraft client state and provides
  * concrete implementations for HUD and message screen management.
- * Loader-specific subclasses supply only {@link #getSavesDir()} and
- * {@link #getModsBackupPaths()}.
  *
  * @author pcal
  * @since 0.2.0

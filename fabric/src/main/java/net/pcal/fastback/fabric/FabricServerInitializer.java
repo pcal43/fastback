@@ -38,19 +38,10 @@ public class FabricServerInitializer implements DedicatedServerModInitializer {
         BaseFabricProvider.registerBackupCommand(false);
 
         ServerLifecycleEvents.SERVER_STARTING.register(
-                minecraftServer -> {
-                    lifecycle.setMinecraftServer(minecraftServer);
-                    lifecycle.onWorldStart();
-                }
+                minecraftServer -> lifecycle.onWorldStart(minecraftServer)
         );
         ServerLifecycleEvents.SERVER_STOPPED.register(
-                minecraftServer -> {
-                    try {
-                        lifecycle.onWorldStop();
-                    } finally {
-                        lifecycle.setMinecraftServer(null);
-                    }
-                }
+                minecraftServer -> lifecycle.onWorldStop()
         );
     }
 }

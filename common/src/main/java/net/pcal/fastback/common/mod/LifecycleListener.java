@@ -27,25 +27,14 @@ import net.minecraft.server.MinecraftServer;
  * @since 0.0.1
  */
 public interface LifecycleListener {
-    /**
-     * Must be called early in initialization of either a client or server.
-     */
-    void onInitialize();
 
     /**
      * Must be called when a world is starting (in either a dedicated or client-embedded server).
      */
-    void onWorldStart();
+    void onWorldStart(MinecraftServer server);
 
     /**
      * Must be called when a world is stopping (in either a dedicated or client-embedded server).
      */
     void onWorldStop();
-
-    /**
-     * Must be called when a MinecraftServer starts or stops.
-     *
-     * @param serverOrNull the server that just started, or null when it stops.
-     */
-    void setMinecraftServer(MinecraftServer serverOrNull);
 }
