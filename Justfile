@@ -35,9 +35,14 @@ clearCaches:
     ./gradlew --stop
     rm -rf "$HOME/.gradle/caches" "$HOME/.gradle/wrapper/dists" "$HOME/.gradle/daemon" "$HOME/.gradle/native"
 
-
 run-fabric:
     ./gradlew :fabric:runClient
 
+run-fabric-server:
+    ./gradlew :fabric:runServer
+
 run-neoforge:
     ./gradlew :neoforge:runClient
+
+run-neoforge:
+    ./gradlew :neoforge:runServer
