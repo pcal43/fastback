@@ -22,11 +22,6 @@ import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.pcal.fastback.common.logging.Log4jLogger;
 import net.pcal.fastback.common.logging.SystemLogger;
-import net.pcal.fastback.common.logging.Log4jLogger;
-import org.apache.logging.log4j.LogManager;
-
-import static net.pcal.fastback.fabric.BaseFabricProvider.MOD_ID;
-import net.pcal.fastback.common.logging.SystemLogger;
 import net.pcal.fastback.common.mod.LifecycleListener;
 import org.apache.logging.log4j.LogManager;
 
