@@ -20,31 +20,25 @@ package net.pcal.fastback.fabric;
 
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.pcal.fastback.common.logging.Log4jLogger;
-import net.pcal.fastback.common.logging.SystemLogger;
 import net.pcal.fastback.common.mod.LifecycleListener;
-import org.apache.logging.log4j.LogManager;
-
-import static net.pcal.fastback.fabric.BaseFabricProvider.MOD_ID;
 
 /**
- * Initializer that runs in a dedicated server.
+ * Initializer that runs on a dedicated server.
  *
  * @author pcal
  * @since 0.0.1
-        SystemLogger.Singleton.register(new Log4jLogger(LogManager.getLogger(MOD_ID)));
  */
 public class FabricServerInitializer implements DedicatedServerModInitializer {
 
     @Override
     public void onInitializeServer() {
-        SystemLogger.Singleton.register(new Log4jLogger(LogManager.getLogger(MOD_ID)));
         final FabricServerProvider serverProvider = new FabricServerProvider();
-        final LifecycleListener lifecycle = serverProvider.initialize();
+        final LifecycleListener lifecycle = LifecycleListener.initialize(serverProvider, null);
+        BaseFabricProvider.registerBackupCommand(false);
 
         ServerLifecycleEvents.SERVER_STARTING.register(
                 minecraftServer -> {
-                    serverProvider.setMinecraftServer(minecraftServer);
+                    lifecycle.setMinecraftServer(minecraftServer);
                     lifecycle.onWorldStart();
                 }
         );
@@ -53,7 +47,7 @@ public class FabricServerInitializer implements DedicatedServerModInitializer {
                     try {
                         lifecycle.onWorldStop();
                     } finally {
-                        serverProvider.setMinecraftServer(null);
+                        lifecycle.setMinecraftServer(null);
                     }
                 }
         );

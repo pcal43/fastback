@@ -28,16 +28,24 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.pcal.fastback.common.logging.UserMessage;
 import net.pcal.fastback.common.mixins.ScreenAccessors;
+import net.pcal.fastback.common.mod.ClientHelper;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import static net.pcal.fastback.common.logging.SystemLogger.syslog;
+import static net.pcal.fastback.common.mod.UserMessageUtil.messageToText;
 
 /**
+ * Fabric implementation of {@link ClientHelper}. Handles HUD rendering, message screen
+ * injection, saves directory, and mods backup paths. Client-side only.
+ *
  * @author pcal
  * @since 0.1.0
  */
-final class FabricClientProvider extends BaseFabricProvider implements HudRenderCallback {
+final class FabricClientProvider implements ClientHelper, HudRenderCallback {
 
     // ======================================================================
     // Constants
@@ -51,8 +59,8 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
     private Component hudText;
     private long hudTextTime;
 
-    // ====================================================================
-    // Public methods
+    // ======================================================================
+    // Package-private lifecycle
 
     public void setMinecraftClient(Minecraft client) {
         if ((this.client == null) == (client == null)) throw new IllegalStateException();
@@ -60,19 +68,22 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
     }
 
     // ======================================================================
-    // MixinGateway implementation
+    // ClientHelper implementation
 
     @Override
-    public void renderMessageScreen(GuiGraphics guiGraphics) {
-        renderHud(guiGraphics);
+    public Path getSavesDir() {
+        return FabricLoader.getInstance().getGameDir().resolve("saves");
     }
 
-    // ====================================================================
-    // FrameworkProvider implementation
-
     @Override
-    public boolean isClient() {
-        return true;
+    public Collection<Path> getModsBackupPaths() {
+        final Path gameDir = FabricLoader.getInstance().getGameDir();
+        final List<Path> out = new ArrayList<>();
+        out.add(gameDir.resolve("options.txt"));
+        out.add(gameDir.resolve("mods"));
+        out.add(gameDir.resolve("config"));
+        out.add(gameDir.resolve("resourcepacks"));
+        return out;
     }
 
     @Override
@@ -80,7 +91,7 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
         if (userMessage == null) {
             clearHudText();
         } else {
-            this.hudText = messageToText(userMessage); // so the hud renderer can find it
+            this.hudText = messageToText(userMessage);
             this.hudTextTime = System.currentTimeMillis();
         }
     }
@@ -88,8 +99,6 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
     @Override
     public void clearHudText() {
         this.hudText = null;
-        // TODO someday it might be nice to bring back the fading text effect.  But getting to it properly
-        // clean up 100% of the time is more than I want to deal with right now.
     }
 
     @Override
@@ -102,11 +111,11 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
     }
 
     @Override
-    public Path getSavesDir() {
-        return FabricLoader.getInstance().getGameDir().resolve("saves");
+    public void renderMessageScreen(GuiGraphics guiGraphics) {
+        renderHud(guiGraphics);
     }
 
-    // ====================================================================
+    // ======================================================================
     // HudRenderCallback implementation
 
     @Override
@@ -114,7 +123,7 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
         renderHud(drawContext);
     }
 
-    // ====================================================================
+    // ======================================================================
     // Private
 
     private void renderHud(GuiGraphics guiGraphics) {
@@ -122,7 +131,6 @@ final class FabricClientProvider extends BaseFabricProvider implements HudRender
         if (this.hudText == null) return;
         if (!this.client.options.showAutosaveIndicator().get()) return;
         if (System.currentTimeMillis() - this.hudTextTime > TEXT_TIMEOUT) {
-            // Don't leave it sitting up there forever if we fail to call clearHudText()
             this.hudText = null;
             syslog().debug("hud text timed out.  somebody forgot to clean up");
             return;

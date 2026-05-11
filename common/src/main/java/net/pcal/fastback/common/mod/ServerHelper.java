@@ -21,39 +21,19 @@ package net.pcal.fastback.common.mod;
 import net.minecraft.server.MinecraftServer;
 
 /**
- * Framework-agnostic lifecycle logic.
+ * Provides access to the current MinecraftServer instance. Implemented by both
+ * client and dedicated-server loader classes; has no Fabric API deps.
  *
  * @author pcal
- * @since 0.0.1
+ * @since 0.2.0
  */
-public interface LifecycleListener {
-    /**
-     * Factory: creates, registers, and initializes the mod.
-     * This is the entry point for loader initializers.
-     */
-    static LifecycleListener initialize(LoaderHelper loaderHelper, ClientHelper clientHelper) {
-        return ModImpl.initialize(loaderHelper, clientHelper);
-    }
+public interface ServerHelper {
 
     /**
-     * Must be called early in initialization of either a client or server.
-     */
-    void onInitialize();
-
-    /**
-     * Must be called when a world is starting (in either a dedicated or client-embedded server).
-     */
-    void onWorldStart();
-
-    /**
-     * Must be called when a world is stopping (in either a dedicated or client-embedded server).
-     */
-    void onWorldStop();
-
-    /**
-     * Must be called when a MinecraftServer starts or stops.
+     * Called by the loader initializer when a server starts or stops.
      *
      * @param serverOrNull the server that just started, or null when it stops.
      */
     void setMinecraftServer(MinecraftServer serverOrNull);
 }
+

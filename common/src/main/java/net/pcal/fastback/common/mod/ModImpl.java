@@ -17,18 +17,28 @@
  */
 package net.pcal.fastback.common.mod;
 
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.level.storage.LevelStorageSource;
+import net.pcal.fastback.common.MixinGateway;
 import net.pcal.fastback.common.commands.SchedulableAction;
 import net.pcal.fastback.common.config.GitConfig;
+import net.pcal.fastback.common.logging.Log4jLogger;
+import net.pcal.fastback.common.logging.SystemLogger;
 import net.pcal.fastback.common.logging.UserLogger;
 import net.pcal.fastback.common.logging.UserMessage;
+import net.pcal.fastback.common.mixins.ServerAccessors;
+import net.pcal.fastback.common.mixins.SessionAccessors;
 import net.pcal.fastback.common.repo.Repo;
 import net.pcal.fastback.common.repo.RepoFactory;
+import org.apache.logging.log4j.LogManager;
 import org.eclipse.jgit.transport.SshSessionFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 import static java.nio.file.Files.createTempDirectory;
@@ -36,152 +46,88 @@ import static java.util.Objects.requireNonNull;
 import static net.pcal.fastback.common.config.FastbackConfigKey.IS_BACKUP_ENABLED;
 import static net.pcal.fastback.common.config.FastbackConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.common.logging.SystemLogger.syslog;
+import static net.pcal.fastback.common.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.common.logging.UserMessage.localized;
+import static net.pcal.fastback.common.mod.LoaderHelper.MOD_ID;
+import static net.pcal.fastback.common.mod.UserMessageUtil.messageToText;
 import static net.pcal.fastback.common.utils.EnvironmentUtils.getGitLfsVersion;
 import static net.pcal.fastback.common.utils.EnvironmentUtils.getGitVersion;
 import static net.pcal.fastback.common.utils.Executor.executor;
 
-class ModImpl implements LifecycleListener, Mod {
+class ModImpl implements LifecycleListener, Mod, MixinGateway {
 
     // ======================================================================
     // Fields
 
-    private final MinecraftProvider fsp;
+    private final LoaderHelper loaderHelper;
+    private final ClientHelper clientHelper; // null on a dedicated server
+    private MinecraftServer minecraftServer;
+    private final Runnable autoSaveListener;
+    private boolean isWorldSaveEnabled = true;
     private Path tempRestoresDirectory = null;
 
     // ======================================================================
-    // Construction
+    // Factory — called by loader initializers
 
-    ModImpl(final MinecraftProvider spi) {
-        this.fsp = requireNonNull(spi);
-        spi.setAutoSaveListener(new AutosaveListener());
+    /**
+     * Creates, registers, and initializes a ModImpl.
+     *
+     * @param loaderHelper loader-specific services (always present)
+     * @param clientHelper client-specific services, or null on a dedicated server
+     * @return the LifecycleListener the loader should hold on to
+     */
+    public static LifecycleListener initialize(LoaderHelper loaderHelper, ClientHelper clientHelper) {
+        SystemLogger.Singleton.register(new Log4jLogger(LogManager.getLogger(MOD_ID)));
+        final ModImpl mod = new ModImpl(loaderHelper, clientHelper);
+        Mod.Singleton.register(mod);
+        MixinGateway.Singleton.register(mod);
+        mod.onInitialize();
+        return mod;
     }
 
-    // ======================================================================
-    // Mod implementation
-
-    @Override
-    public Path getDefaultRestoresDir() throws IOException {
-        Path restoreDir = this.fsp.getSavesDir();
-        if (restoreDir != null) return restoreDir;
-        if (tempRestoresDirectory == null) {
-            tempRestoresDirectory = createTempDirectory("fastback-restore");
-        }
-        return tempRestoresDirectory;
-    }
-
-    @Override
-    public void sendChat(UserMessage message, CommandSourceStack scs) {
-        fsp.sendChat(message, scs);
-    }
-
-    @Override
-    public void sendBroadcast(UserMessage message) {
-        this.fsp.sendBroadcast(message);
-    }
-
-    // ======================================================================
-    // Mod implementation passthroughs
-
-    @Override
-    public String getModVersion() {
-        return this.fsp.getModVersion();
-    }
-
-    @Override
-    public void setWorldSaveEnabled(boolean enabled) {
-        this.fsp.setWorldSaveEnabled(enabled);
-    }
-
-    @Override
-    public void setMessageScreenText(UserMessage message) {
-        this.fsp.setMessageScreenText(message);
-    }
-
-    @Override
-    public void setHudText(UserMessage message) {
-        if (message == null) {
-            syslog().debug("null unexpectedly passed to setHudText, ignoring");
-            this.clearHudText();
-        } else {
-            this.fsp.setHudText(message);
-        }
-    }
-
-    @Override
-    public void clearHudText() {
-        this.fsp.clearHudText();
-    }
-
-    @Override
-    public Path getWorldDirectory() {
-        return this.fsp.getWorldDirectory();
-    }
-
-    @Override
-    public String getWorldName() {
-        return this.fsp.getWorldName();
-    }
-
-    @Override
-    public void addBackupProperties(Map<String, String> props) {
-        fsp.addBackupProperties(props);
-    }
-
-    @Override
-    public void saveWorld() {
-        this.fsp.saveWorld();
-    }
-
-    @Override
-    public Collection<Path> getModsBackupPaths() {
-        return fsp.getModsBackupPaths();
+    private ModImpl(LoaderHelper loaderHelper, ClientHelper clientHelper) {
+        this.loaderHelper = requireNonNull(loaderHelper);
+        this.clientHelper = clientHelper; // nullable — null means dedicated server
+        this.autoSaveListener = new AutosaveListener();
     }
 
     // ======================================================================
     // LifecycleListener implementation
 
-    /**
-     * Must be called early in initialization of either a client or server.
-     */
+    @Override
+    public void setMinecraftServer(MinecraftServer serverOrNull) {
+        if ((serverOrNull == null) == (this.minecraftServer == null)) throw new IllegalStateException();
+        this.minecraftServer = serverOrNull;
+    }
+
     @Override
     public void onInitialize() {
-        {
-            final String gitVersion = getGitVersion();
-            if (gitVersion == null) {
-                syslog().warn("git is not installed.");
-            } else {
-                syslog().info("git is installed: " + gitVersion);
-            }
+        final String gitVersion = getGitVersion();
+        if (gitVersion == null) {
+            syslog().warn("git is not installed.");
+        } else {
+            syslog().info("git is installed: " + gitVersion);
         }
-        {
-            final String gitLfsVersion = getGitLfsVersion();
-            if (gitLfsVersion == null) {
-                syslog().warn("git-lfs is not installed.");
-            } else {
-                syslog().info("git-lfs is installed: " + gitLfsVersion);
-            }
+        final String gitLfsVersion = getGitLfsVersion();
+        if (gitLfsVersion == null) {
+            syslog().warn("git-lfs is not installed.");
+        } else {
+            syslog().info("git-lfs is installed: " + gitLfsVersion);
         }
         if (SshSessionFactory.getInstance() == null) {
             syslog().warn("An ssh provider was not initialized for jgit.  Operations on a remote repo over ssh will fail.");
         } else {
-            syslog().info("SshSessionFactory: " + SshSessionFactory.getInstance().toString());
+            syslog().info("SshSessionFactory: " + SshSessionFactory.getInstance());
         }
         syslog().debug("onInitialize complete");
     }
 
-    /**
-     * Must be called when a world is starting (in either a dedicated or client-embedded server).
-     */
     @Override
     public void onWorldStart() {
         executor().start();
         syslog().debug("onWorldStart complete");
     }
 
-    /**
-     * Must be called when a world is stopping (in either a dedicated or client-embedded server).
-     */
     @Override
     public void onWorldStop() {
         try (final UserLogger ulog = UserLogger.forShutdown()) {
@@ -211,5 +157,124 @@ class ModImpl implements LifecycleListener, Mod {
         }
     }
 
+    // ======================================================================
+    // Mod implementation
 
+    @Override
+    public Path getDefaultRestoresDir() throws IOException {
+        if (this.clientHelper != null) {
+            final Path savesDir = this.clientHelper.getSavesDir();
+            if (savesDir != null) return savesDir;
+        }
+        if (tempRestoresDirectory == null) {
+            tempRestoresDirectory = createTempDirectory("fastback-restore");
+        }
+        return tempRestoresDirectory;
+    }
+
+    @Override
+    public String getModVersion() {
+        return this.loaderHelper.getModVersion();
+    }
+
+    @Override
+    public void setWorldSaveEnabled(boolean enabled) {
+        this.isWorldSaveEnabled = enabled;
+    }
+
+    @Override
+    public void saveWorld() {
+        if (this.minecraftServer == null) throw new IllegalStateException();
+        this.minecraftServer.saveEverything(false, true, true);
+    }
+
+    @Override
+    public void sendChat(UserMessage message, CommandSourceStack scs) {
+        if (message.style() == ERROR) {
+            scs.sendFailure(messageToText(message));
+        } else {
+            scs.sendSuccess(() -> messageToText(message), false);
+        }
+    }
+
+    @Override
+    public void sendBroadcast(UserMessage userMessage) {
+        if (this.minecraftServer != null && this.minecraftServer.isDedicatedServer()) {
+            this.minecraftServer.getPlayerList().broadcastSystemMessage(messageToText(userMessage), false);
+        }
+    }
+
+    @Override
+    public void setHudText(UserMessage message) {
+        if (this.clientHelper == null) return;
+        if (message == null) {
+            syslog().debug("null unexpectedly passed to setHudText, ignoring");
+            this.clearHudText();
+        } else {
+            this.clientHelper.setHudText(message);
+        }
+    }
+
+    @Override
+    public void clearHudText() {
+        if (this.clientHelper != null) this.clientHelper.clearHudText();
+    }
+
+    @Override
+    public void setMessageScreenText(UserMessage message) {
+        if (this.clientHelper != null) this.clientHelper.setMessageScreenText(message);
+    }
+
+    @Override
+    public Path getWorldDirectory() {
+        if (this.minecraftServer == null) throw new IllegalStateException();
+        final LevelStorageSource.LevelStorageAccess session =
+                ((ServerAccessors) this.minecraftServer).getStorageSource();
+        return ((SessionAccessors) session).getLevelDirectory().path();
+    }
+
+    @Override
+    public String getWorldName() {
+        if (this.minecraftServer == null) throw new IllegalStateException();
+        return this.minecraftServer.getWorldData().getLevelName();
+    }
+
+    @Override
+    public void addBackupProperties(Map<String, String> props) {
+        props.put("fastback-version", this.getModVersion());
+        if (this.minecraftServer != null) {
+            props.put("minecraft-version", minecraftServer.getServerVersion());
+            props.put("minecraft-game-mode", String.valueOf(minecraftServer.getWorldData().getGameType()));
+            props.put("minecraft-level-name", minecraftServer.getWorldData().getLevelName());
+        }
+        this.loaderHelper.addLoaderBackupProperties(props);
+    }
+
+    @Override
+    public Collection<Path> getModsBackupPaths() {
+        if (this.clientHelper == null) return Collections.emptyList();
+        return this.clientHelper.getModsBackupPaths();
+    }
+
+    // ======================================================================
+    // MixinGateway implementation
+
+    @Override
+    public boolean isWorldSaveEnabled() {
+        return this.isWorldSaveEnabled;
+    }
+
+    @Override
+    public void autoSaveCompleted() {
+        if (this.autoSaveListener != null) {
+            this.autoSaveListener.run();
+        } else {
+            syslog().warn("Autosave just happened but, unexpectedly, no one is listening.");
+        }
+    }
+
+    @Override
+    public void renderMessageScreen(GuiGraphics drawContext) {
+        if (this.clientHelper != null) this.clientHelper.renderMessageScreen(drawContext);
+    }
 }

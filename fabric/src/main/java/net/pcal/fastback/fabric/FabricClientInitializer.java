@@ -22,15 +22,10 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.pcal.fastback.common.logging.Log4jLogger;
-import net.pcal.fastback.common.logging.SystemLogger;
 import net.pcal.fastback.common.mod.LifecycleListener;
-import org.apache.logging.log4j.LogManager;
-
-import static net.pcal.fastback.fabric.BaseFabricProvider.MOD_ID;
 
 /**
- * Initializer that runs in a client.
+ * Initializer that runs on the client (both integrated and dedicated-server-from-client).
  *
  * @author pcal
  * @since 0.0.1
@@ -39,9 +34,10 @@ public class FabricClientInitializer implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        SystemLogger.Singleton.register(new Log4jLogger(LogManager.getLogger(MOD_ID)));
         final FabricClientProvider clientProvider = new FabricClientProvider();
-        final LifecycleListener lifecycle = clientProvider.initialize();
+        final FabricServerProvider loaderHelper = new FabricServerProvider();
+        final LifecycleListener lifecycle = LifecycleListener.initialize(loaderHelper, clientProvider);
+        BaseFabricProvider.registerBackupCommand(true);
 
         ClientLifecycleEvents.CLIENT_STARTED.register(
                 minecraftClient -> {
@@ -50,13 +46,11 @@ public class FabricClientInitializer implements ClientModInitializer {
                 }
         );
         ClientLifecycleEvents.CLIENT_STOPPING.register(
-                minecraftClient -> {
-                    clientProvider.setMinecraftClient(null);
-                }
+                minecraftClient -> clientProvider.setMinecraftClient(null)
         );
         ServerLifecycleEvents.SERVER_STARTING.register(
                 minecraftServer -> {
-                    clientProvider.setMinecraftServer(minecraftServer);
+                    lifecycle.setMinecraftServer(minecraftServer);
                     lifecycle.onWorldStart();
                 }
         );
@@ -65,7 +59,7 @@ public class FabricClientInitializer implements ClientModInitializer {
                     try {
                         lifecycle.onWorldStop();
                     } finally {
-                        clientProvider.setMinecraftServer(null);
+                        lifecycle.setMinecraftServer(null);
                     }
                 }
         );
