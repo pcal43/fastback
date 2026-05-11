@@ -13,6 +13,9 @@ release-jars:
 compile-common:
     ./gradlew :common:compileJava
 
+test:
+    ./gradlew test
+
 release:
     ./gradlew release
 
