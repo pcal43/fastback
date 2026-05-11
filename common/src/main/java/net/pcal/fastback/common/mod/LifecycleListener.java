@@ -28,14 +28,6 @@ import net.minecraft.server.MinecraftServer;
  */
 public interface LifecycleListener {
     /**
-     * Factory: creates, registers, and initializes the mod.
-     * This is the entry point for loader initializers.
-     */
-    static LifecycleListener initialize(LoaderHelper loaderHelper, ClientHelper clientHelper) {
-        return ModImpl.initialize(loaderHelper, clientHelper);
-    }
-
-    /**
      * Must be called early in initialization of either a client or server.
      */
     void onInitialize();

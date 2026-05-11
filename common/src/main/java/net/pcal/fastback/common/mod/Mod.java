@@ -41,6 +41,20 @@ public interface Mod {
     }
 
     /**
+     * Initializes the mod for a dedicated server. Call once at startup.
+     */
+    static LifecycleListener initializeServer(LoaderHelper loaderHelper) {
+        return ModImpl.initialize(loaderHelper, null);
+    }
+
+    /**
+     * Initializes the mod for a client (integrated or dedicated-server-from-client). Call once at startup.
+     */
+    static LifecycleListener initializeClient(LoaderHelper loaderHelper, ClientHelper clientHelper) {
+        return ModImpl.initialize(loaderHelper, clientHelper);
+    }
+
+    /**
      * @return path to where snapshots should be restored.
      */
     Path getDefaultRestoresDir() throws IOException;

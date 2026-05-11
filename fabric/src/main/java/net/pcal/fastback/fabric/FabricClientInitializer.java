@@ -23,6 +23,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.pcal.fastback.common.mod.LifecycleListener;
+import net.pcal.fastback.common.mod.Mod;
 
 /**
  * Initializer that runs on the client (both integrated and dedicated-server-from-client).
@@ -36,7 +37,7 @@ public class FabricClientInitializer implements ClientModInitializer {
     public void onInitializeClient() {
         final FabricClientProvider clientProvider = new FabricClientProvider();
         final FabricServerProvider loaderHelper = new FabricServerProvider();
-        final LifecycleListener lifecycle = LifecycleListener.initialize(loaderHelper, clientProvider);
+        final LifecycleListener lifecycle = Mod.initializeClient(loaderHelper, clientProvider);
         BaseFabricProvider.registerBackupCommand(true);
 
         ClientLifecycleEvents.CLIENT_STARTED.register(

@@ -21,6 +21,7 @@ package net.pcal.fastback.fabric;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.pcal.fastback.common.mod.LifecycleListener;
+import net.pcal.fastback.common.mod.Mod;
 
 /**
  * Initializer that runs on a dedicated server.
@@ -33,7 +34,7 @@ public class FabricServerInitializer implements DedicatedServerModInitializer {
     @Override
     public void onInitializeServer() {
         final FabricServerProvider serverProvider = new FabricServerProvider();
-        final LifecycleListener lifecycle = LifecycleListener.initialize(serverProvider, null);
+        final LifecycleListener lifecycle = Mod.initializeServer(serverProvider);
         BaseFabricProvider.registerBackupCommand(false);
 
         ServerLifecycleEvents.SERVER_STARTING.register(
