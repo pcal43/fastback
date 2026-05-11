@@ -1,0 +1,70 @@
+/*
+ * FastBack - Fast, incremental Minecraft backups powered by Git.
+ * Copyright (C) 2022 pcal.net
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package net.pcal.fastback.common.commands;
+
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
+import net.minecraft.commands.CommandSourceStack;
+import net.pcal.fastback.common.logging.UserLogger;
+import net.pcal.fastback.common.logging.UserMessage;
+import net.pcal.fastback.common.repo.SnapshotId;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static net.minecraft.commands.Commands.literal;
+import static net.pcal.fastback.common.commands.Commands.FAILURE;
+import static net.pcal.fastback.common.commands.Commands.SUCCESS;
+import static net.pcal.fastback.common.commands.Commands.gitOp;
+import static net.pcal.fastback.common.commands.Commands.subcommandPermission;
+import static net.pcal.fastback.common.mod.Mod.mod;
+import static net.pcal.fastback.common.repo.RepoFactory.rf;
+import static net.pcal.fastback.common.utils.Executor.ExecutionLock.NONE;
+
+enum ListCommand implements Command {
+
+    INSTANCE;
+
+    private static final String COMMAND_NAME = "list";
+
+    @Override
+    public void register(final LiteralArgumentBuilder<CommandSourceStack> argb, PermissionsFactory<CommandSourceStack> pf) {
+        argb.then(
+                literal(COMMAND_NAME).
+                        requires(subcommandPermission(COMMAND_NAME, pf)).
+                        executes(this::execute)
+        );
+    }
+
+    private int execute(final CommandContext<CommandSourceStack> cc) {
+        try (final UserLogger ulog = UserLogger.ulog(cc)) {
+            if (!rf().doInitCheck(mod().getWorldDirectory(), ulog)) return FAILURE;
+            gitOp(NONE, ulog, repo -> {
+                final List<SnapshotId> snapshots = new ArrayList<>(repo.getLocalSnapshots());
+                Collections.sort(snapshots);
+                for (final SnapshotId sid : snapshots) {
+                    ulog.message(UserMessage.raw(sid.getShortName()));
+                }
+            });
+        }
+        return SUCCESS;
+    }
+
+}
