@@ -66,8 +66,12 @@ sourceSets {
 
 processResources {
     inputs.property "mod_version", mod_version
+    inputs.property "minecraft_version", minecraft_version
+    inputs.property "neoforge_version", neoforge_version
     filesMatching("META-INF/neoforge.mods.toml") {
-        filter { line -> line.replace('@mod_version@', mod_version) }
+        expand "mod_version": mod_version,
+               "minecraft_version": minecraft_version,
+               "neoforge_version": neoforge_version
     }
 }
 
@@ -107,4 +111,3 @@ tasks.register('publishCurseForge', TaskPublishCurseForge) {
     mainFile.addModLoader("NeoForge")
     dependsOn(jar)
 }
-

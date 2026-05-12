@@ -7,7 +7,7 @@ config = "fastback.mixins.json"
 
 [[mods]]
 modId = "fastback"
-version = "@mod_version@"
+version = "${mod_version}"
 displayName = "FastBack"
 description = "Fast, incremental world backups powered by git"
 logoFile = "fastback-icon.png"
@@ -15,13 +15,14 @@ logoFile = "fastback-icon.png"
 [[dependencies.fastback]]
 modId = "neoforge"
 type = "required"
-versionRange = "[21,)"
+versionRange = "[${neoforge_version},)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.fastback]]
 modId = "minecraft"
 type = "required"
-versionRange = "[1.21,)"
+versionRange = "[${minecraft_version},)"
 ordering = "NONE"
 side = "BOTH"
+
