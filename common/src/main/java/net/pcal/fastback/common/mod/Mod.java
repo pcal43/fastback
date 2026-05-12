@@ -50,7 +50,7 @@ public interface Mod {
 
         public static void register(Mod mod) {
             requireNonNull(mod);
-            if (INSTANCE != null) throw new IllegalStateException();
+            if (INSTANCE != null) throw new IllegalStateException("Mod singleton initialized twice");
             SingletonHolder.INSTANCE = mod;
         }
     }
