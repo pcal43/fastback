@@ -47,7 +47,7 @@ public class FabricClientInitializer implements ClientModInitializer {
                 minecraftServer -> Mod.mod().onWorldStart(minecraftServer)
         );
         ServerLifecycleEvents.SERVER_STOPPED.register(
-                minecraftServer -> Mod.mod().onWorldStop(minecraftServer)
+                minecraftServer -> Mod.mod().onWorldStop()
         );
     }
 }

@@ -100,7 +100,7 @@ class ModImpl implements Mod, MixinGateway {
     }
 
     @Override
-    public void onWorldStop(final MinecraftServer minecraftServer) {
+    public void onWorldStop() {
         try (final UserLogger ulog = UserLogger.forShutdown()) {
             final Path worldSaveDir = this.getWorldDirectory();
             if (executor().getActiveCount() > 0) {

@@ -66,15 +66,15 @@ public interface Mod {
     /**
      * Initializes the mod for a dedicated server. Call once at startup.
      */
-    static Mod initializeForDedicatedServer(LoaderHelper loaderHelper) {
-        return ModImpl.initialize(loaderHelper, null);
+    static void initializeForDedicatedServer(LoaderHelper loaderHelper) {
+        ModImpl.initialize(loaderHelper, null);
     }
 
     /**
      * Initializes the mod for a client (integrated or dedicated-server-from-client). Call once at startup.
      */
-    static Mod initializeForClient(LoaderHelper loaderHelper, ClientHelper clientHelper) {
-        return ModImpl.initialize(loaderHelper, clientHelper);
+    static void initializeForClient(LoaderHelper loaderHelper, ClientHelper clientHelper) {
+        ModImpl.initialize(loaderHelper, clientHelper);
     }
 
     /**
@@ -150,7 +150,7 @@ public interface Mod {
     /**
      * Must be called when a world is stopping to ensure we run a backup.
      */
-    void onWorldStop(MinecraftServer minecraftServer);
+    void onWorldStop();
 
 
 }

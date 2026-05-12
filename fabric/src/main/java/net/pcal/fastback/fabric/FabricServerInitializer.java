@@ -39,7 +39,7 @@ public class FabricServerInitializer implements DedicatedServerModInitializer {
         });
 
         ServerLifecycleEvents.SERVER_STOPPED.register(
-                minecraftServer -> Mod.mod().onWorldStop(minecraftServer)
+                minecraftServer -> Mod.mod().onWorldStop()
         );
     }
 }
