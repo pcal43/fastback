@@ -68,12 +68,13 @@ sourceSets {
 }
 
 processResources {
+    def mcVersionRange = "[" + minecraft_version.tokenize('.').take(2).join('.') + ",)"
     inputs.property "mod_version", mod_version
-    inputs.property "minecraft_version", minecraft_version
+    inputs.property "minecraft_version_range", mcVersionRange
     inputs.property "neoforge_version", neoforge_version
     filesMatching("META-INF/neoforge.mods.toml") {
         expand "mod_version": mod_version,
-               "minecraft_version": minecraft_version,
+               "minecraft_version_range": mcVersionRange,
                "neoforge_version": neoforge_version
     }
 }

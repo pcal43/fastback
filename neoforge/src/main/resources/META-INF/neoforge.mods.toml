@@ -1,28 +1,23 @@
 modLoader = "javafml"
 loaderVersion = "[4,)"
 license = "GPL-2"
-
 [[mixins]]
 config = "fastback.mixins.json"
-
 [[mods]]
 modId = "fastback"
 version = "${mod_version}"
 displayName = "FastBack"
 description = "Fast, incremental world backups powered by git"
 logoFile = "fastback-icon.png"
-
 [[dependencies.fastback]]
 modId = "neoforge"
 type = "required"
 versionRange = "[${neoforge_version},)"
 ordering = "NONE"
 side = "BOTH"
-
 [[dependencies.fastback]]
 modId = "minecraft"
 type = "required"
-versionRange = "[${minecraft_version},)"
+versionRange = "${minecraft_version_range}"
 ordering = "NONE"
 side = "BOTH"
-
