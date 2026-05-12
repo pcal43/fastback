@@ -18,7 +18,7 @@
 package net.pcal.fastback.common.mixins;
 
 import net.minecraft.server.MinecraftServer;
-import net.pcal.fastback.common.mod.MixinGateway;
+import net.pcal.fastback.common.mod.Mod;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -45,7 +45,7 @@ public class MinecraftServerMixin {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;saveEverything(ZZZ)Z"), remap = false)
     public boolean fastback_saveAll(MinecraftServer instance, boolean suppressLogs, boolean flush, boolean force) {
         boolean result = instance.saveEverything(suppressLogs, flush, force);
-        MixinGateway.get().autoSaveCompleted();
+        Mod.mod().autoSaveCompleted();
         return result;
     }
 
@@ -55,7 +55,7 @@ public class MinecraftServerMixin {
     @Inject(at = @At("HEAD"), method = "saveAllChunks(ZZZ)Z", cancellable = true, remap = false)
     public void fastback_save(boolean suppressLogs, boolean flush, boolean force, CallbackInfoReturnable<Boolean> ci) {
         synchronized (this) {
-            if (MixinGateway.get().isWorldSaveEnabled()) {
+            if (Mod.mod().isWorldSaveEnabled()) {
                 syslog().debug("world saves are enabled, doing requested save");
             } else {
                 syslog().warn("Skipping requested save because a backup is in progress.");
@@ -71,7 +71,7 @@ public class MinecraftServerMixin {
     @Inject(at = @At("HEAD"), method = "saveEverything(ZZZ)Z", cancellable = true, remap = false)
     public void fastback_saveAll(boolean suppressLogs, boolean flush, boolean force, CallbackInfoReturnable<Boolean> ci) {
         synchronized (this) {
-            if (MixinGateway.get().isWorldSaveEnabled()) {
+            if (Mod.mod().isWorldSaveEnabled()) {
                 syslog().debug("world saves are enabled, doing requested saveAll");
                 //TODO should call save here to ensure all synced?
             } else {

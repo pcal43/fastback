@@ -52,7 +52,7 @@ import static net.pcal.fastback.common.utils.EnvironmentUtils.getGitLfsVersion;
 import static net.pcal.fastback.common.utils.EnvironmentUtils.getGitVersion;
 import static net.pcal.fastback.common.utils.Executor.executor;
 
-class ModImpl implements Mod, MixinGateway {
+class ModImpl implements Mod {
 
     // ======================================================================
     // Fields
@@ -78,7 +78,6 @@ class ModImpl implements Mod, MixinGateway {
         SystemLogger.Singleton.register(new Log4jLogger(LogManager.getLogger("fastback")));
         final ModImpl mod = new ModImpl(loaderHelper, clientHelper);
         SingletonHolder.register(mod);
-        MixinGateway.Singleton.register(mod);
         mod.onInitialize();
         return mod;
     }
@@ -224,7 +223,7 @@ class ModImpl implements Mod, MixinGateway {
     }
 
     // ======================================================================
-    // MixinGateway implementation
+    // Mod implementation (continued)
 
     @Override
     public boolean isWorldSaveEnabled() {

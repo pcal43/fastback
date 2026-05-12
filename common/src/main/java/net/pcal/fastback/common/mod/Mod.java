@@ -48,8 +48,6 @@ public interface Mod {
         return SingletonHolder.INSTANCE;
     }
 
-    void renderHud(GuiGraphics drawContext);
-
     class SingletonHolder {
         private static Mod INSTANCE = null;
 
@@ -61,7 +59,7 @@ public interface Mod {
     }
 
     // ======================================================================
-    // Public methods
+    // Loader-facing methods
 
     /**
      * Initializes the mod for a dedicated server. Call once at startup.
@@ -76,6 +74,47 @@ public interface Mod {
     static void initializeForClient(LoaderHelper loaderHelper, ClientHelper clientHelper) {
         ModImpl.initialize(loaderHelper, clientHelper);
     }
+
+    /**
+     *
+     */
+    void onWorldStart(MinecraftServer server);
+
+    /**
+     * Must be called when a world is stopping to ensure we can run a
+     * shutdown backup.
+     */
+    void onWorldStop();
+
+    /**
+     * Allows loaders to plugin HUD rendering.
+     */
+    void renderHud(GuiGraphics drawContext);
+
+    // ======================================================================
+    // Mixin-facing methods
+
+    /**
+     * Called from the mixins to check whether vanilla autosaving should
+     * be disabled.  Autosaving while a backup is in progress could result
+     * in an inconsistent backup state.
+     */
+    boolean isWorldSaveEnabled();
+
+    /**
+     * Called from the mixins to tell us that an autosave just finished.
+     * This may trigger a backup, depending on configuration.
+     */
+    void autoSaveCompleted();
+
+    /**
+     * Called from the shutdown message screen mixins to render additional text.
+     */
+    void renderMessageScreen(GuiGraphics drawContext);
+
+
+    // ======================================================================
+    // Command-facing methods
 
     /**
      * @return path to where snapshots should be restored.
@@ -93,7 +132,7 @@ public interface Mod {
     void setWorldSaveEnabled(boolean enabled);
 
     /**
-     * Save the world.
+     * Forces a save of the world.  We often want to do this before doing a backup.
      */
     void saveWorld();
 
@@ -141,16 +180,4 @@ public interface Mod {
      * Add extra properties that will be stored in .fastback/backup.properties.
      */
     void addBackupProperties(Map<String, String> props);
-
-    /**
-     *
-     */
-    void onWorldStart(MinecraftServer server);
-
-    /**
-     * Must be called when a world is stopping to ensure we run a backup.
-     */
-    void onWorldStop();
-
-
 }
