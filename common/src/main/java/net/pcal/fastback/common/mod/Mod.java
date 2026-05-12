@@ -39,6 +39,9 @@ import static java.util.Objects.requireNonNull;
 public interface Mod {
 
     // ======================================================================
+    // Constants
+
+    // ======================================================================
     // Singleton
 
     static Mod mod() {

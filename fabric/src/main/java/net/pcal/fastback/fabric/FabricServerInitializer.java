@@ -32,8 +32,6 @@ public class FabricServerInitializer implements DedicatedServerModInitializer {
 
     @Override
     public void onInitializeServer() {
-        FabricLoaderHelper.registerBackupCommand(false);
-
         ServerLifecycleEvents.SERVER_STARTING.register(
                 minecraftServer -> {
                     Mod.initializeForDedicatedServer(new FabricLoaderHelper());

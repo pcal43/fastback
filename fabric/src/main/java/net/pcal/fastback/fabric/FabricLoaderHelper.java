@@ -20,11 +20,12 @@ package net.pcal.fastback.fabric;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import me.lucko.fabric.api.permissions.v0.Permissions;
+import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
-import net.fabricmc.api.EnvType;
 import net.minecraft.commands.CommandSourceStack;
+import net.pcal.fastback.common.commands.PermissionsFactory;
 import net.pcal.fastback.common.mod.LoaderHelper;
 
 import java.nio.file.Path;
@@ -33,8 +34,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
-import static net.pcal.fastback.common.commands.Commands.createBackupCommand;
 import static net.pcal.fastback.common.logging.SystemLogger.syslog;
 
 /**
@@ -46,10 +47,12 @@ import static net.pcal.fastback.common.logging.SystemLogger.syslog;
  */
 class FabricLoaderHelper implements LoaderHelper {
 
+    private static final String FABRIC_MOD_ID = "fastback";
+
     @Override
     public String getModVersion() {
-        return FabricLoader.getInstance().getModContainer(MOD_ID)
-                .orElseThrow(() -> new IllegalStateException("Could not find loader for " + MOD_ID))
+        return FabricLoader.getInstance().getModContainer(FABRIC_MOD_ID)
+                .orElseThrow(() -> new IllegalStateException("Could not find loader for " + FABRIC_MOD_ID))
                 .getMetadata().getVersion().toString();
     }
 
@@ -88,19 +91,13 @@ class FabricLoaderHelper implements LoaderHelper {
         return out;
     }
 
-    /**
-     * Registers the /backup command. Called by both client and server initializers
-     * after {@code ModImpl.initialize()} so the command system is ready.
-     *
-     * @param isClient true when running on an integrated (client-embedded) server
-     */
-    static void registerBackupCommand(boolean isClient) {
-        final int requiredLevel = isClient ? 0 : 4;
-        LiteralArgumentBuilder<CommandSourceStack> backupCommand = createBackupCommand(
-                permName -> Permissions.require(permName, requiredLevel)
-        );
+    @Override
+    public void registerBackupCommand(boolean isForClient,
+                                      Function<PermissionsFactory<CommandSourceStack>, LiteralArgumentBuilder<CommandSourceStack>> builder) {
+        final int requiredLevel = isForClient ? 0 : 4;
+        LiteralArgumentBuilder<CommandSourceStack> backupCommand =
+                builder.apply(permName -> Permissions.require(permName, requiredLevel));
         CommandRegistrationCallback.EVENT.register((dispatcher, regAccess, env) ->
                 dispatcher.register(backupCommand));
-        syslog().debug("registered backup command");
     }
 }

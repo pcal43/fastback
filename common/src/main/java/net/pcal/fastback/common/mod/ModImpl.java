@@ -21,6 +21,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelStorageSource;
+import net.pcal.fastback.common.commands.Commands;
 import net.pcal.fastback.common.commands.SchedulableAction;
 import net.pcal.fastback.common.config.GitConfig;
 import net.pcal.fastback.common.logging.Log4jLogger;
@@ -46,7 +47,6 @@ import static net.pcal.fastback.common.config.FastbackConfigKey.SHUTDOWN_ACTION;
 import static net.pcal.fastback.common.logging.SystemLogger.syslog;
 import static net.pcal.fastback.common.logging.UserMessage.UserMessageStyle.ERROR;
 import static net.pcal.fastback.common.logging.UserMessage.localized;
-import static net.pcal.fastback.common.mod.LoaderHelper.MOD_ID;
 import static net.pcal.fastback.common.mod.UserMessageUtil.messageToText;
 import static net.pcal.fastback.common.utils.EnvironmentUtils.getGitLfsVersion;
 import static net.pcal.fastback.common.utils.EnvironmentUtils.getGitVersion;
@@ -75,7 +75,7 @@ class ModImpl implements Mod, MixinGateway {
      * @return the LifecycleListener the loader should hold on to
      */
     public static Mod initialize(final LoaderHelper loaderHelper, final ClientHelper clientHelper) {
-        SystemLogger.Singleton.register(new Log4jLogger(LogManager.getLogger(MOD_ID)));
+        SystemLogger.Singleton.register(new Log4jLogger(LogManager.getLogger("fastback")));
         final ModImpl mod = new ModImpl(loaderHelper, clientHelper);
         SingletonHolder.register(mod);
         MixinGateway.Singleton.register(mod);
@@ -279,6 +279,7 @@ class ModImpl implements Mod, MixinGateway {
         } else {
             syslog().info("SshSessionFactory: " + SshSessionFactory.getInstance());
         }
+        this.loaderHelper.registerBackupCommand(clientHelper != null, Commands::createBackupCommand);
         syslog().debug("onInitialize complete");
     }
 }

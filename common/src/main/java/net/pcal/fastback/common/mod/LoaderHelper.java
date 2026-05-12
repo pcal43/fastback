@@ -18,9 +18,14 @@
 
 package net.pcal.fastback.common.mod;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import net.minecraft.commands.CommandSourceStack;
+import net.pcal.fastback.common.commands.PermissionsFactory;
+
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * Abstracts away loader/environment-specific services that the mod framework (e.g. Fabric)
@@ -31,10 +36,9 @@ import java.util.Map;
  */
 public interface LoaderHelper {
 
-    /** The mod id, shared across all loaders. */
-    String MOD_ID = "fastback";
-
-    /** @return the version string of the fastback mod as reported by the loader. */
+    /**
+     * @return the version string of the fastback mod as reported by the loader.
+     */
     String getModVersion();
 
     /**
@@ -52,4 +56,12 @@ public interface LoaderHelper {
      * @return paths that should be included when mods-backup is enabled.
      */
     Collection<Path> getModsBackupPaths();
+
+    /**
+     * Create the /backup command using the given builder and register it.
+     *
+     * @param isClient true when running on an integrated (client-embedded) server.
+     */
+    void registerBackupCommand(boolean isClient,
+                               Function<PermissionsFactory<CommandSourceStack>, LiteralArgumentBuilder<CommandSourceStack>> builder);
 }

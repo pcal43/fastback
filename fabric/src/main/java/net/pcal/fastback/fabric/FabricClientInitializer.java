@@ -21,7 +21,6 @@ package net.pcal.fastback.fabric;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.pcal.fastback.common.mod.ClientHelper;
 import net.pcal.fastback.common.mod.Mod;
@@ -36,8 +35,6 @@ public class FabricClientInitializer implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        FabricLoaderHelper.registerBackupCommand(true);
-
         ClientLifecycleEvents.CLIENT_STARTED.register(
                 minecraftClient -> {
                     Mod.initializeForClient(new FabricLoaderHelper(), new ClientHelper(minecraftClient));

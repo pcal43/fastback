@@ -44,5 +44,5 @@ run-fabric-server:
 run-neoforge:
     ./gradlew :neoforge:runClient
 
-run-neoforge:
+run-neoforge-server:
     ./gradlew :neoforge:runServer
