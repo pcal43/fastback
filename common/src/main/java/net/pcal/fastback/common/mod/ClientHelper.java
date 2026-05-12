@@ -78,6 +78,7 @@ public final class ClientHelper {
         final Screen screen = client.screen;
         if (screen instanceof GenericMessageScreen) {
             ((ScreenAccessors) screen).setTitle(messageToText(userMessage));
+            ((ScreenAccessors) screen).invokeRebuildWidgets(); // force it to rebuild the message component with the new title
         }
     }
 
@@ -94,6 +95,6 @@ public final class ClientHelper {
             syslog().debug("hud text timed out.  somebody forgot to clean up");
             return;
         }
-        guiGraphics.drawString(this.client.font, this.hudText, 2, 2, 1);
+        guiGraphics.drawString(this.client.font, this.hudText, 2, 2, 0xFFFFFFFF);
     }
 }
