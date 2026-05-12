@@ -44,7 +44,7 @@ public class FabricClientInitializer implements ClientModInitializer {
                 }
         );
         ServerLifecycleEvents.SERVER_STARTING.register(
-                minecraftServer -> Mod.initializeForDedicatedServer(new FabricLoaderHelper())
+                minecraftServer -> Mod.mod().onWorldStart(minecraftServer)
         );
         ServerLifecycleEvents.SERVER_STOPPED.register(
                 minecraftServer -> Mod.mod().onWorldStop(minecraftServer)
