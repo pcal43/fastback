@@ -1,6 +1,6 @@
 /*
  * FastBack - Fast, incremental Minecraft backups powered by Git.
- * Copyright (C) 2022 pcal.net
+ * Copyright (C) 2026 pcal.net
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

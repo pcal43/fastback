@@ -14,6 +14,9 @@ repositories {
 }
 
 dependencies {
+    // common module - needed for IntelliJ to resolve the project dependency
+    compileOnly project(':common')
+
     // jgit and dependencies
     implementation("org.eclipse.jgit:org.eclipse.jgit:${jgit_version}") { transitive = false }
     jarJar("org.eclipse.jgit:org.eclipse.jgit:${jgit_version}") { transitive = false }
