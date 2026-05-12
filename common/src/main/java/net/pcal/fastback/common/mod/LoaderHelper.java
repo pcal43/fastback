@@ -28,8 +28,8 @@ import java.util.Map;
 import java.util.function.Function;
 
 /**
- * Abstracts away loader/environment-specific services that the mod framework (e.g. Fabric)
- * must provide. Implemented by loader-specific classes; has no Minecraft server or client deps.
+ * Abstracts away loader/environment-specific services that the mod framework
+ * (e.g. Fabric) must provide.
  *
  * @author pcal
  * @since 0.2.0

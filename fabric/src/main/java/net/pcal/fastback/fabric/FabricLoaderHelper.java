@@ -39,8 +39,7 @@ import java.util.function.Function;
 import static net.pcal.fastback.common.logging.SystemLogger.syslog;
 
 /**
- * Base Fabric implementation of {@link LoaderHelper}. Provides mod version and
- * loader-specific backup properties. Subclassed by client and server providers.
+ * Base Fabric implementation of {@link LoaderHelper}.
  *
  * @author pcal
  * @since 0.1.0

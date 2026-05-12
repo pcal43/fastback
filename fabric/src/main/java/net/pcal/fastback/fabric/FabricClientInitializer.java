@@ -37,7 +37,7 @@ public class FabricClientInitializer implements ClientModInitializer {
     public void onInitializeClient() {
         ClientLifecycleEvents.CLIENT_STARTED.register(
                 minecraftClient -> {
-                    Mod.initializeForClient(new FabricLoaderHelper(), new ClientHelper(minecraftClient));
+                    Mod.initializeForClient(new FabricLoaderHelper(), new ClientHelper(minecraftClient));                    Mod.initializeForClient(new FabricLoaderHelper(), new ClientHelper(minecraftClient));
                     HudRenderCallback.EVENT.register((guiGraphics,deltaTracker)->{
                         Mod.mod().renderHud(guiGraphics);
                     });

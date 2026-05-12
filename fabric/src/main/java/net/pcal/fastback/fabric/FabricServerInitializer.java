@@ -32,12 +32,10 @@ public class FabricServerInitializer implements DedicatedServerModInitializer {
 
     @Override
     public void onInitializeServer() {
+        Mod.initializeForDedicatedServer(new FabricLoaderHelper());
         ServerLifecycleEvents.SERVER_STARTING.register(
-                minecraftServer -> {
-                    Mod.initializeForDedicatedServer(new FabricLoaderHelper());
-                    Mod.mod().onWorldStart(minecraftServer);
-        });
-
+                minecraftServer -> Mod.mod().onWorldStart(minecraftServer)
+        );
         ServerLifecycleEvents.SERVER_STOPPED.register(
                 minecraftServer -> Mod.mod().onWorldStop()
         );
