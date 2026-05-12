@@ -17,13 +17,15 @@
  */
 package net.pcal.fastback.neoforge;
 
+import net.minecraft.client.Minecraft;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
-import net.pcal.fastback.mod.LifecycleListener;
+import net.pcal.fastback.common.mod.ClientHelper;
+import net.pcal.fastback.common.mod.Mod;
 
 /**
  * Client-side NeoForge initialization. Kept separate from NeoForgeModInitializer
@@ -32,23 +34,23 @@ import net.pcal.fastback.mod.LifecycleListener;
  * @author pcal
  */
 class NeoForgeClientInitializer {
+
     static void init(IEventBus modEventBus) {
-        final NeoForgeClientProvider clientProvider = new NeoForgeClientProvider();
-        final LifecycleListener lifecycle = clientProvider.initialize();
-        NeoForge.EVENT_BUS.addListener((RenderGuiLayerEvent.Post event) ->
-                clientProvider.renderHud(event.getGuiGraphics()));
-        NeoForge.EVENT_BUS.addListener((ServerStartingEvent event) -> {
-            clientProvider.setMinecraftServer(event.getServer());
-            lifecycle.onWorldStart();
-        });
-        NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> {
-            try {
-                lifecycle.onWorldStop();
-            } finally {
-                clientProvider.setMinecraftServer(null);
+        final boolean[] initialized = {false};
+        // We need the Minecraft client instance to build ClientHelper, so we defer until the first tick.
+        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Pre event) -> {
+            if (!initialized[0]) {
+                initialized[0] = true;
+                final Minecraft client = Minecraft.getInstance();
+                Mod.initializeForClient(new NeoForgeLoaderHelper(true), new ClientHelper(client));
             }
         });
-        NeoForge.EVENT_BUS.addListener((RegisterCommandsEvent event) ->
-                clientProvider.onRegisterCommands(event));
+        NeoForge.EVENT_BUS.addListener((RenderGuiLayerEvent.Post event) ->
+                Mod.mod().renderHud(event.getGuiGraphics()));
+        NeoForge.EVENT_BUS.addListener((ServerStartingEvent event) ->
+                Mod.mod().onWorldStart(event.getServer()));
+        NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) ->
+                Mod.mod().onWorldStop());
     }
 }
+
