@@ -72,9 +72,8 @@ class ModImpl implements Mod {
      *
      * @param loaderHelper loader-specific services (always present)
      * @param clientHelper client-specific services, or null on a dedicated server
-     * @return the LifecycleListener the loader should hold on to
      */
-    public static Mod initialize(final LoaderHelper loaderHelper, final ClientHelper clientHelper) {
+    static Mod initialize(final LoaderHelper loaderHelper, final ClientHelper clientHelper) {
         SystemLogger.Singleton.register(new Log4jLogger(LogManager.getLogger("fastback")));
         final ModImpl mod = new ModImpl(loaderHelper, clientHelper);
         SingletonHolder.register(mod);

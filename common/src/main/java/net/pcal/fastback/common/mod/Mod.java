@@ -39,9 +39,6 @@ import static java.util.Objects.requireNonNull;
 public interface Mod {
 
     // ======================================================================
-    // Constants
-
-    // ======================================================================
     // Singleton
 
     static Mod mod() {
@@ -76,7 +73,8 @@ public interface Mod {
     }
 
     /**
-     *
+     * Must be called when a world is starting so that we can have a reference
+     * to the active world.
      */
     void onWorldStart(MinecraftServer server);
 
