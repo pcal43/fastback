@@ -24,8 +24,8 @@ dependencies {
 	modImplementation("me.lucko:fabric-permissions-api:${fabric_permissions_version}") { transitive = false }
 	include("me.lucko:fabric-permissions-api:${fabric_permissions_version}") { transitive = false }
 
-	modImplementation("xyz.nucleoid:server-translations-api:${server_translations_version}") { transitive = false }
-	include("xyz.nucleoid:server-translations-api:${server_translations_version}") { transitive = false }
+	modImplementation("xyz.nucleoid:server-translations-api:${server_translations_version}")
+	include("xyz.nucleoid:server-translations-api:${server_translations_version}")
 
 	// jgit and dependencies
 	modImplementation("org.eclipse.jgit:org.eclipse.jgit:${jgit_version}") { transitive = false }
