@@ -2,6 +2,9 @@ modLoader = "javafml"
 loaderVersion = "[4,)"
 license = "GPL-2"
 
+[[mixins]]
+config = "fastback.mixins.json"
+
 [[mods]]
 modId = "fastback"
 version = "@mod_version@"
@@ -22,4 +25,3 @@ type = "required"
 versionRange = "[1.21,)"
 ordering = "NONE"
 side = "BOTH"
-
