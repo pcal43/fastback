@@ -25,14 +25,15 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 
-import static net.pcal.fastback.neoforge.NeoForgeLoaderHelper.MOD_ID;
+import static net.pcal.fastback.common.mod.Mod.mod;
+import static net.pcal.fastback.neoforge.NeoForgeLoaderHelper.NEOFORGE_MOD_ID;
 
 /**
  * NeoForge mod entry point. Handles both dedicated server and client environments.
  *
  * @author pcal
  */
-@Mod(MOD_ID)
+@Mod(NEOFORGE_MOD_ID)
 public class NeoForgeModInitializer {
 
     public NeoForgeModInitializer(IEventBus modEventBus, ModContainer modContainer, Dist dist) {
@@ -41,9 +42,9 @@ public class NeoForgeModInitializer {
         } else {
             net.pcal.fastback.common.mod.Mod.initializeForDedicatedServer(new NeoForgeLoaderHelper(false));
             NeoForge.EVENT_BUS.addListener((ServerStartingEvent event) ->
-                    net.pcal.fastback.common.mod.Mod.mod().onWorldStart(event.getServer()));
+                    mod().onWorldStart(event.getServer()));
             NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) ->
-                    net.pcal.fastback.common.mod.Mod.mod().onWorldStop());
+                    mod().onWorldStop());
         }
     }
 }

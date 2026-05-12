@@ -27,6 +27,8 @@ import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.pcal.fastback.common.mod.ClientHelper;
 import net.pcal.fastback.common.mod.Mod;
 
+import static net.pcal.fastback.common.mod.Mod.mod;
+
 /**
  * Client-side NeoForge initialization. Kept separate from NeoForgeModInitializer
  * so that client-only classes are not classloaded on a dedicated server.
@@ -46,11 +48,11 @@ class NeoForgeClientInitializer {
             }
         });
         NeoForge.EVENT_BUS.addListener((RenderGuiLayerEvent.Post event) ->
-                Mod.mod().renderHud(event.getGuiGraphics()));
+                mod().renderHud(event.getGuiGraphics()));
         NeoForge.EVENT_BUS.addListener((ServerStartingEvent event) ->
-                Mod.mod().onWorldStart(event.getServer()));
+                mod().onWorldStart(event.getServer()));
         NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) ->
-                Mod.mod().onWorldStop());
+                mod().onWorldStop());
     }
 }
 

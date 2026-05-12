@@ -43,7 +43,7 @@ import static net.pcal.fastback.common.logging.SystemLogger.syslog;
  */
 class NeoForgeLoaderHelper implements LoaderHelper {
 
-    static final String MOD_ID = "fastback";
+    static final String NEOFORGE_MOD_ID = "fastback";
 
     private final boolean isClient;
 
@@ -53,9 +53,9 @@ class NeoForgeLoaderHelper implements LoaderHelper {
 
     @Override
     public String getModVersion() {
-        return ModList.get().getModContainerById(MOD_ID)
+        return ModList.get().getModContainerById(NEOFORGE_MOD_ID)
                 .map(c -> c.getModInfo().getVersion().toString())
-                .orElseThrow(() -> new IllegalStateException("Could not find mod container for " + MOD_ID));
+                .orElseThrow(() -> new IllegalStateException("Could not find mod container for " + NEOFORGE_MOD_ID));
     }
 
     @Override
