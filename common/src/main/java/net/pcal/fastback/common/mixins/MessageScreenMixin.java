@@ -34,7 +34,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(GenericMessageScreen.class)
 public class MessageScreenMixin {
 
-    @Inject(method = "renderBackground", at = @At("TAIL"), remap = false)
+    @Inject(method = "extractBackground", at = @At("TAIL"), remap = false)
     public void fastback_render(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         Mod.mod().renderMessageScreen(context);
     }
