@@ -4,6 +4,7 @@
   "package": "net.pcal.fastback.common.mixins",
   "compatibilityLevel": "JAVA_16",
   "mixins": [
+    "FileFixerUpperMixin",
     "MinecraftServerMixin",
     "ServerAccessors",
     "SessionAccessors"
