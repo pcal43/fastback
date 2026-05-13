@@ -19,7 +19,7 @@
 package net.pcal.fastback.common.mod;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.GenericMessageScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -82,11 +82,11 @@ public final class ClientHelper {
         }
     }
 
-    public void renderMessageScreen(GuiGraphics guiGraphics) {
+    public void renderMessageScreen(GuiGraphicsExtractor guiGraphics) {
         renderHud(guiGraphics);
     }
 
-    public void renderHud(GuiGraphics guiGraphics) {
+    public void renderHud(GuiGraphicsExtractor guiGraphics) {
         if (this.client == null) return;
         if (this.hudText == null) return;
         if (!this.client.options.showAutosaveIndicator().get()) return;
@@ -95,6 +95,6 @@ public final class ClientHelper {
             syslog().debug("hud text timed out.  somebody forgot to clean up");
             return;
         }
-        guiGraphics.drawString(this.client.font, this.hudText, 2, 2, 0xFFFFFFFF);
+        guiGraphics.text(this.client.font, this.hudText, 2, 2, 0xFFFFFF, false);
     }
 }

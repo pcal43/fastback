@@ -18,7 +18,7 @@
 
 package net.pcal.fastback.common.mod;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
 import net.pcal.fastback.common.logging.UserMessage;
@@ -87,7 +87,7 @@ public interface Mod {
     /**
      * Allows loaders to plugin HUD rendering.
      */
-    void renderHud(GuiGraphics drawContext);
+    void renderHud(GuiGraphicsExtractor drawContext);
 
     // ======================================================================
     // Mixin-facing methods
@@ -108,7 +108,7 @@ public interface Mod {
     /**
      * Called from the shutdown message screen mixins to render additional text.
      */
-    void renderMessageScreen(GuiGraphics drawContext);
+    void renderMessageScreen(GuiGraphicsExtractor drawContext);
 
 
     // ======================================================================

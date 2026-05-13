@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom'
+	id 'net.fabricmc.fabric-loom'
 	id 'com.modrinth.minotaur'
 	id 'net.darkhax.curseforgegradle'
 }
@@ -17,33 +17,32 @@ repositories {
 
 dependencies {
 	minecraft "com.mojang:minecraft:${minecraft_version}"
-	mappings loom.officialMojangMappings()
-	modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+	implementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
 
-	modImplementation("me.lucko:fabric-permissions-api:${fabric_permissions_version}") { transitive = false }
+	implementation("me.lucko:fabric-permissions-api:${fabric_permissions_version}") { transitive = false }
 	include("me.lucko:fabric-permissions-api:${fabric_permissions_version}") { transitive = false }
 
-	modImplementation("xyz.nucleoid:server-translations-api:${server_translations_version}")
+	implementation("xyz.nucleoid:server-translations-api:${server_translations_version}")
 	include("xyz.nucleoid:server-translations-api:${server_translations_version}")
 
 	// jgit and dependencies
-	modImplementation("org.eclipse.jgit:org.eclipse.jgit:${jgit_version}") { transitive = false }
+	implementation("org.eclipse.jgit:org.eclipse.jgit:${jgit_version}") { transitive = false }
 	include("org.eclipse.jgit:org.eclipse.jgit:${jgit_version}") { transitive = false }
 
-	modImplementation("com.googlecode.javaewah:JavaEWAH:${JavaEWAH_version}") { transitive = false }
+	implementation("com.googlecode.javaewah:JavaEWAH:${JavaEWAH_version}") { transitive = false }
 	include("com.googlecode.javaewah:JavaEWAH:${JavaEWAH_version}") { transitive = false }
 
-	modImplementation("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${jgit_version}") { transitive = false }
+	implementation("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${jgit_version}") { transitive = false }
 	include("org.eclipse.jgit:org.eclipse.jgit.ssh.apache:${jgit_version}") { transitive = false }
 
-	modImplementation("org.apache.sshd:sshd-core:${apache_sshd_version}") { transitive = false }
+	implementation("org.apache.sshd:sshd-core:${apache_sshd_version}") { transitive = false }
 	include("org.apache.sshd:sshd-core:${apache_sshd_version}") { transitive = false }
 
-	modImplementation("org.apache.sshd:sshd-common:${apache_sshd_version}") { transitive = false }
+	implementation("org.apache.sshd:sshd-common:${apache_sshd_version}") { transitive = false }
 	include("org.apache.sshd:sshd-common:${apache_sshd_version}") { transitive = false }
 
-	modImplementation("net.i2p.crypto:eddsa:${eddsa_version}") { transitive = false }
+	implementation("net.i2p.crypto:eddsa:${eddsa_version}") { transitive = false }
 	include("net.i2p.crypto:eddsa:${eddsa_version}") { transitive = false }
 
 	compileOnly project(':common')
@@ -84,9 +83,6 @@ loom {
 			runDir("run")
 		}
 	}
-	mixin {
-		defaultRefmapName = "fastback-refmap.json"
-	}
 	mods {
 		"fastback" {
 			sourceSet sourceSets.main
@@ -107,7 +103,7 @@ modrinth {
 	versionNumber = mod_version
 	versionName = "${mod_version} (fabric)"
 	versionType = "release"
-	uploadFile = remapJar
+	uploadFile = jar
 	changelog = "<p><a href='${github_projectUrl}/releases/tag/${mod_version}'>${github_projectUrl}/releases/tag/${mod_version}</a></p>"
 	gameVersions = [minecraft_version]
 	loaders = ["fabric"]
@@ -120,11 +116,11 @@ import net.darkhax.curseforgegradle.TaskPublishCurseForge
 
 tasks.register('publishCurseForge', TaskPublishCurseForge) {
 	apiToken = System.getenv("CURSEFORGE_TOKEN") ?: 'CURSEFORGE_TOKEN NOT_SET'
-	def mainFile = upload(curseforge_projectId, remapJar)
+	def mainFile = upload(curseforge_projectId, jar)
 	mainFile.releaseType = "release"
 	mainFile.changelog = "${github_projectUrl}/releases/tag/${mod_version}"
 	mainFile.changelogType = "markdown"
 	mainFile.addGameVersion(minecraft_version)
 	mainFile.addModLoader("Fabric")
-	dependsOn(remapJar)
+	dependsOn(jar)
 }

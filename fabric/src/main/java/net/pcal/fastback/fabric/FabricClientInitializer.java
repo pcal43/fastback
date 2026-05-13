@@ -20,8 +20,9 @@ package net.pcal.fastback.fabric;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.minecraft.resources.Identifier;
 import net.pcal.fastback.common.mod.ClientHelper;
 import net.pcal.fastback.common.mod.Mod;
 
@@ -33,14 +34,17 @@ import net.pcal.fastback.common.mod.Mod;
  */
 public class FabricClientInitializer implements ClientModInitializer {
 
+    private static final String MOD_ID = "fastback";
+
     @Override
     public void onInitializeClient() {
         ClientLifecycleEvents.CLIENT_STARTED.register(
                 minecraftClient -> {
                     Mod.initializeForClient(new FabricLoaderHelper(), new ClientHelper(minecraftClient));
-                    HudRenderCallback.EVENT.register((guiGraphics,deltaTracker)->{
-                        Mod.mod().renderHud(guiGraphics);
-                    });
+                    HudElementRegistry.addLast(
+                            Identifier.fromNamespaceAndPath(MOD_ID, "hud"),
+                            (guiGraphics, deltaTracker) -> Mod.mod().renderHud(guiGraphics)
+                    );
                 }
         );
         ServerLifecycleEvents.SERVER_STARTING.register(

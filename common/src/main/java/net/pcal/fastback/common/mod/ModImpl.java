@@ -17,7 +17,7 @@
  */
 package net.pcal.fastback.common.mod;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelStorageSource;
@@ -239,7 +239,7 @@ class ModImpl implements Mod {
     }
 
     @Override
-    public void renderMessageScreen(GuiGraphics drawContext) {
+    public void renderMessageScreen(GuiGraphicsExtractor drawContext) {
         if (this.clientHelper != null) {
             this.clientHelper.renderMessageScreen(drawContext);
         } else {
@@ -248,7 +248,7 @@ class ModImpl implements Mod {
     }
 
     @Override
-    public void renderHud(GuiGraphics drawContext) {
+    public void renderHud(GuiGraphicsExtractor drawContext) {
         if (this.clientHelper != null) {
             this.clientHelper.renderHud(drawContext);
         } else {

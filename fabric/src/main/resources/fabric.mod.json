@@ -25,10 +25,11 @@
     "fastback.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=${fabric_loader_version}",
-    "minecraft": ">=${minecraft_version}",
-    "java": ">=${java_version}"
+    "fabricloader": ">=0.19.2",
+    "fabric-api": "*",
+    "fabric-permissions-api-v0": "*",
+    "minecraft": "26.1.x",
+    "java": ">=25"
   },
   "conflicts": {}
 }
-
