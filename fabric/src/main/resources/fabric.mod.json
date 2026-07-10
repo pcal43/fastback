@@ -28,7 +28,7 @@
     "fabricloader": ">=${fabric_loader_version}",
     "fabric-api": "*",
     "fabric-permissions-api-v0": "*",
-    "minecraft": "26.1.x",
+    "minecraft": "26.2.x",
     "java": ">=25"
   },
   "conflicts": {}
