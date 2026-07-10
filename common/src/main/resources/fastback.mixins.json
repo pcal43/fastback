@@ -11,7 +11,8 @@
   ],
   "client": [
     "MessageScreenMixin",
-    "ScreenAccessors"
+    "ScreenAccessors",
+    "GuiAccessors"
   ],
   "injectors": {
     "defaultRequire": 1

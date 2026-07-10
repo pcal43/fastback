@@ -19,12 +19,14 @@
 package net.pcal.fastback.common.mod;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.GenericMessageScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.pcal.fastback.common.logging.UserMessage;
 import net.pcal.fastback.common.mixins.ScreenAccessors;
+import net.pcal.fastback.common.mixins.GuiAccessors;
 
 import static net.pcal.fastback.common.logging.SystemLogger.syslog;
 import static net.pcal.fastback.common.mod.UserMessageUtil.messageToText;
@@ -75,7 +77,8 @@ public final class ClientHelper {
 
     public void setMessageScreenText(UserMessage userMessage) {
         if (this.client == null) return;
-        final Screen screen = client.screen;
+        final Gui gui = client.gui;
+        final Screen screen = ((GuiAccessors) gui).getScreen();
         if (screen instanceof GenericMessageScreen) {
             ((ScreenAccessors) screen).setTitle(messageToText(userMessage));
             ((ScreenAccessors) screen).invokeRebuildWidgets(); // force it to rebuild the message component with the new title
