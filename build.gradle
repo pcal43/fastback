@@ -11,6 +11,14 @@ ext {
 }
 
 subprojects {
+	plugins.withId('java') {
+		java {
+			toolchain {
+				languageVersion = JavaLanguageVersion.of(java_version as Integer)
+			}
+		}
+	}
+
 	tasks.withType(JavaCompile).configureEach {
 		it.options.release = project.java_version as Integer
 		options.encoding = "UTF-8"
