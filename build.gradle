@@ -25,6 +25,12 @@ subprojects {
 	}
 }
 
+tasks.register('ciBuild') {
+	group = 'verification'
+	description = 'Runs the tests and builds all supported mod-loader targets'
+	dependsOn ':common:test', ':fabric:build', ':neoforge:build'
+}
+
 // ============================================================================
 // Release Tasks
 // ============================================================================
