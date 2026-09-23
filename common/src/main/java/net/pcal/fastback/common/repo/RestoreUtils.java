@@ -131,7 +131,7 @@ abstract class RestoreUtils {
      * @param snapshotName   - name of the snapshot being restored
      * @return The absolute path to the directory where the snapshot should be restored
      */
-    private static Path getTargetDir(Path allRestoresDir, String worldName, String snapshotName) {
+    static Path getTargetDir(Path allRestoresDir, String worldName, String snapshotName) {
         worldName = worldName.replaceAll("[^\\p{L}\\p{N}]+", ""); // strip out all non-word characters for safety
         Path base = allRestoresDir.resolve(worldName + "-" + snapshotName);
         Path candidate = base;
