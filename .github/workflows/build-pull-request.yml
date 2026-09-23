@@ -42,4 +42,4 @@ jobs:
             ${{ runner.os }}-build-
 
       - name: Execute Gradle build
-        run: ./gradlew build
+        run: ./gradlew clean ciBuild --console=plain
