@@ -28,8 +28,8 @@
     "fabricloader": ">=${fabric_loader_version}",
     "fabric-api": "*",
     "fabric-permissions-api-v0": "*",
-    "minecraft": ">=26.3",
-    "java": ">=25"
+    "minecraft": ">=${minecraft_version}",
+    "java": ">=${java_version}"
   },
   "conflicts": {}
 }
