@@ -16,6 +16,7 @@ repositories {
 dependencies {
     // common module - needed for IntelliJ to resolve the project dependency
     compileOnly project(':common')
+    annotationProcessor "org.spongepowered:mixin:${spongepowered_version}:processor"
 
     // jgit and dependencies
     implementation("org.eclipse.jgit:org.eclipse.jgit:${jgit_version}") { transitive = false }
