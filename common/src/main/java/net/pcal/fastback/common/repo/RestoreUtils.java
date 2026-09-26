@@ -26,6 +26,7 @@ import net.pcal.fastback.common.utils.ProcessException;
 import net.pcal.fastback.common.utils.ProcessUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.errors.ConfigInvalidException;
 import org.eclipse.jgit.lib.ProgressMonitor;
 
 import java.io.IOException;
@@ -77,15 +78,16 @@ abstract class RestoreUtils {
     private static void doRestoreSnapshot(final String snapshotNameToRestore, final String repoUri, final RepoImpl repo, final UserLogger ulog) {
         try {
             PreflightUtils.doPreflight(repo);
+            final Git gitRepo=repo.getJGit();
             final GitConfig conf = repo.getConfig();
             final SnapshotId sid = repo.createSnapshotId(snapshotNameToRestore);
             final Path allRestoresDir = conf.isSet(RESTORE_DIRECTORY) ?
                     Paths.get(conf.getString(RESTORE_DIRECTORY)) : mod().getDefaultRestoresDir();
             final Path restoreTargetDir = getTargetDir(allRestoresDir, mod().getWorldName(), sid.getShortName());
             if (conf.getBoolean(IS_NATIVE_GIT_ENABLED)) {
-                native_restoreSnapshot(sid.getBranchName(), restoreTargetDir, repoUri, ulog);
+                native_restoreSnapshot(sid.getBranchName(), restoreTargetDir, repoUri, ulog, gitRepo);
             } else {
-                jgit_restoreSnapshot(sid.getBranchName(), restoreTargetDir, repoUri, ulog);
+                jgit_restoreSnapshot(sid.getBranchName(), restoreTargetDir, repoUri, ulog, gitRepo);
             }
             ulog.message(localized("fastback.chat.restore-done", restoreTargetDir));
         } catch (Exception e) {
@@ -94,7 +96,7 @@ abstract class RestoreUtils {
         }
     }
 
-    private static void native_restoreSnapshot(final String branchName, final Path restoreTargetDir, final String repoUri, final UserLogger ulog) throws ProcessException {
+    private static void native_restoreSnapshot(final String branchName, final Path restoreTargetDir, final String repoUri, final UserLogger ulog,Git repo) throws ProcessException, IOException, ConfigInvalidException {
         final Map<String, String> env = Map.of("GIT_LFS_FORCE_PROGRESS", "1");
         final Consumer<String> outputConsumer = line -> ulog.update(styledRaw(line, NATIVE_GIT));
         final String restoreTargetDirStr = restoreTargetDir.toString();
@@ -114,15 +116,18 @@ abstract class RestoreUtils {
         ProcessUtils.doExec(new String[]{
                 "git", "-C", restoreTargetDirStr, "checkout", branchName
         }, env, outputConsumer, outputConsumer);
+        Git restoredRepo=Git.open(restoreTargetDir.toFile());
+        RepoImpl.writeFastBackConfig(repo,restoredRepo);
+        restoredRepo.close();
     }
 
-    private static void jgit_restoreSnapshot(final String branchName, final Path restoreTargetDir, final String repoUri, final UserLogger ulog) throws IOException, GitAPIException {
+    private static void jgit_restoreSnapshot(final String branchName, final Path restoreTargetDir, final String repoUri, final UserLogger ulog, Git repo) throws IOException, GitAPIException, ConfigInvalidException {
         ulog.update(localized("fastback.hud.restore-percent", 0));
         final ProgressMonitor pm = new JGitIncrementalProgressMonitor(new JGitRestoreProgressMonitor(ulog), 100);
-        try (Git git = Git.cloneRepository().setProgressMonitor(pm).setDirectory(restoreTargetDir.toFile()).
+        try (Git restoredRepo = Git.cloneRepository().setProgressMonitor(pm).setDirectory(restoreTargetDir.toFile()).
                 setBranchesToClone(List.of("refs/heads/" + branchName)).setBranch(branchName).setURI(repoUri).call()) {
+            RepoImpl.writeFastBackConfig(repo,restoredRepo);
         }
-        FileUtils.rmdir(restoreTargetDir.resolve(".git"));
     }
 
     /**

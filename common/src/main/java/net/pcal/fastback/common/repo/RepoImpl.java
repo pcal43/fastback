@@ -26,8 +26,10 @@ import net.pcal.fastback.common.repo.WorldIdUtils.WorldIdInfo;
 import net.pcal.fastback.common.utils.ProcessException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.errors.ConfigInvalidException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.util.FileUtils;
 
 import java.io.File;
@@ -261,6 +263,17 @@ class RepoImpl implements Repo {
     @Override
     public SnapshotId createSnapshotId(String shortName) throws IOException, ParseException {
         return getWorldIdInfo().sidCodec().create(this.getWorldId(), shortName);
+    }
+
+    static void writeFastBackConfig(Git sourceRepo,Git targetRepo) throws ConfigInvalidException,IOException{
+        StoredConfig targetConfig=targetRepo.getRepository().getConfig();
+        StoredConfig sourceConfig=sourceRepo.getRepository().getConfig();
+        Set<String> keys = sourceConfig.getNames("fastback");
+        for(String key:keys){
+            String value=sourceConfig.getString("fastback",null,key);
+            targetConfig.setString("fastback",null,key,value);
+        }
+        targetConfig.save();
     }
 
     // ======================================================================
