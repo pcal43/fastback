@@ -18,6 +18,7 @@
 
 package net.pcal.fastback.common.mod;
 
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextColor;
@@ -40,8 +41,9 @@ public class UserMessageUtil {
     public static Component messageToText(final UserMessage m) {
         final MutableComponent out;
         if (m.localized() != null) {
-            out = Component.translatable(
+            out = Component.translatableWithFallback(
                 m.localized().key(),
+                Language.DEFAULT_INSTANCE.getOrDefault(m.localized().key()),
                 messageParamsToComponentArgs(m.localized().params())
             );
         } else {
